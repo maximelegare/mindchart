@@ -1,0 +1,21 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# 1. Format staged files with Prettier (and re-stage them)
+echo "🔍 Running Prettier on staged files..."
+yarn lint-staged || {
+  echo "❌ Prettier failed. Fix the errors above, stage the changes, and try again."
+  exit 1
+}
+echo "✅ Prettier passed."
+
+# 2. Check Yarn constraints
+echo "🔍 Checking monorepo constraints..."
+yarn constraints || {
+  echo "❌ Failed to commit! Version mismatch found in package.json files."
+  echo "Run 'yarn constraints' to see errors or 'yarn constraints --fix' to align them."
+  exit 1
+}
+echo "✅ Constraints passed."
+
+echo "✅ All checks passed. Committing..."

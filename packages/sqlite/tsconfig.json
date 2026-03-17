@@ -1,0 +1,22 @@
+{
+  "extends": "../typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "skipLibCheck": true,
+    "maxNodeModuleJsDepth": 0,
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": ["node"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.d.ts",
+    "index.ts",
+    "app.json"
+  ],
+  "exclude": ["node_modules", "**/node_modules", "dist", "src/migrations/*"]
+}

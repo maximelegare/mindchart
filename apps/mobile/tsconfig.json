@@ -1,0 +1,31 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@/assets/*": ["./assets/*"],
+      "@repo/sqlite": ["../../packages/sqlite/index.ts"],
+      "@repo/sqlite/*": ["../../packages/sqlite/*"],
+      "@repo/zod-schemas": ["../../packages/zod-schemas/client.ts"],
+      "@repo/zod-schemas/*": ["../../packages/zod-schemas/*"],
+      "@repo/constants": ["../../packages/constants/index.ts"],
+      "@repo/constants/*": ["../../packages/constants/*"],
+      "@repo/eslint-config": ["../../packages/eslint-config"],
+      "@repo/eslint-config/*": ["../../packages/eslint-config/*"],
+      "@repo/theme": ["../../packages/theme/index.ts"],
+      "@repo/theme/*": ["../../packages/theme/*"]
+    },
+    "skipLibCheck": true
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts",
+    "../../packages/sqlite/src/types/**/*.d.ts"
+  ]
+}

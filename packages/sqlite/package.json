@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "@op-engineering/op-sqlite": "^15.2.3",
+    "buffer": "^6.0.3",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.43.1",
+    "expo-file-system": "^19.0.17"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/zod-schemas": "workspace:*",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.0",
+    "@types/react-native": "^0.73.0"
+  },
+  "exports": {
+    ".": "./index.ts"
+  },
+  "private": true,
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:pull-from-computer": "adb shell run-as com.mindchart.app sh -c 'cat > /data/user/0/com.mindchart.app/files/databases/mindchart.db' < mindchart.db",
+    "db:push-to-computer": "adb shell run-as com.mindchart.app cat files/databases/mindchart.db > mindchart.db"
+  },
+  "version": "0.0.0",
+  "name": "@repo/sqlite"
+}

@@ -1,0 +1,267 @@
+name: React Native CI/CD
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [MAIN]
+    paths-ignore:
+      - "**.md"
+      - "LICENSE"
+      - "docs/**"
+  workflow_dispatch:
+    inputs:
+      buildType:
+        type: choice
+        description: "Build type to run"
+        options:
+          - dev
+          - prod
+          - all
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  NODE_OPTIONS: --openssl-legacy-provider
+
+jobs:
+  check-skip:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - name: Skip CI check
+        run: echo "Proceeding with workflow"
+
+  test:
+    needs: check-skip
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: 📦 Install dependencies
+        run: yarn install
+
+      - name: 🧪 Run TypeScript check
+        run: yarn check-types
+
+      - name: 🧹 Run ESLint
+        run: yarn lint
+
+  build-and-release:
+    needs: test
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: 📦 Install dependencies & EAS CLI
+        run: |
+          yarn install
+          npm install -g eas-cli@latest
+
+      - name: 🔄 Verify EAS CLI
+        run: eas --version
+
+      # ---------------------------
+      # Build APKs
+      # ---------------------------
+
+      - name: 📱 Build Development APK
+        if: github.event.inputs.buildType == 'all' || github.event.inputs.buildType == 'dev' || github.event_name == 'push'
+        working-directory: apps/mobile
+        run: |
+          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
+          eas build --platform android --profile development --local --non-interactive --output=../../MindChart-dev.apk
+        env:
+          NODE_ENV: development
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+
+           
+
+      - name: 🔑 Restore Android Keystore
+        run: |
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/MindChart.keystore    
+         
+            
+      - name: 📝 Create local credentials.json
+        working-directory: apps/mobile
+        run: |
+          echo '{
+                "android": {
+                  "keystore":{
+                    "keystorePath": "./MindChart.keystore",
+                    "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
+                    "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
+                    "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
+                  }
+                }
+              }' > credentials.json
+        env:
+            EAS_BUILD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+            EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
+            EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}      
+
+
+
+      - name: 📱 Build Production APK
+        if: github.event.inputs.buildType == 'all' || github.event.inputs.buildType == 'prod' || github.event_name == 'push'
+        working-directory: apps/mobile
+        run: |
+          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
+          eas build --platform android --profile production --local --non-interactive --output=../../MindChart-prod.apk
+        env:
+          NODE_ENV: production
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+          EAS_BUILD_KEYSTORE_PATH: "./MindChart.keystore"
+          EAS_BUILD_KEYSTORE_ALIAS: "${{ secrets.KEY_ALIAS }}"
+          EAS_BUILD_KEYSTORE_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
+          EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
+
+      # ---------------------------
+      # Generate build info & changelog
+      # ---------------------------
+
+
+      - name: 🔄 Fetch git history
+        run: | 
+          git fetch --prune --tags --force
+          git fetch --unshallow || true
+
+      - name: 🏷️ Generate build info & changelog
+        id: build-info
+        run: |
+          VERSION=$(node -p "require('./apps/mobile/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          BUILD_DATE=$(date -u +"%Y-%m-%d")
+          
+          # 1. Determine Git Range
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+              RANGE="--max-count=50"
+          else
+              RANGE="$LAST_TAG..HEAD"
+          fi
+
+          # 2. Write Header
+          echo "## v$VERSION ($BUILD_DATE)" > changelog.md
+
+
+
+
+          # Fetch all logs in the range once to avoid repeated git calls
+          ALL_LOGS=$(git log $RANGE --pretty=format:"%s")
+
+          FEATURE_LOGS=$(echo "$ALL_LOGS" | grep -Ei "^feat\s*(\(.*?\))?\s*:?" || true)
+          NON_FEATURE_LOGS=$(echo "$ALL_LOGS" | grep -Eiv "^feat\s*(\(.*?\))?\s*:?" || true)
+
+          # ---------------------------
+          # Highlights
+          # ---------------------------
+          if [ -n "$FEATURE_LOGS" ]; then
+            echo "" >> changelog.md
+            echo "## 🚀 Highlights" >> changelog.md
+            echo "$FEATURE_LOGS" | sed 's/^/- /' >> changelog.md
+          fi
+
+          # ---------------------------
+          # Other categories
+          # ---------------------------
+          categories=(
+            "🐛 Fixes:fix"
+            "⚡ Improvements:perf|refactor|improve"
+            "📝 Docs:docs"
+            "⚙️ Chore:chore"
+            "🔧 Build:build"
+            "🤖 CI:ci"
+            "🔄 Reverts:revert"
+            "🎨 Style:style"
+            "🧪 Tests:test"
+          )
+
+          for entry in "${categories[@]}"; do
+            TITLE="${entry%%:*}"
+            PATTERN="${entry#*:}"
+
+            CATEGORY_LOG=$(echo "$NON_FEATURE_LOGS" | grep -Ei "^($PATTERN)\s*(\(.*?\))?\s*:?" | sed 's/^/- /' || true)
+
+            if [ -n "$CATEGORY_LOG" ]; then
+              echo "" >> changelog.md
+              echo "### $TITLE" >> changelog.md
+              echo "$CATEGORY_LOG" >> changelog.md
+            fi
+          done
+
+    
+
+
+      - name: 🔖 Create git tag
+        run: |
+          VERSION="${{ steps.build-info.outputs.version }}"
+      
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+      
+          if ! git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            git tag v$VERSION
+            git push origin v$VERSION
+          fi
+
+
+      # ---------------------------
+      # Create GitHub Release
+      # ---------------------------
+      - name: 📝 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: "v${{ steps.build-info.outputs.version }}"
+          tag_name: "v${{ steps.build-info.outputs.version }}"
+          body_path: changelog.md
+          files: |
+            ./MindChart-dev.apk
+            ./MindChart-prod.apk
+            ./MindChart-dev.apk.sha256
+            ./MindChart-prod.apk.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+      # ---------------------------
+      # SHA256 generation
+      # ---------------------------
+      - name: 🔑 Generate SHA256 for APKs
+        run: |
+          sha256sum ./MindChart-dev.apk > MindChart-dev.apk.sha256
+          sha256sum ./MindChart-prod.apk > MindChart-prod.apk.sha256
+     
+   
+
+      # ---------------------------
+      # Upload artifacts
+      # ---------------------------
+      - name: 📦 Upload build artifacts to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-builds
+          path: |
+            ./MindChart-dev.apk
+            ./MindChart-prod.apk
+            ./MindChart-dev.apk.sha256
+            ./MindChart-prod.apk.sha256
+          retention-days: 7

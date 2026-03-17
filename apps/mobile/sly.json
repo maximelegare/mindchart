@@ -1,0 +1,22 @@
+{
+  "$schema": "https://sly-cli.fly.dev/registry/config.v2.json",
+  "config": {
+    "icons": {
+      "directory": "./svg/",
+      "postinstall": [],
+      "transformers": []
+    },
+    "components": {},
+    "utils": {}
+  },
+  "libraries": {
+    "iconify:lucide": {
+      "name": "Lucide",
+      "config": "icons"
+    },
+    "iconify:ph": {
+      "name": "Phosphor",
+      "config": "icons"
+    }
+  }
+}

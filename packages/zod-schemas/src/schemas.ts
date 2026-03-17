@@ -1,0 +1,39 @@
+import { z } from "zod";
+import { CategorySchema } from "./client";
+
+export type Note = z.infer<typeof NoteSchema>;
+
+export type Thought = z.infer<typeof ThoughtSchema>;
+
+export type Category = z.infer<typeof CategorySchema>;
+
+export type Embedding = z.infer<typeof EmbeddingSchema>;
+export type ThoughtWithEmbedding = z.infer<typeof ThoughtWithEmbeddingSchema>;
+
+export const ThoughtSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  semanticLabel: z.string(),
+  noteId: z.string(),
+  categoryId: z.string(),
+  thoughtId: z.string(),
+  createdAt: z.string().nullable(),
+});
+
+export const EmbeddingSchema = z.object({
+  id: z.string(),
+  thoughtId: z.string(),
+  createdAt: z.string(),
+  embedding: z
+    .custom<Float32Array>() // tell Zod this is a Float32Array
+    .nullable(),
+});
+
+export const NoteSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  summary: z.string(),
+});
+
+export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);

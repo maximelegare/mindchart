@@ -1,0 +1,94 @@
+// MindChart – Copyright (C) 2007-2026 Maxime Legare
+// Licensed under GNU AGPL v3 + Commercial Use Restrictions
+// You may not use the name "MindChart" for derivative or competing products.
+// See LICENSE.md for full license and terms.
+
+import type { ConfigContext, ExpoConfig } from "@expo/config";
+import pkg from "../../package.json";
+
+const version = pkg.version;
+
+function versionCode(v: string) {
+  const [major, minor, patch] = v.split(".").map(Number);
+  return major * 10000 + minor * 100 + patch;
+}
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: "MindChart",
+  slug: "mindchart",
+  newArchEnabled: true,
+  version,
+  orientation: "portrait",
+  icon: "./assets/images/icon.png",
+  scheme: "mindchart",
+  userInterfaceStyle: "light",
+  runtimeVersion: {
+    policy: "appVersion",
+  },
+  splash: {
+    image: "./assets/images/splash.png",
+    resizeMode: "contain",
+
+    backgroundColor: "#17302b",
+  },
+  assetBundlePatterns: ["**/*"],
+  ios: {
+    newArchEnabled: true,
+    supportsTablet: true,
+    bundleIdentifier: "com.mindchart.app",
+    buildNumber: version,
+  },
+  android: {
+    newArchEnabled: true,
+    adaptiveIcon: {
+      foregroundImage: "./assets/images/adaptive-icon.png",
+      backgroundColor: "#17302b",
+    },
+    versionCode: versionCode(version),
+    package: "com.mindchart.app",
+    permissions: ["RECORD_AUDIO"],
+    softwareKeyboardLayoutMode: "resize",
+  },
+  web: {
+    bundler: "metro",
+    output: "static",
+    favicon: "./assets/images/favicon.png",
+  },
+  plugins: [
+    "expo-router",
+    "expo-font",
+    "expo-web-browser",
+    [
+      "llama.rn",
+      {
+        enableEntitlements: true,
+        entitlementsProfile: "production",
+        forceCxx20: true,
+        enableOpenCLAndHexagon: true,
+      },
+    ],
+    [
+      "expo-splash-screen",
+      {
+        backgroundColor: "#17302b",
+        image: "./assets/images/splash.png",
+        resizeMode: "contain",
+        imageWidth: 250,
+      },
+    ],
+  ],
+  experiments: {
+    typedRoutes: true,
+    baseUrl: "/mindchart",
+  },
+  extra: {
+    version,
+    gitCommit: process.env.GITHUB_SHA ?? null,
+    buildTime: new Date().toISOString(),
+    eas: {
+      projectId: "e27c8edb-41b3-457f-89b2-eb382f2020ee",
+    },
+  },
+  owner: "maximelegare",
+});

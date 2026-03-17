@@ -1,0 +1,14 @@
+{
+  "name": "@repo/theme",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./categories": "./categories",
+    "./global": "./global"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "devDependencies": {
+    "@commitlint/config-conventional": "^19.8.1",
+    "@yarnpkg/types": "^4.0.1",
+    "commitlint": "^20.1.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.8",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "name": "mindchart",
+  "packageManager": "yarn@4.12.0",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": "maximelegare/mindchart",
+  "author": "Maxime Legare",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "turbo run build",
+    "check-types": "turbo run check-types",
+    "dev": "turbo run dev --parallel",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lint": "turbo run lint",
+    "lint-staged": "lint-staged",
+    "prepare": "husky install",
+    "postinstall": "echo 'test'",
+    "bump:patch": "yarn version:patch -w apps/mobile",
+    "bump:minor": "yarn version:minor -w apps/mobile",
+    "bump:major": "yarn version:major -w apps/mobile"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/*/*"
+  ],
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,md}": "prettier --write"
+  }
+}
