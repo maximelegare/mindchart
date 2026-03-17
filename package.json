@@ -18,7 +18,6 @@
   "license": "SEE LICENSE IN LICENSE",
   "repository": "maximelegare/mindchart",
   "author": "Maxime Legare",
-  "version": "0.1.0",
   "scripts": {
     "build": "turbo run build",
     "check-types": "turbo run check-types",

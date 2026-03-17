@@ -4,7 +4,7 @@
 // See LICENSE.md for full license and terms.
 
 import type { ConfigContext, ExpoConfig } from "@expo/config";
-import pkg from "../../package.json";
+import pkg from "./package.json";
 
 const version = pkg.version;
 
