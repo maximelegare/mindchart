@@ -87,7 +87,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     gitCommit: process.env.GITHUB_SHA ?? null,
     buildTime: new Date().toISOString(),
     eas: {
-      projectId: "e27c8edb-41b3-457f-89b2-eb382f2020ee",
+      projectId: "c093ea99-2e9d-4ba7-b127-097a209f3928",
     },
   },
   owner: "maximelegare",
