@@ -59,15 +59,12 @@ export const WhisperSettings = () => {
   };
 
   return (
-    <Card>
+    <>
       <Gutter size="md" className="py-3">
         <View className="pb-4">
-          <Typography variant="h3" padding>
-            Whisper
-          </Typography>
           <Typography padding>
-            Optimized for on-device transcription. Large models provide better
-            accuracy but require more RAM.
+            AI Engine responsible for the local transcription of speech. Use
+            Tiny for English and Base for other languages.
           </Typography>
         </View>
 
@@ -171,6 +168,6 @@ export const WhisperSettings = () => {
           </View>
         </View>
       </Gutter>
-    </Card>
+    </>
   );
 };
