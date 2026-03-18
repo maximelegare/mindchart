@@ -2,7 +2,7 @@ import { memo, ReactElement, ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { Button } from "@/components/ui";
 import { Separator } from "@/components/ui/separator";
-import { CollapsableContainer } from "@/components/ui/collapsibleContainer";
+import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
 import { Icon } from "@/components/ui/icons/icon";
@@ -63,9 +63,9 @@ export const ExpandableNoteWithThoughts: React.FC<ListItemProps> = memo(
             </View>
           </Pressable>
 
-          <CollapsableContainer expanded={expanded}>
+          <CollapsibleContainer expanded={expanded}>
             {children}
-          </CollapsableContainer>
+          </CollapsibleContainer>
         </View>
       </>
     );

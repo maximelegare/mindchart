@@ -55,16 +55,13 @@ export const LlamaEmbeddingsSettings = () => {
   };
 
   return (
-    <Card>
+    <>
       <Gutter size="md" className="py-3">
         {/* Header Section */}
         <View className="pb-4">
-          <Typography variant="h3" padding>
-            Llama Embeddings
-          </Typography>
           <Typography padding>
-            Local Large Language Models for summarization and reasoning. Large
-            models require more VRAM and storage.
+            Local Embeddings Engine responsible for the creation of thoughts
+            embeddings. It helps finding connections between notes.
           </Typography>
         </View>
 
@@ -171,6 +168,6 @@ export const LlamaEmbeddingsSettings = () => {
           </View>
         </View>
       </Gutter>
-    </Card>
+    </>
   );
 };

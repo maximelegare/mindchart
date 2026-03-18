@@ -10,7 +10,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import { View } from "react-native";
 import { Gradient } from "@/components/ui/gradient";
 import { cn } from "@/lib/cn";
-import { useSettingsStore } from "@/features/settings/context/settings";
+import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
@@ -31,7 +31,7 @@ export const GenerateNote = ({
   onSuccess?: () => void;
 }) => {
   const { notesAndThoughts, categories } = useControllers();
-  const { aiProvider } = useSettingsStore();
+  const { aiProvider } = useAISettingsPreferences();
   const { openModal, setModalContent, closeModal } = useModal();
 
   const { colorScheme } = useColorScheme();

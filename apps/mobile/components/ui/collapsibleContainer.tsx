@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export const CollapsableContainer = ({
+export const CollapsibleContainer = ({
   children,
   expanded,
 }: {

@@ -34,6 +34,7 @@ import { cn } from "@/lib/cn";
 import { validateIfDBExists } from "@repo/sqlite";
 
 import { Buffer } from "buffer";
+import { AutoConnectService } from "@/features/settings/features/ai/autoConnect/services/autoConnectService";
 global.Buffer = Buffer;
 
 export { ErrorBoundary } from "expo-router";
@@ -45,6 +46,7 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const { colorScheme, setColorScheme } = useColorScheme();
+
   const router = useRouter();
   const segments = useSegments();
 
@@ -170,19 +172,21 @@ export default function RootLayout() {
 
                   <LlamaProvider>
                     <WhisperProvider>
-                      <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="(tabs)" />
-                        <Stack.Screen name="newDatabase" />
-                        <Stack.Screen name="categories" />
-                        <Stack.Screen
-                          name="graph"
-                          options={{
-                            headerShown: true,
-                            title: "Graph",
-                            header: (props) => <CustomHeader {...props} />,
-                          }}
-                        />
-                      </Stack>
+                      <AutoConnectService>
+                        <Stack screenOptions={{ headerShown: false }}>
+                          <Stack.Screen name="(tabs)" />
+                          <Stack.Screen name="newDatabase" />
+                          <Stack.Screen name="categories" />
+                          <Stack.Screen
+                            name="graph"
+                            options={{
+                              headerShown: true,
+                              title: "Graph",
+                              header: (props) => <CustomHeader {...props} />,
+                            }}
+                          />
+                        </Stack>
+                      </AutoConnectService>
                     </WhisperProvider>
                   </LlamaProvider>
                 </View>
