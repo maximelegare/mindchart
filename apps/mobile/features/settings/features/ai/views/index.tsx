@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
 import { WhisperSettings } from "../whisper/whisperSettings";
-import { AiProviderSettings } from "../aiMode/aiModeSettings";
+import { AiProviderSettings } from "../aiProviderSettings/aiProviderSettings";
 import { LlamaChatSettings } from "../llamaChat/llamaChatSettings";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { LlamaEmbeddingsSettings } from "../llamaEmbeddingsSettings/llamaEmbeddingsSettings";

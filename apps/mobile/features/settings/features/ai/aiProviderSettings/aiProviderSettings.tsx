@@ -28,7 +28,7 @@ export const AiProviderSettings = () => {
     <Card>
       <Gutter size="md" className="py-3">
         <Typography variant="h3" padding>
-          AI Mode
+          AI Provider
         </Typography>
         <Select
           value={
