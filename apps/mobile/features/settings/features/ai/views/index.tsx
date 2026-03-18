@@ -6,6 +6,7 @@ import { LlamaChatSettings } from "../llamaChat/llamaChatSettings";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { LlamaEmbeddingsSettings } from "../llamaEmbeddingsSettings/llamaEmbeddingsSettings";
 import { ExpandableSetting } from "@/features/settings/components/ExpandableSetting";
+import { AutoConnectSettings } from "../autoConnect/autoConnect";
 
 export const AISettingsFeature = () => {
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
@@ -18,6 +19,7 @@ export const AISettingsFeature = () => {
   return (
     <View className="flex-col gap-4">
       <AiProviderSettings />
+      <AutoConnectSettings />
       <ExpandableSetting
         id="whisper"
         title="Whisper Engine"
