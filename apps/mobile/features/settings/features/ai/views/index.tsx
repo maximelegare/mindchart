@@ -6,7 +6,7 @@ import { LlamaChatSettings } from "../llamaChat/llamaChatSettings";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { LlamaEmbeddingsSettings } from "../llamaEmbeddingsSettings/llamaEmbeddingsSettings";
 import { ExpandableSetting } from "@/features/settings/components/ExpandableSetting";
-import { AutoConnectSettings } from "../autoConnect/autoConnect";
+import { AutoConnectSettings } from "../autoConnect/components/autoConnect";
 
 export const AISettingsFeature = () => {
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
