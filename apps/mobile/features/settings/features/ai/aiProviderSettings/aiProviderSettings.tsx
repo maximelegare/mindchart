@@ -1,5 +1,5 @@
 import React from "react";
-import { useSettingsStore } from "@/features/settings/context/settings";
+import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import {
   Select,
@@ -13,7 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 
 export const AiProviderSettings = () => {
-  const { aiProvider, setAiProvider } = useSettingsStore();
+  const { aiProvider, setAIProvider } = useAISettingsPreferences();
 
   const aiProviders: Array<{ label: string; value: AIProvider }> = [
     { label: "Local", value: "local" },
@@ -21,7 +21,7 @@ export const AiProviderSettings = () => {
   ];
 
   const onSelect = (value: AIProvider) => {
-    setAiProvider(value);
+    setAIProvider(value);
   };
 
   return (
