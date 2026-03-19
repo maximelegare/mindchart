@@ -16,9 +16,7 @@ on:
         type: choice
         description: "Build type to run"
         options:
-          - dev
           - prod
-          - all
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -80,15 +78,6 @@ jobs:
       # Build APKs
       # ---------------------------
 
-      - name: 📱 Build Development APK
-        if: github.event.inputs.buildType == 'all' || github.event.inputs.buildType == 'dev' || github.event_name == 'push'
-        working-directory: apps/mobile
-        run: |
-          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
-          eas build --platform android --profile development --local --non-interactive --output=../../MindChart-dev.apk
-        env:
-          NODE_ENV: development
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
 
            
 
@@ -118,7 +107,7 @@ jobs:
 
 
       - name: 📱 Build Production APK
-        if: github.event.inputs.buildType == 'all' || github.event.inputs.buildType == 'prod' || github.event_name == 'push'
+        if: github.event_name == 'push' || github.event.inputs.buildType == 'prod'
         working-directory: apps/mobile
         run: |
           export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
@@ -233,9 +222,7 @@ jobs:
           tag_name: "v${{ steps.build-info.outputs.version }}"
           body_path: changelog.md
           files: |
-            ./MindChart-dev.apk
             ./MindChart-prod.apk
-            ./MindChart-dev.apk.sha256
             ./MindChart-prod.apk.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -247,7 +234,6 @@ jobs:
       # ---------------------------
       - name: 🔑 Generate SHA256 for APKs
         run: |
-          sha256sum ./MindChart-dev.apk > MindChart-dev.apk.sha256
           sha256sum ./MindChart-prod.apk > MindChart-prod.apk.sha256
      
    
@@ -260,8 +246,6 @@ jobs:
         with:
           name: app-builds
           path: |
-            ./MindChart-dev.apk
             ./MindChart-prod.apk
-            ./MindChart-dev.apk.sha256
             ./MindChart-prod.apk.sha256
           retention-days: 7
