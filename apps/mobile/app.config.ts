@@ -8,6 +8,8 @@ import pkg from "./package.json";
 
 const version = pkg.version;
 
+const isDev = process.env.NODE_ENV !== "production";
+
 function versionCode(v: string) {
   const [major, minor, patch] = v.split(".").map(Number);
   return major * 10000 + minor * 100 + patch;
@@ -29,24 +31,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   splash: {
     image: "./assets/images/splash.png",
     resizeMode: "contain",
-
     backgroundColor: "#17302b",
   },
   assetBundlePatterns: ["**/*"],
   ios: {
     newArchEnabled: true,
     supportsTablet: true,
-    bundleIdentifier: "com.mindchart.app",
+    bundleIdentifier: isDev ? "com.mindchart.dev.app" : "com.mindchart.app",
     buildNumber: version,
   },
   android: {
     newArchEnabled: true,
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      foregroundImage: isDev
+        ? "./assets/images/adaptive-icon_dev.png"
+        : "./assets/images/adaptive-icon.png",
       backgroundColor: "#17302b",
     },
     versionCode: versionCode(version),
-    package: "com.mindchart.app",
+    package: isDev ? "com.mindchart.dev.app" : "com.mindchart.app",
     permissions: ["RECORD_AUDIO"],
     softwareKeyboardLayoutMode: "resize",
   },
