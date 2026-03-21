@@ -2,7 +2,6 @@ import { generateID } from "../../utils/generareID";
 import { EmbeddingTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
 import { Embedding } from "../../../../zod-schemas/src/schemas";
-import { float32ToUint8 } from "../../utils/conversions/float32ToUint8";
 
 export const insertEmbeddingsQuery = async (db: DB, data: Embedding[]) => {
   return db.transaction(async (tx) => {

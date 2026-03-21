@@ -19,6 +19,9 @@ import {
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { Migrator } from "@/features/settings/features/database/inspector/components/migrator";
 import { useRouter } from "expo-router";
+import { useNotesAndThoughtsController } from "@/api/controllers/useNotesAndThoughtsController";
+import { useModal } from "@/components/ui/modal/modal";
+import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 
 type TableInfo = {
   name: string;
@@ -27,6 +30,10 @@ type TableInfo = {
 
 export const DatabaseInspectorFeature = () => {
   const db = getOPDatabase();
+  const { openModal, closeModal } = useModal();
+
+  const { useSeedDatabaseMutation } = useNotesAndThoughtsController();
+  const { mutateAsync: seedDatabaseAsync } = useSeedDatabaseMutation();
   const router = useRouter();
   const [tables, setTables] = React.useState<TableInfo[]>([]);
 
@@ -113,6 +120,22 @@ export const DatabaseInspectorFeature = () => {
     );
   };
 
+  const seedDatabase = async () => {
+    openModal({
+      dismissOnBackgroundPress: false,
+      customContent: () => (
+        <LoadingState title="Seeding Database" size="large" />
+      ),
+    });
+    try {
+      await seedDatabaseAsync();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      closeModal();
+    }
+  };
+
   return (
     // <ScrollView contentContainerStyle={{ padding: 16 }}>
     <>
@@ -120,6 +143,9 @@ export const DatabaseInspectorFeature = () => {
         <Migrator />
         <Button variant="destructive" onPress={dropDatabaseFile}>
           <Typography>Delete DB File</Typography>
+        </Button>
+        <Button variant="default" onPress={() => seedDatabase()}>
+          <Typography>Seed</Typography>
         </Button>
       </View>
 

@@ -14,6 +14,7 @@ import { useGraphController } from "./useGraphController";
 
 import { useGenerateNoteService } from "../../services/generateNote/useGenerateNoteService";
 import { GenerateNoteService } from "../../services/generateNote/types";
+import { useSeedDatabaseService } from "@/services/seed/useSeedDatabaseService";
 
 export const useNotesAndThoughtsController = () => {
   // const useGenerateNoteMutation = (options?: Partial<InferMutationOptions<typeof generateNote>>) =>
@@ -24,6 +25,18 @@ export const useNotesAndThoughtsController = () => {
   //       ...options,
   //     }
   //   );
+
+  const useSeedDatabaseMutation = () => {
+    const { seedDatabaseService } = useSeedDatabaseService();
+    return useMutation<
+      Awaited<ReturnType<typeof seedDatabaseService>>,
+      Error,
+      void
+    >({
+      mutationKey: [REACT_QUERY_KEYS.seedDatabase],
+      mutationFn: seedDatabaseService,
+    });
+  };
 
   const useGenerateNoteMutation = () => {
     const { generateNoteService } = useGenerateNoteService();
@@ -65,6 +78,9 @@ export const useNotesAndThoughtsController = () => {
         queryClient.invalidateQueries({
           queryKey: [REACT_QUERY_KEYS.fetchThoughts],
         });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
       },
       ...options,
     });
@@ -99,5 +115,6 @@ export const useNotesAndThoughtsController = () => {
     useFetchAllThoughtsWithEmbeddingsQuery,
     useFetchNotesAndThoughtsQuery,
     useFetchNoteDetails,
+    useSeedDatabaseMutation,
   };
 };
