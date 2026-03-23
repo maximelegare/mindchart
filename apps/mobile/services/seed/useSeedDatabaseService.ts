@@ -1,17 +1,25 @@
 import { Note, Thought } from "@repo/zod-schemas";
 import { formatNote } from "../generateNote/utils/formatNote";
 import { useGenerateLocalEmbeddingsService } from "../useGenerateLocalEmbeddingService";
-import { generateGraphNotes } from "./utils/generateFakeData";
 import { getOPDatabase, seedDatabaseQuery } from "@repo/sqlite";
 import { ServiceResponse } from "@/api/utils/responseObject";
+import fakeData from "./data/mock.json" with { type: "json" };
 
 const useSeedDatabaseService = () => {
   const db = getOPDatabase();
   const { generateEmbeddings } = useGenerateLocalEmbeddingsService();
-  const seedDatabaseService = async () => {
-    const fakeData = generateGraphNotes(100);
+  const seedDatabaseService = async (numberOfNotes: number) => {
+    // const fakeData = generateGraphNotes(numberOfNotes);
+    if (numberOfNotes > fakeData.length) {
+      return ServiceResponse.failure(
+        `Enter a number less than or equal to ${fakeData.length}`,
+        null
+      );
+    }
 
-    const formatedNotes = fakeData.map((note) => formatNote(note));
+    const formatedNotes = fakeData
+      .map((note) => formatNote(note))
+      .splice(0, numberOfNotes);
     const formatedStructuredData = formatedNotes.reduce(
       (acc, { note, thoughts }) => {
         acc.notes.push(note);

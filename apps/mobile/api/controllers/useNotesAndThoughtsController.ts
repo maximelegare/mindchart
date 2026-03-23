@@ -27,14 +27,38 @@ export const useNotesAndThoughtsController = () => {
   //   );
 
   const useSeedDatabaseMutation = () => {
+    const queryClient = useQueryClient();
     const { seedDatabaseService } = useSeedDatabaseService();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
     return useMutation<
       Awaited<ReturnType<typeof seedDatabaseService>>,
       Error,
-      void
+      number
     >({
       mutationKey: [REACT_QUERY_KEYS.seedDatabase],
-      mutationFn: seedDatabaseService,
+      mutationFn: (numberOfNotes: number) => seedDatabaseService(numberOfNotes),
+      onSuccess: async () => {
+        // Runs embeddings service before fetching the rest of the data
+        // await runEmbeddingsService();
+        await mutateAsyncGraphData(true);
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
+      },
     });
   };
 

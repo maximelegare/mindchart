@@ -1,6 +1,10 @@
-import { DB } from "@/utils/initialize/getOPDatabase";
+import { DB } from "../../utils/initialize/getOPDatabase";
 
-import type { Embedding, Note, Thought } from "@repo/zod-schemas/src/schemas";
+import type {
+  Embedding,
+  Note,
+  Thought,
+} from "../../../../zod-schemas/src/schemas";
 import { insertNoteQuery } from "../notes/insertNote";
 import { insertThoughtsQuery } from "../thoughts/insertThoughts";
 import { insertEmbeddingsQuery } from "../embeddings/insertEmbeddings";

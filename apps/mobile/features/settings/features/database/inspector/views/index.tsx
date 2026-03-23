@@ -22,6 +22,7 @@ import { useRouter } from "expo-router";
 import { useNotesAndThoughtsController } from "@/api/controllers/useNotesAndThoughtsController";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import { Input } from "@/components/ui/input";
 
 type TableInfo = {
   name: string;
@@ -121,6 +122,10 @@ export const DatabaseInspectorFeature = () => {
   };
 
   const seedDatabase = async () => {
+    if (numberOfNotes === "") {
+      Alert.alert("Please enter a number of notes");
+      return;
+    }
     openModal({
       dismissOnBackgroundPress: false,
       customContent: () => (
@@ -128,7 +133,7 @@ export const DatabaseInspectorFeature = () => {
       ),
     });
     try {
-      await seedDatabaseAsync();
+      await seedDatabaseAsync(parseInt(numberOfNotes));
     } catch (error) {
       console.error(error);
     } finally {
@@ -136,17 +141,30 @@ export const DatabaseInspectorFeature = () => {
     }
   };
 
+  const [numberOfNotes, setNumberOfNotes] = React.useState("100");
+
   return (
     // <ScrollView contentContainerStyle={{ padding: 16 }}>
     <>
-      <View className="flex-row gap-4 pb-4">
-        <Migrator />
-        <Button variant="destructive" onPress={dropDatabaseFile}>
-          <Typography>Delete DB File</Typography>
-        </Button>
-        <Button variant="default" onPress={() => seedDatabase()}>
-          <Typography>Seed</Typography>
-        </Button>
+      <View className="gap-4 pb-4">
+        <View className="flex-row gap-4">
+          <Migrator />
+          <Button variant="destructive" onPress={dropDatabaseFile}>
+            <Typography>Delete DB File</Typography>
+          </Button>
+        </View>
+        <View className="flex-row gap-2">
+          <Button variant="default" onPress={() => seedDatabase()}>
+            <Typography>Seed</Typography>
+          </Button>
+          <Input
+            style={{ width: 100 }}
+            placeholder="Number of notes"
+            keyboardType="number-pad"
+            value={numberOfNotes}
+            onChangeText={setNumberOfNotes}
+          />
+        </View>
       </View>
 
       {tables.map((table) => (
