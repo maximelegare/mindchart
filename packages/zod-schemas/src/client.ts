@@ -73,7 +73,7 @@ export const LocalAIResNoteSchema = z.object({
   thoughts: z.array(LocalAIResThoughtSchema),
 });
 
-export type LocalAIResNote = z.infer<typeof LocalAIResNoteSchema>;
+export type LocalAIResNoteSchemaModel = z.infer<typeof LocalAIResNoteSchema>;
 export type LocalAIResThought = z.infer<typeof LocalAIResThoughtSchema>;
 export type PendingEmbedding = z.infer<typeof PendingEmbeddingSchema>;
 // Re-export shared schemas for convenience

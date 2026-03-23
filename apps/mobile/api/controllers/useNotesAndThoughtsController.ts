@@ -14,6 +14,7 @@ import { useGraphController } from "./useGraphController";
 
 import { useGenerateNoteService } from "../../services/generateNote/useGenerateNoteService";
 import { GenerateNoteService } from "../../services/generateNote/types";
+import { useSeedDatabaseService } from "@/services/seed/useSeedDatabaseService";
 
 export const useNotesAndThoughtsController = () => {
   // const useGenerateNoteMutation = (options?: Partial<InferMutationOptions<typeof generateNote>>) =>
@@ -24,6 +25,42 @@ export const useNotesAndThoughtsController = () => {
   //       ...options,
   //     }
   //   );
+
+  const useSeedDatabaseMutation = () => {
+    const queryClient = useQueryClient();
+    const { seedDatabaseService } = useSeedDatabaseService();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
+    return useMutation<
+      Awaited<ReturnType<typeof seedDatabaseService>>,
+      Error,
+      number
+    >({
+      mutationKey: [REACT_QUERY_KEYS.seedDatabase],
+      mutationFn: (numberOfNotes: number) => seedDatabaseService(numberOfNotes),
+      onSuccess: async () => {
+        // Runs embeddings service before fetching the rest of the data
+        // await runEmbeddingsService();
+        await mutateAsyncGraphData(true);
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
+      },
+    });
+  };
 
   const useGenerateNoteMutation = () => {
     const { generateNoteService } = useGenerateNoteService();
@@ -65,6 +102,9 @@ export const useNotesAndThoughtsController = () => {
         queryClient.invalidateQueries({
           queryKey: [REACT_QUERY_KEYS.fetchThoughts],
         });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
       },
       ...options,
     });
@@ -99,5 +139,6 @@ export const useNotesAndThoughtsController = () => {
     useFetchAllThoughtsWithEmbeddingsQuery,
     useFetchNotesAndThoughtsQuery,
     useFetchNoteDetails,
+    useSeedDatabaseMutation,
   };
 };

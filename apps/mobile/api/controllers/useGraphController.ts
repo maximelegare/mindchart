@@ -44,6 +44,9 @@ export const useGraphController = () => {
         queryClient.invalidateQueries({
           queryKey: [REACT_QUERY_KEYS.fetchGraphData],
         });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
       },
       ...options,
     });

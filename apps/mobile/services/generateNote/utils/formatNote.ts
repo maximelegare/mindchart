@@ -1,5 +1,6 @@
 import {
   LocalAIResNoteSchema,
+  LocalAIResNoteSchemaModel,
   LocalAIResThought,
   Note,
   Thought,
@@ -7,7 +8,7 @@ import {
 import { generateID } from "@/utils/genrateID";
 
 export const formatNote = (
-  data: unknown
+  data: LocalAIResNoteSchemaModel
 ): { note: Note; thoughts: Thought[] } => {
   const { summary, thoughts, title } = LocalAIResNoteSchema.parse(data);
 

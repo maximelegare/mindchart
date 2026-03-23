@@ -14,12 +14,14 @@ export const useGenerateLocalEmbeddingsService = () => {
     for (const thought of thoughts) {
       const textToEmbed = thought.semanticLabel;
       const vector = await embed(textToEmbed);
-
-      const floatArray = new Float32Array(vector);
+      const floatArray =
+        vector instanceof Float32Array
+          ? vector.slice()
+          : new Float32Array(vector);
       embeddings.push({
         id: generateID(),
         thoughtId: thought.id,
-        embedding: floatArray.buffer as any,
+        embedding: floatArray.buffer as unknown as Embedding["embedding"],
         createdAt: new Date().toISOString(),
       });
     }

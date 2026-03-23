@@ -23,7 +23,7 @@ export const AutoConnectService = ({
             <LoadingState title="Initializing AI Models" size="large" />
           ),
         });
-      }, 300);
+      }, 500);
     } else {
       closeModal();
     }

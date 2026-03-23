@@ -19,6 +19,7 @@ import {
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { Migrator } from "@/features/settings/features/database/inspector/components/migrator";
 import { useRouter } from "expo-router";
+import { SeedDatabase } from "../components/seedDatabase";
 
 type TableInfo = {
   name: string;
@@ -27,6 +28,7 @@ type TableInfo = {
 
 export const DatabaseInspectorFeature = () => {
   const db = getOPDatabase();
+
   const router = useRouter();
   const [tables, setTables] = React.useState<TableInfo[]>([]);
 
@@ -116,11 +118,14 @@ export const DatabaseInspectorFeature = () => {
   return (
     // <ScrollView contentContainerStyle={{ padding: 16 }}>
     <>
-      <View className="flex-row gap-4 pb-4">
-        <Migrator />
-        <Button variant="destructive" onPress={dropDatabaseFile}>
-          <Typography>Delete DB File</Typography>
-        </Button>
+      <View className="gap-4 pb-4">
+        <View className="flex-row gap-4">
+          <Migrator />
+          <Button variant="destructive" onPress={dropDatabaseFile}>
+            <Typography>Delete DB File</Typography>
+          </Button>
+        </View>
+        <SeedDatabase />
       </View>
 
       {tables.map((table) => (

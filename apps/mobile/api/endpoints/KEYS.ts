@@ -18,6 +18,7 @@ export type InferMutationOptions<F extends (...args: any) => any> =
   >;
 
 export const REACT_QUERY_KEYS = {
+  seedDatabase: "seed_database",
   generateLocalEmbeddings: "generate_local_embeddings",
   insertEmbeddings: "insert_embeddings",
   exportDatabase: "export_database",

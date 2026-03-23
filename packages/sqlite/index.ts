@@ -33,6 +33,7 @@ export * from "./src/data/settings";
 import { useMigrationHelper } from "./src/utils/useMigrationHelper";
 import { validateIfDBExists } from "./src/queries/dbStatus/validateIfDBExists";
 import { insertEmbeddingsQuery } from "./src/queries/embeddings/insertEmbeddings";
+import { seedDatabaseQuery } from "./src/queries/bulk/seedDatabase";
 
 export {
   getMigratingStatusQuery,
@@ -67,4 +68,5 @@ export {
   validateIfDBExists,
   useMigrationHelper,
   closeOPDatabase,
+  seedDatabaseQuery,
 };

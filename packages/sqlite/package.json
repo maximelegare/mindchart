@@ -21,8 +21,8 @@
   "private": true,
   "scripts": {
     "db:generate": "drizzle-kit generate",
-    "db:pull-from-computer": "adb shell run-as com.mindchart.app sh -c 'cat > /data/user/0/com.mindchart.app/files/databases/mindchart.db' < mindchart.db",
-    "db:push-to-computer": "adb shell run-as com.mindchart.app cat files/databases/mindchart.db > mindchart.db"
+    "db:pull-from-computer": "adb shell run-as com.mindchart.dev.app sh -c 'cat > /data/user/0/com.mindchart.dev.app/files/databases/mindchart.db' < mindchart.db",
+    "db:push-to-computer": "adb shell run-as com.mindchart.dev.app cat files/databases/mindchart.db > mindchart.db"
   },
   "version": "0.0.0",
   "name": "@repo/sqlite"
