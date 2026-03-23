@@ -19,10 +19,7 @@ import {
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { Migrator } from "@/features/settings/features/database/inspector/components/migrator";
 import { useRouter } from "expo-router";
-import { useNotesAndThoughtsController } from "@/api/controllers/useNotesAndThoughtsController";
-import { useModal } from "@/components/ui/modal/modal";
-import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import { Input } from "@/components/ui/input";
+import { SeedDatabase } from "../components/seedDatabase";
 
 type TableInfo = {
   name: string;
@@ -31,10 +28,7 @@ type TableInfo = {
 
 export const DatabaseInspectorFeature = () => {
   const db = getOPDatabase();
-  const { openModal, closeModal } = useModal();
 
-  const { useSeedDatabaseMutation } = useNotesAndThoughtsController();
-  const { mutateAsync: seedDatabaseAsync } = useSeedDatabaseMutation();
   const router = useRouter();
   const [tables, setTables] = React.useState<TableInfo[]>([]);
 
@@ -121,28 +115,6 @@ export const DatabaseInspectorFeature = () => {
     );
   };
 
-  const seedDatabase = async () => {
-    if (numberOfNotes === "") {
-      Alert.alert("Please enter a number of notes");
-      return;
-    }
-    openModal({
-      dismissOnBackgroundPress: false,
-      customContent: () => (
-        <LoadingState title="Seeding Database" size="large" />
-      ),
-    });
-    try {
-      await seedDatabaseAsync(parseInt(numberOfNotes));
-    } catch (error) {
-      console.error(error);
-    } finally {
-      closeModal();
-    }
-  };
-
-  const [numberOfNotes, setNumberOfNotes] = React.useState("100");
-
   return (
     // <ScrollView contentContainerStyle={{ padding: 16 }}>
     <>
@@ -153,18 +125,7 @@ export const DatabaseInspectorFeature = () => {
             <Typography>Delete DB File</Typography>
           </Button>
         </View>
-        <View className="flex-row gap-2">
-          <Button variant="default" onPress={() => seedDatabase()}>
-            <Typography>Seed</Typography>
-          </Button>
-          <Input
-            style={{ width: 100 }}
-            placeholder="Number of notes"
-            keyboardType="number-pad"
-            value={numberOfNotes}
-            onChangeText={setNumberOfNotes}
-          />
-        </View>
+        <SeedDatabase />
       </View>
 
       {tables.map((table) => (
