@@ -7,6 +7,7 @@ export const WHISPER_MODELS: WhisperModel[] = [
     url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin",
     filename: "ggml-tiny.en.bin",
     capabilities: { multilingual: false, quantizable: false },
+    size: "74.1 MB",
   },
   {
     id: "base",
@@ -14,6 +15,7 @@ export const WHISPER_MODELS: WhisperModel[] = [
     url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin",
     filename: "ggml-base.bin",
     capabilities: { multilingual: true, quantizable: false },
+    size: "134 MB",
   },
   // ... other models from your list
 ];

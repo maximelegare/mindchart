@@ -3,6 +3,9 @@ import { AIProvider } from "../features/ai/types/ai";
 import { CHAT_MODELS } from "@/features/llama/data/models/chat/chatModels";
 import { EMBEDDINGS_MODELS } from "@/features/llama/data/models/embeddings/embeddingsModels";
 
+import { persist } from "zustand/middleware";
+import { mmkv } from "@/context/mmkvBridge";
+
 export type UserAISettingsPreferences = {
   whisper: string;
   llamaChat: keyof typeof CHAT_MODELS;
@@ -16,19 +19,22 @@ export type UserAISettingsPreferences = {
   setAutoConnect: (autoConnect: boolean) => void;
 };
 
-export const useAISettingsPreferences = create<UserAISettingsPreferences>(
-  (set) => ({
-    whisper: "tiny",
-    llamaChat: "INTERNVL3_2B",
-    llamaEmbeddings: "NOMIC_EMBED_TEXT_V1_5",
-    aiProvider: "local",
-    autoConnect: true,
-    setWhisperModel: (modelId: string) => set({ whisper: modelId }),
-    setLlamaChatModel: (modelId: keyof typeof CHAT_MODELS) =>
-      set({ llamaChat: modelId }),
-    setLlamaEmbeddingsModel: (modelId: keyof typeof EMBEDDINGS_MODELS) =>
-      set({ llamaEmbeddings: modelId }),
-    setAIProvider: (provider: AIProvider) => set({ aiProvider: provider }),
-    setAutoConnect: (autoConnect: boolean) => set({ autoConnect }),
-  })
+export const useAISettingsPreferences = create<UserAISettingsPreferences>()(
+  persist(
+    (set) => ({
+      whisper: "tiny",
+      llamaChat: "INTERNVL3_2B",
+      llamaEmbeddings: "NOMIC_EMBED_TEXT_V1_5",
+      aiProvider: "local",
+      autoConnect: true,
+      setWhisperModel: (modelId: string) => set({ whisper: modelId }),
+      setLlamaChatModel: (modelId: keyof typeof CHAT_MODELS) =>
+        set({ llamaChat: modelId }),
+      setLlamaEmbeddingsModel: (modelId: keyof typeof EMBEDDINGS_MODELS) =>
+        set({ llamaEmbeddings: modelId }),
+      setAIProvider: (provider: AIProvider) => set({ aiProvider: provider }),
+      setAutoConnect: (autoConnect: boolean) => set({ autoConnect }),
+    }),
+    mmkv("settings")
+  )
 );
