@@ -51,15 +51,9 @@ export const useAiAutoConnect = () => {
     const canAttempt =
       autoConnect &&
       !hasAttempted &&
-      // && Object.keys(modelFiles).length > 0
-      Object.keys(llamaChatModelFiles).length > 0;
-    // && Object.keys(llamaEmbeddingsModelFiles).length > 0;
-
-    console.log("canAttempt", canAttempt);
-    console.log("hasAttempted", hasAttempted);
-    console.log("autoConnect", autoConnect);
-    console.log("modelFiles", modelFiles);
-    console.log("llamaChatModelFiles", llamaChatModelFiles);
+      Object.keys(modelFiles).length > 0 &&
+      Object.keys(llamaChatModelFiles).length > 0 &&
+      Object.keys(llamaEmbeddingsModelFiles).length > 0;
 
     if (canAttempt) {
       initializeAi();
