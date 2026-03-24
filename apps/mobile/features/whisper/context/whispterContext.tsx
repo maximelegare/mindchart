@@ -1,11 +1,18 @@
 // hooks/useWhisper.ts
-import React, { createContext, useState, useCallback, useMemo } from "react";
-import { Directory, File, Paths } from "expo-file-system";
-import { createDownloadResumable } from "expo-file-system/legacy";
+import React, {
+  createContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
+import * as FileSystem from "expo-file-system/legacy"; // Use standard FileSystem
 import { initWhisper, type WhisperContext } from "whisper.rn/index.js";
 
 /* --- Constants --- */
 import { WHISPER_MODELS } from "../data/whisperModels";
+
+const MODEL_DIR = `${FileSystem.documentDirectory}whisper-models/`;
 
 interface WhisperState {
   whisperContext: WhisperContext | null;
@@ -13,13 +20,14 @@ interface WhisperState {
   isDownloading: boolean;
   isInitializing: boolean;
   downloadProgress: Record<string, number>;
-  modelFiles: Record<string, { path: string; size: number }>;
+  modelFiles: Record<string, boolean>;
 }
 
 interface WhisperActions {
   initializeModel: (modelId: string) => Promise<void>;
   releaseAll: () => Promise<void>;
   deleteModel: (modelId: string) => Promise<void>;
+  checkDownloadedModels: () => Promise<void>;
 }
 
 export const WhisperContextInstance = createContext<
@@ -38,15 +46,46 @@ export const WhisperProvider: React.FC<{ children: React.ReactNode }> = ({
     modelFiles: {},
   });
 
-  const getModelFile = (filename: string) => {
-    const directory = new Directory(Paths.document, "whisper-models");
-    directory.create({ idempotent: true });
-    return new File(directory, filename);
-  };
+  const checkDownloadedModels = useCallback(async () => {
+    // 1. CRITICAL: Initialize the object with ALL keys as false immediately
+    const results: Record<string, any> = {};
+    WHISPER_MODELS.forEach((m) => {
+      results[m.id] = false;
+    });
+
+    try {
+      // 2. Ensure directory exists
+      const dirInfo = await FileSystem.getInfoAsync(MODEL_DIR);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(MODEL_DIR, { intermediates: true });
+      } else {
+        // 3. Check each file
+        for (const model of WHISPER_MODELS) {
+          const fileUri = `${MODEL_DIR}${model.filename}`;
+          const fileInfo = await FileSystem.getInfoAsync(fileUri);
+
+          if (fileInfo.exists) {
+            results[model.id] = {
+              path: fileUri,
+              size: fileInfo.size || 0,
+            };
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Whisper FS Scan Error:", error);
+    }
+
+    // This will now have all keys, even if they are all 'false'
+    setState((prev) => ({ ...prev, modelFiles: results }));
+  }, []);
+
+  useEffect(() => {
+    checkDownloadedModels();
+  }, [checkDownloadedModels]);
 
   const releaseAll = useCallback(async () => {
     if (state.whisperContext) {
-      // CRITICAL: Call the native release method
       await state.whisperContext.release();
     }
     setState((prev) => ({
@@ -61,19 +100,17 @@ export const WhisperProvider: React.FC<{ children: React.ReactNode }> = ({
       const model = WHISPER_MODELS.find((m) => m.id === modelId);
       if (!model) return;
 
-      // If deleting the active model, unload it first
-      if (state.currentModelId === modelId) {
-        await releaseAll();
-      }
+      if (state.currentModelId === modelId) await releaseAll();
 
-      const file = getModelFile(model.filename);
-      if (file.exists) {
-        file.delete();
-        setState((prev) => {
-          const newFiles = { ...prev.modelFiles };
-          delete newFiles[modelId];
-          return { ...prev, modelFiles: newFiles };
-        });
+      const fileUri = `${MODEL_DIR}${model.filename}`;
+      const info = await FileSystem.getInfoAsync(fileUri);
+
+      if (info.exists) {
+        await FileSystem.deleteAsync(fileUri);
+        setState((prev) => ({
+          ...prev,
+          modelFiles: { ...prev.modelFiles, [modelId]: false },
+        }));
       }
     },
     [state.currentModelId, releaseAll]
@@ -84,39 +121,40 @@ export const WhisperProvider: React.FC<{ children: React.ReactNode }> = ({
       const model = WHISPER_MODELS.find((m) => m.id === modelId);
       if (!model) throw new Error("Model not found");
 
-      const file = getModelFile(model.filename);
+      const fileUri = `${MODEL_DIR}${model.filename}`;
+      const info = await FileSystem.getInfoAsync(fileUri);
 
-      // 1. Download if missing
-      if (!file.exists) {
+      if (!info.exists) {
         setState((prev) => ({ ...prev, isDownloading: true }));
-        const resumable = createDownloadResumable(
-          model.url,
-          file.uri,
-          {},
-          (p) => {
-            const progress = p.totalBytesWritten / p.totalBytesExpectedToWrite;
-            setState((prev) => ({
-              ...prev,
-              downloadProgress: {
-                ...prev.downloadProgress,
-                [modelId]: progress,
-              },
-            }));
-          }
-        );
-        await resumable.downloadAsync();
+        try {
+          const downloadResumable = FileSystem.createDownloadResumable(
+            model.url,
+            fileUri,
+            {},
+            (p) => {
+              const progress =
+                p.totalBytesWritten / p.totalBytesExpectedToWrite;
+              setState((prev) => ({
+                ...prev,
+                downloadProgress: {
+                  ...prev.downloadProgress,
+                  [modelId]: progress,
+                },
+              }));
+            }
+          );
+          await downloadResumable.downloadAsync();
+        } finally {
+          setState((prev) => ({ ...prev, isDownloading: false }));
+        }
       }
 
-      // 2. Load into Native Memory
-      setState((prev) => ({
-        ...prev,
-        isDownloading: false,
-        isInitializing: true,
-      }));
+      setState((prev) => ({ ...prev, isInitializing: true }));
       try {
         if (state.whisperContext) await state.whisperContext.release();
 
-        const context = await initWhisper({ filePath: file.uri });
+        const context = await initWhisper({ filePath: fileUri });
+        const finalInfo = await FileSystem.getInfoAsync(fileUri);
 
         setState((prev) => ({
           ...prev,
@@ -125,7 +163,7 @@ export const WhisperProvider: React.FC<{ children: React.ReactNode }> = ({
           isInitializing: false,
           modelFiles: {
             ...prev.modelFiles,
-            [modelId]: { path: file.uri, size: Number(file.info().size) },
+            [modelId]: finalInfo.uri ? true : false,
           },
         }));
       } catch (e) {
@@ -137,8 +175,14 @@ export const WhisperProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const value = useMemo(
-    () => ({ ...state, initializeModel, releaseAll, deleteModel }),
-    [state, initializeModel, releaseAll, deleteModel]
+    () => ({
+      ...state,
+      initializeModel,
+      releaseAll,
+      deleteModel,
+      checkDownloadedModels,
+    }),
+    [state, initializeModel, releaseAll, deleteModel, checkDownloadedModels]
   );
 
   return (

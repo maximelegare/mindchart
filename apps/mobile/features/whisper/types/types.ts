@@ -4,4 +4,5 @@ export interface WhisperModel {
   url: string;
   filename: string;
   capabilities: { multilingual: boolean; quantizable: boolean; tdrz?: boolean };
+  size: string;
 }
