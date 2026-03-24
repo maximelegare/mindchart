@@ -20,6 +20,7 @@ import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { Migrator } from "@/features/settings/features/database/inspector/components/migrator";
 import { useRouter } from "expo-router";
 import { SeedDatabase } from "../components/seedDatabase";
+import { useQueryClient } from "@tanstack/react-query";
 
 type TableInfo = {
   name: string;
@@ -27,6 +28,7 @@ type TableInfo = {
 };
 
 export const DatabaseInspectorFeature = () => {
+  const queryClient = useQueryClient();
   const db = getOPDatabase();
 
   const router = useRouter();
@@ -107,6 +109,8 @@ export const DatabaseInspectorFeature = () => {
             await closeOPDatabase();
             // Delete the database file
             await removeDatabaseFile();
+            // Clear the query client
+            queryClient.clear();
             // Navigate to new database screen
             router.replace("/newDatabase");
           },
