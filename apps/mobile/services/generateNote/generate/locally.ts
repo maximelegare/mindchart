@@ -24,8 +24,6 @@ export const useGenerateLocalNote = () => {
       throw new Error("Model not selected");
     }
 
-    console.log("hello");
-
     try {
       let transcript = "";
 
@@ -49,13 +47,11 @@ export const useGenerateLocalNote = () => {
         }
 
         const json = stringToJson(response);
-        console.log("json", json);
         if (!json) {
           throw new Error("Response is not valid JSON");
         }
 
         const data = formatNote(json);
-        console.log("data.note", data);
         const closestTopic = await findClosestTopic(data.note.topic);
 
         // Remove the topic field from the note

@@ -10,7 +10,6 @@ export const useTopicService = () => {
   const { useFetchAllTopicsQuery } = useControllers().topics;
 
   const { data: topics } = useFetchAllTopicsQuery();
-  console.log("topics", topics);
   const { embed } = useLlamaEmbeddings();
 
   const findClosestTopic = async (topic: string): Promise<Topic> => {
