@@ -7,14 +7,20 @@ import {
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 
+type NoteWithTopic = Omit<Note, "topicId"> & {
+  topic: string;
+};
+
 export const formatNote = (
   data: LocalAIResNoteSchemaModel
-): { note: Note; thoughts: Thought[] } => {
-  const { summary, thoughts, title } = LocalAIResNoteSchema.parse(data);
+): { note: NoteWithTopic; thoughts: Thought[] } => {
+  console.log("data", data);
+  const { summary, thoughts, title, topic } = LocalAIResNoteSchema.parse(data);
 
   const noteId = generateID();
 
   const formatedNote = {
+    topic,
     id: noteId,
     title,
     summary,

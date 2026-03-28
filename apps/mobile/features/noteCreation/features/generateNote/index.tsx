@@ -3,6 +3,7 @@ import {
   GenerateNoteResponseSchema,
   Note,
   Thought,
+  Topic,
 } from "@repo/zod-schemas/client";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,10 @@ export const GenerateNote = ({
   const { useInsertEmbeddingsMutation, useGenerateLocalEmbeddingsMutation } =
     useControllers().embeddings;
 
+  const { useInsertNewTopicMutation } = useControllers().topics;
+  const { mutateAsync: insertNewTopicMutateAsync } =
+    useInsertNewTopicMutation();
+
   // const { mutateAsync: generateLocalNoteMutateAsync } = useGenerateLocalNoteMutation();
   const { mutateAsync: generateNoteMutateAsync } = useGenerateNoteMutation();
   const { mutateAsync: generateLocalEmbeddingsMutateAsync } =
@@ -60,12 +65,17 @@ export const GenerateNote = ({
     currentView === "audio" ? !!fileURI : inputText.trim().length > 0;
   const isDisabled = !isInputValid;
 
-  const handleInsertNoteAndThoughts = async (
+  const handleInsertContent = async (
     note: Note,
-    thoughts: Thought[]
+    thoughts: Thought[],
+    newTopic: Topic | null
   ) => {
     const embeddings = await generateLocalEmbeddingsMutateAsync({ thoughts });
     await insertEmbeddingsMutateAsync({ data: embeddings });
+
+    if (newTopic) {
+      await insertNewTopicMutateAsync({ data: newTopic });
+    }
     await insertNoteAndThoughtsMutateAsync({ note, thoughts });
     onSuccess?.();
     closeModal();
@@ -110,7 +120,7 @@ export const GenerateNote = ({
       const parsedCategories = z.array(CategorySchema).parse(categoriesData);
 
       const {
-        responseObject: { note, thoughts },
+        responseObject: { note, thoughts, topic },
       } = parsedResponse;
 
       if (note && thoughts) {
@@ -118,8 +128,9 @@ export const GenerateNote = ({
           title: "AI Generated Note",
           customContent: () => (
             <GenerateNotePreview
-              onAction={handleInsertNoteAndThoughts}
+              onAction={handleInsertContent}
               note={note}
+              topic={topic}
               thoughts={thoughts}
               categories={parsedCategories}
             />

@@ -11,23 +11,32 @@ import { useModal } from "@/components/ui/modal/modal";
 import { Icon } from "@/components/ui/icons/icon";
 import { CategorySelector } from "./categoriesSelector";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import { Topic } from "@repo/zod-schemas/src/schemas";
+import { TopicSelector } from "./topicSelector";
 
 type GenerateNotePreviewProps = {
   note: Note;
   thoughts: Thought[];
   categories: Category[];
-  onAction: (note: Note, thoughts: Thought[]) => void;
+  topic: Topic;
+  onAction: (note: Note, thoughts: Thought[], topic: Topic | null) => void;
 };
 
 export const GenerateNotePreview = ({
   note,
   thoughts,
   categories,
+  topic,
   onAction,
 }: GenerateNotePreviewProps) => {
   const { closeModal, setModalContent } = useModal();
 
   const { control, handleSubmit } = useForm<{
+    topic: {
+      topicId: string;
+      name: string;
+      isNew?: boolean;
+    };
     title: string;
     summary: string;
     thoughts: Array<{
@@ -35,11 +44,17 @@ export const GenerateNotePreview = ({
       summary: string;
       category: string;
       semanticLabel?: string;
+      topic: string;
     }>;
   }>({
     defaultValues: {
       title: note.title,
       summary: note.summary,
+      topic: {
+        topicId: topic.id,
+        name: topic?.name,
+        isNew: topic.isNew,
+      },
       thoughts: thoughts.map((thought) => ({
         title: thought.title ?? "",
         summary: thought.summary ?? "",
@@ -64,7 +79,8 @@ export const GenerateNotePreview = ({
 
       // Call the onGeneratedNote callback to handle the note and thoughts
       // This is to be able to use useLlamaEmbeddings without being blocked by the modal
-      onAction(note, thoughts);
+
+      onAction(note, thoughts, topic.isNew ? topic : null);
     } catch (error) {
       console.error("Error inserting note and thoughts:", error);
       setModalContent({
@@ -75,13 +91,30 @@ export const GenerateNotePreview = ({
   };
 
   return (
-    <View className="flex-col gap-4">
+    <View className="flex-col gap-4 w-full">
+      <View className="flex-col gap-1">
+        <View className="flex-col gap-2">
+          <Label nativeID="title">Topic</Label>
+          <Controller
+            control={control}
+            name="topic"
+            render={({ field: { onChange } }) => {
+              return (
+                <TopicSelector
+                  selectedTopic={topic}
+                  onSelect={(t) => onChange({ ...t })}
+                />
+              );
+            }}
+          />
+        </View>
+      </View>
       <Controller
         control={control}
         name="title"
         rules={{ required: true }}
         render={({ field: { onChange, value } }) => (
-          <View className="flex-col gap-1 relative">
+          <View className="flex-col gap-1 relative w-full">
             <Label nativeID="title">Title</Label>
             <View className="relative">
               <Icon
