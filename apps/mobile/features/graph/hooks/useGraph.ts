@@ -1,7 +1,5 @@
 import { useControllers } from "@/api/controllers/useControllers";
-import { buildHierarchyFromClusters } from "@/features/kNN/graph/buildHierarchy";
-import { buildKNNGraph } from "@/features/kNN/utils/kNN";
-import { labelPropagation } from "@/features/kNN/utils/labelPropagation";
+import { buildGraphWithTopics } from "../utils/buildGraphWithTopics";
 import { ThoughtWithEmbedding } from "@repo/zod-schemas";
 import { useEffect, useState, useCallback } from "react";
 
@@ -58,32 +56,18 @@ export const useGraph = () => {
   const [hierarchy, setHierarchy] = useState<NodeDatum | null>(null);
 
   // -------------------------------
-  // Rebuild the graph (can be called manually)
+  // Rebuild the graph (NOW SIMPLE)
   const rebuildGraph = useCallback(async () => {
     if (!thoughts || thoughts.length === 0) return;
 
-    const thoughtsWithEmbeddings = thoughts.filter((t) => t.embedding !== null);
-    if (thoughtsWithEmbeddings.length === 0) return;
-
-    // 1️⃣ Build kNN graph
-    const edges = buildKNNGraph(
-      thoughtsWithEmbeddings as ThoughtWithEmbedding[],
-      5
-    );
-
-    // 2️⃣ Community detection
-    const nodeIds = thoughtsWithEmbeddings.map((t) => t.thoughtId);
-    const clusters = labelPropagation(nodeIds, edges);
-
-    // 3️⃣ Build hierarchy
-    const newHierarchy = buildHierarchyFromClusters(
-      thoughtsWithEmbeddings as ThoughtWithEmbedding[],
-      clusters
+    // ✅ No filtering needed unless you want to exclude null topics
+    const newHierarchy = buildGraphWithTopics(
+      thoughts as ThoughtWithEmbedding[]
     ) as NodeDatum;
 
     setHierarchy(newHierarchy);
 
-    // 4️⃣ Sync to DB
+    // Sync to DB
     await mutateGraph(newHierarchy);
   }, [thoughts, mutateGraph]);
 
@@ -103,7 +87,7 @@ export const useGraph = () => {
   return {
     syncGraph,
     hierarchy,
-    rebuildGraph, // expose this function
+    rebuildGraph,
     refetchGraph: graphQuery.refetch,
     refetchSyncFlag: refetchSyncGraph,
   };

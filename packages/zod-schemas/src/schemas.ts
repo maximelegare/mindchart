@@ -23,6 +23,8 @@ export const TopicSchema = z.object({
 export const ThoughtSchema = z.object({
   id: z.string(),
   title: z.string(),
+  topicName: z.string().optional(),
+  topicId: z.string().optional(),
   summary: z.string(),
   semanticLabel: z.string(),
   noteId: z.string(),

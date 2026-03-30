@@ -1,5 +1,10 @@
 import { eq, sql } from "drizzle-orm";
-import { EmbeddingTable, ThoughtTable } from "../../schema.root";
+import {
+  EmbeddingTable,
+  NoteTable,
+  ThoughtTable,
+  TopicTable,
+} from "../../schema.root";
 import { type DB } from "../../utils/initialize/getOPDatabase";
 
 export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
@@ -13,12 +18,16 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
         categoryId: ThoughtTable.categoryId,
         noteId: ThoughtTable.noteId,
         semanticLabel: ThoughtTable.semanticLabel,
+        topicName: TopicTable.name,
+        topicId: TopicTable.id,
         // Using raw SQL selection to ensure we get the clean binary blob
         embedding: sql<Uint8Array>`${EmbeddingTable.embedding}`,
         createdAt: ThoughtTable.createdAt,
       })
       .from(ThoughtTable)
-      .innerJoin(EmbeddingTable, eq(EmbeddingTable.thoughtId, ThoughtTable.id));
+      .innerJoin(EmbeddingTable, eq(EmbeddingTable.thoughtId, ThoughtTable.id))
+      .innerJoin(NoteTable, eq(ThoughtTable.noteId, NoteTable.id))
+      .innerJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id));
 
     return rows.map((row) => {
       const raw = row.embedding;
