@@ -13,14 +13,19 @@ export const useTopicService = () => {
   const { embed } = useLlamaEmbeddings();
 
   const findClosestTopic = async (topic: string): Promise<Topic> => {
-    const topicEmbedding = await embed(topic);
+    console.log("topic", topic);
+    const topicEmbedding = await embed(topic, "query");
 
     const closestTopic = findClosestEmbedding(
       topicEmbedding,
-      topics?.map((topic) => topic.embedding) || []
+      topics?.map((topic) => {
+        console.log("topic", topic.name);
+        return topic.embedding;
+      }) || []
     );
 
     if (closestTopic) {
+      console.log("closestTopic", closestTopic);
       return topics?.[closestTopic.index] as Topic;
     } else {
       return {

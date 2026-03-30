@@ -12,5 +12,6 @@ export const getAllTopics = async () => {
 
 export const insertNewTopic = async (data: Topic) => {
   const db = getOPDatabase();
+  console.log("embedding", data.embedding);
   return await insertNewTopicQuery(db, data);
 };
