@@ -69,10 +69,22 @@ export const LocalAIResThoughtSchema = z.object({
 
 export const LocalAIResNoteSchema = z.object({
   topic: z.string(),
+  topicId: z.string().optional(),
   title: z.string(),
   summary: z.string(),
   thoughts: z.array(LocalAIResThoughtSchema),
 });
+
+export const SeedLocalAIResNoteSchema = z.object({
+  topicId: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  thoughts: z.array(LocalAIResThoughtSchema),
+});
+
+export type SeedLocalAIResNoteSchemaModel = z.infer<
+  typeof SeedLocalAIResNoteSchema
+>;
 
 export type LocalAIResNoteSchemaModel = z.infer<typeof LocalAIResNoteSchema>;
 export type LocalAIResThought = z.infer<typeof LocalAIResThoughtSchema>;
