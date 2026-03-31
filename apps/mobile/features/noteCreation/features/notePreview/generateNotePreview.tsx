@@ -27,16 +27,31 @@ export const GenerateNotePreview = ({
 }: GenerateNotePreviewProps) => {
   const { closeModal, setModalContent } = useModal();
 
-  const { control, handleSubmit } = useForm<{
+  type FormData = {
+    // topic: {
+    //   id: string;
+    //   name: string;
+    //   isNew?: boolean;
+    //   embedding: Float32Array;
+    //   createdAt: string;
+    // };
     title: string;
     summary: string;
     thoughts: Array<{
       title: string;
       summary: string;
       category: string;
-      semanticLabel?: string;
+      semanticLabel: string;
+      // topic: string;
+      id: string;
+      createdAt: string;
+      noteId: string;
+      categoryId: string;
+      thoughtId: string;
     }>;
-  }>({
+  };
+
+  const { control, handleSubmit } = useForm<FormData>({
     defaultValues: {
       title: note.title,
       summary: note.summary,
@@ -45,6 +60,11 @@ export const GenerateNotePreview = ({
         summary: thought.summary ?? "",
         category: thought.categoryId,
         semanticLabel: thought.semanticLabel,
+        id: thought.id,
+        createdAt: thought.createdAt ?? "",
+        noteId: thought.noteId,
+        categoryId: thought.categoryId,
+        thoughtId: thought.thoughtId,
       })),
     },
   });
@@ -55,16 +75,25 @@ export const GenerateNotePreview = ({
     name: "thoughts",
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: FormData) => {
+    const { title, summary } = data;
     try {
       setModalContent({
         title: "Saving your Note",
         customContent: () => <LoadingState title="Saving..." size="large" />,
       });
 
+      const noteData = {
+        id: note.id,
+        title: title,
+        summary: summary,
+        // topicId: topic.id,
+      };
+
       // Call the onGeneratedNote callback to handle the note and thoughts
       // This is to be able to use useLlamaEmbeddings without being blocked by the modal
-      onAction(note, thoughts);
+
+      onAction({ ...noteData }, data.thoughts);
     } catch (error) {
       console.error("Error inserting note and thoughts:", error);
       setModalContent({
