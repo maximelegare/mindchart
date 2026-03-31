@@ -14,6 +14,7 @@ export const useGenerateLocalEmbeddingsService = () => {
     for (const thought of thoughts) {
       const textToEmbed = thought.semanticLabel;
       const vector = await embed(textToEmbed, "document");
+
       const floatArray =
         vector instanceof Float32Array
           ? vector.slice()

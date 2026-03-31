@@ -59,13 +59,33 @@ export const useLlamaEmbeddings = () => {
    * Generate embedding vector for a single text
    */
   const embed = useCallback(
-    async (text: string, task: "query" | "document") => {
+    async (
+      text: string,
+      task: "query" | "document" | "clustering" | "classification"
+    ) => {
       if (!context.embeddingContext) {
         throw new Error("Embedding model not initialized.");
       }
 
-      const prefix = task === "query" ? "search_query: " : "search_document: ";
-      const formattedText = `${prefix}${text.trim()}`;
+      let prefix = "";
+      switch (task) {
+        case "query":
+          prefix = "search_query: ";
+          break;
+        case "document":
+          prefix = "search_document: ";
+          break;
+        case "clustering":
+          prefix = "clustering: ";
+          break;
+        case "classification":
+          prefix = "classification: ";
+          break;
+        default:
+          throw new Error("Invalid task.");
+      }
+
+      const formattedText = `${prefix}${text.trim().toLowerCase()}`;
 
       const embeddingResult =
         await context.embeddingContext.embedding(formattedText);

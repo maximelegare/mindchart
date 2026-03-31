@@ -44,7 +44,7 @@ const useSeedDatabaseService = () => {
       const topics: Topic[] = [];
 
       for (const topic of seedTopics) {
-        const vector = await embed(topic.name.trim().toLowerCase(), "document");
+        const vector = await embed(topic.name, "clustering");
 
         const floatArray =
           vector instanceof Float32Array

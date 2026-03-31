@@ -1,3 +1,5 @@
+// import { cosineSimilarity } from "fast-cosine-similarity";
+
 interface MatchResult {
   index: number;
   similarity: number;
@@ -35,26 +37,28 @@ function cosineSimilarity(a: Float32Array, b: Float32Array): number {
 export function findClosestEmbedding(
   target: Float32Array,
   embeddings: Float32Array[],
-  threshold = 0.5
+  threshold = 0.5 // Adjust this based on Nomic's behavior
 ): MatchResult | null {
   if (embeddings.length === 0) return null;
 
   let bestIndex = -1;
-  let bestSimilarity = -1; // Cosine similarity is usually -1 to 1
+  let bestSimilarity = -1;
 
   for (let i = 0; i < embeddings.length; i++) {
     const sim = cosineSimilarity(target, embeddings[i]);
 
-    // DEBUG: Log the similarities to see why they are failing the threshold
-    // console.log(`Index ${i} Similarity: ${sim.toFixed(4)}`);
-
-    if (sim > bestSimilarity) {
-      bestSimilarity = sim;
-      bestIndex = i;
+    // 1. Only consider it if it's above the threshold
+    if (sim >= threshold) {
+      // 2. Keep track of the highest one found so far
+      if (sim > bestSimilarity) {
+        bestSimilarity = sim;
+        bestIndex = i;
+      }
     }
   }
 
-  if (bestSimilarity >= threshold) {
+  // 3. If nothing was above the threshold, bestIndex remains -1
+  if (bestIndex !== -1) {
     return { index: bestIndex, similarity: bestSimilarity };
   }
 
