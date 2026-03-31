@@ -33,9 +33,11 @@ export const GenerateNotePreview = ({
 
   const { control, handleSubmit } = useForm<{
     topic: {
-      topicId: string;
+      id: string;
       name: string;
       isNew?: boolean;
+      embedding: Float32Array;
+      createdAt: string;
     };
     title: string;
     summary: string;
@@ -51,9 +53,11 @@ export const GenerateNotePreview = ({
       title: note.title,
       summary: note.summary,
       topic: {
-        topicId: topic.id,
+        id: topic.id,
         name: topic?.name,
         isNew: topic.isNew,
+        embedding: topic.embedding,
+        createdAt: topic.createdAt,
       },
       thoughts: thoughts.map((thought) => ({
         title: thought.title ?? "",
@@ -98,10 +102,10 @@ export const GenerateNotePreview = ({
           <Controller
             control={control}
             name="topic"
-            render={({ field: { onChange } }) => {
+            render={({ field: { onChange, value } }) => {
               return (
                 <TopicSelector
-                  selectedTopic={topic}
+                  selectedTopic={{ ...value }}
                   onSelect={(t) => onChange({ ...t })}
                 />
               );

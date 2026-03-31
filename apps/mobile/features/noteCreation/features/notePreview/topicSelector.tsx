@@ -37,8 +37,8 @@ export const TopicSelector = ({
         <BottomSheetOpenTrigger asChild className="w-fit">
           <TouchableOpacity className="flex-row items-center gap-2">
             <Typography
-              variant="h3"
-              className="text-foreground p-2 bg-card border border-input rounded-lg"
+              variant="h4"
+              className="text-foreground px-2 py-1 bg-card border border-input rounded-lg"
             >
               {selectedTopic?.name}
             </Typography>
@@ -64,9 +64,8 @@ export const TopicSelector = ({
                   <TopicItem
                     key={topic.id}
                     item={topic}
-                    // Use handleSelect instead of onSelect to ensure close() is called
                     onPress={() => handleSelect(topic)}
-                    selected={selectedTopic === topic}
+                    selected={selectedTopic.id === topic.id}
                   />
                 ))}
               </View>
