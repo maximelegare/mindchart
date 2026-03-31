@@ -1,6 +1,6 @@
 import { Gutter } from "@/components/ui/gutter";
 import React from "react";
-import { GenerateNote } from "@/features/noteCreation/features/generateNote/index";
+import { GenerateNote } from "@/features/noteCreation/features/generateNote/components/index";
 import { View } from "react-native";
 import { AudioFeature } from "@/features/noteCreation/features/audio/views/index";
 import ModeToggle from "@/components/ui/modeToggle";

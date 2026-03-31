@@ -6,7 +6,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useState } from "react";
 import { Alert, View } from "react-native";
 
-import fakeData from "@/services/seed/data/mock.json" with { type: "json" };
+import fakeData from "@/seed/data/mock.json" with { type: "json" };
 import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 

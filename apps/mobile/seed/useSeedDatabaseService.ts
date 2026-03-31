@@ -1,6 +1,6 @@
 import { Note, Thought, Topic } from "@repo/zod-schemas";
 import { seedFormatNote } from "./utils/seedFormatNote";
-import { useGenerateLocalEmbeddingsService } from "../useGenerateLocalEmbeddingService";
+import { useGenerateLocalEmbeddingsService } from "../features/embeddings/services/useGenerateLocalEmbeddingService";
 import { getOPDatabase, seedDatabaseQuery } from "@repo/sqlite";
 import { ServiceResponse } from "@/api/utils/responseObject";
 import seedNotes from "./data/mock.json" with { type: "json" };

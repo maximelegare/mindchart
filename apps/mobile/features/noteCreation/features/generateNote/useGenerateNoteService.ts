@@ -1,4 +1,4 @@
-import { useGenerateLocalNote } from "./generate/locally";
+import { useGenerateLocalNote } from "./services/locally";
 import { GenerateNoteService } from "./types";
 
 export const useGenerateNoteService = () => {
