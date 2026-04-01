@@ -14,6 +14,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { Topic } from "@repo/zod-schemas";
 import { hsl } from "@/utils/hsl";
 import { useControllers } from "@/api/controllers/useControllers";
+import { Icon } from "@/components/ui/icons/icon";
 
 export const TopicSelector = ({
   onSelect,
@@ -36,11 +37,14 @@ export const TopicSelector = ({
       <BottomSheet>
         <BottomSheetOpenTrigger asChild className="w-fit">
           <TouchableOpacity className="flex-row items-center gap-2">
+            {selectedTopic.isNew && (
+              <Icon name="plus" size={16} color="foreground" />
+            )}
             <Typography
               variant="h4"
               className="text-foreground px-2 py-1 bg-card border border-input rounded-lg"
             >
-              {selectedTopic?.name}
+              {selectedTopic.name}
             </Typography>
           </TouchableOpacity>
         </BottomSheetOpenTrigger>
