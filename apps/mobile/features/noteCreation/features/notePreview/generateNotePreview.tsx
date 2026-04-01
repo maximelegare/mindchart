@@ -37,7 +37,6 @@ export const GenerateNotePreview = ({
     thoughts: Array<{
       title: string;
       summary: string;
-      category: string;
       semanticLabel: string;
       topic: string;
       id: string;
@@ -69,7 +68,6 @@ export const GenerateNotePreview = ({
       thoughts: thoughts.map((thought) => ({
         title: thought.title ?? "",
         summary: thought.summary ?? "",
-        category: thought.categoryId,
         semanticLabel: thought.semanticLabel,
         id: thought.id,
         createdAt: thought.createdAt ?? "",
@@ -183,7 +181,7 @@ export const GenerateNotePreview = ({
 
                 <Controller
                   control={control}
-                  name={`thoughts.${index}.category`}
+                  name={`thoughts.${index}.categoryId`}
                   render={({ field: { onChange, value } }) => {
                     const selectedCategory =
                       categories.find((cat) => cat.id === value) || null;
