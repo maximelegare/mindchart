@@ -5,7 +5,7 @@ import { SettingsFeature } from "@/features/settings/views";
 
 export const SettingsPage = () => {
   return (
-    <PageContainer headerVariant="stack" title="Settings">
+    <PageContainer headerVariant="tab" title="Settings">
       <SettingsFeature />
     </PageContainer>
   );

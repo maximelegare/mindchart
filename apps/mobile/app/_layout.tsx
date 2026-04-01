@@ -20,7 +20,6 @@ import { PaperProvider } from "react-native-paper";
 
 import { PortalHost } from "@/components/primitives/portal";
 import { ModalProvider } from "@/components/ui/modal/modal";
-import CustomHeader from "@/components/layout/header/customHeader";
 
 import { WhisperProvider } from "@/features/whisper/context/whispterContext";
 import { LlamaProvider } from "@/features/llama/context/llamaContext";
@@ -177,14 +176,7 @@ export default function RootLayout() {
                           <Stack.Screen name="(tabs)" />
                           <Stack.Screen name="newDatabase" />
                           <Stack.Screen name="categories" />
-                          <Stack.Screen
-                            name="graph"
-                            options={{
-                              headerShown: true,
-                              title: "Graph",
-                              header: (props) => <CustomHeader {...props} />,
-                            }}
-                          />
+                          <Stack.Screen name="settings" />
                         </Stack>
                       </AutoConnectService>
                     </WhisperProvider>

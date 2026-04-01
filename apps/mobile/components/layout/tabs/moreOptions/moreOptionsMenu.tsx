@@ -3,15 +3,14 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Text } from "react-native";
 import { useState } from "react";
 import { Icon } from "@/components/ui/icons/icon";
 import { hsl } from "@/utils/hsl";
+import { Typography } from "@/components/ui";
+import { push } from "expo-router/build/global-state/routing";
 
 export function MoreOptionsMenu() {
   const [open, setOpen] = useState(false);
@@ -30,15 +29,11 @@ export function MoreOptionsMenu() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-56" side="top" align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent className="w-44 rounded-2xl" side="top" align="end">
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Text>Profile</Text>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Text>Settings</Text>
+          <DropdownMenuItem onPress={() => push("/settings")}>
+            <Icon name="settings" size={24} color="background" />
+            <Typography>Settings</Typography>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

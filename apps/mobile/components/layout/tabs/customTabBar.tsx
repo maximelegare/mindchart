@@ -10,7 +10,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { MoreOptionsMenu } from "./moreOptionsMenu";
+import { MoreOptionsMenu } from "./moreOptions/moreOptionsMenu";
 
 export function CustomTabBar({
   state,
@@ -22,12 +22,8 @@ export function CustomTabBar({
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  // Filter out settings so the UI only calculates space for visible tabs
-  const visibleRoutes = state.routes.filter(
-    (route) => route.name !== "settings"
-  );
   const buttonWidth =
-    dimensions.width > 0 ? dimensions.width / visibleRoutes.length : 0;
+    dimensions.width > 0 ? dimensions.width / state.routes.length : 0;
 
   const onTabBarLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -37,20 +33,12 @@ export function CustomTabBar({
   const tabPositionX = useSharedValue(0);
 
   useEffect(() => {
-    if (dimensions.width > 0 && visibleRoutes.length > 0) {
-      // Find the index of the current route within the visible set
-      const currentRoute = state.routes[state.index];
-      const visibleIndex = visibleRoutes.findIndex(
-        (r) => r.key === currentRoute.key
-      );
-
-      if (visibleIndex !== -1) {
-        tabPositionX.value = withSpring(visibleIndex * buttonWidth, {
-          duration: 350,
-        });
-      }
+    if (dimensions.width > 0 && state.routes.length > 0) {
+      tabPositionX.value = withSpring(state.index * buttonWidth, {
+        duration: 350,
+      });
     }
-  }, [state.index, buttonWidth, dimensions.width]);
+  }, [state.index, buttonWidth, dimensions.width, state.routes.length]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: tabPositionX.value }],
@@ -79,7 +67,7 @@ export function CustomTabBar({
             </Animated.View>
           )}
 
-          {visibleRoutes.map((route) => {
+          {state.routes.map((route) => {
             const { options } = descriptors[route.key];
             const isFocused = state.routes[state.index].key === route.key;
             const label = options.tabBarLabel ?? options.title ?? route.name;
