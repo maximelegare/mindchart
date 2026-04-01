@@ -16,10 +16,10 @@ export const useTopicService = () => {
     const topicEmbedding = await embed(topic, "clustering");
 
     const closestTopic = findClosestEmbedding(
-      topicEmbedding,
+      { embedding: topicEmbedding, text: topic },
       topics?.map((topic) => {
         console.log("topic", topic.name);
-        return topic.embedding;
+        return { embedding: topic.embedding, text: topic.name };
       }) || []
     );
 

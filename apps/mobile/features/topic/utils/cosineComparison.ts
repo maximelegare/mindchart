@@ -1,5 +1,3 @@
-// import { cosineSimilarity } from "fast-cosine-similarity";
-
 interface MatchResult {
   index: number;
   similarity: number;
@@ -34,10 +32,26 @@ function cosineSimilarity(a: Float32Array, b: Float32Array): number {
   return dot / denominator;
 }
 
+function getAdjustedSimilarity(
+  textA: string,
+  textB: string,
+  vectorSim: number
+): number {
+  const wordsA = textA.toLowerCase().split(" ");
+  const wordsB = textB.toLowerCase().split(" ");
+
+  // If they share a word (like "Health"), give it a 15% boost
+  const hasOverlap = wordsA.some(
+    (word) => word.length > 3 && wordsB.includes(word)
+  );
+
+  return hasOverlap ? Math.min(vectorSim + 0.15, 1.0) : vectorSim;
+}
+
 export function findClosestEmbedding(
-  target: Float32Array,
-  embeddings: Float32Array[],
-  threshold = 0.5 // Adjust this based on Nomic's behavior
+  target: { embedding: Float32Array; text: string },
+  embeddings: { embedding: Float32Array; text: string }[],
+  threshold = 0.6 // Adjust this based on Nomic's behavior
 ): MatchResult | null {
   if (embeddings.length === 0) return null;
 
@@ -45,13 +59,20 @@ export function findClosestEmbedding(
   let bestSimilarity = -1;
 
   for (let i = 0; i < embeddings.length; i++) {
-    const sim = cosineSimilarity(target, embeddings[i]);
+    const sim = cosineSimilarity(target.embedding, embeddings[i].embedding);
+
+    // Adjust the similarity based on the overlap of words
+    const adjustedSim = getAdjustedSimilarity(
+      embeddings[i].text,
+      target.text,
+      sim
+    );
 
     // 1. Only consider it if it's above the threshold
-    if (sim >= threshold) {
+    if (adjustedSim >= threshold) {
       // 2. Keep track of the highest one found so far
-      if (sim > bestSimilarity) {
-        bestSimilarity = sim;
+      if (adjustedSim > bestSimilarity) {
+        bestSimilarity = adjustedSim;
         bestIndex = i;
       }
     }
