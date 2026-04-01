@@ -10,6 +10,7 @@ export type IconName =
   | "cpu"
   | "database"
   | "download"
+  | "ellipsis-vertical"
   | "graph"
   | "import"
   | "keyboard"
@@ -67,6 +68,10 @@ export const ICON_METADATA: Record<
   download: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 15V3m9 12v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10l5 5l5-5"></path></g>`,
+  },
+  "ellipsis-vertical": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></g>`,
   },
   graph: {
     viewBox: "0 0 256 256",

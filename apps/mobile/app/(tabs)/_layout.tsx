@@ -27,12 +27,12 @@ export default function TabLayout() {
           title: "Notes",
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="graph"
         options={{

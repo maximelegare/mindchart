@@ -24,20 +24,15 @@ export const TabBarButton = ({
   label,
 }: TabBarButtonProps) => {
   const scale = useSharedValue(0);
+
   useEffect(() => {
-    scale.value = withSpring(
-      typeof isFocused === "boolean" ? (isFocused ? 1 : 0) : isFocused,
-      { duration: 350 }
-    );
-  }, [scale, isFocused]);
+    scale.value = withSpring(isFocused ? 1 : 0, { duration: 350 });
+  }, [isFocused]);
 
   const animatedIconStyle = useAnimatedStyle(() => {
-    const scaleValue = interpolate(scale.value, [0, 1], [1, 1.2]);
-
-    const top = interpolate(scale.value, [0, 1], [0, 6]);
     return {
-      transform: [{ scale: scaleValue }],
-      top,
+      transform: [{ scale: interpolate(scale.value, [0, 1], [1, 1.2]) }],
+      top: interpolate(scale.value, [0, 1], [0, 6]),
     };
   });
 
@@ -48,7 +43,7 @@ export const TabBarButton = ({
   return (
     <Pressable
       onPress={onPress}
-      className={cn("items-center justify-center w-24 py-1  rounded-[18px]")}
+      className="items-center justify-center flex-1 h-full py-1"
     >
       <Animated.View style={animatedIconStyle}>
         <Icon
@@ -60,7 +55,7 @@ export const TabBarButton = ({
         className={cn("text-xs", isFocused ? "text-foreground" : "text-border")}
         style={[animatedTextStyle, { fontFamily: "QuicksandRegular" }]}
       >
-        {label as string}
+        {label}
       </Animated.Text>
     </Pressable>
   );
