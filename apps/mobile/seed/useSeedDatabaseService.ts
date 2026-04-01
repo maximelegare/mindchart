@@ -1,24 +1,28 @@
-import { Note, Thought } from "@repo/zod-schemas";
-import { formatNote } from "../generateNote/utils/formatNote";
-import { useGenerateLocalEmbeddingsService } from "../useGenerateLocalEmbeddingService";
+import { Note, Thought, Topic } from "@repo/zod-schemas";
+import { seedFormatNote } from "./utils/seedFormatNote";
+import { useGenerateLocalEmbeddingsService } from "../features/embeddings/services/useGenerateLocalEmbeddingService";
 import { getOPDatabase, seedDatabaseQuery } from "@repo/sqlite";
 import { ServiceResponse } from "@/api/utils/responseObject";
-import fakeData from "./data/mock.json" with { type: "json" };
+import seedNotes from "./data/mock.json" with { type: "json" };
+import seedTopics from "./data/mock_topics.json" with { type: "json" };
+import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 
 const useSeedDatabaseService = () => {
   const db = getOPDatabase();
   const { generateEmbeddings } = useGenerateLocalEmbeddingsService();
+  const { embed } = useLlamaEmbeddings();
+
   const seedDatabaseService = async (numberOfNotes: number) => {
     // const fakeData = generateGraphNotes(numberOfNotes);
-    if (numberOfNotes > fakeData.length) {
+    if (numberOfNotes > seedNotes.length) {
       return ServiceResponse.failure(
-        `Enter a number less than or equal to ${fakeData.length}`,
+        `Enter a number less than or equal to ${seedNotes.length}`,
         null
       );
     }
 
-    const formatedNotes = fakeData
-      .map((note) => formatNote(note))
+    const formatedNotes = seedNotes
+      .map((note) => seedFormatNote(note))
       .splice(0, numberOfNotes);
     const formatedStructuredData = formatedNotes.reduce(
       (acc, { note, thoughts }) => {
@@ -37,10 +41,28 @@ const useSeedDatabaseService = () => {
       }
       const embeddings = embeddingsByNote.flat();
 
+      const topics: Topic[] = [];
+
+      for (const topic of seedTopics) {
+        const vector = await embed(topic.name, "clustering");
+
+        const floatArray =
+          vector instanceof Float32Array
+            ? vector.slice()
+            : new Float32Array(vector);
+        topics.push({
+          id: topic.id,
+          name: topic.name,
+          embedding: floatArray.buffer as unknown as Topic["embedding"],
+          createdAt: new Date().toISOString(),
+        });
+      }
+
       await seedDatabaseQuery(db, {
         notes: formatedStructuredData.notes,
         thoughts: formatedStructuredData.thoughts,
         embeddings,
+        topics,
       });
 
       return ServiceResponse.success("Database seeded successfully", null);

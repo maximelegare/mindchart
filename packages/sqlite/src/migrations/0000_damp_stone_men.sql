@@ -25,7 +25,9 @@ CREATE TABLE `note` (
 	`id` text PRIMARY KEY NOT NULL,
 	`title` text,
 	`summary` text,
-	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
+	`topic_id` text,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	FOREIGN KEY (`topic_id`) REFERENCES `topic`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `setting` (
@@ -44,4 +46,11 @@ CREATE TABLE `thought` (
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	FOREIGN KEY (`note_id`) REFERENCES `note`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`category_id`) REFERENCES `category`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `topic` (
+	`id` text PRIMARY KEY NOT NULL,
+	`name` text NOT NULL,
+	`embedding` blob,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

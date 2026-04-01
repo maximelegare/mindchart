@@ -12,6 +12,7 @@ import { getOPDatabase } from "./src/utils/initialize/getOPDatabase";
 import { getAllCategoriesQuery } from "./src/queries/categories/getAllcategories";
 import { removeDatabaseFile } from "./src/utils/removeDatabaseFile";
 import { setupDB } from "./src/utils/initialize/setupDB";
+import { insertNewTopicQuery } from "./src/queries/topics/insertNewTopic";
 import {
   AppDataTable,
   CategoryTable,
@@ -34,6 +35,7 @@ import { useMigrationHelper } from "./src/utils/useMigrationHelper";
 import { validateIfDBExists } from "./src/queries/dbStatus/validateIfDBExists";
 import { insertEmbeddingsQuery } from "./src/queries/embeddings/insertEmbeddings";
 import { seedDatabaseQuery } from "./src/queries/bulk/seedDatabase";
+import { getAllTopicsQuery } from "./src/queries/topics/getAllTopics";
 
 export {
   getMigratingStatusQuery,
@@ -69,4 +71,6 @@ export {
   useMigrationHelper,
   closeOPDatabase,
   seedDatabaseQuery,
+  getAllTopicsQuery,
+  insertNewTopicQuery,
 };

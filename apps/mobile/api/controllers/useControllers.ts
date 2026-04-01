@@ -4,6 +4,7 @@ import { useEmbeddingsController } from "./useEmbeddingsContolller";
 import { useGraphController } from "./useGraphController";
 import { useNotesAndThoughtsController } from "./useNotesAndThoughtsController";
 import { useSettingsController } from "./useSettingsController";
+import { useTopicsController } from "./useTopicsController";
 
 // useEmbeddingsController is not imported here because of a client error related to useQuery
 
@@ -14,4 +15,5 @@ export const useControllers = () => ({
   graph: useGraphController(),
   databaseInspector: useDatabaseInspectorController(),
   settings: useSettingsController(),
+  topics: useTopicsController(),
 });

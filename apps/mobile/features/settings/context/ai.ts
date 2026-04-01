@@ -4,7 +4,7 @@ import { CHAT_MODELS } from "@/features/llama/data/models/chat/chatModels";
 import { EMBEDDINGS_MODELS } from "@/features/llama/data/models/embeddings/embeddingsModels";
 
 import { persist } from "zustand/middleware";
-import { mmkv } from "@/context/mmkvBridge";
+import { mmkv } from "@/context/bridge/zustand_mmkv";
 
 export type UserAISettingsPreferences = {
   whisper: string;

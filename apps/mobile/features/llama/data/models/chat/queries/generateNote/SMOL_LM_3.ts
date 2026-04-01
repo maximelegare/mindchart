@@ -17,6 +17,11 @@ You are an assistant that returns a single, valid JSON object with the structure
       "description": "1-2 sentence summary that captures the main ideas of the transcription",
       "maxLength": 120
     },
+    "topic": {
+      "type": "string",
+      "description": "A 2-4 word semantic label that captures the main idea of the note",
+      "maxLength": 20
+    },
     "thoughts": {
       "type": "array",
       "description": "A list of key thoughts extracted from the transcription",
@@ -49,13 +54,14 @@ You are an assistant that returns a single, valid JSON object with the structure
       }
     }
   },
-  "required": ["title", "summary", "thoughts"],
+  "required": ["title", "summary", "topic", "thoughts"],
   "additionalProperties": false
 }
 
 Instructions:
 - title: 4-10 words summarizing the transcription
 - summary: 1-2 sentence summary capturing the main ideas
+- topic: a 2-4 word semantic label that captures the main idea of the note
 - thoughts: each main idea as an object with title, summary, category (lowercase), and semanticLabel (2-4 words)
 - Use one of the categories provided: ${options?.categories}, or "other" if none apply
 - Always include all fields, even if empty

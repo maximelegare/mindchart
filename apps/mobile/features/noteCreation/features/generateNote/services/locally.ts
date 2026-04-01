@@ -5,16 +5,21 @@ import { QUERIES } from "@/features/llama/data/models/chat/queries/queries";
 import { stringToJson } from "@/features/llama/utils/stringToJson";
 import { ServiceResponse } from "@/api/utils/responseObject";
 import { formatNote } from "../utils/formatNote";
+import { useTopicService } from "@/features/topic/topicService";
+import { Note, Thought, Topic } from "@repo/zod-schemas";
 
 export const useGenerateLocalNote = () => {
   const { transcribe } = useWhisper();
   const { generate, currentModelId } = useLlamaChat();
+  const { findClosestTopic } = useTopicService();
 
   const generateLocalNote = async ({
     text,
     audio,
     categories,
-  }: GenerateNoteServiceData) => {
+  }: GenerateNoteServiceData): Promise<
+    ServiceResponse<{ note: Note; thoughts: Thought[]; topic: Topic } | null>
+  > => {
     if (!currentModelId) {
       throw new Error("Model not selected");
     }
@@ -47,11 +52,35 @@ export const useGenerateLocalNote = () => {
         }
 
         const data = formatNote(json);
+        const closestTopic = await findClosestTopic(data.note.topic);
+
+        // Remove the topic field from the note
+        const { topic: _topic, ...noteWithoutTopic } = data.note;
+
+        if (closestTopic.isNew) {
+          return ServiceResponse.success(
+            "Success generating the note & thoughts",
+            {
+              ...data,
+              note: { ...data.note, topicId: closestTopic.id },
+              topic: closestTopic,
+            }
+          );
+        }
+
+        const ret = {
+          ...data,
+          note: { topicId: closestTopic.id, ...noteWithoutTopic },
+          topic: closestTopic,
+        };
+
         return ServiceResponse.success(
           "Success generating the note & thoughts",
-          data
+          ret
         );
       }
+
+      return ServiceResponse.failure("Unsupported model query mapping", null);
     } catch (error) {
       console.error("Error generating note:", error);
       return ServiceResponse.failure("Error generating note", null);

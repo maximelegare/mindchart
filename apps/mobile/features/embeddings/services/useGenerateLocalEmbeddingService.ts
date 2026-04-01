@@ -1,4 +1,4 @@
-import { Embedding } from "@repo/zod-schemas/src/schemas";
+import { Embedding } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 import { PendingEmbedding } from "@repo/zod-schemas";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
@@ -13,7 +13,8 @@ export const useGenerateLocalEmbeddingsService = () => {
 
     for (const thought of thoughts) {
       const textToEmbed = thought.semanticLabel;
-      const vector = await embed(textToEmbed);
+      const vector = await embed(textToEmbed, "document");
+
       const floatArray =
         vector instanceof Float32Array
           ? vector.slice()

@@ -33,14 +33,24 @@ export const ThoughtTable = sqliteTable(
   ]
 );
 
-export const NoteTable = sqliteTable("note", {
-  id: text("id").notNull().primaryKey(),
-  title: text("title"),
-  summary: text("summary"),
-  createdAt: text("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-});
+export const NoteTable = sqliteTable(
+  "note",
+  {
+    id: text("id").notNull().primaryKey(),
+    title: text("title"),
+    summary: text("summary"),
+    topicId: text("topic_id"),
+    createdAt: text("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (note) => [
+    foreignKey({
+      columns: [note.topicId],
+      foreignColumns: [TopicTable.id],
+    }),
+  ]
+);
 
 export const EmbeddingTable = sqliteTable(
   "embedding",
@@ -74,6 +84,15 @@ export const AppDataTable = sqliteTable("app_data", {
 export const CategoryTable = sqliteTable("category", {
   id: text("id").notNull().primaryKey(),
   name: text("name").notNull(),
+  createdAt: text("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
+export const TopicTable = sqliteTable("topic", {
+  id: text("id").notNull().primaryKey(),
+  name: text("name").notNull(),
+  embedding: float32ArrayBlob("embedding").notNull(),
   createdAt: text("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

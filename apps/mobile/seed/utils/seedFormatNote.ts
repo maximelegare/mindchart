@@ -1,20 +1,23 @@
 import {
-  LocalAIResNoteSchema,
-  LocalAIResNoteSchemaModel,
+  SeedLocalAIResNoteSchema,
+  SeedLocalAIResNoteSchemaModel,
   LocalAIResThought,
   Note,
   Thought,
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 
-export const formatNote = (
-  data: LocalAIResNoteSchemaModel
+export const seedFormatNote = (
+  data: SeedLocalAIResNoteSchemaModel
 ): { note: Note; thoughts: Thought[] } => {
-  const { summary, thoughts, title } = LocalAIResNoteSchema.parse(data);
+  console.log("data", data);
+  const { summary, thoughts, title, topicId } =
+    SeedLocalAIResNoteSchema.parse(data);
 
   const noteId = generateID();
 
   const formatedNote = {
+    topicId,
     id: noteId,
     title,
     summary,

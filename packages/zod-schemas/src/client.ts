@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NoteSchema, ThoughtSchema } from "./schemas";
+import { NoteSchema, ThoughtSchema, TopicSchema } from "./schemas";
 
 // Client-side API response schemas (what clients receive)
 export const GenerateNoteResponseSchema = z.object({
@@ -7,7 +7,7 @@ export const GenerateNoteResponseSchema = z.object({
   responseObject: z.object({
     note: NoteSchema,
     thoughts: z.array(ThoughtSchema),
-    // embeddings: z.array(EmbeddingSchema),
+    topic: TopicSchema.merge(z.object({ isNew: z.boolean().optional() })),
   }),
 });
 
@@ -68,14 +68,35 @@ export const LocalAIResThoughtSchema = z.object({
 });
 
 export const LocalAIResNoteSchema = z.object({
+  topic: z.string(),
+  topicId: z.string().optional(),
   title: z.string(),
   summary: z.string(),
   thoughts: z.array(LocalAIResThoughtSchema),
 });
+
+export const SeedLocalAIResNoteSchema = z.object({
+  topicId: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  thoughts: z.array(LocalAIResThoughtSchema),
+});
+
+export type SeedLocalAIResNoteSchemaModel = z.infer<
+  typeof SeedLocalAIResNoteSchema
+>;
 
 export type LocalAIResNoteSchemaModel = z.infer<typeof LocalAIResNoteSchema>;
 export type LocalAIResThought = z.infer<typeof LocalAIResThoughtSchema>;
 export type PendingEmbedding = z.infer<typeof PendingEmbeddingSchema>;
 // Re-export shared schemas for convenience
 export { NoteSchema, ThoughtSchema } from "./schemas";
-export type { Note, Thought, ThoughtWithEmbedding, Category } from "./schemas";
+
+export type {
+  Note,
+  Thought,
+  ThoughtWithEmbedding,
+  Category,
+  Topic,
+  Embedding,
+} from "./schemas";

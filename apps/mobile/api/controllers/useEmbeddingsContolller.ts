@@ -8,7 +8,7 @@ import {
 import { REACT_QUERY_KEYS } from "../endpoints/KEYS";
 import { useMutation } from "@tanstack/react-query";
 import { Embedding } from "@repo/zod-schemas/src/schemas";
-import { useGenerateLocalEmbeddingsService } from "../../services/useGenerateLocalEmbeddingService";
+import { useGenerateLocalEmbeddingsService } from "../../features/embeddings/services/useGenerateLocalEmbeddingService";
 
 export const useEmbeddingsController = () => {
   const db = getOPDatabase();

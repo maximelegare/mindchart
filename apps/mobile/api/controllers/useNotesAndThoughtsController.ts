@@ -12,9 +12,9 @@ import {
 import { fetchAllThoughtsWithEmbeddings } from "@/api/endpoints/thoughts";
 import { useGraphController } from "./useGraphController";
 
-import { useGenerateNoteService } from "../../services/generateNote/useGenerateNoteService";
-import { GenerateNoteService } from "../../services/generateNote/types";
-import { useSeedDatabaseService } from "@/services/seed/useSeedDatabaseService";
+import { useGenerateNoteService } from "../../features/noteCreation/features/generateNote/useGenerateNoteService";
+import { GenerateNoteService } from "../../features/noteCreation/features/generateNote/types";
+import { useSeedDatabaseService } from "@/seed/useSeedDatabaseService";
 
 export const useNotesAndThoughtsController = () => {
   // const useGenerateNoteMutation = (options?: Partial<InferMutationOptions<typeof generateNote>>) =>

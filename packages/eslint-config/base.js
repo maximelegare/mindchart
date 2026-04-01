@@ -20,6 +20,13 @@ export const config = [
       "turbo/no-undeclared-env-vars": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   // {

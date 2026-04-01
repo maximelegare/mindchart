@@ -7,12 +7,24 @@ export type Thought = z.infer<typeof ThoughtSchema>;
 
 export type Category = z.infer<typeof CategorySchema>;
 
+export type Topic = z.infer<typeof TopicSchema>;
+
 export type Embedding = z.infer<typeof EmbeddingSchema>;
 export type ThoughtWithEmbedding = z.infer<typeof ThoughtWithEmbeddingSchema>;
+
+export const TopicSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  embedding: z.custom<Float32Array>(),
+  isNew: z.boolean().optional(),
+  createdAt: z.string(),
+});
 
 export const ThoughtSchema = z.object({
   id: z.string(),
   title: z.string(),
+  topicName: z.string().optional(),
+  topicId: z.string().optional(),
   summary: z.string(),
   semanticLabel: z.string(),
   noteId: z.string(),
@@ -34,6 +46,7 @@ export const NoteSchema = z.object({
   id: z.string(),
   title: z.string(),
   summary: z.string(),
+  topicId: z.string(),
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);
