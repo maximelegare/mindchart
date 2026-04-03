@@ -10,7 +10,6 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { MoreOptionsMenu } from "./moreOptions/moreOptionsMenu";
 
 export function CustomTabBar({
   state,
@@ -97,9 +96,9 @@ export function CustomTabBar({
         </View>
 
         {/* Menu Container: Anchored to the right */}
-        <View className="h-full">
+        {/* <View className="h-full">
           <MoreOptionsMenu />
-        </View>
+        </View> */}
       </View>
     </Gutter>
   );
