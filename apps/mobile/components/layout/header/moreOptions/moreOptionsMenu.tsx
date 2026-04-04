@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Animated, { SlideOutUp } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 import {
   DropdownMenu,
@@ -78,7 +78,7 @@ export function MoreOptionsMenu({ links }: MoreOptionsMenuProps) {
           <View style={{ paddingTop: 5 }}>
             <Animated.View
               entering={CustomEntering}
-              exiting={SlideOutUp.duration(200)}
+              // exiting={SlideOutUp.duration(100)}
               className="bg-popover rounded-3xl border border-border"
             >
               <DropdownMenuGroup>
@@ -89,7 +89,7 @@ export function MoreOptionsMenu({ links }: MoreOptionsMenuProps) {
                       onPress={() => {
                         setOpen(false);
                         // Using a small delay to avoid the Android ViewTree crash
-                        setTimeout(() => router.push(link.href), 100);
+                        setTimeout(() => router.push(link.href), 150);
                       }}
                     >
                       <Icon name={link.icon} size={18} color="background" />
