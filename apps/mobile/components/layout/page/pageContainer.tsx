@@ -10,6 +10,7 @@ import { cn } from "@/lib/cn";
 
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { MoreOptionsMenuProps } from "../header/moreOptions/moreOptionsMenu";
 
 const { HEADER_HEIGHT, HEADER_OVERLAP } = LAYOUT_SIZES;
 
@@ -21,6 +22,7 @@ type PageContainerProps = {
   buttons?: React.ReactNode;
   children: React.ReactNode;
   noScrollView?: boolean;
+  moreOptionsMenuLinks?: MoreOptionsMenuProps["links"];
 };
 
 export const PageContainer = ({
@@ -29,6 +31,7 @@ export const PageContainer = ({
   buttons,
   children,
   noScrollView = false,
+  moreOptionsMenuLinks,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -75,6 +78,7 @@ export const PageContainer = ({
               title={title ?? ""}
               hideBackButton={headerVariant === "stack" || !canGoBack}
               buttons={buttons}
+              moreOptionsMenuLinks={moreOptionsMenuLinks}
             />
           </Gutter>
         </View>

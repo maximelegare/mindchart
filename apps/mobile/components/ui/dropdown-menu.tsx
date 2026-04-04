@@ -85,44 +85,41 @@ const DropdownMenuSubContent = React.forwardRef<
 });
 DropdownMenuSubContent.displayName =
   DropdownMenuPrimitive.SubContent.displayName;
-
 const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> & {
     overlayStyle?: StyleProp<ViewStyle>;
     overlayClassName?: string;
     portalHost?: string;
+    forceMount?: boolean; // Add forceMount to control animation lifecycle
   }
 >(
   (
-    { className, overlayClassName, overlayStyle, portalHost, ...props },
+    {
+      className,
+      overlayClassName,
+      overlayStyle,
+      portalHost,
+      forceMount,
+      ...props
+    },
     ref
   ) => {
-    const { open } = DropdownMenuPrimitive.useRootContext();
     return (
       <DropdownMenuPrimitive.Portal hostName={portalHost}>
         <DropdownMenuPrimitive.Overlay
           style={
             overlayStyle
-              ? StyleSheet.flatten(
-                  [
-                    Platform.OS !== "web" ? StyleSheet.absoluteFill : undefined,
-                    overlayStyle,
-                  ].filter(Boolean) as ViewStyle[]
-                )
-              : Platform.OS !== "web"
-                ? StyleSheet.absoluteFill
-                : undefined
+              ? [StyleSheet.absoluteFill, overlayStyle]
+              : StyleSheet.absoluteFill
           }
           className={overlayClassName}
         >
           <DropdownMenuPrimitive.Content
             ref={ref}
+            forceMount={forceMount} // Ensure the primitive doesn't unmount before animation ends
             className={cn(
-              "z-50 min-w-[8rem] overflow-hidden rounded-md border border-border bg-popover p-1 shadow-md shadow-foreground/5 web:data-[side=bottom]:slide-in-from-top-2 web:data-[side=left]:slide-in-from-right-2 web:data-[side=right]:slide-in-from-left-2 web:data-[side=top]:slide-in-from-bottom-2",
-              open
-                ? "web:animate-in web:fade-in-0 web:zoom-in-95"
-                : "web:animate-out web:fade-out-0 web:zoom-out-95",
+              "z-50 min-w-[8rem]  overflow-hidden rounded-3xl shadow-md pb-6",
               className
             )}
             {...props}
@@ -132,7 +129,6 @@ const DropdownMenuContent = React.forwardRef<
     );
   }
 );
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
 
 const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
@@ -227,7 +223,7 @@ const DropdownMenuSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-border", className)}
+    className={cn("-mx-1 my-1 h-px bg-input/40", className)}
     {...props}
   />
 ));
