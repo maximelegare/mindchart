@@ -1,6 +1,7 @@
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { useModal } from "@/components/ui/modal/modal";
 import { useAiAutoConnect } from "@/features/settings/features/ai/autoConnect/hooks/useAutoConnect";
+import { useRouter } from "expo-router";
 import { useEffect } from "react";
 
 export const AutoConnectService = ({
@@ -8,13 +9,15 @@ export const AutoConnectService = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { isInitializing } = useAiAutoConnect();
+  const { isInitializing, setupRequired, isReady } = useAiAutoConnect();
   const { openModal, closeModal } = useModal();
+  const router = useRouter();
 
   useEffect(() => {
+    if (!isReady) return; // 🚨 prevents flicker entirely
+
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    // Add a delay to ensure the UI Thread and Portal are stable to make sure the modal appears
     if (isInitializing) {
       timer = setTimeout(() => {
         openModal({
@@ -23,7 +26,18 @@ export const AutoConnectService = ({
             <LoadingState title="Initializing AI Models" size="large" />
           ),
         });
-      }, 500);
+      }, 300); // slight delay avoids micro flicker
+    } else if (setupRequired) {
+      timer = setTimeout(() => {
+        openModal({
+          modalName: "AI_SETUP_REQUIRED",
+          confirmText: "Go to Settings",
+          onConfirm: () => {
+            router.push("/settings/ai");
+            closeModal();
+          },
+        });
+      }, 300);
     } else {
       closeModal();
     }
@@ -31,7 +45,7 @@ export const AutoConnectService = ({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isInitializing, openModal, closeModal]);
+  }, [isInitializing, setupRequired, isReady, openModal, closeModal]);
 
   return <>{children}</>;
 };

@@ -17,6 +17,13 @@ export const MODALS_CONTENT = {
     confirmText: "Delete",
     cancelText: "Cancel",
   },
+  AI_SETUP_REQUIRED: {
+    title: "AI Setup Required",
+    description:
+      "You will need to download the models to use the local AI engines.",
+    confirmText: "Go to Settings",
+    cancelText: "Cancel",
+  },
 };
 
 export type ModalContent = keyof typeof MODALS_CONTENT;
