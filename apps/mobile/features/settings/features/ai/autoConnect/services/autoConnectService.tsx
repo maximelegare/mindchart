@@ -4,6 +4,8 @@ import { useAiAutoConnect } from "@/features/settings/features/ai/autoConnect/ho
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 
+import { useRef } from "react";
+
 export const AutoConnectService = ({
   children,
 }: {
@@ -12,6 +14,8 @@ export const AutoConnectService = ({
   const { isInitializing, setupRequired, isReady } = useAiAutoConnect();
   const { openModal, closeModal } = useModal();
   const router = useRouter();
+
+  const hasMounted = useRef(false);
 
   useEffect(() => {
     if (!isReady) return; // 🚨 prevents flicker entirely
@@ -26,18 +30,23 @@ export const AutoConnectService = ({
             <LoadingState title="Initializing AI Models" size="large" />
           ),
         });
+        hasMounted.current = true;
       }, 300); // slight delay avoids micro flicker
     } else if (setupRequired) {
-      timer = setTimeout(() => {
-        openModal({
-          modalName: "AI_SETUP_REQUIRED",
-          confirmText: "Go to Settings",
-          onConfirm: () => {
-            router.push("/settings/ai");
-            closeModal();
-          },
-        });
-      }, 300);
+      // Prevent modal from appearing multiple times after the first render
+      if (!hasMounted.current) {
+        timer = setTimeout(() => {
+          openModal({
+            modalName: "AI_SETUP_REQUIRED",
+            confirmText: "Go to Settings",
+            onConfirm: () => {
+              router.push("/settings/ai");
+              closeModal();
+            },
+          });
+          hasMounted.current = true;
+        }, 300);
+      }
     } else {
       closeModal();
     }
