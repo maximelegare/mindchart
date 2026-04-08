@@ -5,11 +5,14 @@ import { Separator } from "@/components/ui/separator";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
+import { hsl } from "@/utils/hsl";
+import { useColorScheme } from "@/lib/useColorScheme";
 
 type ExpandableSettingProps = {
   id: string;
   children: ReactElement | ReactNode;
   title: string;
+  warning?: string | null;
   date?: string | null;
   category?: string | null;
   onPress?: (id: string) => void;
@@ -17,7 +20,8 @@ type ExpandableSettingProps = {
 };
 
 export const ExpandableSetting: React.FC<ExpandableSettingProps> = memo(
-  ({ children, title, id, onPress, expanded }) => {
+  ({ children, title, id, onPress, expanded, warning }) => {
+    const { colorScheme } = useColorScheme();
     return (
       <>
         <View className="bg-card border-border border w-full rounded-lg p-2 pb-4">
@@ -28,7 +32,25 @@ export const ExpandableSetting: React.FC<ExpandableSettingProps> = memo(
                 <View className="flex-1">
                   <Typography variant="h3">{title.toUpperCase()}</Typography>
                 </View>
-                <View className="relative" style={{ width: 20 }}>
+                {warning && (
+                  <View className="">
+                    <Typography
+                      variant="p"
+                      style={{
+                        fontSize: 12,
+                        marginTop: 2,
+                        color: hsl(
+                          "destructive-foreground",
+                          "theme",
+                          colorScheme
+                        ),
+                      }}
+                    >
+                      {warning}
+                    </Typography>
+                  </View>
+                )}
+                <View className="relative" style={{ width: 40 }}>
                   <Button
                     className="absolute right-0"
                     style={{ top: -10 }}
