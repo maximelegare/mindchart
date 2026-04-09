@@ -3,9 +3,8 @@ import { Linking, Platform } from "react-native";
 import List, { ListHeader } from "@/components/ui/list";
 import ListItem from "@/components/ui/list-item";
 import { Muted } from "@/components/ui/typography";
-import { Send, Star } from "@/lib/icons";
 import * as WebBrowser from "expo-web-browser";
-import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
+// import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { useRouter } from "expo-router";
 import { Icon } from "@/components/ui/icons/icon";
@@ -26,7 +25,7 @@ export const SettingsFeature = () => {
         <ListHeader>
           <Muted>App</Muted>
         </ListHeader>
-        <ThemeSettingItem />
+        {/* <ThemeSettingItem /> */}
         <ListItem
           className="bg-background"
           itemLeft={() => <Icon name="cpu" color="foreground" />} // props adds size and color attributes
@@ -50,18 +49,11 @@ export const SettingsFeature = () => {
         </ListHeader>
         <ListItem
           className="bg-background"
-          itemLeft={(props) => <Star {...props} />} // props adds size and color attributes
+          itemLeft={() => <Icon name="star" color="foreground" />}
           label="Give us a start"
           onPress={() =>
-            openExternalURL("https://github.com/expo-starter/expo-template")
+            openExternalURL("https://github.com/maximelegare/mindchart")
           }
-        />
-
-        <ListItem
-          className="bg-background"
-          itemLeft={(props) => <Send {...props} />} // props adds size and color attributes
-          label="Send Feedback"
-          onPress={() => openExternalURL("https://expostarter.com")}
         />
       </List>
       <SpaceFiller
