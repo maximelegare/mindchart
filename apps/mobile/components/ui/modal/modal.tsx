@@ -125,10 +125,15 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     customContent,
     onCancel,
     onConfirm,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
+    confirmText: confirmTextOption,
+    cancelText: cancelTextOption,
     dismissOnBackgroundPress = true,
   } = modalOptions;
+
+  const modalPreset = modalName ? MODALS_CONTENT[modalName] : undefined;
+  const confirmText =
+    confirmTextOption ?? modalPreset?.confirmText ?? "Confirm";
+  const cancelText = cancelTextOption ?? modalPreset?.cancelText ?? "Cancel";
 
   const hasTitle = title || (modalName && MODALS_CONTENT[modalName]?.title);
 

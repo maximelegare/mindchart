@@ -1,4 +1,11 @@
 export const MODALS_CONTENT = {
+  DELETE_DATABASE_FILE: {
+    title: "Delete Workspace?",
+    description:
+      "This will permanently delete your database. You can always re-import it later.",
+    confirmText: "Delete",
+    cancelText: "Cancel",
+  },
   INITIALIZE_MODEL_ERROR: {
     title: "Failed to initialize LLM.",
     description: "You will need to download it again to use it.",
