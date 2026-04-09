@@ -74,18 +74,10 @@ jobs:
       - name: 🔄 Verify EAS CLI
         run: eas --version
 
-      # ---------------------------
-      # Build APKs
-      # ---------------------------
-
-
-           
-
       - name: 🔑 Restore Android Keystore
         run: |
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/MindChart.keystore    
          
-            
       - name: 📝 Create local credentials.json
         working-directory: apps/mobile
         run: |
@@ -104,8 +96,6 @@ jobs:
             EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
             EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}      
 
-
-
       - name: 📱 Build Production APK
         if: github.event_name == 'push' || github.event.inputs.buildType == 'prod'
         working-directory: apps/mobile
@@ -120,11 +110,6 @@ jobs:
           EAS_BUILD_KEYSTORE_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
           EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
 
-      # ---------------------------
-      # Generate build info & changelog
-      # ---------------------------
-
-
       - name: 🔄 Fetch git history
         run: | 
           git fetch --prune --tags --force
@@ -138,7 +123,6 @@ jobs:
 
           BUILD_DATE=$(date -u +"%Y-%m-%d")
           
-          # 1. Determine Git Range
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LAST_TAG" ]; then
               RANGE="--max-count=50"
@@ -146,30 +130,19 @@ jobs:
               RANGE="$LAST_TAG..HEAD"
           fi
 
-          # 2. Write Header
           echo "## v$VERSION ($BUILD_DATE)" > changelog.md
 
-
-
-
-          # Fetch all logs in the range once to avoid repeated git calls
           ALL_LOGS=$(git log $RANGE --pretty=format:"%s")
 
           FEATURE_LOGS=$(echo "$ALL_LOGS" | grep -Ei "^feat\s*(\(.*?\))?\s*:?" || true)
           NON_FEATURE_LOGS=$(echo "$ALL_LOGS" | grep -Eiv "^feat\s*(\(.*?\))?\s*:?" || true)
 
-          # ---------------------------
-          # Highlights
-          # ---------------------------
           if [ -n "$FEATURE_LOGS" ]; then
             echo "" >> changelog.md
             echo "## 🚀 Highlights" >> changelog.md
             echo "$FEATURE_LOGS" | sed 's/^/- /' >> changelog.md
           fi
 
-          # ---------------------------
-          # Other categories
-          # ---------------------------
           categories=(
             "🐛 Fixes:fix"
             "⚡ Improvements:perf|refactor|improve"
@@ -195,8 +168,13 @@ jobs:
             fi
           done
 
-    
-
+      - name: 🌿 Create version branch
+        run: |
+          VERSION="${{ steps.build-info.outputs.version }}"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git checkout -b "v$VERSION"
+          git push origin "v$VERSION"
 
       - name: 🔖 Create git tag
         run: |
@@ -210,10 +188,6 @@ jobs:
             git push origin v$VERSION
           fi
 
-
-      # ---------------------------
-      # Create GitHub Release
-      # ---------------------------
       - name: 📝 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -227,20 +201,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-
-
-      # ---------------------------
-      # SHA256 generation
-      # ---------------------------
       - name: 🔑 Generate SHA256 for APKs
         run: |
           sha256sum ./MindChart-prod.apk > MindChart-prod.apk.sha256
      
-   
-
-      # ---------------------------
-      # Upload artifacts
-      # ---------------------------
       - name: 📦 Upload build artifacts to GitHub
         uses: actions/upload-artifact@v4
         with:
