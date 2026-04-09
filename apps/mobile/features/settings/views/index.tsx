@@ -50,7 +50,7 @@ export const SettingsFeature = () => {
         <ListItem
           className="bg-background"
           itemLeft={() => <Icon name="star" color="foreground" />}
-          label="Give us a start"
+          label="Give us a star"
           onPress={() =>
             openExternalURL("https://github.com/maximelegare/mindchart")
           }
