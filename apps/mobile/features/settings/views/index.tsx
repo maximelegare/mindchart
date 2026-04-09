@@ -35,9 +35,9 @@ export const SettingsFeature = () => {
         />
         <ListItem
           className="bg-background"
-          itemLeft={() => <Icon name="database" color="foreground" />}
-          label="Database"
-          onPress={() => push("/settings/database")}
+          itemLeft={() => <Icon name="brackets-curly" color="foreground" />}
+          label="Developer Options"
+          onPress={() => push("/settings/developer")}
         />
         <ListHeader className="pt-8">
           <Muted>GENERAL</Muted>

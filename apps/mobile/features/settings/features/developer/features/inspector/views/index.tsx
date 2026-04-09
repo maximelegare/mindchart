@@ -17,9 +17,8 @@ import {
   closeOPDatabase,
 } from "@repo/sqlite";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
-import { Migrator } from "@/features/settings/features/database/inspector/components/migrator";
+import { Migrator } from "@/features/settings/features/developer/features/inspector/components/migrator";
 import { useRouter } from "expo-router";
-import { SeedDatabase } from "../components/seedDatabase";
 import { useQueryClient } from "@tanstack/react-query";
 
 type TableInfo = {
@@ -129,7 +128,6 @@ export const DatabaseInspectorFeature = () => {
             <Typography>Delete DB File</Typography>
           </Button>
         </View>
-        <SeedDatabase />
       </View>
 
       {tables.map((table) => (

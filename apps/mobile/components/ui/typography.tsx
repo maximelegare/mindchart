@@ -19,6 +19,7 @@ const variantFonts: Record<string, string> = {
   h3: "QuicksandBold",
   h4: "QuicksandRegular",
   p: "QuicksandRegular",
+  span: "QuicksandRegular",
   lead: "QuicksandRegular",
   large: "QuicksandRegular",
   small: "QuicksandRegular",
@@ -35,6 +36,7 @@ const variantClasses = {
   h3: "web:scroll-m-20 text-xl font-semibold tracking-tight",
   h4: "web:scroll-m-20 text-lg font-semibold tracking-tight",
   p: "text-base font-normal",
+  span: "text-base font-normal",
   lead: "text-xl text-muted-foreground",
   large: "text-xl font-semibold",
   small: "text-sm font-medium leading-none",
@@ -52,6 +54,7 @@ const paddingClasses: Record<string, string> = {
   h3: "pb-3",
   h4: "pb-1",
   p: "pb-2",
+  span: "pb-0",
   lead: "pb-4",
   large: "pb-4",
   small: "pb-2",
@@ -147,6 +150,9 @@ const H4 = React.forwardRef<TextRef, SlottableTextProps>((props, ref) => (
 const P = React.forwardRef<TextRef, SlottableTextProps>((props, ref) => (
   <Typography variant="p" ref={ref} {...props} />
 ));
+const Span = React.forwardRef<TextRef, SlottableTextProps>((props, ref) => (
+  <Typography variant="span" ref={ref} {...props} />
+));
 const Lead = React.forwardRef<TextRef, SlottableTextProps>((props, ref) => (
   <Typography variant="lead" ref={ref} {...props} />
 ));
@@ -173,6 +179,7 @@ export {
   H3,
   H4,
   P,
+  Span,
   Lead,
   Large,
   Small,
