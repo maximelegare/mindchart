@@ -21,6 +21,13 @@ export default function SettingsLayout() {
           header: () => null,
         }}
       />
+      <Stack.Screen
+        name="workspace"
+        options={{
+          title: "Workspace Settings",
+          header: () => null,
+        }}
+      />
     </Stack>
   );
 }

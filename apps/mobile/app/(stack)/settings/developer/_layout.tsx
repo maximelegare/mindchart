@@ -6,7 +6,7 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Developer Options",
+          title: "Developer Settings",
           headerShown: false,
           header: () => null,
         }}

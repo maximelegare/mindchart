@@ -35,6 +35,12 @@ export const SettingsFeature = () => {
         />
         <ListItem
           className="bg-background"
+          itemLeft={() => <Icon name="layers" color="foreground" />}
+          label="Workspaces"
+          onPress={() => push("/settings/workspace")}
+        />
+        <ListItem
+          className="bg-background"
           itemLeft={() => <Icon name="brackets-curly" color="foreground" />}
           label="Developer Options"
           onPress={() => push("/settings/developer")}

@@ -1,2 +1,2 @@
-import { DatabaseInspectorPage } from "@/pages/settings/database/dbInspector";
+import { DatabaseInspectorPage } from "@/pages/settings/developer/dbInspector";
 export default DatabaseInspectorPage;

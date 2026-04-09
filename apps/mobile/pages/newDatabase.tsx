@@ -1,6 +1,6 @@
 import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
-import { useDatabaseBackup } from "@/features/settings/features/database/backup/hooks/useDatabaseBackup";
+import { useDatabaseBackup } from "@/features/settings/features/workspace/features/backup/hooks/useDatabaseBackup";
 import { Migrator } from "@/features/settings/features/developer/features/inspector/components/migrator";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
