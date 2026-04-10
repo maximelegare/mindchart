@@ -76,25 +76,25 @@ jobs:
 
       - name: 🔑 Restore Android Keystore
         run: |
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/MindChart.keystore    
-         
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/MindChart.keystore    
+
       - name: 📝 Create local credentials.json
         working-directory: apps/mobile
         run: |
           echo '{
-                "android": {
-                  "keystore":{
-                    "keystorePath": "./MindChart.keystore",
-                    "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
-                    "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
-                    "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
-                  }
-                }
-              }' > credentials.json
+            "android": {
+              "keystore": {
+                "keystorePath": "./MindChart.keystore",
+                "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
+                "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
+                "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
+              }
+            }
+          }' > credentials.json
         env:
-            EAS_BUILD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-            EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
-            EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}      
+          EAS_BUILD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
+          EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
       - name: 📱 Build Production APK
         if: github.event_name == 'push' || github.event.inputs.buildType == 'prod'
@@ -111,7 +111,7 @@ jobs:
           EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
 
       - name: 🔄 Fetch git history
-        run: | 
+        run: |
           git fetch --prune --tags --force
           git fetch --unshallow || true
 
@@ -122,7 +122,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
           BUILD_DATE=$(date -u +"%Y-%m-%d")
-          
+
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LAST_TAG" ]; then
               RANGE="--max-count=50"
@@ -179,14 +179,12 @@ jobs:
       - name: 🔖 Create git tag
         run: |
           VERSION="${{ steps.build-info.outputs.version }}"
-      
+
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-      
-          if ! git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            git tag v$VERSION
-            git push origin v$VERSION
-          fi
+
+          git tag "v$VERSION" HEAD
+          git push origin "v$VERSION"
 
       - name: 📝 Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -204,7 +202,7 @@ jobs:
       - name: 🔑 Generate SHA256 for APKs
         run: |
           sha256sum ./MindChart-prod.apk > MindChart-prod.apk.sha256
-     
+
       - name: 📦 Upload build artifacts to GitHub
         uses: actions/upload-artifact@v4
         with:
