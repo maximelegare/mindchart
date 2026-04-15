@@ -1,22 +1,20 @@
-import React from "react";
-import List from "@/components/ui/list";
+import { SeedDatabaseFeature } from "../features/seed/seedDatabase";
 import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
 import { useRouter } from "expo-router";
+import List from "@/components/ui/list";
 
-import { DatabaseBackupFeature } from "../backup/views";
-
-export const DatabaseSettingsFeature = () => {
+export const DeveloperSettingsFeature = () => {
   const { push } = useRouter();
-
   return (
     <List>
-      <DatabaseBackupFeature />
+      <SeedDatabaseFeature style={{ marginBottom: 20 }} />
       <ListItem
+        borderTop
         className="bg-background"
         itemLeft={() => <Icon name="square-mouse-pointer" color="foreground" />}
         label="DB Inspector"
-        onPress={() => push("/settings/database/inspector")}
+        onPress={() => push("/settings/developer/inspector")}
       />
     </List>
   );

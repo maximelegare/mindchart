@@ -7,6 +7,10 @@ import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { LlamaEmbeddingsSettings } from "../llamaEmbeddingsSettings/llamaEmbeddingsSettings";
 import { ExpandableSetting } from "@/features/settings/components/ExpandableSetting";
 import { AutoConnectSettings } from "../autoConnect/components/autoConnect";
+import { useWhisper } from "@/features/whisper/hooks/useWhisperModels";
+import { useLlamaChat } from "@/features/llama/hooks/useLlamaChat";
+import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
+import { useAISettingsPreferences } from "@/features/settings/context/ai";
 
 export const AISettingsFeature = () => {
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
@@ -16,6 +20,13 @@ export const AISettingsFeature = () => {
     else setExpandedCardId(id);
   };
 
+  const { whisper, llamaChat, llamaEmbeddings } = useAISettingsPreferences();
+
+  const { modelFiles } = useWhisper();
+  const { downloadedModels: llamaChatModelFiles } = useLlamaChat();
+
+  const { downloadedModels: llamaEmbeddingsModelFiles } = useLlamaEmbeddings();
+
   return (
     <View className="flex-col gap-4">
       <AiProviderSettings />
@@ -24,6 +35,7 @@ export const AISettingsFeature = () => {
         id="whisper"
         title="Whisper Engine"
         expanded={expandedCardId === "whisper"}
+        warning={!modelFiles[whisper] ? "Setup Required" : null}
         onPress={handleExpandableCardPress}
       >
         <WhisperSettings />
@@ -32,6 +44,7 @@ export const AISettingsFeature = () => {
       <ExpandableSetting
         id="llamaChat"
         title="Llama Chat Engine"
+        warning={!llamaChatModelFiles[llamaChat] ? "Setup Required" : null}
         expanded={expandedCardId === "llamaChat"}
         onPress={handleExpandableCardPress}
       >
@@ -41,6 +54,9 @@ export const AISettingsFeature = () => {
       <ExpandableSetting
         id="llamaEmbeddings"
         title="Embeddings Engine"
+        warning={
+          !llamaEmbeddingsModelFiles[llamaEmbeddings] ? "Setup Required" : null
+        }
         expanded={expandedCardId === "llamaEmbeddings"}
         onPress={handleExpandableCardPress}
       >

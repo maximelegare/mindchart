@@ -3,6 +3,7 @@
 export type IconName =
   | "arrow-left"
   | "arrow-up-from-line"
+  | "brackets-curly"
   | "calendar"
   | "chevron-down"
   | "chevron-right"
@@ -14,6 +15,7 @@ export type IconName =
   | "graph"
   | "import"
   | "keyboard"
+  | "layers"
   | "mic"
   | "notebook-text"
   | "pencil"
@@ -26,6 +28,7 @@ export type IconName =
   | "square-dashed-mouse-pointer"
   | "square-mouse-pointer"
   | "square"
+  | "star"
   | "trash-2"
   | "zoom-out";
 
@@ -40,6 +43,10 @@ export const ICON_METADATA: Record<
   "arrow-up-from-line": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m18 9l-6-6l-6 6m6-6v14m-7 4h14"></path>`,
+  },
+  "brackets-curly": {
+    viewBox: "0 0 256 256",
+    content: `<path d="M43.18 128a29.8 29.8 0 0 1 8 10.26c4.8 9.9 4.8 22 4.8 33.74c0 24.31 1 36 24 36a8 8 0 0 1 0 16c-17.48 0-29.32-6.14-35.2-18.26c-4.8-9.9-4.8-22-4.8-33.74c0-24.31-1-36-24-36a8 8 0 0 1 0-16c23 0 24-11.69 24-36c0-11.72 0-23.84 4.8-33.74C50.68 38.14 62.52 32 80 32a8 8 0 0 1 0 16c-23 0-24 11.69-24 36c0 11.72 0 23.84-4.8 33.74A29.8 29.8 0 0 1 43.18 128M240 120c-23 0-24-11.69-24-36c0-11.72 0-23.84-4.8-33.74C205.32 38.14 193.48 32 176 32a8 8 0 0 0 0 16c23 0 24 11.69 24 36c0 11.72 0 23.84 4.8 33.74a29.8 29.8 0 0 0 8 10.26a29.8 29.8 0 0 0-8 10.26c-4.8 9.9-4.8 22-4.8 33.74c0 24.31-1 36-24 36a8 8 0 0 0 0 16c17.48 0 29.32-6.14 35.2-18.26c4.8-9.9 4.8-22 4.8-33.74c0-24.31 1-36 24-36a8 8 0 0 0 0-16"></path>`,
   },
   calendar: {
     viewBox: "0 0 24 24",
@@ -84,6 +91,10 @@ export const ICON_METADATA: Record<
   keyboard: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 8h.01M12 12h.01M14 8h.01M16 12h.01M18 8h.01M6 8h.01M7 16h10m-9-4h.01"></path><rect width="20" height="16" x="2" y="4" rx="2"></rect></g>`,
+  },
+  layers: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"></path><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"></path><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"></path></g>`,
   },
   mic: {
     viewBox: "0 0 24 24",
@@ -132,6 +143,10 @@ export const ICON_METADATA: Record<
   square: {
     viewBox: "0 0 24 24",
     content: `<rect width="18" height="18" x="3" y="3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" rx="2"></rect>`,
+  },
+  star: {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.12 2.12 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.12 2.12 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.12 2.12 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.12 2.12 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.12 2.12 0 0 0 1.597-1.16z"></path>`,
   },
   "trash-2": {
     viewBox: "0 0 24 24",

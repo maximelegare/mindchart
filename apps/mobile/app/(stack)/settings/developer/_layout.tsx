@@ -2,10 +2,14 @@ import { Stack } from "expo-router";
 
 export default function SettingsLayout() {
   return (
-    <Stack>
+    <Stack screenOptions={{ headerShown: false, header: () => null }}>
       <Stack.Screen
         name="index"
-        options={{ title: "Database", headerShown: false, header: () => null }}
+        options={{
+          title: "Developer Settings",
+          headerShown: false,
+          header: () => null,
+        }}
       />
       <Stack.Screen
         name="inspector"

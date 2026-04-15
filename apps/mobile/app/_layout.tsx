@@ -174,9 +174,7 @@ export default function RootLayout() {
                       <AutoConnectService>
                         <Stack screenOptions={{ headerShown: false }}>
                           <Stack.Screen name="(tabs)" />
-                          <Stack.Screen name="newDatabase" />
-                          <Stack.Screen name="categories" />
-                          <Stack.Screen name="settings" />
+                          <Stack.Screen name="(stack)" />
                         </Stack>
                       </AutoConnectService>
                     </WhisperProvider>
