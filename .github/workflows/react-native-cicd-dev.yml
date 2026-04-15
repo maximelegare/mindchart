@@ -1,0 +1,145 @@
+name: React Native CI/CD
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [DEV]
+    paths-ignore:
+      - "**.md"
+      - "LICENSE"
+      - "docs/**"
+  workflow_dispatch:
+    inputs:
+      buildType:
+        type: choice
+        description: "Build type to run"
+        options:
+          - dev
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  NODE_OPTIONS: --openssl-legacy-provider
+
+jobs:
+  check-skip:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - name: Skip CI check
+        run: echo "Proceeding with workflow"
+
+  test:
+    needs: check-skip
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: 📦 Install dependencies
+        run: yarn install
+
+      - name: 🧪 Run TypeScript check
+        run: yarn check-types
+
+      - name: 🧹 Run ESLint
+        run: yarn lint
+
+  build:
+    needs: test
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/DEV') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: 📦 Install dependencies & EAS CLI
+        run: |
+          yarn install
+          npm install -g eas-cli@latest
+
+      - name: 🔄 Verify EAS CLI
+        run: eas --version
+
+      # ---------------------------
+      # Build APKs
+      # ---------------------------
+
+
+           
+
+      - name: 🔑 Restore Android Keystore
+        run: |
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/MindChart.keystore    
+         
+            
+      - name: 📝 Create local credentials.json
+        working-directory: apps/mobile
+        run: |
+          echo '{
+                "android": {
+                  "keystore":{
+                    "keystorePath": "./MindChart.keystore",
+                    "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
+                    "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
+                    "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
+                  }
+                }
+              }' > credentials.json
+        env:
+            EAS_BUILD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+            EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
+            EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}      
+
+
+
+      - name: 📱 Build QA APK
+        if: github.event_name == 'push' || github.event.inputs.buildType == 'dev'
+        working-directory: apps/mobile
+        run: |
+          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
+          eas build --platform android --profile production --local --non-interactive --output=../../MindChart-dev.apk
+        env:
+          NODE_ENV: production
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+          EAS_BUILD_KEYSTORE_PATH: "./MindChart.keystore"
+          EAS_BUILD_KEYSTORE_ALIAS: "${{ secrets.KEY_ALIAS }}"
+          EAS_BUILD_KEYSTORE_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
+          EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
+
+
+
+
+      # ---------------------------
+      # SHA256 generation
+      # ---------------------------
+      - name: 🔑 Generate SHA256 for APKs
+        run: |
+          sha256sum ./MindChart-dev.apk > MindChart-dev.apk.sha256
+     
+   
+
+      # ---------------------------
+      # Upload artifacts
+      # ---------------------------
+      - name: 📦 Upload build artifacts to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-builds
+          path: |
+            ./MindChart-dev.apk
+            ./MindChart-dev.apk.sha256
+          retention-days: 7
