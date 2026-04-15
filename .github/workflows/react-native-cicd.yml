@@ -198,17 +198,25 @@ jobs:
     
 
 
-      - name: 🔖 Create git tag
+      - name: 🔖 Create git tag and branch
         run: |
           VERSION="${{ steps.build-info.outputs.version }}"
-      
+          TAG="v${VERSION}"
+          BRANCH="release/${VERSION}"
+        
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-      
-          if ! git rev-parse "v$VERSION" >/dev/null 2>&1; then
-            git tag v$VERSION
-            git push origin v$VERSION
+        
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "Tag ${TAG} already exists, skipping tag/branch creation."
+            exit 0
           fi
+        
+          git tag -a "${TAG}" -m "Release ${TAG}"
+          git push origin "refs/tags/${TAG}"
+        
+          git checkout -b "${BRANCH}"
+          git push -u origin "refs/heads/${BRANCH}"
 
 
       # ---------------------------
