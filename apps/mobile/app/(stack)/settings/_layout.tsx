@@ -10,16 +10,21 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="ai"
         options={{
-          headerShown: true,
           title: "AI Settings",
           header: () => null,
         }}
       />
       <Stack.Screen
-        name="database"
+        name="developer"
         options={{
-          headerShown: true,
-          title: "Database",
+          title: "Developer Options",
+          header: () => null,
+        }}
+      />
+      <Stack.Screen
+        name="workspace"
+        options={{
+          title: "Workspace Settings",
           header: () => null,
         }}
       />

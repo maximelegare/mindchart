@@ -1,6 +1,6 @@
 import * as React from "react";
 import { PageContainer } from "@/components/layout/page/pageContainer";
-import { DatabaseInspectorFeature } from "@/features/settings/features/database/inspector/views";
+import { DatabaseInspectorFeature } from "@/features/settings/features/developer/features/inspector/views";
 
 export const DatabaseInspectorPage = () => {
   return (

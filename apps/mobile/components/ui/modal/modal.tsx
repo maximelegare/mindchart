@@ -12,7 +12,7 @@ import { View, StyleSheet, Animated, Dimensions, Keyboard } from "react-native";
 import { Modal, Portal } from "react-native-paper";
 import { Typography } from "../typography";
 import { Button } from "../button";
-import { MODALS_CONTENT } from "./data/modals";
+import { MODALS_CONTENT, type ModalButtonConfig } from "./data/modals";
 import { cn } from "@/lib/cn";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -22,8 +22,8 @@ type ModalOptions = {
   title?: string;
   description?: string;
   onCancel?: () => void;
-  cancelText?: string;
-  confirmText?: string;
+  cancelButton?: Partial<ModalButtonConfig>;
+  confirmButton?: Partial<ModalButtonConfig>;
   onConfirm?: () => void;
   dismissOnBackgroundPress?: boolean;
   customContent?: () => ReactNode | ReactElement;
@@ -125,10 +125,28 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     customContent,
     onCancel,
     onConfirm,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
+    confirmButton: confirmButtonOption,
+    cancelButton: cancelButtonOption,
     dismissOnBackgroundPress = true,
   } = modalOptions;
+
+  const modalPreset = modalName ? MODALS_CONTENT[modalName] : undefined;
+  const confirmButton: ModalButtonConfig = {
+    text:
+      confirmButtonOption?.text ?? modalPreset?.confirmButton.text ?? "Confirm",
+    variant:
+      confirmButtonOption?.variant ??
+      modalPreset?.confirmButton.variant ??
+      "default",
+  };
+  const cancelButton: ModalButtonConfig = {
+    text:
+      cancelButtonOption?.text ?? modalPreset?.cancelButton.text ?? "Cancel",
+    variant:
+      cancelButtonOption?.variant ??
+      modalPreset?.cancelButton.variant ??
+      "destructive",
+  };
 
   const hasTitle = title || (modalName && MODALS_CONTENT[modalName]?.title);
 
@@ -203,17 +221,17 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
               {!customContent && (
                 <View className="flex-row justify-end gap-2 mt-4">
                   <Button
-                    variant="destructive"
+                    variant={cancelButton.variant}
                     onPress={() => {
                       onCancel?.();
                       closeModal();
                     }}
                   >
-                    <Typography>{cancelText}</Typography>
+                    <Typography>{cancelButton.text}</Typography>
                   </Button>
                   {onConfirm && (
-                    <Button variant="default" onPress={onConfirm}>
-                      <Typography>{confirmText}</Typography>
+                    <Button variant={confirmButton.variant} onPress={onConfirm}>
+                      <Typography>{confirmButton.text}</Typography>
                     </Button>
                   )}
                 </View>
