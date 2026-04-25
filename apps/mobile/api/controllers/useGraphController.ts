@@ -55,10 +55,18 @@ export const useGraphController = () => {
   const useUpdateSyncGraphDataMutation = (
     options?: Partial<InferMutationOptions<typeof updateSyncGraphData>>
   ) => {
+    const queryClient = useQueryClient();
+    const { onSuccess: userOnSuccess, ...restOptions } = options ?? {};
     return useMutation({
       mutationKey: [REACT_QUERY_KEYS.updateSyncGraphData],
       mutationFn: updateSyncGraphData,
-      ...options,
+      ...restOptions,
+      onSuccess: async (data, variables, onMutateResult, context) => {
+        await userOnSuccess?.(data, variables, onMutateResult, context);
+        await queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchSyncGraph],
+        });
+      },
     });
   };
 

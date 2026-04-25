@@ -1,5 +1,10 @@
 import { ClientOpenAIRoutes } from "@repo/constants";
-import { insertNoteQuery } from "@repo/sqlite";
+import {
+  deleteNoteByIdQuery,
+  insertNoteQuery,
+  updateNoteQuery,
+  updateThoughtsQuery,
+} from "@repo/sqlite";
 import { getOPDatabase } from "@repo/sqlite";
 import { insertThoughtsQuery } from "@repo/sqlite";
 import { Note, Thought } from "@repo/zod-schemas/client";
@@ -19,6 +24,23 @@ export const insertNoteAndThoughts = async ({
   } catch (error) {
     console.error(error);
   }
+};
+
+export const updateNoteAndThoughts = async ({
+  note,
+  thoughts,
+}: {
+  note: Note;
+  thoughts: Array<Thought & { status: "new" | "updated" }>;
+}) => {
+  const db = getOPDatabase();
+  await updateNoteQuery(db, note);
+  await updateThoughtsQuery(db, thoughts);
+};
+
+export const deleteNoteById = async ({ noteId }: { noteId: string }) => {
+  const db = getOPDatabase();
+  await deleteNoteByIdQuery(db, noteId);
 };
 
 export const generateNote = async (body: FormData) => {

@@ -1,35 +1,53 @@
 import { Category, Note, Thought } from "@repo/zod-schemas";
-import React from "react";
-import { ScrollView, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Keyboard, ScrollView, View } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EditableField } from "@/components/ui/editableField";
-import { useModal } from "@/components/ui/modal/modal";
 import { Icon } from "@/components/ui/icons/icon";
-import { CategorySelector } from "./categoriesSelector";
-import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import { CategorySelector } from "../../notePreview/categoriesSelector";
 import { Topic } from "@repo/zod-schemas/src/schemas";
-import { TopicSelector } from "./topicSelector";
+import { TopicSelector } from "../../notePreview/topicSelector";
+import { generateID } from "@/utils/genrateID";
 
-type GenerateNotePreviewProps = {
+type EditNotePreviewProps = {
   note: Note;
   thoughts: Thought[];
   categories: Category[];
   topic: Topic;
-  onAction: (note: Note, thoughts: Thought[], topic: Topic | null) => void;
+  onAction: (
+    note: Note,
+    thoughts: (Thought & { status: "new" | "updated" })[],
+    thoughtsToDelete: string[]
+  ) => void;
+  onCancel: () => void;
 };
 
-export const GenerateNotePreview = ({
+export const EditNotePreview = ({
   note,
   thoughts,
   categories,
   topic,
   onAction,
-}: GenerateNotePreviewProps) => {
-  const { closeModal, setModalContent } = useModal();
+  onCancel,
+}: EditNotePreviewProps) => {
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  // Keyboard handling
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) =>
+      setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSub = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardHeight(0)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   type FormData = {
     title: string;
@@ -44,6 +62,7 @@ export const GenerateNotePreview = ({
       noteId: string;
       categoryId: string;
       thoughtId: string;
+      status: "new" | "updated";
     }>;
     topic: {
       id: string;
@@ -74,12 +93,20 @@ export const GenerateNotePreview = ({
         noteId: thought.noteId,
         categoryId: thought.categoryId,
         thoughtId: thought.thoughtId,
+        status: "updated",
       })),
     },
   });
 
+  const [defaultThoughts] = useState(thoughts.map((thought) => thought.id));
+  const [thoughtsToDelete, setThoughtsToDelete] = useState<string[]>([]);
+
   // 1. Initialize useFieldArray
-  const { fields } = useFieldArray({
+  const {
+    fields: thoughtsFields,
+    remove: thoughtsRemove,
+    append: thoughtsAppend,
+  } = useFieldArray({
     control,
     name: "thoughts",
   });
@@ -87,33 +114,56 @@ export const GenerateNotePreview = ({
   const onSubmit = async (data: FormData) => {
     const { title, summary } = data;
     try {
-      setModalContent({
-        title: "Saving your Note",
-        customContent: () => <LoadingState title="Saving..." size="large" />,
-      });
-
       const noteData = {
         id: note.id,
         title: title,
         summary: summary,
-        topicId: topic.id,
+        topicId: data.topic.id,
       };
 
+      const thoughtsData = data.thoughts.map((thought) => ({
+        ...thought,
+        semanticLabel: thought.semanticLabel ?? thought.title,
+      }));
       // Call the onGeneratedNote callback to handle the note and thoughts
       // This is to be able to use useLlamaEmbeddings without being blocked by the modal
 
-      onAction({ ...noteData }, data.thoughts, topic.isNew ? topic : null);
+      onAction({ ...noteData }, thoughtsData, thoughtsToDelete);
     } catch (error) {
       console.error("Error inserting note and thoughts:", error);
-      setModalContent({
-        title: "Error",
-        description: "Error inserting note and thoughts",
-      });
     }
   };
 
+  const handleDeleteThought = (index: number, thoughtId: string) => {
+    if (defaultThoughts.includes(thoughtId)) {
+      setThoughtsToDelete((prev) =>
+        prev.includes(thoughtId) ? prev : [...prev, thoughtId]
+      );
+    }
+    thoughtsRemove(index);
+  };
+
+  const handleAddThought = () => {
+    const thoughtId = generateID();
+    thoughtsAppend({
+      title: "",
+      summary: "",
+      semanticLabel: "",
+      topic: topic.id,
+      id: thoughtId,
+      createdAt: new Date().toISOString(),
+      noteId: note.id,
+      categoryId: "uncategorized",
+      thoughtId: thoughtId,
+      status: "new",
+    });
+  };
+
   return (
-    <View className="flex-col gap-4 w-full">
+    <View
+      className="flex-col gap-4 w-full"
+      style={{ paddingBottom: keyboardHeight !== 0 ? keyboardHeight : 0 }}
+    >
       <View className="flex-col gap-1">
         <View className="flex-col gap-2">
           <Label nativeID="title">Topic</Label>
@@ -152,6 +202,7 @@ export const GenerateNotePreview = ({
                 id="title"
                 title="Title"
                 fontSize="lg"
+                inBottomSheet
               />
             </View>
           </View>
@@ -160,16 +211,16 @@ export const GenerateNotePreview = ({
 
       <View className="flex-col gap-1">
         <Label nativeID="thoughts">Thoughts</Label>
-        <ScrollView style={{ maxHeight: 400 }}>
+        <ScrollView style={{ maxHeight: keyboardHeight !== 0 ? 150 : 300 }}>
           <View className="flex-col gap-4">
             {/* 2. Map over 'fields' instead of Controller 'value' */}
-            {fields.map((field, index) => (
+            {thoughtsFields.map((field, index) => (
               <View
                 key={field.id}
                 /* CRITICAL: We decrease the zIndex as the index increases.
                    This ensures the top items float ABOVE the bottom items.
                 */
-                style={{ zIndex: fields.length - index }}
+                style={{ zIndex: thoughtsFields.length - index }}
                 className="flex-col gap-1 p-2 rounded-lg bg-card border border-input relative"
               >
                 <Icon
@@ -178,7 +229,22 @@ export const GenerateNotePreview = ({
                   size={15}
                   style={{ position: "absolute", top: 5, right: 5 }}
                 />
-
+                <Button
+                  onPress={() => handleDeleteThought(index, field.thoughtId)}
+                  variant="ghost"
+                  style={{
+                    position: "absolute",
+                    zIndex: 100,
+                    top: 30,
+                    right: -13,
+                  }}
+                >
+                  <Icon
+                    name="trash-2"
+                    size={20}
+                    color="destructive-foreground"
+                  />
+                </Button>
                 <Controller
                   control={control}
                   name={`thoughts.${index}.categoryId`}
@@ -205,6 +271,9 @@ export const GenerateNotePreview = ({
                       id={`title-${index}`}
                       title="Title"
                       fontSize="md"
+                      inBottomSheet
+                      className="relative"
+                      placeholder="Enter a Title"
                     />
                   )}
                 />
@@ -220,6 +289,8 @@ export const GenerateNotePreview = ({
                       title="Summary"
                       fontSize="sm"
                       fontFamily="QuicksandRegular"
+                      inBottomSheet
+                      placeholder="Enter a Bullet Point"
                     />
                   )}
                 />
@@ -229,8 +300,21 @@ export const GenerateNotePreview = ({
         </ScrollView>
       </View>
 
+      <View className="flex-row gap-2 justify-center border-b border-input pb-4">
+        <Button
+          className="flex-row gap-2 items-center"
+          onPress={() => handleAddThought()}
+          variant="default"
+          size="sm"
+          cornerRadius="full"
+        >
+          <Icon name="plus" size={20} color="background" />
+          <Typography>Add Thought</Typography>
+        </Button>
+      </View>
+
       <View className="flex-row gap-2 justify-center">
-        <Button variant="destructive" onPress={closeModal}>
+        <Button variant="destructive" onPress={onCancel}>
           <Typography>Cancel</Typography>
         </Button>
         <Button onPress={handleSubmit(onSubmit)}>

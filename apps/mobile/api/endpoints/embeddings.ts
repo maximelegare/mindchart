@@ -8,6 +8,7 @@ import { Thought, PendingEmbeddingSchema } from "@repo/zod-schemas/client";
 import { ClientOpenAIRoutes } from "@repo/constants";
 import { z } from "zod";
 import { Embedding } from "@repo/zod-schemas/src/schemas";
+import { updateEmbeddingsQuery } from "@repo/sqlite";
 
 export const fetchPendingEmbeddings = async () => {
   const db = getOPDatabase();
@@ -44,4 +45,9 @@ export const generateEmbeddings = async (body: Array<PendingEmbedding>) => {
 export const insertEmbeddings = async (data: Embedding[]) => {
   const db = getOPDatabase();
   return await insertEmbeddingsQuery(db, data);
+};
+
+export const updateEmbeddings = async (data: Embedding[]) => {
+  const db = getOPDatabase();
+  return await updateEmbeddingsQuery(db, data);
 };

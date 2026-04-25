@@ -22,7 +22,10 @@ type PageContainerProps = {
   buttons?: React.ReactNode;
   children: React.ReactNode;
   noScrollView?: boolean;
-  moreOptionsMenuLinks?: MoreOptionsMenuProps["links"];
+  moreOptionsMenu?: {
+    state: { open: boolean; setOpen: (open: boolean) => void };
+    links: MoreOptionsMenuProps["links"];
+  };
 };
 
 export const PageContainer = ({
@@ -31,7 +34,7 @@ export const PageContainer = ({
   buttons,
   children,
   noScrollView = false,
-  moreOptionsMenuLinks,
+  moreOptionsMenu,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -78,7 +81,7 @@ export const PageContainer = ({
               title={title ?? ""}
               hideBackButton={headerVariant === "stack" || !canGoBack}
               buttons={buttons}
-              moreOptionsMenuLinks={moreOptionsMenuLinks}
+              moreOptionsMenu={moreOptionsMenu}
             />
           </Gutter>
         </View>

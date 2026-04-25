@@ -58,7 +58,7 @@ export const useGraph = () => {
   // -------------------------------
   // Rebuild the graph (NOW SIMPLE)
   const rebuildGraph = useCallback(async () => {
-    if (!thoughts || thoughts.length === 0) return;
+    if (!thoughts) return;
 
     // ✅ No filtering needed unless you want to exclude null topics
     const newHierarchy = buildGraphWithTopics(

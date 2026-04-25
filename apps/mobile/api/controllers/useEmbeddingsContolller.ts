@@ -4,6 +4,7 @@ import { Thought } from "@repo/zod-schemas/client";
 import {
   fetchPendingEmbeddings,
   insertEmbeddings,
+  updateEmbeddings,
 } from "@/api/endpoints/embeddings";
 import { REACT_QUERY_KEYS } from "../endpoints/KEYS";
 import { useMutation } from "@tanstack/react-query";
@@ -41,8 +42,20 @@ export const useEmbeddingsController = () => {
     });
   };
 
+  const useUpdateEmbeddingsMutation = () => {
+    return useMutation<
+      Awaited<ReturnType<typeof updateEmbeddings>>,
+      Error,
+      { data: Embedding[] }
+    >({
+      mutationKey: [REACT_QUERY_KEYS.updateEmbeddings],
+      mutationFn: ({ data }) => updateEmbeddings(data),
+    });
+  };
+
   return {
     useFetchPendingEmbeddings,
+    useUpdateEmbeddingsMutation,
     insertPendingEmbeddings,
     useGenerateLocalEmbeddingsMutation,
     useInsertEmbeddingsMutation,

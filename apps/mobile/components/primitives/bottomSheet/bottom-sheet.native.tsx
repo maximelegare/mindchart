@@ -284,16 +284,20 @@ const BottomSheetFlatList = React.forwardRef<
 
 type BottomSheetHeaderRef = React.ElementRef<typeof View>;
 type BottomSheetHeaderProps = React.ComponentPropsWithoutRef<typeof View>;
+
 const BottomSheetHeader = React.forwardRef<
   BottomSheetHeaderRef,
-  BottomSheetHeaderProps
->(({ className, children, ...props }, ref) => {
+  BottomSheetHeaderProps & { onDismiss?: () => void }
+>(({ className, children, onDismiss, ...props }, ref) => {
   const { dismiss } = useBottomSheetModal();
   function close() {
+    onDismiss?.();
     if (Keyboard.isVisible()) {
       Keyboard.dismiss();
     }
-    dismiss();
+    setTimeout(() => {
+      dismiss();
+    }, 150);
   }
   return (
     <View

@@ -165,11 +165,11 @@ export default function RootLayout() {
                 <View
                   className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}
                 >
-                  <StatusBar
-                    style={colorScheme === "dark" ? "light" : "dark"}
-                  />
-
                   <LlamaProvider>
+                    <StatusBar
+                      style={colorScheme === "dark" ? "light" : "dark"}
+                    />
+
                     <WhisperProvider>
                       <AutoConnectService>
                         <Stack screenOptions={{ headerShown: false }}>

@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { insertNoteAndThoughts } from "@/api/endpoints/notes";
+import {
+  deleteNoteById,
+  insertNoteAndThoughts,
+  updateNoteAndThoughts,
+} from "@/api/endpoints/notes";
 import {
   InferMutationOptions,
   REACT_QUERY_KEYS,
@@ -9,23 +13,17 @@ import {
   fetchNoteDetails,
   fetchNotesAndThoughts,
 } from "@/api/endpoints/thoughtsAndNotes";
-import { fetchAllThoughtsWithEmbeddings } from "@/api/endpoints/thoughts";
+import {
+  deleteThoughtsByIds,
+  fetchAllThoughtsWithEmbeddings,
+} from "@/api/endpoints/thoughts";
 import { useGraphController } from "./useGraphController";
 
-import { useGenerateNoteService } from "../../features/noteCreation/features/generateNote/useGenerateNoteService";
-import { GenerateNoteService } from "../../features/noteCreation/features/generateNote/types";
+import { useGenerateNoteService } from "@/features/notes/noteCreation/features/generateNote/useGenerateNoteService";
+import { GenerateNoteService } from "@/features/notes/noteCreation/features/generateNote/types";
 import { useSeedDatabaseService } from "@/seed/useSeedDatabaseService";
 
 export const useNotesAndThoughtsController = () => {
-  // const useGenerateNoteMutation = (options?: Partial<InferMutationOptions<typeof generateNote>>) =>
-  //   useMutation<Awaited<ReturnType<typeof generateNote>>, Error, FormData>(
-  //     {
-  //       mutationKey: [REACT_QUERY_KEYS.generateNote],
-  //       mutationFn: generateNote,
-  //       ...options,
-  //     }
-  //   );
-
   const useSeedDatabaseMutation = () => {
     const queryClient = useQueryClient();
     const { seedDatabaseService } = useSeedDatabaseService();
@@ -110,6 +108,80 @@ export const useNotesAndThoughtsController = () => {
     });
   };
 
+  const useDeleteThoughtsByIdsMutation = (
+    options?: Partial<InferMutationOptions<typeof deleteThoughtsByIds>>
+  ) => {
+    const queryClient = useQueryClient();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
+
+    return useMutation({
+      mutationKey: [REACT_QUERY_KEYS.deleteThoughtsByIds],
+      mutationFn: deleteThoughtsByIds,
+      onSuccess: async () => {
+        await mutateAsyncGraphData(true);
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails],
+        });
+      },
+      ...options,
+    });
+  };
+
+  const useUpdateNoteAndThoughtsMutation = (
+    options?: Partial<InferMutationOptions<typeof updateNoteAndThoughts>>
+  ) => {
+    const queryClient = useQueryClient();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
+
+    return useMutation({
+      mutationKey: [REACT_QUERY_KEYS.updateNoteAndThoughts], // unique mutation key
+      mutationFn: updateNoteAndThoughts,
+      onSuccess: async () => {
+        // Runs embeddings service before fetching the rest of the data
+        // await runEmbeddingsService();
+        await mutateAsyncGraphData(true);
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails],
+        });
+      },
+      ...options,
+    });
+  };
+
   const useFetchAllThoughtsWithEmbeddingsQuery = (
     options?: ReactQueryOptions
   ) =>
@@ -133,6 +205,38 @@ export const useNotesAndThoughtsController = () => {
       ...options,
     });
 
+  const useDeleteNoteByIdMutation = (
+    options?: Partial<InferMutationOptions<typeof deleteNoteById>>
+  ) => {
+    const queryClient = useQueryClient();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
+    return useMutation({
+      mutationKey: [REACT_QUERY_KEYS.deleteNoteById],
+      mutationFn: deleteNoteById,
+      onSuccess: async () => {
+        await mutateAsyncGraphData(true);
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.seedDatabase],
+        });
+      },
+      ...options,
+    });
+  };
+
   return {
     useGenerateNoteMutation,
     useInsertNoteAndThoughtsMutation,
@@ -140,5 +244,8 @@ export const useNotesAndThoughtsController = () => {
     useFetchNotesAndThoughtsQuery,
     useFetchNoteDetails,
     useSeedDatabaseMutation,
+    useUpdateNoteAndThoughtsMutation,
+    useDeleteThoughtsByIdsMutation,
+    useDeleteNoteByIdMutation,
   };
 };

@@ -18,6 +18,10 @@ export type InferMutationOptions<F extends (...args: any) => any> =
   >;
 
 export const REACT_QUERY_KEYS = {
+  deleteNoteById: "delete_note_by_id",
+  deleteThoughtsByIds: "delete_thoughts_by_ids",
+  updateEmbeddings: "update_embeddings",
+  updateNoteAndThoughts: "update_note_and_thoughts",
   fetchAllTopics: "fetch_all_topics",
   insertNewTopic: "insert_new_topic",
   seedDatabase: "seed_database",

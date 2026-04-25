@@ -17,7 +17,8 @@ export const MODALS_CONTENT: Record<
   | "INITIALIZE_MODEL_ERROR"
   | "DELETE_MODEL_ERROR"
   | "DELETE_MODEL_ACTION"
-  | "AI_SETUP_REQUIRED",
+  | "AI_SETUP_REQUIRED"
+  | "DELETE_NOTE_CONFIRMATION",
   ModalPreset
 > = {
   DELETE_DATABASE_FILE: {
@@ -51,6 +52,13 @@ export const MODALS_CONTENT: Record<
       "You will need to download the models to use the local AI engines.",
     confirmButton: { text: "Go to Settings" },
     cancelButton: { text: "Cancel" },
+  },
+  DELETE_NOTE_CONFIRMATION: {
+    title: "Are you sure you want to delete this note?",
+    description:
+      "This will permanently delete this note and all associated thoughts.",
+    confirmButton: { text: "Delete", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
   },
 };
 

@@ -36,6 +36,12 @@ import { validateIfDBExists } from "./src/queries/dbStatus/validateIfDBExists";
 import { insertEmbeddingsQuery } from "./src/queries/embeddings/insertEmbeddings";
 import { seedDatabaseQuery } from "./src/queries/bulk/seedDatabase";
 import { getAllTopicsQuery } from "./src/queries/topics/getAllTopics";
+import { updateNoteQuery } from "./src/queries/notes/updateNote";
+import { updateThoughtsQuery } from "./src/queries/thoughts/updateThouhts";
+import { updateEmbeddingsQuery } from "./src/queries/embeddings/updateEmbeddings";
+import { deleteThoughByIdQuery } from "./src/queries/thoughts/deleteThoughById";
+import { deleteThoughtsByIdsQuery } from "./src/queries/thoughts/deleteThoughtsByIds";
+import { deleteNoteByIdQuery } from "./src/queries/notes/deleteNoteById";
 
 export {
   getMigratingStatusQuery,
@@ -73,4 +79,10 @@ export {
   seedDatabaseQuery,
   getAllTopicsQuery,
   insertNewTopicQuery,
+  updateNoteQuery,
+  updateThoughtsQuery,
+  updateEmbeddingsQuery,
+  deleteThoughByIdQuery,
+  deleteThoughtsByIdsQuery,
+  deleteNoteByIdQuery,
 };

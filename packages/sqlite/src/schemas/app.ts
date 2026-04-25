@@ -23,10 +23,12 @@ export const ThoughtTable = sqliteTable(
   },
   (thought) => [
     foreignKey({
+      name: "thought_note_id_note_id_fk",
       columns: [thought.noteId],
       foreignColumns: [NoteTable.id],
-    }),
+    }).onDelete("cascade"),
     foreignKey({
+      name: "thought_category_id_category_id_fk",
       columns: [thought.categoryId],
       foreignColumns: [CategoryTable.id],
     }),
@@ -65,9 +67,10 @@ export const EmbeddingTable = sqliteTable(
   },
   (embedding) => [
     foreignKey({
+      name: "embedding_thought_id_thought_id_fk",
       columns: [embedding.thoughtId],
       foreignColumns: [ThoughtTable.id],
-    }),
+    }).onDelete("cascade"),
   ]
 );
 

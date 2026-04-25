@@ -1,14 +1,14 @@
 import React from "react";
-import { Recorder } from "@/features/noteCreation/features/audio/recorder/components/audioRecorder";
-import { Player } from "@/features/noteCreation/features/audio/player/components/audioPlayer";
-import { DeleteURI } from "@/features/noteCreation/features/audio/deleteURI/index";
-import { useExpoAudioPlayer } from "@/features/noteCreation/features/audio/player/hooks/useExpoAudioPlayer";
-import { useExpoAudioRecorder } from "@/features/noteCreation/features/audio/recorder/hooks/useExpoAudioRecorder";
+import { Recorder } from "@/features/notes/noteCreation/features/audio/recorder/components/audioRecorder";
+import { Player } from "@/features/notes/noteCreation/features/audio/player/components/audioPlayer";
+import { DeleteURI } from "@/features/notes/noteCreation/features/audio/deleteURI/index";
+import { useExpoAudioPlayer } from "@/features/notes/noteCreation/features/audio/player/hooks/useExpoAudioPlayer";
+import { useExpoAudioRecorder } from "@/features/notes/noteCreation/features/audio/recorder/hooks/useExpoAudioRecorder";
 import { View } from "react-native";
 import { AudioProgressBar } from "@/components/ui/audioProgessBar";
-import { TimeLine } from "@/features/noteCreation/features/audio/timeLine/components/timeLine";
-import { Timer } from "@/features/noteCreation/features/audio/timer/components/timer";
-import { RecordingLabel } from "@/features/noteCreation/features/audio/timer/components/isRecordingLabel";
+import { TimeLine } from "@/features/notes/noteCreation/features/audio/timeLine/components/timeLine";
+import { Timer } from "@/features/notes/noteCreation/features/audio/timer/components/timer";
+import { RecordingLabel } from "@/features/notes/noteCreation/features/audio/timer/components/isRecordingLabel";
 import { normalizePath } from "@/utils/path";
 import { useWhisper } from "@/features/whisper/hooks/useWhisperModels";
 

@@ -15,7 +15,7 @@ import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import { GenerateNotePreview } from "@/features/noteCreation/features/notePreview/generateNotePreview";
+import { GenerateNotePreview } from "@/features/notes/notePreview/generateNotePreview";
 import { CategoryKey } from "@repo/sqlite";
 import { z } from "zod";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -32,6 +32,7 @@ export const GenerateNote = ({
   onSuccess?: () => void;
 }) => {
   const { notesAndThoughts, categories } = useControllers();
+
   const { aiProvider } = useAISettingsPreferences();
   const { openModal, setModalContent, closeModal } = useModal();
 
@@ -82,7 +83,6 @@ export const GenerateNote = ({
   };
 
   const handleGenerateNote = async () => {
-    // Extra safety guard
     if (isDisabled) return;
 
     openModal({

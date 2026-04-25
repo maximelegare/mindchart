@@ -1,11 +1,11 @@
 import { Gutter } from "@/components/ui/gutter";
 import React from "react";
-import { GenerateNote } from "@/features/noteCreation/features/generateNote/components/index";
+import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
 import { View } from "react-native";
-import { AudioFeature } from "@/features/noteCreation/features/audio/views/index";
+import { AudioFeature } from "@/features/notes/noteCreation/features/audio/views/index";
 import ModeToggle from "@/components/ui/modeToggle";
 import ViewSwitcher from "@/components/ui/viewSwitcher";
-import { TextInputFeature } from "@/features/noteCreation/features/textInput/textInput";
+import { TextInputFeature } from "@/features/notes/noteCreation/features/textInput/textInput";
 import { useFileSystem } from "@/hooks/useFileSystem";
 
 export function NoteCreationFeature() {

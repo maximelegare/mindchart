@@ -14,15 +14,19 @@ type HeaderContentProps = {
   title: string;
   hideBackButton?: boolean;
   buttons?: React.ReactNode;
-  moreOptionsMenuLinks?: MoreOptionsMenuProps["links"];
+  moreOptionsMenu?: {
+    links: MoreOptionsMenuProps["links"];
+    state: { open: boolean; setOpen: (open: boolean) => void };
+  };
 };
 
 export const HeaderContent = ({
   title,
   hideBackButton = false,
   buttons,
-  moreOptionsMenuLinks,
+  moreOptionsMenu,
 }: HeaderContentProps) => {
+  const { links, state } = moreOptionsMenu ?? {};
   const { back } = useRouter();
 
   return (
@@ -42,7 +46,7 @@ export const HeaderContent = ({
       </View>
       <View className="flex-row justify-end">
         {buttons}
-        <MoreOptionsMenu links={moreOptionsMenuLinks} />
+        {links && state && <MoreOptionsMenu links={links} state={state} />}
       </View>
     </View>
   );
