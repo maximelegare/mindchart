@@ -71,12 +71,12 @@ export const GenerateNote = ({
     newTopic: Topic | null
   ) => {
     const embeddings = await generateLocalEmbeddingsMutateAsync({ thoughts });
-    await insertEmbeddingsMutateAsync({ data: embeddings });
 
     if (newTopic) {
       await insertNewTopicMutateAsync({ data: newTopic });
     }
     await insertNoteAndThoughtsMutateAsync({ note, thoughts });
+    await insertEmbeddingsMutateAsync({ data: embeddings });
     onSuccess?.();
     closeModal();
   };
