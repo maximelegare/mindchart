@@ -21,9 +21,12 @@ export const useLlamaChat = () => {
       const { text } = await context.chatContext.completion(
         {
           prompt: `User: ${prompt}\nAssistant:`,
-          n_predict: 500,
+          n_predict: 120, // 🔥 biggest speed win
+          temperature: 0.2,
+          // Fewer threads leaves headroom for Android (e.g. recording FGS) after long runs
+          n_threads: 4,
+          top_p: 0.9,
           stop: ["User:", "</s>", "```", "}"],
-          temperature: 0.1,
         },
         (data) => {
           if (onToken) onToken(data.token);
