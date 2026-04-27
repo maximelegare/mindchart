@@ -41,13 +41,14 @@ export const CHAT_MODELS = {
   //   mmproj: 'mmproj-SmolVLM2-2.2B-Instruct-Q8_0.gguf',
   //   size: '1.8GB (model) + 565MB (mmproj)',
   // },
-  INTERNVL3_2B: {
-    name: "InternVL3 2B (Q8_0)",
-    repo: "ggml-org/InternVL3-2B-Instruct-GGUF",
-    filename: "InternVL3-2B-Instruct-Q8_0.gguf",
-    mmproj: "mmproj-InternVL3-2B-Instruct-Q8_0.gguf",
-    size: "1.89GB (model) + 337MB (mmproj)",
-  },
+  // INTERNVL3_2B: {
+  //   name: "InternVL3 2B (Q8_0)",
+  //   repo: "ggml-org/InternVL3-2B-Instruct-GGUF",
+  //   filename: "InternVL3-2B-Instruct-Q8_0.gguf",
+  //   mmproj: "mmproj-InternVL3-2B-Instruct-Q8_0.gguf",
+  //   size: "1.89GB (model) + 337MB (mmproj)",
+  // },
+
   // QWEN2_5_VL_3B: {
   //   name: 'Qwen2.5 VL 3B (Q4_K_M)',
   //   repo: 'ggml-org/Qwen2.5-VL-3B-Instruct-GGUF',
@@ -55,12 +56,19 @@ export const CHAT_MODELS = {
   //   mmproj: 'mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf',
   //   size: '1.93GB (model) + 845MB (mmproj)',
   // },
-  // QWEN2_5_OMNI_3B: {
-  //   name: 'Qwen2.5 Omni 3B (Q4_K_M)',
-  //   repo: 'ggml-org/Qwen2.5-Omni-3B-GGUF',
-  //   filename: 'Qwen2.5-Omni-3B-Q4_K_M.gguf',
-  //   mmproj: 'mmproj-Qwen2.5-Omni-3B-Q8_0.gguf',
-  //   size: '2.1GB (model) + 1.54GB (mmproj)',
+  QWEN2_5_OMNI_3B: {
+    name: "Qwen2.5 Omni 3B (Q4_K_M)",
+    repo: "ggml-org/Qwen2.5-Omni-3B-GGUF",
+    filename: "Qwen2.5-Omni-3B-Q4_K_M.gguf",
+    mmproj: "mmproj-Qwen2.5-Omni-3B-Q8_0.gguf",
+    size: "2.1GB (model) + 1.54GB (mmproj)",
+  },
+  // PHI_3_MINI_4K: {
+  // name:"Phi3 Mini 4K (Q4_K_M)",
+  // repo:"microsoft/Phi-3-mini-4k-instruct-gguf",
+  // filename:"Phi-3-mini-4k-instruct-q4.gguf",
+  // mmproj:undefined,
+  // size:"2.2GB (model)"
   // },
   // GEMMA_3_4B_QAT: {
   //   name: 'Gemma 3 4B IT QAT (Q3_K_M)',

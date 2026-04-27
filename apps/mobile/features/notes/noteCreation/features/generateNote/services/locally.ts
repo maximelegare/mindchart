@@ -46,6 +46,8 @@ export const useGenerateLocalNote = () => {
           throw new Error("Response is null");
         }
 
+        console.log("response", response);
+
         const json = stringToJson(response);
         if (!json) {
           throw new Error("Response is not valid JSON");

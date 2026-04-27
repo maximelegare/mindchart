@@ -23,7 +23,7 @@ export const useAISettingsPreferences = create<UserAISettingsPreferences>()(
   persist(
     (set) => ({
       whisper: "tiny",
-      llamaChat: "INTERNVL3_2B",
+      llamaChat: "QWEN2_5_OMNI_3B",
       llamaEmbeddings: "NOMIC_EMBED_TEXT_V1_5",
       aiProvider: "local",
       autoConnect: true,
