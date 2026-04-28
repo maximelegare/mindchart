@@ -14,6 +14,7 @@ export const LlamaChatSettings = () => {
   const {
     currentModelId,
     isDownloading,
+    activeDownloadModelId,
     isInitializingChat,
     downloadProgress,
     downloadedModels,
@@ -102,7 +103,7 @@ export const LlamaChatSettings = () => {
             const isActive = currentModelId === key;
             const progress = downloadProgress[key] || 0;
             const downloadingThis =
-              isDownloading && progress > 0 && progress < 100;
+              isDownloading && activeDownloadModelId === key;
 
             return (
               <Card
@@ -137,7 +138,11 @@ export const LlamaChatSettings = () => {
                     disabled={isDownloading || isInitializingChat || isActive}
                   >
                     {downloadingThis ? (
-                      <Typography>{progress.toFixed(0)}%</Typography>
+                      <Typography>
+                        {progress > 0 && progress < 100
+                          ? `${progress.toFixed(0)}%`
+                          : "Downloading..."}
+                      </Typography>
                     ) : (
                       <Typography>
                         {isDownloaded

@@ -20,6 +20,7 @@ interface LlamaState {
   currentEmbeddingModelId: string | null;
 
   isDownloading: boolean;
+  activeDownloadModelId: string | null;
   isInitializingChat: boolean;
   isInitializingEmbedding: boolean;
 
@@ -56,6 +57,7 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
     currentEmbeddingModelId: null,
 
     isDownloading: false,
+    activeDownloadModelId: null,
     isInitializingChat: false,
     isInitializingEmbedding: false,
 
@@ -78,11 +80,11 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
       const mainExists = await RNBlobUtil.fs.exists(
         `${modelDir}/${model.filename}`
       );
-      const mmprojExists = model.mmproj
-        ? await RNBlobUtil.fs.exists(`${modelDir}/${model.mmproj}`)
-        : true;
 
-      results[key] = mainExists && mmprojExists;
+      // Chat/embedding initialization in this provider uses only the main GGUF path.
+      // Treat model availability based on main file presence to avoid false "Download"
+      // states when optional multimodal projector files are absent.
+      results[key] = mainExists;
     }
 
     setState((prev) => ({ ...prev, downloadedModels: results }));
@@ -135,7 +137,11 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!config) return;
 
       try {
-        setState((prev) => ({ ...prev, isDownloading: true }));
+        setState((prev) => ({
+          ...prev,
+          isDownloading: true,
+          activeDownloadModelId: modelKey,
+        }));
 
         const modelPath = await downloader.downloadModel(
           config.repo,
@@ -156,6 +162,7 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
         setState((prev) => ({
           ...prev,
           isDownloading: false,
+          activeDownloadModelId: null,
           isInitializingEmbedding: true,
         }));
 
@@ -182,6 +189,7 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
           ...prev,
           isInitializingEmbedding: false,
           isDownloading: false,
+          activeDownloadModelId: null,
         }));
         throw error;
       }
@@ -199,7 +207,11 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!config) return;
 
       try {
-        setState((prev) => ({ ...prev, isDownloading: true }));
+        setState((prev) => ({
+          ...prev,
+          isDownloading: true,
+          activeDownloadModelId: modelKey,
+        }));
 
         const modelPath = await downloader.downloadModel(
           config.repo,
@@ -215,15 +227,12 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         );
 
-        if (config.mmproj) {
-          await downloader.downloadModel(config.repo, config.mmproj);
-        }
-
         await checkLocalModels();
 
         setState((prev) => ({
           ...prev,
           isDownloading: false,
+          activeDownloadModelId: null,
           isInitializingChat: true,
         }));
 
@@ -249,6 +258,7 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
           ...prev,
           isInitializingChat: false,
           isDownloading: false,
+          activeDownloadModelId: null,
         }));
         throw error;
       }
