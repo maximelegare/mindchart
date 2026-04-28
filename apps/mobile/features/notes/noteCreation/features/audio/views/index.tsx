@@ -20,8 +20,13 @@ export function AudioFeature({
   fileURI: string | null;
 }) {
   const { currentModelId } = useWhisper();
-  const { startRecording, stopRecording, isRecording, metering } =
-    useExpoAudioRecorder();
+  const {
+    startRecording,
+    stopRecording,
+    isRecording,
+    isRecorderBusy,
+    metering,
+  } = useExpoAudioRecorder();
 
   const handleFileURIChange = (fileURI: string | null) => {
     onFileURIChange(fileURI);
@@ -63,12 +68,12 @@ export function AudioFeature({
           disabled={!currentModelId}
           fileURI={fileURI}
           onStartRecording={startRecording}
-          onStopRecording={() =>
-            stopRecording().then((uri) =>
-              handleFileURIChange(normalizePath(uri))
-            )
-          }
+          onStopRecording={async () => {
+            const uri = await stopRecording();
+            handleFileURIChange(normalizePath(uri));
+          }}
           isRecording={isRecording}
+          isTransitioning={isRecorderBusy}
         />
         <DeleteURI fileURI={fileURI} onDelete={() => onFileURIChange(null)} />
       </View>

@@ -23,7 +23,8 @@ export const useLlamaChat = () => {
           prompt: `User: ${prompt}\nAssistant:`,
           n_predict: 120, // 🔥 biggest speed win
           temperature: 0.2,
-          n_threads: 6, // slightly higher = more natural
+          // Fewer threads leaves headroom for Android (e.g. recording FGS) after long runs
+          n_threads: 4,
           top_p: 0.9,
           stop: ["User:", "</s>", "```", "}"],
         },
