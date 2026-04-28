@@ -18,7 +18,7 @@ export const LlamaEmbeddingsSettings = () => {
     downloadProgress,
     downloadedModels,
     initializeEmbeddingModel,
-    releaseAll,
+    releaseEmbedding,
     deleteModel,
   } = useLlamaEmbeddings();
 
@@ -90,7 +90,7 @@ export const LlamaEmbeddingsSettings = () => {
             {isInitializingEmbedding ? (
               <ActivityIndicator color={hsl("primary", "light")} />
             ) : currentModelId ? (
-              <Button onPress={releaseAll} variant="destructive">
+              <Button onPress={releaseEmbedding} variant="destructive">
                 <Typography>Unload from RAM</Typography>
               </Button>
             ) : null}

@@ -116,6 +116,7 @@ export const GenerateNote = ({
         });
       }
 
+      console.log("response", response);
       const parsedResponse = GenerateNoteResponseSchema.parse(response);
       const parsedCategories = z.array(CategorySchema).parse(categoriesData);
 

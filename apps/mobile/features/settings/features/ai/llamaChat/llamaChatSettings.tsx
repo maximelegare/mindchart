@@ -18,7 +18,7 @@ export const LlamaChatSettings = () => {
     downloadProgress,
     downloadedModels,
     initializeChatModel,
-    releaseAll,
+    releaseChat,
     deleteModel,
   } = useLlamaChat();
 
@@ -84,7 +84,7 @@ export const LlamaChatSettings = () => {
           {isInitializingChat ? (
             <ActivityIndicator color={hsl("primary", "light")} />
           ) : currentModelId ? (
-            <Button onPress={releaseAll} variant="destructive">
+            <Button onPress={releaseChat} variant="destructive">
               <Typography>Unload from RAM</Typography>
             </Button>
           ) : null}
