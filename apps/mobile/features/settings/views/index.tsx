@@ -28,7 +28,7 @@ export const SettingsFeature = () => {
         {/* <ThemeSettingItem /> */}
         <ListItem
           className="bg-background"
-          itemLeft={() => <Icon name="cpu" color="foreground" />} // props adds size and color attributes
+          itemLeft={() => <Icon name="brain" color="foreground" />} // props adds size and color attributes
           label="Ai Settings"
           onPress={() => push("/settings/ai")}
         />
