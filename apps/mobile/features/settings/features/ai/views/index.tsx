@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View } from "react-native";
 import { WhisperSettings } from "../whisper/whisperSettings";
 import { AiProviderSettings } from "../aiProviderSettings/aiProviderSettings";
@@ -10,22 +10,18 @@ import { AutoConnectSettings } from "../autoConnect/components/autoConnect";
 import { useWhisper } from "@/features/whisper/hooks/useWhisperModels";
 import { useLlamaChat } from "@/features/llama/hooks/useLlamaChat";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
-import { useAISettingsPreferences } from "@/features/settings/context/ai";
 
 export const AISettingsFeature = () => {
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
 
-  const handleExpandableCardPress = (id: string) => {
-    if (expandedCardId === id) setExpandedCardId(null);
-    else setExpandedCardId(id);
-  };
+  const handleExpandableCardPress = useCallback((id: string) => {
+    setExpandedCardId((current) => (current === id ? null : id));
+  }, []);
 
-  const { whisper, llamaChat, llamaEmbeddings } = useAISettingsPreferences();
+  const { isReady: whisperReady } = useWhisper();
+  const { isReady: llamaChatReady } = useLlamaChat();
 
-  const { modelFiles } = useWhisper();
-  const { downloadedModels: llamaChatModelFiles } = useLlamaChat();
-
-  const { downloadedModels: llamaEmbeddingsModelFiles } = useLlamaEmbeddings();
+  const { isReady: llamaEmbeddingsReady } = useLlamaEmbeddings();
 
   return (
     <View className="flex-col gap-4">
@@ -35,7 +31,11 @@ export const AISettingsFeature = () => {
         id="whisper"
         title="Whisper Engine"
         expanded={expandedCardId === "whisper"}
-        warning={!modelFiles[whisper] ? "Setup Required" : null}
+        label={
+          !whisperReady
+            ? { text: "Setup Required", color: "destructive-foreground" }
+            : { text: "Loaded", color: "primary" }
+        }
         onPress={handleExpandableCardPress}
       >
         <WhisperSettings />
@@ -44,7 +44,11 @@ export const AISettingsFeature = () => {
       <ExpandableSetting
         id="llamaChat"
         title="Llama Chat Engine"
-        warning={!llamaChatModelFiles[llamaChat] ? "Setup Required" : null}
+        label={
+          !llamaChatReady
+            ? { text: "Setup Required", color: "destructive-foreground" }
+            : { text: "Loaded", color: "primary" }
+        }
         expanded={expandedCardId === "llamaChat"}
         onPress={handleExpandableCardPress}
       >
@@ -54,8 +58,10 @@ export const AISettingsFeature = () => {
       <ExpandableSetting
         id="llamaEmbeddings"
         title="Embeddings Engine"
-        warning={
-          !llamaEmbeddingsModelFiles[llamaEmbeddings] ? "Setup Required" : null
+        label={
+          !llamaEmbeddingsReady
+            ? { text: "Setup Required", color: "destructive-foreground" }
+            : { text: "Loaded", color: "primary" }
         }
         expanded={expandedCardId === "llamaEmbeddings"}
         onPress={handleExpandableCardPress}
