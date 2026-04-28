@@ -25,7 +25,7 @@ export const AiProviderSettings = () => {
   };
 
   return (
-    <Card>
+    <Card className="py-2">
       <Gutter size="md" className="py-3">
         <Typography variant="h3" padding>
           AI Provider
