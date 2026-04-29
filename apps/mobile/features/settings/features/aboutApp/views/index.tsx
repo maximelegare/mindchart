@@ -2,6 +2,7 @@ import { Typography } from "@/components/ui/typography";
 import { View } from "react-native";
 import { AppVersionFeature } from "../features/appVersion";
 import List, { ListHeader } from "@/components/ui/list";
+import { SourceCodeFeature } from "../features/sourceCode";
 
 export const AboutAppFeature = () => {
   return (
@@ -11,6 +12,7 @@ export const AboutAppFeature = () => {
           <Typography>General</Typography>
         </ListHeader>
         <AppVersionFeature />
+        <SourceCodeFeature />
       </List>
     </View>
   );
