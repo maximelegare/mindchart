@@ -7,7 +7,7 @@ export const useGenerateNoteService = () => {
   const generateNoteService = async (props: GenerateNoteService) => {
     const { data, options } = props;
 
-    if (options?.providers?.llm === "local") {
+    if (options?.providers?.llamaChat === "local") {
       return generateLocalNote(data);
     } else {
       return generateLocalNote(data);

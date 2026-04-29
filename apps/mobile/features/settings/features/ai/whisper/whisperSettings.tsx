@@ -54,7 +54,7 @@ export const WhisperSettings = () => {
 
   return (
     <>
-      <Gutter size="md" className="py-3">
+      <Gutter size="none" className="py-3 mt-4">
         <View className="pb-4">
           <Typography padding>
             AI Engine responsible for the local transcription of speech. Use

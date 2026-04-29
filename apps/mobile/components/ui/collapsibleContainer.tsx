@@ -9,9 +9,11 @@ import Animated, {
 export const CollapsibleContainer = ({
   children,
   expanded,
+  className,
 }: {
   children: React.ReactNode;
   expanded: boolean;
+  className?: string;
 }) => {
   const height = useSharedValue(0);
   const animatedHeight = useAnimatedStyle(() => ({
@@ -27,7 +29,10 @@ export const CollapsibleContainer = ({
   };
 
   return (
-    <Animated.View style={[animatedHeight, { overflow: "hidden" }]}>
+    <Animated.View
+      style={[animatedHeight, { overflow: "hidden" }]}
+      className={className}
+    >
       <View style={{ position: "absolute", width: "100%" }} onLayout={onLayout}>
         {children}
       </View>
