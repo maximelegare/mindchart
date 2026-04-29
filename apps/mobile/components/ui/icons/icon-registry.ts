@@ -8,6 +8,7 @@ export type IconName =
   | "calendar"
   | "check"
   | "chevron-down"
+  | "chevron-left"
   | "chevron-right"
   | "chevron-up"
   | "cpu"
@@ -66,6 +67,10 @@ export const ICON_METADATA: Record<
   "chevron-down": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9l6 6l6-6"></path>`,
+  },
+  "chevron-left": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 18l-6-6l6-6"></path>`,
   },
   "chevron-right": {
     viewBox: "0 0 24 24",
