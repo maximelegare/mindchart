@@ -6,13 +6,13 @@ import type { ElementType } from "react";
 import {
   Pressable,
   type PressableProps,
-  Text,
   View,
   type ViewProps,
 } from "react-native";
 import { Muted } from "@/components/ui/typography";
 import { ChevronRight } from "@/components/Icons";
 import { cn } from "@/lib/cn";
+import { Typography } from "@/components/ui/typography";
 
 const listItemTextVariants = cva(
   "text-base font-normal", // base styles
@@ -100,7 +100,7 @@ const ListItem: React.FC<ListItemProps> = ({
   const body = (
     <Component
       className={cn(
-        "flex-row items-center  border-b-[1px] justify-between w-full px-3 py-2 border-border bg-card",
+        "flex-row items-center  border-b-[1px] justify-between w-full px-3 py-3 border-border bg-card",
         borderTop && "border-t-[1px] border-border",
         pressable ? "web:hover:opacity-90 active:opacity-90" : "",
         listItemTextVariants({ variant }),
@@ -118,7 +118,12 @@ const ListItem: React.FC<ListItemProps> = ({
         </View>
       )}
       <View className="flex-1">
-        <Text className={cn(listItemTextVariants({ variant }))}>{label}</Text>
+        <Typography
+          variant="h4"
+          className={cn(listItemTextVariants({ variant }))}
+        >
+          {label}
+        </Typography>
         {description && <Muted>{description}</Muted>}
       </View>
       <ItemRight />

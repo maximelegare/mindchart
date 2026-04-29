@@ -8,7 +8,7 @@ export const AppVersionFeature = () => {
   return (
     <ListItem
       className="bg-background"
-      itemLeft={() => <></>}
+      itemLeft={undefined}
       label="App Version"
       itemRight={() => <Typography variant="h4">{version}</Typography>}
       onPress={() => {}}

@@ -1,7 +1,6 @@
 import * as React from "react";
-import List, { ListHeader } from "@/components/ui/list";
+import List from "@/components/ui/list";
 import ListItem from "@/components/ui/list-item";
-import { Muted } from "@/components/ui/typography";
 // import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { useRouter } from "expo-router";
@@ -13,10 +12,6 @@ export const SettingsFeature = () => {
   return (
     <>
       <List>
-        <ListHeader>
-          <Muted>App</Muted>
-        </ListHeader>
-        {/* <ThemeSettingItem /> */}
         <ListItem
           className="bg-background"
           itemLeft={() => <Icon name="cpu" color="foreground" />} // props adds size and color attributes
@@ -41,9 +36,6 @@ export const SettingsFeature = () => {
           label="About App"
           onPress={() => push("/settings/aboutApp")}
         />
-        {/* <ListHeader className="pt-8">
-          <Muted>GENERAL</Muted>
-        </ListHeader> */}
       </List>
       <SpaceFiller
         sizes={{

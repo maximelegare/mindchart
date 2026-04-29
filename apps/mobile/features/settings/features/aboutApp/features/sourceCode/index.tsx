@@ -5,7 +5,7 @@ export const SourceCodeFeature = () => {
   return (
     <ListItem
       className="bg-background"
-      itemLeft={() => <></>}
+      itemLeft={undefined}
       label="Source Code"
       onPress={() =>
         openExternalURL("https://github.com/maximelegare/mindchart")
