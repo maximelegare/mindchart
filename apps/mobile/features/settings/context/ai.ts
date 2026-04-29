@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { AIProvider } from "../features/ai/types/ai";
+import { AIProviders } from "../features/ai/types/ai";
 import { CHAT_MODELS } from "@/features/llama/data/models/chat/chatModels";
 import { EMBEDDINGS_MODELS } from "@/features/llama/data/models/embeddings/embeddingsModels";
 
@@ -25,12 +25,16 @@ export type UserAISettingsPreferences = {
   whisper: string;
   llamaChat: keyof typeof CHAT_MODELS;
   llamaEmbeddings: keyof typeof EMBEDDINGS_MODELS;
-  aiProvider: AIProvider;
+  aiProviders: AIProviders;
   autoConnect: boolean;
   setWhisperModel: (modelId: string) => void;
   setLlamaChatModel: (modelId: keyof typeof CHAT_MODELS) => void;
   setLlamaEmbeddingsModel: (modelId: keyof typeof EMBEDDINGS_MODELS) => void;
-  setAIProvider: (provider: AIProvider) => void;
+  setAIProviders: (
+    providers:
+      | Partial<AIProviders>
+      | ((previousProviders: AIProviders) => AIProviders)
+  ) => void;
   setAutoConnect: (autoConnect: boolean) => void;
 };
 
@@ -40,14 +44,24 @@ export const useAISettingsPreferences = create<UserAISettingsPreferences>()(
       whisper: "tiny",
       llamaChat: DEFAULT_LLAMA_CHAT_MODEL,
       llamaEmbeddings: DEFAULT_LLAMA_EMBEDDINGS_MODEL,
-      aiProvider: "local",
+      aiProviders: {
+        whisper: "local",
+        llamaChat: "local",
+        embeddings: "local",
+      },
       autoConnect: true,
       setWhisperModel: (modelId: string) => set({ whisper: modelId }),
       setLlamaChatModel: (modelId: keyof typeof CHAT_MODELS) =>
         set({ llamaChat: ensureValidLlamaChatModel(modelId) }),
       setLlamaEmbeddingsModel: (modelId: keyof typeof EMBEDDINGS_MODELS) =>
         set({ llamaEmbeddings: ensureValidLlamaEmbeddingsModel(modelId) }),
-      setAIProvider: (provider: AIProvider) => set({ aiProvider: provider }),
+      setAIProviders: (providers) =>
+        set((state) => ({
+          aiProviders:
+            typeof providers === "function"
+              ? providers(state.aiProviders)
+              : { ...state.aiProviders, ...providers },
+        })),
       setAutoConnect: (autoConnect: boolean) => set({ autoConnect }),
     }),
     {

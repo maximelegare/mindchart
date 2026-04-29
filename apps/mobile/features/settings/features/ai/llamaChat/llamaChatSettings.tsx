@@ -55,7 +55,7 @@ export const LlamaChatSettings = () => {
 
   return (
     // <Card>
-    <Gutter size="md" className="py-3">
+    <Gutter size="none" className="py-3 mt-4">
       {/* Header Section */}
 
       <Typography padding>

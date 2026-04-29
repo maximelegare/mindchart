@@ -57,7 +57,7 @@ export const LlamaEmbeddingsSettings = () => {
 
   return (
     <>
-      <Gutter size="md" className="py-3">
+      <Gutter size="none" className="py-3 mt-4">
         {/* Header Section */}
         <View className="pb-4">
           <Typography padding>

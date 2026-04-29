@@ -3,12 +3,16 @@ import React from "react";
 import { View } from "react-native";
 import { cn } from "@/lib/cn";
 
-type GutterSize = "sm" | "md";
+type GutterSize = "sm" | "md" | "none";
 
 const GUTTER_PRESETS: Record<GutterSize, ViewStyle> = {
   sm: {
     marginLeft: 4,
     marginRight: 4,
+  },
+  none: {
+    marginLeft: 0,
+    marginRight: 0,
   },
   md: {
     marginLeft: 8,
