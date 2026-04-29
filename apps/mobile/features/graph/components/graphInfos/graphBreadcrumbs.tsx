@@ -42,12 +42,12 @@ export const GraphBreadcrumbs = ({
   };
 
   return (
-    <View className="mb-3 m-2 gap-1 p-2 rounded-md bg-muted w-fit">
+    <View className="mb-3 m-2 gap-1 p-2 rounded-md bg-muted w-fit border-input border">
       <View className="flex-row flex-wrap items-center gap-1 h-6">
         {breadcrumbs.map((breadcrumb, index) => (
           <React.Fragment key={breadcrumb.id}>
             {index > 0 && (
-              <Typography variant="h3" className="ml-1">
+              <Typography variant="p" className="ml-1 opacity-50">
                 /
               </Typography>
             )}
