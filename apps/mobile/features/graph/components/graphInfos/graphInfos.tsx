@@ -1,9 +1,10 @@
 import React from "react";
-import { View, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import { Card } from "@/components/ui/card";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { ThoughtsList } from "./thoughtsList";
+import { GraphBreadcrumbs } from "./graphBreadcrumbs";
 
 interface Props {
   activeNode: NodeDatum | null;
@@ -20,16 +21,7 @@ const GraphInfos = ({ activeNode, parentNode }: Props) => {
   return (
     <>
       <Card className="p-4" style={{ flex: 1 }}>
-        <View className="p-2 mb-4">
-          <Typography variant="h3" className="font-bold">
-            {activeNode?.name || "Graph Overview"}
-          </Typography>
-          {parentNode && (
-            <Typography variant="h4" className="text-sm">
-              Cluster: {parentNode.name}
-            </Typography>
-          )}
-        </View>
+        <GraphBreadcrumbs activeNode={activeNode} parentNode={parentNode} />
 
         <ScrollView showsVerticalScrollIndicator={false}>
           {listData.length > 0 ? (

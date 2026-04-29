@@ -21,6 +21,7 @@ const buttonVariants = cva(
         link: "web:underline-offset-4 web:hover:underline web:focus:underline ",
       },
       size: {
+        xs: "p1",
         default: "h-10 px-4 py-2 native:h-12 native:px-5 native:py-3",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8 native:h-14",
@@ -59,6 +60,7 @@ const buttonTextVariants = cva(
         sm: "",
         lg: "native:text-lg",
         icon: "",
+        xs: "",
       },
       cornerRadius: {
         sm: "",
