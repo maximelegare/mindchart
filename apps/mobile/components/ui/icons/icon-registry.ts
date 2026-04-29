@@ -16,6 +16,7 @@ export type IconName =
   | "ellipsis-vertical"
   | "graph"
   | "import"
+  | "info"
   | "keyboard"
   | "layers"
   | "mic"
@@ -97,6 +98,10 @@ export const ICON_METADATA: Record<
   import: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 3v12m-4-4l4 4l4-4"></path><path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"></path></g>`,
+  },
+  info: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4m0-4h.01"></path></g>`,
   },
   keyboard: {
     viewBox: "0 0 24 24",
