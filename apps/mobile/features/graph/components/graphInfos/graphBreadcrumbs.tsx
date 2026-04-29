@@ -3,6 +3,7 @@ import { NodeDatum } from "../../types/types";
 import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui";
+import { useRouter } from "expo-router";
 
 type GraphBreadcrumbsProps = {
   activeNode: NodeDatum | null;
@@ -30,6 +31,16 @@ export const GraphBreadcrumbs = ({
     return items;
   }, [activeNode, parentNode]);
 
+  const { setParams } = useRouter();
+
+  const handleZoom = (breadcrumb: { id: string; name: string }) => {
+    const targetId = breadcrumb.id;
+    setParams({
+      id: targetId,
+      _t: Date.now().toString(),
+    });
+  };
+
   return (
     <View className="mb-3 m-2 gap-1 p-2 rounded-md bg-muted w-fit">
       <View className="flex-row flex-wrap items-center gap-1 h-6">
@@ -40,7 +51,11 @@ export const GraphBreadcrumbs = ({
                 /
               </Typography>
             )}
-            <Button variant="ghost" size="xs">
+            <Button
+              variant="ghost"
+              size="xs"
+              onPress={() => handleZoom(breadcrumb)}
+            >
               <Typography variant="h3" className="ml-1">
                 {breadcrumb.name.charAt(0).toUpperCase() +
                   breadcrumb.name.slice(1)}
