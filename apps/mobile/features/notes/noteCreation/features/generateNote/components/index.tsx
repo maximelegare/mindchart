@@ -33,7 +33,7 @@ export const GenerateNote = ({
 }) => {
   const { notesAndThoughts, categories } = useControllers();
 
-  const { aiProvider } = useAISettingsPreferences();
+  const { aiProviders } = useAISettingsPreferences();
   const { openModal, setModalContent, closeModal } = useModal();
 
   const { colorScheme } = useColorScheme();
@@ -103,7 +103,7 @@ export const GenerateNote = ({
             audio: { uri: fileURI!, name: "audio.m4a", type: "audio/m4a" },
             categories: categoryNames.join(","),
           },
-          options: { providers: { llm: aiProvider } },
+          options: { providers: aiProviders },
         });
       } else {
         response = await generateNoteMutateAsync({
@@ -112,11 +112,10 @@ export const GenerateNote = ({
             audio: undefined,
             categories: categoryNames.join(","),
           },
-          options: { providers: { llm: "local" } },
+          options: { providers: aiProviders },
         });
       }
 
-      console.log("response", response);
       const parsedResponse = GenerateNoteResponseSchema.parse(response);
       const parsedCategories = z.array(CategorySchema).parse(categoriesData);
 

@@ -1,4 +1,4 @@
-import { AIProvider } from "@repo/constants";
+import { AIProviders } from "@/features/settings/features/ai/types/ai";
 
 export type GenerateNoteService = {
   data: GenerateNoteServiceData;
@@ -6,11 +6,7 @@ export type GenerateNoteService = {
 };
 
 export type GenerateNoteServiceOptions = {
-  providers?: {
-    llm?: AIProvider;
-    speechToText?: AIProvider;
-    embeddings?: AIProvider;
-  };
+  providers?: AIProviders;
 };
 
 export type GenerateNoteServiceData = {

@@ -10,7 +10,7 @@ export const AutoConnectSettings = () => {
   const { autoConnect, setAutoConnect } = useAISettingsPreferences();
 
   return (
-    <Card>
+    <Card className="py-2">
       <Gutter size="md" className="py-3 flex-row gap-4">
         <View className="flex-1">
           <Typography variant="h3" padding>
