@@ -44,6 +44,12 @@ export const SettingsFeature = () => {
           label="Developer Options"
           onPress={() => push("/settings/developer")}
         />
+        <ListItem
+          className="bg-background"
+          itemLeft={() => <Icon name="info" color="foreground" />}
+          label="About App"
+          onPress={() => push("/settings/aboutApp")}
+        />
         <ListHeader className="pt-8">
           <Muted>GENERAL</Muted>
         </ListHeader>

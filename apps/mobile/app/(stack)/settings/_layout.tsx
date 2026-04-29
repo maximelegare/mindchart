@@ -28,6 +28,13 @@ export default function SettingsLayout() {
           header: () => null,
         }}
       />
+      <Stack.Screen
+        name="aboutApp"
+        options={{
+          title: "About App",
+          header: () => null,
+        }}
+      />
     </Stack>
   );
 }
