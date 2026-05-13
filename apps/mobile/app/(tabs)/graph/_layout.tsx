@@ -14,6 +14,7 @@ export default function GraphLayout() {
       />
       <Stack.Screen
         name="[id]"
+        dangerouslySingular={() => "graph-id"}
         options={{
           headerShown: false,
           animation: "none",

@@ -35,6 +35,96 @@ type NodeInfo = {
   rawData: NodeDatum;
 };
 
+type Layout = {
+  rootNode: NodeInfo;
+  allNodes: NodeInfo[];
+  nodeMap: Map<string, NodeInfo>;
+};
+
+// Module-level cache: d3 hierarchy + circle-pack layout.
+// `fetchGraphData` does JSON.parse on every call, producing a brand-new object
+// tree whose references differ across navigations even when the content is
+// identical. We therefore key the cache on a cheap structural signature of the
+// data (preorder of node ids + child counts) with a reference fast-path so a
+// fresh component instance can reuse the previously computed layout instead of
+// recomputing from scratch.
+const computeSignature = (root: NodeDatum): string => {
+  const parts: string[] = [];
+  const walk = (n: NodeDatum) => {
+    parts.push(n.id, String(n.children?.length ?? 0));
+    n.children?.forEach(walk);
+  };
+  walk(root);
+  return parts.join("|");
+};
+
+let cachedLayoutEntry: {
+  dataRef: NodeDatum;
+  signature: string;
+  layout: Layout;
+} | null = null;
+
+const getOrComputeLayout = (
+  data: NodeDatum,
+  padding: number
+): { layout: Layout; hitReason: "ref" | "sig" | "miss" } => {
+  if (cachedLayoutEntry && cachedLayoutEntry.dataRef === data) {
+    return { layout: cachedLayoutEntry.layout, hitReason: "ref" };
+  }
+  const signature = computeSignature(data);
+  if (cachedLayoutEntry && cachedLayoutEntry.signature === signature) {
+    cachedLayoutEntry = {
+      dataRef: data,
+      signature,
+      layout: cachedLayoutEntry.layout,
+    };
+    return { layout: cachedLayoutEntry.layout, hitReason: "sig" };
+  }
+  const layout = computeLayout(data, padding);
+  cachedLayoutEntry = { dataRef: data, signature, layout };
+  return { layout, hitReason: "miss" };
+};
+
+const computeLayout = (data: NodeDatum, padding: number): Layout => {
+  const hierarchyRoot = d3
+    .hierarchy<NodeDatum>(data)
+    .sum((d) => d.value || 1)
+    .sort((a, b) => (b.value || 0) - (a.value || 0));
+
+  const packed = d3.pack<NodeDatum>().size([SIZE, SIZE]).padding(padding)(
+    hierarchyRoot
+  );
+
+  const nodes: NodeInfo[] = [];
+  const map = new Map<string, NodeInfo>();
+  let counter = 0;
+
+  const walk = (
+    node: d3.HierarchyCircularNode<NodeDatum>,
+    parentId?: string
+  ) => {
+    const internalId = `node-${counter++}`;
+    const info: NodeInfo = {
+      dbId: String(node.data.id),
+      internalId,
+      x: node.x,
+      y: node.y,
+      r: node.r,
+      parentId,
+      depth: node.depth,
+      hasChildren: !!node.children && node.children.length > 0,
+      rawData: node.data,
+    };
+    nodes.push(info);
+    map.set(internalId, info);
+    if (node.children) node.children.forEach((c) => walk(c, internalId));
+  };
+
+  walk(packed);
+
+  return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
+};
+
 interface Props {
   data: NodeDatum;
   focusedThoughtId?: string;
@@ -56,43 +146,8 @@ export default function CirclePackSkia({
 
   // ---------- 1. Process Hierarchy & Layout ----------
   const { rootNode, allNodes, nodeMap } = useMemo(() => {
-    const hierarchyRoot = d3
-      .hierarchy<NodeDatum>(data)
-      .sum((d) => d.value || 1)
-      .sort((a, b) => (b.value || 0) - (a.value || 0));
-
-    const packed = d3.pack<NodeDatum>().size([SIZE, SIZE]).padding(padding)(
-      hierarchyRoot
-    );
-
-    const nodes: NodeInfo[] = [];
-    const map = new Map<string, NodeInfo>();
-    let counter = 0;
-
-    const walk = (
-      node: d3.HierarchyCircularNode<NodeDatum>,
-      parentId?: string
-    ) => {
-      const internalId = `node-${counter++}`;
-      const info: NodeInfo = {
-        dbId: String(node.data.id),
-        internalId,
-        x: node.x,
-        y: node.y,
-        r: node.r,
-        parentId,
-        depth: node.depth,
-        hasChildren: !!node.children && node.children.length > 0,
-        rawData: node.data,
-      };
-      nodes.push(info);
-      map.set(internalId, info);
-      if (node.children) node.children.forEach((c) => walk(c, internalId));
-    };
-
-    walk(packed);
-
-    return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
+    const { layout } = getOrComputeLayout(data, padding);
+    return layout;
   }, [data]);
 
   // ---------- 2. Shared Values ----------
