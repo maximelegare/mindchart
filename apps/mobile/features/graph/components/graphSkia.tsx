@@ -136,6 +136,11 @@ export default function CirclePackSkia({
       if (found) target = found;
     }
 
+    if (!target.hasChildren && target.parentId) {
+      const parent = nodeMap.get(target.parentId);
+      if (parent) target = parent;
+    }
+
     navigateToNode(target, false);
   }, [focusedThoughtId, trigger, allNodes, rootNode]);
 

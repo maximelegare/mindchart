@@ -52,9 +52,6 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({ thoughts }) => {
           >
             <Icon color="text" name="graph" />
           </Button>
-          <Button variant="ghost">
-            <Icon name="notebook-text" color="text" />
-          </Button>
         </View>
       </View>
     </Card>
