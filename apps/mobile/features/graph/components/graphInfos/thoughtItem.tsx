@@ -58,8 +58,11 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
       <Card
         className={cn(
           "h-fit flex-row gap-2 w-full items-center overflow-hidden bg-muted",
-          isHighlighted && "border-2 border-primary"
+          isHighlighted && "border-2"
         )}
+        style={{
+          borderColor: hsl("border", colorScheme, isHighlighted ? 30 : 10),
+        }}
       >
         <View
           style={{ backgroundColor: categoryColor }}
