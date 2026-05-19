@@ -1,6 +1,6 @@
-import React, { useMemo, useEffect, useRef } from "react";
+import React, { useMemo, useEffect, useRef, useState } from "react";
 import { Dimensions, View, StyleSheet, Pressable } from "react-native";
-import { Canvas, Circle, Group } from "@shopify/react-native-skia";
+import { Canvas, Circle, Group, Line, Skia } from "@shopify/react-native-skia";
 import * as d3 from "d3-hierarchy";
 import {
   Gesture,
@@ -125,6 +125,26 @@ const computeLayout = (data: NodeDatum, padding: number): Layout => {
   return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
 };
 
+const buildHatchLines = (r: number, lineColor: string) => {
+  const spacing = Math.max(3, r * 0.12);
+  const strokeWidth = Math.max(0.5, r * 0.035);
+  const span = r * 2.5;
+  const lines: React.ReactNode[] = [];
+  let key = 0;
+  for (let d = -span; d <= span; d += spacing) {
+    lines.push(
+      <Line
+        key={key++}
+        p1={{ x: d - r, y: -r }}
+        p2={{ x: d + r, y: r }}
+        color={lineColor}
+        strokeWidth={strokeWidth}
+      />
+    );
+  }
+  return lines;
+};
+
 interface Props {
   data: NodeDatum;
   focusedThoughtId?: string;
@@ -143,6 +163,8 @@ export default function CirclePackSkia({
 
   // This ref prevents the useEffect from overwriting a tap-initiated animation
   const isTransitioningInternal = useRef(false);
+  const [hatchHighlightActive, setHatchHighlightActive] =
+    useState(!!focusedThoughtId);
 
   // ---------- 1. Process Hierarchy & Layout ----------
   const { rootNode, allNodes, nodeMap } = useMemo(() => {
@@ -158,7 +180,39 @@ export default function CirclePackSkia({
   const previousInternalId = useSharedValue(rootNode.internalId);
 
   // ---------- 3. Camera Helper ----------
-  const navigateToNode = (node: NodeInfo, isToggleBack = false) => {
+  const navigateToNode = (
+    node: NodeInfo,
+    isToggleBack = false,
+    dismissFocusHighlight = false
+  ) => {
+    if (dismissFocusHighlight && hatchHighlightActive) {
+      setHatchHighlightActive(false);
+      // #region agent log
+      fetch(
+        "http://127.0.0.1:7896/ingest/7a3c8f38-74e4-4a91-a5fb-eff7ecdcfe85",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "16f523",
+          },
+          body: JSON.stringify({
+            sessionId: "16f523",
+            location: "graphSkia.tsx:navigateToNode",
+            message: "dismissed focused hatch",
+            data: {
+              targetDbId: node.dbId,
+              targetInternalId: node.internalId,
+            },
+            timestamp: Date.now(),
+            hypothesisId: "H5",
+            runId: "post-fix",
+          }),
+        }
+      ).catch(() => {});
+      // #endregion
+    }
+
     if (!isToggleBack) {
       previousInternalId.value = activeInternalId.value;
     }
@@ -177,6 +231,12 @@ export default function CirclePackSkia({
   };
 
   // ---------- 4. External Focus Effect ----------
+  useEffect(() => {
+    if (focusedThoughtId) {
+      setHatchHighlightActive(true);
+    }
+  }, [focusedThoughtId, trigger]);
+
   useEffect(() => {
     // If we are already moving because the user tapped a circle,
     // don't restart the animation from the effect.
@@ -235,11 +295,11 @@ export default function CirclePackSkia({
           targetToProcess.rawData.name?.toLowerCase() !== "root" &&
           canToggleBack
         ) {
-          runOnJS(navigateToNode)(prev, true);
+          runOnJS(navigateToNode)(prev, true, true);
         } else if (!isSameTarget) {
-          runOnJS(navigateToNode)(targetToProcess, false);
+          runOnJS(navigateToNode)(targetToProcess, false, true);
         } else {
-          runOnJS(navigateToNode)(rootNode, false);
+          runOnJS(navigateToNode)(rootNode, false, true);
         }
         break;
       }
@@ -252,16 +312,16 @@ export default function CirclePackSkia({
     const current = nodeMap.get(activeInternalId.value);
     if (current?.parentId) {
       const parent = nodeMap.get(current.parentId);
-      if (parent) navigateToNode(parent, false);
+      if (parent) navigateToNode(parent, false, true);
     } else if (current && current.internalId !== rootNode.internalId) {
-      navigateToNode(rootNode, false);
+      navigateToNode(rootNode, false, true);
     }
   };
 
   const handleZoomOut = () => {
     const current = nodeMap.get(activeInternalId.value);
     if (current?.rawData.name === "Root") return;
-    else navigateToNode(rootNode, false);
+    else navigateToNode(rootNode, false, true);
   };
 
   // ---------- 6. Dynamic Color Logic ----------
@@ -286,6 +346,7 @@ export default function CirclePackSkia({
     return palette[node.depth] || palette[palette.length - 1];
   };
 
+  const focusedDbId = focusedThoughtId ? String(focusedThoughtId) : undefined;
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View
@@ -307,6 +368,13 @@ export default function CirclePackSkia({
                 viewY={viewY}
                 viewR={viewR}
                 color={getNodeColor(node)}
+                isFocusedThought={
+                  hatchHighlightActive &&
+                  !!focusedDbId &&
+                  !node.hasChildren &&
+                  node.dbId === focusedDbId
+                }
+                hatchLineColor={hsl("border", colorScheme, 10)}
               />
             ))}
           </Canvas>
@@ -340,7 +408,25 @@ export default function CirclePackSkia({
   );
 }
 
-const SkCircle = ({ node, viewX, viewY, viewR, color }: any) => {
+type SkCircleProps = {
+  node: NodeInfo;
+  viewX: { value: number };
+  viewY: { value: number };
+  viewR: { value: number };
+  color: string;
+  isFocusedThought: boolean;
+  hatchLineColor: string;
+};
+
+const SkCircle = ({
+  node,
+  viewX,
+  viewY,
+  viewR,
+  color,
+  isFocusedThought,
+  hatchLineColor,
+}: SkCircleProps) => {
   const transform = useDerivedValue(() => {
     const k = SIZE / (viewR.value * 2);
     return [
@@ -350,9 +436,48 @@ const SkCircle = ({ node, viewX, viewY, viewR, color }: any) => {
     ];
   });
 
+  const clipPath = useMemo(() => {
+    const p = Skia.Path.Make();
+    p.addCircle(0, 0, node.r);
+    return p;
+  }, [node.r]);
+
+  const hatchLines = useMemo(
+    () => buildHatchLines(node.r, hatchLineColor),
+    [node.r, hatchLineColor]
+  );
+
+  // #region agent log
+  useEffect(() => {
+    if (!isFocusedThought) return;
+    fetch("http://127.0.0.1:7896/ingest/7a3c8f38-74e4-4a91-a5fb-eff7ecdcfe85", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "16f523",
+      },
+      body: JSON.stringify({
+        sessionId: "16f523",
+        location: "graphSkia.tsx:SkCircle",
+        message: "rendering hatched focused thought",
+        data: { dbId: node.dbId, r: node.r },
+        timestamp: Date.now(),
+        hypothesisId: "H1",
+      }),
+    }).catch(() => {});
+  }, [isFocusedThought, node.dbId, node.r]);
+  // #endregion
+
   return (
     <Group transform={transform}>
-      <Circle cx={0} cy={0} r={node.r} color={color} />
+      {isFocusedThought ? (
+        <Group clip={clipPath}>
+          <Circle cx={0} cy={0} r={node.r} color="white" />
+          {hatchLines}
+        </Group>
+      ) : (
+        <Circle cx={0} cy={0} r={node.r} color={color} />
+      )}
       <Circle
         cx={0}
         cy={0}
