@@ -37,6 +37,7 @@ const LABEL_FONT_SIZE = 10;
 const LABEL_PAD_X = 5;
 const LABEL_PAD_Y = 2;
 const LABEL_BG_RADIUS = 3;
+const MAX_LABEL_LENGTH = 20;
 
 type NodeInfo = {
   dbId: string;
@@ -162,7 +163,9 @@ const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
 
 const formatLabel = (name: string) => {
   if (!name) return "";
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  const formatted = name.charAt(0).toUpperCase() + name.slice(1);
+  if (formatted.length <= MAX_LABEL_LENGTH) return formatted;
+  return `${formatted.slice(0, MAX_LABEL_LENGTH - 1)}…`;
 };
 
 const buildHatchLines = (r: number, lineColor: string) => {
