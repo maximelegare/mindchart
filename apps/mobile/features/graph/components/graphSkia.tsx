@@ -1,6 +1,15 @@
 import React, { useMemo, useEffect, useRef, useState } from "react";
 import { Dimensions, View, StyleSheet, Pressable } from "react-native";
-import { Canvas, Circle, Group, Line, Skia } from "@shopify/react-native-skia";
+import {
+  Canvas,
+  Circle,
+  Group,
+  Line,
+  Skia,
+  Text,
+  RoundedRect,
+  useFont,
+} from "@shopify/react-native-skia";
 import * as d3 from "d3-hierarchy";
 import {
   Gesture,
@@ -22,6 +31,12 @@ import { CategoryKey } from "@repo/sqlite";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIZE = SCREEN_WIDTH - 24;
+const PACK_PADDING = 8;
+const LABEL_GAP = -10;
+const LABEL_FONT_SIZE = 10;
+const LABEL_PAD_X = 5;
+const LABEL_PAD_Y = 2;
+const LABEL_BG_RADIUS = 3;
 
 type NodeInfo = {
   dbId: string;
@@ -61,6 +76,7 @@ const computeSignature = (root: NodeDatum): string => {
 let cachedLayoutEntry: {
   dataRef: NodeDatum;
   signature: string;
+  padding: number;
   layout: Layout;
 } | null = null;
 
@@ -68,20 +84,29 @@ const getOrComputeLayout = (
   data: NodeDatum,
   padding: number
 ): { layout: Layout; hitReason: "ref" | "sig" | "miss" } => {
-  if (cachedLayoutEntry && cachedLayoutEntry.dataRef === data) {
+  if (
+    cachedLayoutEntry &&
+    cachedLayoutEntry.dataRef === data &&
+    cachedLayoutEntry.padding === padding
+  ) {
     return { layout: cachedLayoutEntry.layout, hitReason: "ref" };
   }
   const signature = computeSignature(data);
-  if (cachedLayoutEntry && cachedLayoutEntry.signature === signature) {
+  if (
+    cachedLayoutEntry &&
+    cachedLayoutEntry.signature === signature &&
+    cachedLayoutEntry.padding === padding
+  ) {
     cachedLayoutEntry = {
       dataRef: data,
       signature,
+      padding,
       layout: cachedLayoutEntry.layout,
     };
     return { layout: cachedLayoutEntry.layout, hitReason: "sig" };
   }
   const layout = computeLayout(data, padding);
-  cachedLayoutEntry = { dataRef: data, signature, layout };
+  cachedLayoutEntry = { dataRef: data, signature, padding, layout };
   return { layout, hitReason: "miss" };
 };
 
@@ -125,6 +150,21 @@ const computeLayout = (data: NodeDatum, padding: number): Layout => {
   return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
 };
 
+const isCategoryNode = (node: NodeInfo) =>
+  node.depth === 1 &&
+  node.hasChildren &&
+  node.rawData.id.startsWith("category-");
+const isTopicNode = (node: NodeInfo) =>
+  node.hasChildren && node.rawData.id.startsWith("topic-");
+
+const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
+  allNodes.filter((n) => n.parentId === parent.internalId).length;
+
+const formatLabel = (name: string) => {
+  if (!name) return "";
+  return name.charAt(0).toUpperCase() + name.slice(1);
+};
+
 const buildHatchLines = (r: number, lineColor: string) => {
   const spacing = Math.max(3, r * 0.12);
   const strokeWidth = Math.max(0.5, r * 0.035);
@@ -159,8 +199,6 @@ export default function CirclePackSkia({
   onNodeSelected,
 }: Props) {
   const { colorScheme } = useColorScheme();
-  const padding = 5;
-
   // This ref prevents the useEffect from overwriting a tap-initiated animation
   const isTransitioningInternal = useRef(false);
   const [hatchHighlightActive, setHatchHighlightActive] =
@@ -168,7 +206,7 @@ export default function CirclePackSkia({
 
   // ---------- 1. Process Hierarchy & Layout ----------
   const { rootNode, allNodes, nodeMap } = useMemo(() => {
-    const { layout } = getOrComputeLayout(data, padding);
+    const { layout } = getOrComputeLayout(data, PACK_PADDING);
     return layout;
   }, [data]);
 
@@ -178,6 +216,11 @@ export default function CirclePackSkia({
   const viewR = useSharedValue(rootNode.r);
   const activeInternalId = useSharedValue(rootNode.internalId);
   const previousInternalId = useSharedValue(rootNode.internalId);
+  const [activeViewNode, setActiveViewNode] = useState(rootNode);
+
+  useEffect(() => {
+    setActiveViewNode(rootNode);
+  }, [rootNode.internalId]);
 
   // ---------- 3. Camera Helper ----------
   const navigateToNode = (
@@ -218,6 +261,7 @@ export default function CirclePackSkia({
     }
 
     activeInternalId.value = node.internalId;
+    setActiveViewNode(node);
     const config = { duration: 600, easing: Easing.out(Easing.exp) };
 
     viewX.value = withTiming(node.x, config);
@@ -347,6 +391,44 @@ export default function CirclePackSkia({
   };
 
   const focusedDbId = focusedThoughtId ? String(focusedThoughtId) : undefined;
+
+  const labelsByInternalId = useMemo(() => {
+    const labels = new Map<string, string>();
+    const atRoot = activeViewNode.internalId === rootNode.internalId;
+
+    if (atRoot) {
+      for (const node of allNodes) {
+        if (!isCategoryNode(node)) continue;
+        if (countDirectChildren(node, allNodes) >= 2) {
+          labels.set(node.internalId, formatLabel(node.rawData.name));
+        }
+      }
+      return labels;
+    }
+
+    if (isCategoryNode(activeViewNode)) {
+      for (const node of allNodes) {
+        if (isTopicNode(node) && node.parentId === activeViewNode.internalId) {
+          labels.set(node.internalId, formatLabel(node.rawData.name));
+        }
+      }
+    }
+
+    return labels;
+  }, [activeViewNode, allNodes, nodeMap, rootNode]);
+
+  const labelColor = hsl("foreground", colorScheme);
+  const labelBgColor = hsl("background", colorScheme);
+
+  const labeledNodes = useMemo(() => {
+    const items: { node: NodeInfo; text: string }[] = [];
+    labelsByInternalId.forEach((text, internalId) => {
+      const node = nodeMap.get(internalId);
+      if (node) items.push({ node, text });
+    });
+    return items;
+  }, [labelsByInternalId, nodeMap]);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View
@@ -359,7 +441,7 @@ export default function CirclePackSkia({
         ]}
       >
         <GestureDetector gesture={tap}>
-          <Canvas style={{ width: SIZE, height: SIZE }}>
+          <Canvas style={styles.canvas}>
             {allNodes.map((node) => (
               <SkCircle
                 key={node.internalId}
@@ -375,6 +457,18 @@ export default function CirclePackSkia({
                   node.dbId === focusedDbId
                 }
                 hatchLineColor={hsl("border", colorScheme, 10)}
+              />
+            ))}
+            {labeledNodes.map(({ node, text }) => (
+              <SkLabel
+                key={`label-${node.internalId}`}
+                node={node}
+                text={text}
+                color={labelColor}
+                backgroundColor={labelBgColor}
+                viewX={viewX}
+                viewY={viewY}
+                viewR={viewR}
               />
             ))}
           </Canvas>
@@ -407,6 +501,76 @@ export default function CirclePackSkia({
     </GestureHandlerRootView>
   );
 }
+
+type SkLabelProps = {
+  node: NodeInfo;
+  text: string;
+  color: string;
+  backgroundColor: string;
+  viewX: { value: number };
+  viewY: { value: number };
+  viewR: { value: number };
+};
+
+const SkLabel = ({
+  node,
+  text,
+  color,
+  backgroundColor,
+  viewX,
+  viewY,
+  viewR,
+}: SkLabelProps) => {
+  const font = useFont(
+    require("@/assets/fonts/Quicksand-Bold.ttf"),
+    LABEL_FONT_SIZE
+  );
+
+  const textWidth = useMemo(() => {
+    if (!font) return 0;
+    return font.measureText(text).width;
+  }, [font, text]);
+
+  const bgWidth = textWidth + LABEL_PAD_X * 2;
+  const bgHeight = LABEL_FONT_SIZE + LABEL_PAD_Y * 2;
+
+  const textY = useMemo(() => {
+    if (!font) return -bgHeight / 2;
+    const metrics = font.getMetrics();
+    return -bgHeight / 2 - (metrics.ascent + metrics.descent) / 2;
+  }, [font, bgHeight]);
+
+  const labelTransform = useDerivedValue(() => {
+    const k = SIZE / (viewR.value * 2);
+    const cx = SIZE / 2 + (node.x - viewX.value) * k;
+    const anchorY =
+      SIZE / 2 + (node.y - viewY.value) * k - node.r * k - LABEL_GAP;
+    return [{ translateX: cx }, { translateY: anchorY }];
+  });
+
+  if (!font) return null;
+
+  return (
+    <Group transform={labelTransform}>
+      <RoundedRect
+        x={-bgWidth / 2}
+        y={-bgHeight}
+        width={bgWidth}
+        height={bgHeight}
+        r={LABEL_BG_RADIUS}
+        color={backgroundColor}
+        opacity={0.7}
+      />
+      <Text
+        x={-textWidth / 2}
+        y={textY}
+        text={text}
+        font={font}
+        color={color}
+      />
+    </Group>
+  );
+};
 
 type SkCircleProps = {
   node: NodeInfo;
@@ -447,27 +611,6 @@ const SkCircle = ({
     [node.r, hatchLineColor]
   );
 
-  // #region agent log
-  useEffect(() => {
-    if (!isFocusedThought) return;
-    fetch("http://127.0.0.1:7896/ingest/7a3c8f38-74e4-4a91-a5fb-eff7ecdcfe85", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "16f523",
-      },
-      body: JSON.stringify({
-        sessionId: "16f523",
-        location: "graphSkia.tsx:SkCircle",
-        message: "rendering hatched focused thought",
-        data: { dbId: node.dbId, r: node.r },
-        timestamp: Date.now(),
-        hypothesisId: "H1",
-      }),
-    }).catch(() => {});
-  }, [isFocusedThought, node.dbId, node.r]);
-  // #endregion
-
   return (
     <Group transform={transform}>
       {isFocusedThought ? (
@@ -499,6 +642,10 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,
+  },
+  canvas: {
+    width: SIZE,
+    height: SIZE,
   },
   zoomBtn: {
     position: "relative",
