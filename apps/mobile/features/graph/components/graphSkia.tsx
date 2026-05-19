@@ -1,6 +1,15 @@
-import React, { useMemo, useEffect, useRef } from "react";
-import { Dimensions, View, StyleSheet, Pressable } from "react-native";
-import { Canvas, Circle, Group } from "@shopify/react-native-skia";
+import React, { useMemo, useEffect, useRef, useState } from "react";
+import { Dimensions, View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Canvas,
+  Circle,
+  Group,
+  Line,
+  Skia,
+  Text,
+  RoundedRect,
+  useFont,
+} from "@shopify/react-native-skia";
 import * as d3 from "d3-hierarchy";
 import {
   Gesture,
@@ -22,6 +31,13 @@ import { CategoryKey } from "@repo/sqlite";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIZE = SCREEN_WIDTH - 24;
+const PACK_PADDING = 8;
+const LABEL_GAP = -10;
+const LABEL_FONT_SIZE = 10;
+const LABEL_PAD_X = 5;
+const LABEL_PAD_Y = 2;
+const LABEL_BG_RADIUS = 3;
+const MAX_LABEL_LENGTH = 20;
 
 type NodeInfo = {
   dbId: string;
@@ -33,6 +49,143 @@ type NodeInfo = {
   depth: number;
   hasChildren: boolean;
   rawData: NodeDatum;
+};
+
+type Layout = {
+  rootNode: NodeInfo;
+  allNodes: NodeInfo[];
+  nodeMap: Map<string, NodeInfo>;
+};
+
+// Module-level cache: d3 hierarchy + circle-pack layout.
+// `fetchGraphData` does JSON.parse on every call, producing a brand-new object
+// tree whose references differ across navigations even when the content is
+// identical. We therefore key the cache on a cheap structural signature of the
+// data (preorder of node ids + child counts) with a reference fast-path so a
+// fresh component instance can reuse the previously computed layout instead of
+// recomputing from scratch.
+const computeSignature = (root: NodeDatum): string => {
+  const parts: string[] = [];
+  const walk = (n: NodeDatum) => {
+    parts.push(n.id, String(n.children?.length ?? 0));
+    n.children?.forEach(walk);
+  };
+  walk(root);
+  return parts.join("|");
+};
+
+let cachedLayoutEntry: {
+  dataRef: NodeDatum;
+  signature: string;
+  padding: number;
+  layout: Layout;
+} | null = null;
+
+const getOrComputeLayout = (
+  data: NodeDatum,
+  padding: number
+): { layout: Layout; hitReason: "ref" | "sig" | "miss" } => {
+  if (
+    cachedLayoutEntry &&
+    cachedLayoutEntry.dataRef === data &&
+    cachedLayoutEntry.padding === padding
+  ) {
+    return { layout: cachedLayoutEntry.layout, hitReason: "ref" };
+  }
+  const signature = computeSignature(data);
+  if (
+    cachedLayoutEntry &&
+    cachedLayoutEntry.signature === signature &&
+    cachedLayoutEntry.padding === padding
+  ) {
+    cachedLayoutEntry = {
+      dataRef: data,
+      signature,
+      padding,
+      layout: cachedLayoutEntry.layout,
+    };
+    return { layout: cachedLayoutEntry.layout, hitReason: "sig" };
+  }
+  const layout = computeLayout(data, padding);
+  cachedLayoutEntry = { dataRef: data, signature, padding, layout };
+  return { layout, hitReason: "miss" };
+};
+
+const computeLayout = (data: NodeDatum, padding: number): Layout => {
+  const hierarchyRoot = d3
+    .hierarchy<NodeDatum>(data)
+    .sum((d) => d.value || 1)
+    .sort((a, b) => (b.value || 0) - (a.value || 0));
+
+  const packed = d3.pack<NodeDatum>().size([SIZE, SIZE]).padding(padding)(
+    hierarchyRoot
+  );
+
+  const nodes: NodeInfo[] = [];
+  const map = new Map<string, NodeInfo>();
+  let counter = 0;
+
+  const walk = (
+    node: d3.HierarchyCircularNode<NodeDatum>,
+    parentId?: string
+  ) => {
+    const internalId = `node-${counter++}`;
+    const info: NodeInfo = {
+      dbId: String(node.data.id),
+      internalId,
+      x: node.x,
+      y: node.y,
+      r: node.r,
+      parentId,
+      depth: node.depth,
+      hasChildren: !!node.children && node.children.length > 0,
+      rawData: node.data,
+    };
+    nodes.push(info);
+    map.set(internalId, info);
+    if (node.children) node.children.forEach((c) => walk(c, internalId));
+  };
+
+  walk(packed);
+
+  return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
+};
+
+const isCategoryNode = (node: NodeInfo) =>
+  node.depth === 1 &&
+  node.hasChildren &&
+  node.rawData.id.startsWith("category-");
+const isTopicNode = (node: NodeInfo) =>
+  node.hasChildren && node.rawData.id.startsWith("topic-");
+
+const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
+  allNodes.filter((n) => n.parentId === parent.internalId).length;
+
+const formatLabel = (name: string) => {
+  if (!name) return "";
+  const formatted = name.charAt(0).toUpperCase() + name.slice(1);
+  if (formatted.length <= MAX_LABEL_LENGTH) return formatted;
+  return `${formatted.slice(0, MAX_LABEL_LENGTH - 1)}…`;
+};
+
+const buildHatchLines = (r: number, lineColor: string) => {
+  const spacing = Math.max(3, r * 0.12);
+  const strokeWidth = Math.max(0.5, r * 0.035);
+  const span = r * 2.5;
+  const lines: React.ReactNode[] = [];
+  let key = 0;
+  for (let d = -span; d <= span; d += spacing) {
+    lines.push(
+      <Line
+        key={key++}
+        p1={{ x: d - r, y: -r }}
+        p2={{ x: d + r, y: r }}
+        color={lineColor}
+        strokeWidth={strokeWidth}
+      />
+    );
+  }
+  return lines;
 };
 
 interface Props {
@@ -49,50 +202,15 @@ export default function CirclePackSkia({
   onNodeSelected,
 }: Props) {
   const { colorScheme } = useColorScheme();
-  const padding = 5;
-
   // This ref prevents the useEffect from overwriting a tap-initiated animation
   const isTransitioningInternal = useRef(false);
+  const [hatchHighlightActive, setHatchHighlightActive] =
+    useState(!!focusedThoughtId);
 
   // ---------- 1. Process Hierarchy & Layout ----------
   const { rootNode, allNodes, nodeMap } = useMemo(() => {
-    const hierarchyRoot = d3
-      .hierarchy<NodeDatum>(data)
-      .sum((d) => d.value || 1)
-      .sort((a, b) => (b.value || 0) - (a.value || 0));
-
-    const packed = d3.pack<NodeDatum>().size([SIZE, SIZE]).padding(padding)(
-      hierarchyRoot
-    );
-
-    const nodes: NodeInfo[] = [];
-    const map = new Map<string, NodeInfo>();
-    let counter = 0;
-
-    const walk = (
-      node: d3.HierarchyCircularNode<NodeDatum>,
-      parentId?: string
-    ) => {
-      const internalId = `node-${counter++}`;
-      const info: NodeInfo = {
-        dbId: String(node.data.id),
-        internalId,
-        x: node.x,
-        y: node.y,
-        r: node.r,
-        parentId,
-        depth: node.depth,
-        hasChildren: !!node.children && node.children.length > 0,
-        rawData: node.data,
-      };
-      nodes.push(info);
-      map.set(internalId, info);
-      if (node.children) node.children.forEach((c) => walk(c, internalId));
-    };
-
-    walk(packed);
-
-    return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
+    const { layout } = getOrComputeLayout(data, PACK_PADDING);
+    return layout;
   }, [data]);
 
   // ---------- 2. Shared Values ----------
@@ -101,14 +219,52 @@ export default function CirclePackSkia({
   const viewR = useSharedValue(rootNode.r);
   const activeInternalId = useSharedValue(rootNode.internalId);
   const previousInternalId = useSharedValue(rootNode.internalId);
+  const [activeViewNode, setActiveViewNode] = useState(rootNode);
+
+  useEffect(() => {
+    setActiveViewNode(rootNode);
+  }, [rootNode.internalId]);
 
   // ---------- 3. Camera Helper ----------
-  const navigateToNode = (node: NodeInfo, isToggleBack = false) => {
+  const navigateToNode = (
+    node: NodeInfo,
+    isToggleBack = false,
+    dismissFocusHighlight = false
+  ) => {
+    if (dismissFocusHighlight && hatchHighlightActive) {
+      setHatchHighlightActive(false);
+      // #region agent log
+      fetch(
+        "http://127.0.0.1:7896/ingest/7a3c8f38-74e4-4a91-a5fb-eff7ecdcfe85",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "16f523",
+          },
+          body: JSON.stringify({
+            sessionId: "16f523",
+            location: "graphSkia.tsx:navigateToNode",
+            message: "dismissed focused hatch",
+            data: {
+              targetDbId: node.dbId,
+              targetInternalId: node.internalId,
+            },
+            timestamp: Date.now(),
+            hypothesisId: "H5",
+            runId: "post-fix",
+          }),
+        }
+      ).catch(() => {});
+      // #endregion
+    }
+
     if (!isToggleBack) {
       previousInternalId.value = activeInternalId.value;
     }
 
     activeInternalId.value = node.internalId;
+    setActiveViewNode(node);
     const config = { duration: 600, easing: Easing.out(Easing.exp) };
 
     viewX.value = withTiming(node.x, config);
@@ -123,6 +279,12 @@ export default function CirclePackSkia({
 
   // ---------- 4. External Focus Effect ----------
   useEffect(() => {
+    if (focusedThoughtId) {
+      setHatchHighlightActive(true);
+    }
+  }, [focusedThoughtId, trigger]);
+
+  useEffect(() => {
     // If we are already moving because the user tapped a circle,
     // don't restart the animation from the effect.
     if (isTransitioningInternal.current) {
@@ -134,6 +296,11 @@ export default function CirclePackSkia({
     if (focusedThoughtId) {
       const found = allNodes.find((n) => n.dbId === String(focusedThoughtId));
       if (found) target = found;
+    }
+
+    if (!target.hasChildren && target.parentId) {
+      const parent = nodeMap.get(target.parentId);
+      if (parent) target = parent;
     }
 
     navigateToNode(target, false);
@@ -160,27 +327,48 @@ export default function CirclePackSkia({
           if (parent) targetToProcess = parent;
         }
 
-        if (activeInternalId.value === targetToProcess.internalId) {
-          const prev = nodeMap.get(previousInternalId.value);
-          if (prev) runOnJS(navigateToNode)(prev, true);
+        const isSameTarget =
+          activeInternalId.value === targetToProcess.internalId;
+        const prev = nodeMap.get(previousInternalId.value);
+        const isParentChild =
+          !!prev &&
+          (prev.internalId === targetToProcess.parentId ||
+            targetToProcess.internalId === prev.parentId);
+        const canToggleBack =
+          !!prev && (isParentChild || prev.internalId === rootNode.internalId);
+
+        if (
+          isSameTarget &&
+          targetToProcess.rawData.name?.toLowerCase() !== "root" &&
+          canToggleBack
+        ) {
+          runOnJS(navigateToNode)(prev, true, true);
+        } else if (!isSameTarget) {
+          runOnJS(navigateToNode)(targetToProcess, false, true);
         } else {
-          runOnJS(navigateToNode)(targetToProcess, false);
+          runOnJS(navigateToNode)(rootNode, false, true);
         }
         break;
       }
     }
   });
 
-  const handleZoomOut = () => {
+  const handleZoomBack = () => {
     // Zooming out via button should NOT block the effect,
     // so we don't set isTransitioningInternal to true here.
     const current = nodeMap.get(activeInternalId.value);
     if (current?.parentId) {
       const parent = nodeMap.get(current.parentId);
-      if (parent) navigateToNode(parent, false);
+      if (parent) navigateToNode(parent, false, true);
     } else if (current && current.internalId !== rootNode.internalId) {
-      navigateToNode(rootNode, false);
+      navigateToNode(rootNode, false, true);
     }
+  };
+
+  const handleZoomOut = () => {
+    const current = nodeMap.get(activeInternalId.value);
+    if (current?.rawData.name === "Root") return;
+    else navigateToNode(rootNode, false, true);
   };
 
   // ---------- 6. Dynamic Color Logic ----------
@@ -205,6 +393,47 @@ export default function CirclePackSkia({
     return palette[node.depth] || palette[palette.length - 1];
   };
 
+  const focusedDbId = focusedThoughtId ? String(focusedThoughtId) : undefined;
+
+  const labelsByInternalId = useMemo(() => {
+    const labels = new Map<string, string>();
+    const atRoot = activeViewNode.internalId === rootNode.internalId;
+
+    if (atRoot) {
+      for (const node of allNodes) {
+        if (!isCategoryNode(node)) continue;
+        if (countDirectChildren(node, allNodes) >= 2) {
+          labels.set(node.internalId, formatLabel(node.rawData.name));
+        }
+      }
+      return labels;
+    }
+
+    if (isCategoryNode(activeViewNode)) {
+      for (const node of allNodes) {
+        if (isTopicNode(node) && node.parentId === activeViewNode.internalId) {
+          labels.set(node.internalId, formatLabel(node.rawData.name));
+        }
+      }
+    }
+
+    return labels;
+  }, [activeViewNode, allNodes, nodeMap, rootNode]);
+
+  const labelColor = hsl("foreground", colorScheme);
+  const labelBgColor = hsl("background", colorScheme);
+
+  const labeledNodes = useMemo(() => {
+    const items: { node: NodeInfo; text: string }[] = [];
+    labelsByInternalId.forEach((text, internalId) => {
+      const node = nodeMap.get(internalId);
+      if (node) items.push({ node, text });
+    });
+    return items;
+  }, [labelsByInternalId, nodeMap]);
+
+  const isAtRoot = activeViewNode.internalId === rootNode.internalId;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View
@@ -217,7 +446,7 @@ export default function CirclePackSkia({
         ]}
       >
         <GestureDetector gesture={tap}>
-          <Canvas style={{ width: SIZE, height: SIZE }}>
+          <Canvas style={styles.canvas}>
             {allNodes.map((node) => (
               <SkCircle
                 key={node.internalId}
@@ -226,20 +455,151 @@ export default function CirclePackSkia({
                 viewY={viewY}
                 viewR={viewR}
                 color={getNodeColor(node)}
+                isFocusedThought={
+                  hatchHighlightActive &&
+                  !!focusedDbId &&
+                  !node.hasChildren &&
+                  node.dbId === focusedDbId
+                }
+                hatchLineColor={hsl("border", colorScheme, 10)}
+              />
+            ))}
+            {labeledNodes.map(({ node, text }) => (
+              <SkLabel
+                key={`label-${node.internalId}`}
+                node={node}
+                text={text}
+                color={labelColor}
+                backgroundColor={labelBgColor}
+                viewX={viewX}
+                viewY={viewY}
+                viewR={viewR}
               />
             ))}
           </Canvas>
         </GestureDetector>
 
-        <Pressable onPress={handleZoomOut} style={styles.zoomBtn}>
-          <Icon name="zoom-out" color="text" />
-        </Pressable>
+        <View
+          className="absolute gap-2 p-2 m-2"
+          style={{ bottom: 0, right: 0 }}
+        >
+          <TouchableOpacity
+            onPress={handleZoomBack}
+            disabled={isAtRoot}
+            style={{
+              ...styles.zoomBtn,
+              backgroundColor: hsl("background", colorScheme),
+              opacity: isAtRoot ? 0.4 : 1,
+            }}
+          >
+            <Icon name="undo-dot" color="text" opacity={isAtRoot ? 50 : 100} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleZoomOut}
+            disabled={isAtRoot}
+            style={{
+              ...styles.zoomBtn,
+              backgroundColor: hsl("background", colorScheme),
+              opacity: isAtRoot ? 0.4 : 1,
+            }}
+          >
+            <Icon name="zoom-out" color="text" opacity={isAtRoot ? 50 : 100} />
+          </TouchableOpacity>
+        </View>
       </View>
     </GestureHandlerRootView>
   );
 }
 
-const SkCircle = ({ node, viewX, viewY, viewR, color }: any) => {
+type SkLabelProps = {
+  node: NodeInfo;
+  text: string;
+  color: string;
+  backgroundColor: string;
+  viewX: { value: number };
+  viewY: { value: number };
+  viewR: { value: number };
+};
+
+const SkLabel = ({
+  node,
+  text,
+  color,
+  backgroundColor,
+  viewX,
+  viewY,
+  viewR,
+}: SkLabelProps) => {
+  const font = useFont(
+    require("@/assets/fonts/Quicksand-Bold.ttf"),
+    LABEL_FONT_SIZE
+  );
+
+  const textWidth = useMemo(() => {
+    if (!font) return 0;
+    return font.measureText(text).width;
+  }, [font, text]);
+
+  const bgWidth = textWidth + LABEL_PAD_X * 2;
+  const bgHeight = LABEL_FONT_SIZE + LABEL_PAD_Y * 2;
+
+  const textY = useMemo(() => {
+    if (!font) return -bgHeight / 2;
+    const metrics = font.getMetrics();
+    return -bgHeight / 2 - (metrics.ascent + metrics.descent) / 2;
+  }, [font, bgHeight]);
+
+  const labelTransform = useDerivedValue(() => {
+    const k = SIZE / (viewR.value * 2);
+    const cx = SIZE / 2 + (node.x - viewX.value) * k;
+    const anchorY =
+      SIZE / 2 + (node.y - viewY.value) * k - node.r * k - LABEL_GAP;
+    return [{ translateX: cx }, { translateY: anchorY }];
+  });
+
+  if (!font) return null;
+
+  return (
+    <Group transform={labelTransform}>
+      <RoundedRect
+        x={-bgWidth / 2}
+        y={-bgHeight}
+        width={bgWidth}
+        height={bgHeight}
+        r={LABEL_BG_RADIUS}
+        color={backgroundColor}
+        opacity={0.7}
+      />
+      <Text
+        x={-textWidth / 2}
+        y={textY}
+        text={text}
+        font={font}
+        color={color}
+      />
+    </Group>
+  );
+};
+
+type SkCircleProps = {
+  node: NodeInfo;
+  viewX: { value: number };
+  viewY: { value: number };
+  viewR: { value: number };
+  color: string;
+  isFocusedThought: boolean;
+  hatchLineColor: string;
+};
+
+const SkCircle = ({
+  node,
+  viewX,
+  viewY,
+  viewR,
+  color,
+  isFocusedThought,
+  hatchLineColor,
+}: SkCircleProps) => {
   const transform = useDerivedValue(() => {
     const k = SIZE / (viewR.value * 2);
     return [
@@ -249,9 +609,27 @@ const SkCircle = ({ node, viewX, viewY, viewR, color }: any) => {
     ];
   });
 
+  const clipPath = useMemo(() => {
+    const p = Skia.Path.Make();
+    p.addCircle(0, 0, node.r);
+    return p;
+  }, [node.r]);
+
+  const hatchLines = useMemo(
+    () => buildHatchLines(node.r, hatchLineColor),
+    [node.r, hatchLineColor]
+  );
+
   return (
     <Group transform={transform}>
-      <Circle cx={0} cy={0} r={node.r} color={color} />
+      {isFocusedThought ? (
+        <Group clip={clipPath}>
+          <Circle cx={0} cy={0} r={node.r} color="white" />
+          {hatchLines}
+        </Group>
+      ) : (
+        <Circle cx={0} cy={0} r={node.r} color={color} />
+      )}
       <Circle
         cx={0}
         cy={0}
@@ -274,14 +652,15 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 10,
   },
+  canvas: {
+    width: SIZE,
+    height: SIZE,
+  },
   zoomBtn: {
-    position: "absolute",
-    bottom: 16,
-    right: 16,
-    width: 44,
-    height: 44,
+    position: "relative",
+    width: 38,
+    height: 38,
     borderRadius: 22,
-    backgroundColor: "white",
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,

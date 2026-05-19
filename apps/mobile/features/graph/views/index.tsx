@@ -6,7 +6,6 @@ import CirclePackSkia from "../components/graphSkia";
 import GraphInfos from "../components/graphInfos/graphInfos";
 import { NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
-import { Button, Typography } from "@/components/ui";
 
 export const GraphFeature = ({
   focusedThoughtId,
@@ -15,7 +14,7 @@ export const GraphFeature = ({
   focusedThoughtId?: string;
   trigger?: string;
 }) => {
-  const { hierarchy, refetchGraph, refetchSyncFlag, rebuildGraph } = useGraph();
+  const { hierarchy, refetchGraph, refetchSyncFlag } = useGraph();
 
   const [selection, setSelection] = useState<{
     active: NodeDatum | null;
@@ -43,9 +42,6 @@ export const GraphFeature = ({
 
   return (
     <View className="flex-col gap-4 items-center flex-1">
-      <Button onPress={rebuildGraph}>
-        <Typography>Rebuild Graph</Typography>
-      </Button>
       <CirclePackSkia
         data={hierarchy}
         focusedThoughtId={focusedThoughtId}
@@ -57,6 +53,7 @@ export const GraphFeature = ({
         <GraphInfos
           activeNode={selection.active}
           parentNode={selection.parent}
+          focusedThoughtId={focusedThoughtId}
         />
       </View>
       <SpaceFiller

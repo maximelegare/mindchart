@@ -34,6 +34,7 @@ export type IconName =
   | "square"
   | "star"
   | "trash-2"
+  | "undo-dot"
   | "zoom-out";
 
 export const ICON_METADATA: Record<
@@ -171,6 +172,10 @@ export const ICON_METADATA: Record<
   "trash-2": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>`,
+  },
+  "undo-dot": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M21 17a9 9 0 0 0-15-6.7L3 13"></path><path d="M3 7v6h6"></path><circle cx="12" cy="17" r="1"></circle></g>`,
   },
   "zoom-out": {
     viewBox: "0 0 24 24",
