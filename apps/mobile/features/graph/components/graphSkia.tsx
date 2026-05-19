@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from "react";
-import { Dimensions, View, StyleSheet, Pressable } from "react-native";
+import { Dimensions, View, StyleSheet, TouchableOpacity } from "react-native";
 import {
   Canvas,
   Circle,
@@ -432,6 +432,8 @@ export default function CirclePackSkia({
     return items;
   }, [labelsByInternalId, nodeMap]);
 
+  const isAtRoot = activeViewNode.internalId === rootNode.internalId;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View
@@ -481,24 +483,28 @@ export default function CirclePackSkia({
           className="absolute gap-2 p-2 m-2"
           style={{ bottom: 0, right: 0 }}
         >
-          <Pressable
+          <TouchableOpacity
             onPress={handleZoomBack}
+            disabled={isAtRoot}
             style={{
               ...styles.zoomBtn,
               backgroundColor: hsl("background", colorScheme),
+              opacity: isAtRoot ? 0.4 : 1,
             }}
           >
-            <Icon name="undo-dot" color="text" />
-          </Pressable>
-          <Pressable
+            <Icon name="undo-dot" color="text" opacity={isAtRoot ? 50 : 100} />
+          </TouchableOpacity>
+          <TouchableOpacity
             onPress={handleZoomOut}
+            disabled={isAtRoot}
             style={{
               ...styles.zoomBtn,
               backgroundColor: hsl("background", colorScheme),
+              opacity: isAtRoot ? 0.4 : 1,
             }}
           >
-            <Icon name="zoom-out" color="text" />
-          </Pressable>
+            <Icon name="zoom-out" color="text" opacity={isAtRoot ? 50 : 100} />
+          </TouchableOpacity>
         </View>
       </View>
     </GestureHandlerRootView>
