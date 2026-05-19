@@ -57,6 +57,7 @@ export const GraphFeature = ({
         <GraphInfos
           activeNode={selection.active}
           parentNode={selection.parent}
+          focusedThoughtId={focusedThoughtId}
         />
       </View>
       <SpaceFiller

@@ -15,11 +15,13 @@ import capitalize from "@/utils/stringManipulations/capitalize";
 type ThoughtItem = {
   thought: NodeDatum & { idx: number };
   parentNodeId: string;
+  isHighlighted: boolean;
 };
 
 export const ThoughtItem: React.FC<ThoughtItem> = ({
   thought,
   parentNodeId,
+  isHighlighted,
 }) => {
   const { summary, categoryId, name, children, noteId } = thought;
 
@@ -52,8 +54,13 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
   };
 
   return (
-    <Pressable onPress={children && handleZoom}>
-      <Card className="bg-muted h-fit flex-row gap-2 w-full items-center overflow-hidden">
+    <Pressable onPress={children && handleZoom} id={thought.thoughtId}>
+      <Card
+        className={cn(
+          "h-fit flex-row gap-2 w-full items-center overflow-hidden bg-muted",
+          isHighlighted && "border-2 border-primary"
+        )}
+      >
         <View
           style={{ backgroundColor: categoryColor }}
           className="w-3 h-full"

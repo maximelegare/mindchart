@@ -9,9 +9,10 @@ import { GraphBreadcrumbs } from "./graphBreadcrumbs";
 interface Props {
   activeNode: NodeDatum | null;
   parentNode: NodeDatum | null;
+  focusedThoughtId?: string;
 }
 
-const GraphInfos = ({ activeNode, parentNode }: Props) => {
+const GraphInfos = ({ activeNode, parentNode, focusedThoughtId }: Props) => {
   // If we have children, show them. If it's a leaf, show the leaf itself in the list.
   const listData = React.useMemo(() => {
     if (!activeNode) return [];
@@ -28,6 +29,7 @@ const GraphInfos = ({ activeNode, parentNode }: Props) => {
             <ThoughtsList
               parentNodeId={parentNode?.id || "root"}
               thoughts={listData}
+              focusedThoughtId={focusedThoughtId}
             />
           ) : (
             <Typography className="text-center py-10 opacity-50">
