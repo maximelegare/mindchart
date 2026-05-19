@@ -34,13 +34,14 @@ export const NoteEditor = ({ noteId, setOpen, onAction }: NoteEditorProps) => {
 
   if (!parsedData) return null;
 
-  const { title, thoughts, summary, id } = parsedData[0];
+  const { title, thoughts, summary, rawText, id } = parsedData[0];
 
   const note: Note = {
     id,
     title,
     topicId: "test",
     summary: summary,
+    rawText: rawText ?? "",
   };
 
   const onActionHandler = async (

@@ -118,6 +118,7 @@ export const EditNotePreview = ({
         id: note.id,
         title: title,
         summary: summary,
+        rawText: note.rawText,
         topicId: data.topic.id,
       };
 
@@ -181,6 +182,19 @@ export const EditNotePreview = ({
           />
         </View>
       </View>
+
+      {note.rawText ? (
+        <View className="flex-col gap-1">
+          <Label nativeID="rawText">Original text</Label>
+          <Typography
+            variant="p"
+            className="p-2 rounded-lg bg-card border border-input"
+          >
+            {note.rawText}
+          </Typography>
+        </View>
+      ) : null}
+
       <Controller
         control={control}
         name="title"

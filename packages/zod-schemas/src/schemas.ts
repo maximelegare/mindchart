@@ -46,6 +46,7 @@ export const NoteSchema = z.object({
   id: z.string(),
   title: z.string(),
   summary: z.string(),
+  rawText: z.string().default(""),
   topicId: z.string(),
 });
 

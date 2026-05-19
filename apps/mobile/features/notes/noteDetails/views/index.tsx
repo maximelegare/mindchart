@@ -7,6 +7,7 @@ import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAnd
 import { DisplayDate } from "@/components/ui/date";
 import { Card } from "@/components/ui/card";
 import ThoughtsList from "@/features/notes/noteDetails/components/ThoughtsList";
+import { RawTextViewer } from "@/features/notes/noteDetails/components/RawText";
 
 export const NoteDetailsFeature = () => {
   const local = useLocalSearchParams();
@@ -17,12 +18,17 @@ export const NoteDetailsFeature = () => {
   const parsedData = parseNoteAndThoughts(data);
 
   if (!parsedData) return;
-  const { title, created_at, thoughts } = parsedData[0];
+  const { title, created_at, rawText, thoughts } = parsedData[0];
 
   return (
-    <View className="flex-col">
-      <Card className="p-2">
-        <Typography variant="h3">{title.toUpperCase()}</Typography>
+    <View className="flex-col w-full">
+      <Card className="p-2 w-full">
+        <View className="flex-row w-full items-center justify-between gap-2">
+          <Typography variant="h3" className="flex-1 shrink">
+            {title.toUpperCase()}
+          </Typography>
+          {rawText ? <RawTextViewer rawText={rawText} /> : null}
+        </View>
         <DisplayDate size="md" date={created_at} className="pb-4" />
 
         <Typography variant="h4" className="text-border">

@@ -37,6 +37,7 @@ export const NotesJoinThoughtsPageSchema = z.object({
   note_id: z.string(),
   note_title: z.string(),
   note_summary: z.string(),
+  note_raw_text: z.string().nullable().optional(),
   note_created_at: z.string().nullable(),
   thoughts_json: z.string(),
 });
@@ -46,6 +47,7 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   title: z.string(),
   summary: z.string(),
   created_at: z.string().nullable(),
+  rawText: z.string(),
   thoughts: z.array(ThoughtSchema),
 });
 
@@ -72,6 +74,7 @@ export const LocalAIResNoteSchema = z.object({
   topicId: z.string().optional(),
   title: z.string(),
   summary: z.string(),
+  rawText: z.string().optional(),
   thoughts: z.array(LocalAIResThoughtSchema),
 });
 

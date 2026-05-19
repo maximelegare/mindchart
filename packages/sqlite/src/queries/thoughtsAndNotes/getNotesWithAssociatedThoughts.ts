@@ -10,6 +10,7 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
         note_id: NoteTable.id,
         note_title: NoteTable.title,
         note_summary: NoteTable.summary,
+        note_raw_text: NoteTable.rawText,
         note_created_at: NoteTable.createdAt,
         // We aggregate the thoughts into a JSON array string
         thoughts_json: sql<string>`

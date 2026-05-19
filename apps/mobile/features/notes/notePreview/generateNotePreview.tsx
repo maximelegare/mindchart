@@ -97,10 +97,11 @@ export const GenerateNotePreview = ({
         customContent: () => <LoadingState title="Saving..." size="large" />,
       });
 
-      const noteData = {
+      const noteData: Note = {
         id: note.id,
         title: title,
         summary: summary,
+        rawText: note.rawText,
         topicId: topic.id,
       };
 
@@ -155,6 +156,19 @@ export const GenerateNotePreview = ({
           />
         </View>
       </View>
+
+      {note.rawText ? (
+        <View className="flex-col gap-1">
+          <Label nativeID="rawText">Original text</Label>
+          <Typography
+            variant="p"
+            className="p-2 rounded-lg bg-card border border-input"
+          >
+            {note.rawText}
+          </Typography>
+        </View>
+      ) : null}
+
       <Controller
         control={control}
         name="title"

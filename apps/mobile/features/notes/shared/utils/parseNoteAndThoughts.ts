@@ -12,6 +12,7 @@ export const parseNoteAndThoughts = (
     id: row.note_id,
     title: row.note_title,
     summary: row.note_summary,
+    rawText: row.note_raw_text ?? "",
     created_at: row.note_created_at,
     // SQLite returns a stringified array from json_group_array
     thoughts:

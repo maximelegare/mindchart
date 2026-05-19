@@ -53,7 +53,7 @@ export const useGenerateLocalNote = () => {
           throw new Error("Response is not valid JSON");
         }
 
-        const data = formatNote(json);
+        const data = formatNote(json, transcript);
         const closestTopic = await findClosestTopic(data.note.topic);
 
         // Remove the topic field from the note

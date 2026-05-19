@@ -21,6 +21,7 @@ export const seedFormatNote = (
     id: noteId,
     title,
     summary,
+    rawText: "",
     createdAt: new Date().toISOString(),
   };
 

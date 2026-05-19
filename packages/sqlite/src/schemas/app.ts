@@ -41,6 +41,7 @@ export const NoteTable = sqliteTable(
     id: text("id").notNull().primaryKey(),
     title: text("title"),
     summary: text("summary"),
+    rawText: text("raw_text"),
     topicId: text("topic_id"),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)

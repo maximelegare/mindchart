@@ -12,9 +12,9 @@ type NoteWithTopic = Omit<Note, "topicId"> & {
 };
 
 export const formatNote = (
-  data: LocalAIResNoteSchemaModel
+  data: LocalAIResNoteSchemaModel,
+  rawText: string
 ): { note: NoteWithTopic; thoughts: Thought[] } => {
-  console.log("data", data);
   const { summary, thoughts, title, topic } = LocalAIResNoteSchema.parse(data);
 
   const noteId = generateID();
@@ -24,6 +24,7 @@ export const formatNote = (
     id: noteId,
     title,
     summary,
+    rawText,
     createdAt: new Date().toISOString(),
   };
 

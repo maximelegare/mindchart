@@ -14,6 +14,7 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
         note_id: NoteTable.id,
         note_title: NoteTable.title,
         note_summary: NoteTable.summary,
+        note_raw_text: NoteTable.rawText,
         note_created_at: NoteTable.createdAt,
         thoughts_json: sql<string>`
           json_group_array(
