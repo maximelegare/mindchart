@@ -220,18 +220,33 @@ export default function CirclePackSkia({
           if (parent) targetToProcess = parent;
         }
 
-        if (activeInternalId.value === targetToProcess.internalId) {
-          const prev = nodeMap.get(previousInternalId.value);
-          if (prev) runOnJS(navigateToNode)(prev, true);
-        } else {
+        const isSameTarget =
+          activeInternalId.value === targetToProcess.internalId;
+        const prev = nodeMap.get(previousInternalId.value);
+        const isParentChild =
+          !!prev &&
+          (prev.internalId === targetToProcess.parentId ||
+            targetToProcess.internalId === prev.parentId);
+        const canToggleBack =
+          !!prev && (isParentChild || prev.internalId === rootNode.internalId);
+
+        if (
+          isSameTarget &&
+          targetToProcess.rawData.name?.toLowerCase() !== "root" &&
+          canToggleBack
+        ) {
+          runOnJS(navigateToNode)(prev, true);
+        } else if (!isSameTarget) {
           runOnJS(navigateToNode)(targetToProcess, false);
+        } else {
+          runOnJS(navigateToNode)(rootNode, false);
         }
         break;
       }
     }
   });
 
-  const handleZoomOut = () => {
+  const handleZoomBack = () => {
     // Zooming out via button should NOT block the effect,
     // so we don't set isTransitioningInternal to true here.
     const current = nodeMap.get(activeInternalId.value);
@@ -241,6 +256,12 @@ export default function CirclePackSkia({
     } else if (current && current.internalId !== rootNode.internalId) {
       navigateToNode(rootNode, false);
     }
+  };
+
+  const handleZoomOut = () => {
+    const current = nodeMap.get(activeInternalId.value);
+    if (current?.rawData.name === "Root") return;
+    else navigateToNode(rootNode, false);
   };
 
   // ---------- 6. Dynamic Color Logic ----------
@@ -291,9 +312,29 @@ export default function CirclePackSkia({
           </Canvas>
         </GestureDetector>
 
-        <Pressable onPress={handleZoomOut} style={styles.zoomBtn}>
-          <Icon name="zoom-out" color="text" />
-        </Pressable>
+        <View
+          className="absolute gap-2 p-2 m-2"
+          style={{ bottom: 0, right: 0 }}
+        >
+          <Pressable
+            onPress={handleZoomBack}
+            style={{
+              ...styles.zoomBtn,
+              backgroundColor: hsl("background", colorScheme),
+            }}
+          >
+            <Icon name="undo-dot" color="text" />
+          </Pressable>
+          <Pressable
+            onPress={handleZoomOut}
+            style={{
+              ...styles.zoomBtn,
+              backgroundColor: hsl("background", colorScheme),
+            }}
+          >
+            <Icon name="zoom-out" color="text" />
+          </Pressable>
+        </View>
       </View>
     </GestureHandlerRootView>
   );
@@ -335,13 +376,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   zoomBtn: {
-    position: "absolute",
-    bottom: 16,
-    right: 16,
-    width: 44,
-    height: 44,
+    position: "relative",
+    width: 38,
+    height: 38,
     borderRadius: 22,
-    backgroundColor: "white",
     alignItems: "center",
     justifyContent: "center",
     elevation: 4,
