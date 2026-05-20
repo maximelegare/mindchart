@@ -42,6 +42,7 @@ import { updateEmbeddingsQuery } from "./src/queries/embeddings/updateEmbeddings
 import { deleteThoughByIdQuery } from "./src/queries/thoughts/deleteThoughById";
 import { deleteThoughtsByIdsQuery } from "./src/queries/thoughts/deleteThoughtsByIds";
 import { deleteNoteByIdQuery } from "./src/queries/notes/deleteNoteById";
+import { searchNotesQuery } from "./src/queries/search/searchNotes";
 
 export {
   getMigratingStatusQuery,
@@ -85,4 +86,5 @@ export {
   deleteThoughByIdQuery,
   deleteThoughtsByIdsQuery,
   deleteNoteByIdQuery,
+  searchNotesQuery,
 };
