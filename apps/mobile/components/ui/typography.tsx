@@ -85,7 +85,7 @@ const ariaLevels: Partial<Record<string, number>> = {
 // Main Typography component
 type TypographyVariant = keyof typeof variantClasses;
 
-interface TypographyProps extends SlottableTextProps {
+export interface TypographyProps extends SlottableTextProps {
   variant?: TypographyVariant;
   padding?: boolean;
   asChild?: boolean;

@@ -51,8 +51,9 @@ const searchResults: SearchResultsType = {
       results: [
         {
           id: "1",
-          title: "Thought 1",
-          summary: "Summary 1",
+          title: "this is a title",
+          summary:
+            "this is a summary of the thought this is a summary of the thought",
           semanticLabel: "Semantic Label 1",
           noteId: "1",
           categoryId: "1",

@@ -12,9 +12,10 @@ export const SearchResultItem: FC<SearchResultItemProps> = ({
   type,
   result,
 }) => {
+  const query = "title";
   switch (type) {
     case "notes":
-      return <NoteResult data={result as Note} />;
+      return <NoteResult query={query} />;
     case "thoughts":
       return <ThoughtsResult data={result as Thought} />;
   }
