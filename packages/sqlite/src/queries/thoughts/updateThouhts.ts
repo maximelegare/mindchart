@@ -1,7 +1,7 @@
 import { Thought } from "@repo/zod-schemas/src/schemas";
 import { DB } from "../../utils/initialize/getOPDatabase";
 import { ThoughtTable } from "../../schema.root";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const updateThoughtsQuery = async (
   db: DB,
@@ -20,11 +20,13 @@ export const updateThoughtsQuery = async (
     let updated = 0;
 
     try {
-      // 2. Split new vs updated
+      // Split new vs updated
       const toInsert = validData.filter((t) => t.status === "new");
       const toUpdate = validData.filter((t) => t.status === "updated");
 
-      // 3. Batch insert (fast)
+      // -----------------------------------
+      // INSERTS (Thought + FTS)
+      // -----------------------------------
       if (toInsert.length > 0) {
         await tx.insert(ThoughtTable).values(
           toInsert.map((thought) => ({
@@ -37,10 +39,25 @@ export const updateThoughtsQuery = async (
             createdAt: thought.createdAt ?? new Date().toISOString(),
           }))
         );
+
+        // FTS sync insert
+        await tx.run(sql`
+          INSERT INTO thought_fts (id, title, summary, semantic_label)
+          VALUES ${sql.join(
+            toInsert.map(
+              (t) =>
+                sql`(${t.id}, ${t.title}, ${t.summary}, ${t.semanticLabel})`
+            ),
+            sql`, `
+          )}
+        `);
+
         inserted = toInsert.length;
       }
 
-      // 4. Sequential updates (safe for SQLite)
+      // -----------------------------------
+      // UPDATES (Thought + FTS)
+      // -----------------------------------
       for (const thought of toUpdate) {
         await tx
           .update(ThoughtTable)
@@ -51,6 +68,15 @@ export const updateThoughtsQuery = async (
             categoryId: thought.categoryId,
           })
           .where(eq(ThoughtTable.id, thought.id));
+
+        // FTS sync update
+        await tx.run(sql`
+          UPDATE thought_fts
+          SET title = ${thought.title},
+              summary = ${thought.summary},
+              semantic_label = ${thought.semanticLabel}
+          WHERE id = ${thought.id}
+        `);
 
         updated++;
       }

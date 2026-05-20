@@ -3,6 +3,7 @@ import { useMigrations } from "drizzle-orm/op-sqlite/migrator";
 import { getOPDatabase } from "./initialize/getOPDatabase";
 import migrations from "../migrations/migrations";
 import { setupDB } from "./initialize/setupDB";
+import { sql } from "drizzle-orm";
 
 export const useMigrationHelper = () => {
   const [success, setSuccess] = useState(false);
@@ -10,16 +11,34 @@ export const useMigrationHelper = () => {
 
   const db = getOPDatabase();
 
-  // ✅ hook runs during render
-  useMigrations(db, migrations);
+  // Drizzle migrations (tables, schema, etc.)
+  const { success: drizzleSuccess, error: drizzleError } = useMigrations(
+    db,
+    migrations
+  );
 
-  // ✅ async work happens in effect
   useEffect(() => {
     let cancelled = false;
 
     const run = async () => {
       try {
+        // -----------------------------------
+        // 1. run custom setup
+        // -----------------------------------
         await setupDB();
+
+        // -----------------------------------
+        // 2. MANUAL FTS MIGRATIONS (IMPORTANT)
+        // -----------------------------------
+        await db.run(sql`
+          CREATE VIRTUAL TABLE IF NOT EXISTS thought_fts USING fts5(
+            id UNINDEXED,
+            title,
+            summary,
+            semantic_label
+          );
+        `);
+
         if (!cancelled) setSuccess(true);
       } catch (err) {
         if (!cancelled) setError(err);
@@ -31,7 +50,10 @@ export const useMigrationHelper = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [db]);
 
-  return { success, error };
+  return {
+    success: success && drizzleSuccess,
+    error: error || drizzleError,
+  };
 };

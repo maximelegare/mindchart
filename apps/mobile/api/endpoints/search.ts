@@ -1,6 +1,6 @@
-import { getOPDatabase, searchNotesQuery } from "@repo/sqlite";
+import { getOPDatabase, searchThoughtsInFTSQuery } from "@repo/sqlite";
 
 export const searchNotes = async (query: string) => {
   const db = getOPDatabase();
-  return await searchNotesQuery(db, query);
+  return await searchThoughtsInFTSQuery(db, query);
 };
