@@ -2,13 +2,16 @@ import { Typography } from "@/components/ui";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { Highlight } from "../highlight";
+import { SearchResultItemSchemaModel } from "@repo/zod-schemas";
 
-export const NoteResult = ({ query }: { query: string }) => {
-  const noteTitle = "Refining the User Onboarding Flow for Mobile App";
-  const thoughtTitle = "Simplify Social Login Integration";
-  const thoughtSummary =
-    "Implement OAuth for Google and Apple to allow one-tap registration and reduce drop-off rates.";
-
+export const NoteResult = ({
+  query,
+  data,
+}: {
+  query: string;
+  data: SearchResultItemSchemaModel;
+}) => {
+  const { noteTitle, thoughtTitle, thoughtSummary, createdAt } = data;
   return (
     <Pressable className="px-2 py-3 border-b border-input flex-row gap-2 items-center justify-between">
       <View className="flex-col" style={{ maxWidth: "75%" }}>
@@ -35,7 +38,7 @@ export const NoteResult = ({ query }: { query: string }) => {
       </View>
 
       <View>
-        <Typography variant="small">May 20</Typography>
+        <Typography variant="small">{createdAt}</Typography>
       </View>
     </Pressable>
   );

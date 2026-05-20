@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ScrollView } from "react-native";
 import {
   BottomSheet,
@@ -10,45 +10,12 @@ import {
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { Input } from "@/components/ui/input";
-import {
-  SearchResults as SearchResultsType,
-  SearchResultsList,
-} from "../features/searchResults/components/searchResultsList";
-
-const searchResults: SearchResultsType = {
-  results: [
-    {
-      type: "notes",
-      name: "Notes",
-      results: [
-        {
-          id: "1",
-          title: "Note 1",
-          summary: "Summary 1",
-          semanticLabel: "Semantic Label 1",
-          noteId: "1",
-          categoryId: "1",
-          thoughtId: "1",
-          createdAt: "2021-01-01",
-          topicName: "Topic 1",
-        },
-        {
-          id: "2",
-          title: "Note 2",
-          summary: "Summary 2",
-          semanticLabel: "Semantic Label 2",
-          noteId: "2",
-          categoryId: "2",
-          thoughtId: "2",
-          createdAt: "2021-01-02",
-          topicName: "Topic 2",
-        },
-      ],
-    },
-  ],
-};
+import { SearchResultsList } from "../features/searchResults/components/searchResultsList";
+import { useSearch } from "../hooks/useSearch";
 
 export const SearchFeature = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const { searchNotes } = useSearch(searchQuery);
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild>
@@ -66,10 +33,15 @@ export const SearchFeature = () => {
           style={{ left: 19 }}
         >
           <BottomSheetHeader className="bg-background" closeButton={false}>
-            <Input placeholder="Search" className="w-full mb-2" />
+            <Input
+              placeholder="Search"
+              className="w-full mb-2"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
           </BottomSheetHeader>
           <ScrollView>
-            <SearchResultsList results={searchResults.results} />
+            <SearchResultsList query={searchQuery} data={searchNotes ?? []} />
           </ScrollView>
         </BottomSheetView>
       </BottomSheetContent>

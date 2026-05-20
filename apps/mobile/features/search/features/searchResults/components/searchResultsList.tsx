@@ -1,37 +1,17 @@
-import { Typography } from "@/components/ui";
-import { Note, Thought } from "@repo/zod-schemas";
+import { SearchResultsSchemaModel } from "@repo/zod-schemas";
 import { View } from "react-native";
 import { SearchResultItem } from "./searchResultItem";
 
-type Type = "notes" | "thoughts";
-
-type SearchResult = {
-  type: Type;
-  name: string;
-  results: Thought[] | Note[];
-};
-
 export type SearchResults = {
-  results: SearchResult[];
+  query: string;
+  data: SearchResultsSchemaModel;
 };
 
-export const SearchResultsList = ({ results }: SearchResults) => {
+export const SearchResultsList = ({ query, data }: SearchResults) => {
   return (
     <View>
-      {results.map((resultCategory) => (
-        <View key={resultCategory.type}>
-          <Typography variant="h3" className="border-b border-input pb-2">
-            {resultCategory.name}
-          </Typography>
-          {resultCategory.results.map((result) => (
-            <View key={result.id}>
-              <SearchResultItem
-                type={resultCategory.type}
-                result={result as Thought | Note}
-              />
-            </View>
-          ))}
-        </View>
+      {data.map((item, idx) => (
+        <SearchResultItem key={idx} data={item} query={query} />
       ))}
     </View>
   );

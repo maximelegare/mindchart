@@ -1,16 +1,15 @@
-import { Note, Thought } from "@repo/zod-schemas";
+import { SearchResultItemSchemaModel } from "@repo/zod-schemas";
 import { NoteResult } from "./resultsItems/noteResult";
 import { FC } from "react";
 
 interface SearchResultItemProps {
-  type: "notes" | "thoughts";
-  result: Thought | Note;
+  query: string;
+  data: SearchResultItemSchemaModel;
 }
 
-export const SearchResultItem: FC<SearchResultItemProps> = ({ type }) => {
-  const query = "the";
-  switch (type) {
-    case "notes":
-      return <NoteResult query={query} />;
-  }
+export const SearchResultItem: FC<SearchResultItemProps> = ({
+  query,
+  data,
+}) => {
+  return <NoteResult query={query} data={data} />;
 };
