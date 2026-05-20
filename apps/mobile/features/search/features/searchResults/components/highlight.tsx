@@ -42,7 +42,9 @@ export const Highlight = ({
   if (matches.length === 0) {
     return (
       <Typography variant={variant} className={className} {...props}>
-        {text}
+        {text.slice(0, contextWindow)}
+        {" ... "}
+        {text.slice(-contextWindow)}
       </Typography>
     );
   }
@@ -77,8 +79,8 @@ export const Highlight = ({
   // -----------------------------------
   const displayText = merged.map((w) => text.slice(w.start, w.end)).join(" … ");
 
-  const prefix = merged[0].start > 0 ? "…" : "";
-  const suffix = merged[merged.length - 1].end < text.length ? "…" : "";
+  const prefix = merged[0].start > 0 ? " … " : "";
+  const suffix = merged[merged.length - 1].end < text.length ? " … " : "";
 
   // -----------------------------------
   // 4. Highlight ALL matches in final snippet
@@ -95,7 +97,7 @@ export const Highlight = ({
           <Typography
             key={i}
             variant={variant}
-            className={cn(isMatch ? highlightClassName : undefined)}
+            className={cn(isMatch ? highlightClassName : undefined, className)}
           >
             {part}
           </Typography>

@@ -20,7 +20,9 @@ export const SearchResultsList = ({ results }: SearchResults) => {
     <View>
       {results.map((resultCategory) => (
         <View key={resultCategory.type}>
-          <Typography variant="h3">{resultCategory.name}</Typography>
+          <Typography variant="h3" className="border-b border-input pb-2">
+            {resultCategory.name}
+          </Typography>
           {resultCategory.results.map((result) => (
             <View key={result.id}>
               <SearchResultItem
