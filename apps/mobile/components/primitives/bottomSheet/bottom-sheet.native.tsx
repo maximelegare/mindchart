@@ -287,8 +287,8 @@ type BottomSheetHeaderProps = React.ComponentPropsWithoutRef<typeof View>;
 
 const BottomSheetHeader = React.forwardRef<
   BottomSheetHeaderRef,
-  BottomSheetHeaderProps & { onDismiss?: () => void }
->(({ className, children, onDismiss, ...props }, ref) => {
+  BottomSheetHeaderProps & { onDismiss?: () => void; closeButton?: boolean }
+>(({ className, children, onDismiss, closeButton = true, ...props }, ref) => {
   const { dismiss } = useBottomSheetModal();
   function close() {
     onDismiss?.();
@@ -303,15 +303,17 @@ const BottomSheetHeader = React.forwardRef<
     <View
       ref={ref}
       className={cn(
-        "border-b border-border flex-row items-center justify-between pl-4",
+        "border-b border-border flex-row items-center justify-between",
         className
       )}
       {...props}
     >
       {children}
-      <Button onPress={close} variant="ghost" className="pr-4">
-        <X className="text-muted-foreground" size={24} />
-      </Button>
+      {closeButton && (
+        <Button onPress={close} variant="ghost" className="pr-4">
+          <X className="text-muted-foreground" size={24} />
+        </Button>
+      )}
     </View>
   );
 });
