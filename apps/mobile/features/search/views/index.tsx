@@ -9,13 +9,14 @@ import {
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
-import { Input } from "@/components/ui/input";
 import { SearchResultsList } from "../features/searchResults/components/searchResultsList";
 import { useSearch } from "../hooks/useSearch";
+import { ConventionalSearch } from "../features/conventionalSearch/search";
 
 export const SearchFeature = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { searchNotes } = useSearch(searchQuery);
+
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild>
@@ -32,13 +33,11 @@ export const SearchFeature = () => {
           className="gap-5 pt-6 bg-background h-full"
           style={{ left: 19 }}
         >
-          <BottomSheetHeader className="bg-background" closeButton={false}>
-            <Input
-              placeholder="Search"
-              className="w-full mb-2"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
+          <BottomSheetHeader
+            className="bg-background w-full"
+            closeButton={false}
+          >
+            <ConventionalSearch onSearch={setSearchQuery} />
           </BottomSheetHeader>
           <ScrollView>
             <SearchResultsList query={searchQuery} data={searchNotes ?? []} />
