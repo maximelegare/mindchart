@@ -11,6 +11,8 @@ type HighlightProps = TypographyProps & {
   minLengthToTrim?: number;
 };
 
+type HighlightRange = { start: number; end: number };
+
 export const Highlight = ({
   text,
   query,
@@ -20,7 +22,10 @@ export const Highlight = ({
   contextWindow = 20,
   ...props
 }: HighlightProps) => {
-  if (!query.trim()) {
+  const trimmedQuery = query.trim();
+
+  // Require minimum 2 characters before rendering highlights
+  if (!trimmedQuery || trimmedQuery.length < 2) {
     return (
       <Typography variant={variant} className={className} {...props}>
         {text}
@@ -28,18 +33,10 @@ export const Highlight = ({
     );
   }
 
-  const lowerText = text.toLowerCase();
-  const lowerQuery = query.toLowerCase();
+  const highlightRanges = getHighlightRanges(text, trimmedQuery);
 
-  const matches: number[] = [];
-
-  let idx = lowerText.indexOf(lowerQuery);
-  while (idx !== -1) {
-    matches.push(idx);
-    idx = lowerText.indexOf(lowerQuery, idx + 1);
-  }
-
-  if (matches.length === 0) {
+  // If query isn't matched contiguously within this block of text, return contextual snippet
+  if (highlightRanges.length === 0) {
     return (
       <Typography variant={variant} className={className} {...props}>
         {text.slice(0, contextWindow)}
@@ -49,64 +46,88 @@ export const Highlight = ({
     );
   }
 
-  // -----------------------------------
-  // 1. Build windows per match
-  // -----------------------------------
-  const windows = matches.map((m) => ({
-    start: Math.max(0, m - contextWindow),
-    end: Math.min(text.length, m + query.length + contextWindow),
-  }));
+  const sorted = [...highlightRanges].sort((a, b) => a.start - b.start);
+  const snippetStart = Math.max(0, sorted[0].start - contextWindow);
+  const snippetEnd = Math.min(
+    text.length,
+    sorted[sorted.length - 1].end + contextWindow
+  );
+  const displayText = text.slice(snippetStart, snippetEnd);
+  const prefix = snippetStart > 0 ? " … " : "";
+  const suffix = snippetEnd < text.length ? " … " : "";
 
-  // -----------------------------------
-  // 2. Merge overlapping windows
-  // -----------------------------------
-  windows.sort((a, b) => a.start - b.start);
-
-  const merged: { start: number; end: number }[] = [];
-
-  for (const w of windows) {
-    const last = merged[merged.length - 1];
-
-    if (!last || w.start > last.end) {
-      merged.push({ ...w });
-    } else {
-      last.end = Math.max(last.end, w.end);
-    }
-  }
-
-  // -----------------------------------
-  // 3. Build final display text
-  // -----------------------------------
-  const displayText = merged.map((w) => text.slice(w.start, w.end)).join(" … ");
-
-  const prefix = merged[0].start > 0 ? " … " : "";
-  const suffix = merged[merged.length - 1].end < text.length ? " … " : "";
-
-  // -----------------------------------
-  // 4. Highlight ALL matches in final snippet
-  // -----------------------------------
-  const parts = displayText.split(new RegExp(`(${escapeRegex(query)})`, "gi"));
+  const segments = splitByHighlightRanges(
+    displayText,
+    snippetStart,
+    highlightRanges
+  );
 
   return (
     <Typography className={className} variant={variant} {...props}>
       {prefix}
-      {parts.map((part, i) => {
-        const isMatch = part.toLowerCase() === lowerQuery;
-
-        return (
-          <Typography
-            key={i}
-            variant={variant}
-            className={cn(isMatch ? highlightClassName : undefined, className)}
-          >
-            {part}
-          </Typography>
-        );
-      })}
+      {segments.map((seg, i) => (
+        <Typography
+          key={i}
+          variant={variant}
+          className={cn(
+            seg.highlight ? highlightClassName : undefined,
+            className
+          )}
+        >
+          {seg.text}
+        </Typography>
+      ))}
       {suffix}
     </Typography>
   );
 };
+
+/** Finds strict, continuous raw substring locations bypassing arbitrary word-boundary checks. */
+function getHighlightRanges(text: string, query: string): HighlightRange[] {
+  if (query.length < 2) return [];
+
+  const ranges: HighlightRange[] = [];
+  const escapedQuery = escapeRegex(query);
+
+  const re = new RegExp(escapedQuery, "gi");
+  let match: RegExpExecArray | null;
+
+  while ((match = re.exec(text)) !== null) {
+    ranges.push({
+      start: match.index,
+      end: match.index + query.length,
+    });
+
+    if (match[0].length === 0) re.lastIndex++;
+  }
+
+  return ranges;
+}
+
+function splitByHighlightRanges(
+  displayText: string,
+  displayStart: number,
+  ranges: HighlightRange[]
+): { text: string; highlight: boolean }[] {
+  const segments: { text: string; highlight: boolean }[] = [];
+  let i = 0;
+
+  while (i < displayText.length) {
+    const abs = displayStart + i;
+    const inRange = ranges.some((r) => abs >= r.start && abs < r.end);
+    let j = i + 1;
+    while (j < displayText.length) {
+      const absJ = displayStart + j;
+      const same = ranges.some((r) => absJ >= r.start && absJ < r.end);
+      if (same !== inRange) break;
+      j++;
+    }
+    segments.push({ text: displayText.slice(i, j), highlight: inRange });
+    i = j;
+  }
+
+  return segments;
+}
 
 function escapeRegex(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

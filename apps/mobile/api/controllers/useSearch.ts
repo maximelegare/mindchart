@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
 import { searchNotes } from "../endpoints/search";
 
@@ -8,6 +8,7 @@ export const useSearchController = () => {
       queryKey: [REACT_QUERY_KEYS.searchNotes, query],
       queryFn: () => searchNotes(query),
       enabled: query.trim().length > 0,
+      placeholderData: keepPreviousData,
       ...options,
     });
 

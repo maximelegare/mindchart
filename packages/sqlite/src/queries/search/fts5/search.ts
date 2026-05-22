@@ -2,41 +2,61 @@ import { sql } from "drizzle-orm";
 import { DB } from "../../../utils/initialize/getOPDatabase";
 import { SearchResultsSchema } from "../../../../../zod-schemas/src/client";
 
-/** FTS5 prefix match per token (OR) for search-as-you-type. */
-function buildFts5PrefixMatchQuery(query: string): string {
-  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+/** Minimum chars before a token is used in FTS (1-char prefixes match almost everything). */
+const MIN_FTS_TOKEN_LEN = 2;
 
-  if (!tokens.length) return "";
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
-  return tokens
-    .map((t) => {
-      const bare = t.replace(/[^a-z0-9_]/gi, "");
-      if (bare.length > 0) return `${bare}*`;
-      return `"${t.replace(/"/g, '""')}"*`;
-    })
-    .join(" OR ");
+/** True if text contains the raw query string as a substring (case-insensitive). */
+function hasSubStringMatch(text: string, query: string): boolean {
+  if (query.length < MIN_FTS_TOKEN_LEN) return false;
+  return new RegExp(escapeRegex(query), "i").test(text);
+}
+
+function getRowSearchableText(row: {
+  noteTitle: string;
+  thoughtTitle: string;
+  thoughtSummary: string;
+}): string {
+  return `${row.noteTitle} ${row.thoughtTitle} ${row.thoughtSummary}`;
+}
+
+/**
+ * FTS5 phrase query match. Multi-token strings are searched as contiguous text sequences.
+ */
+function buildFts5PhraseQuery(query: string): {
+  ftsMatch: string;
+  isTooShort: boolean;
+} {
+  const normalized = query.trim();
+  if (normalized.length < MIN_FTS_TOKEN_LEN) {
+    return { ftsMatch: "", isTooShort: true };
+  }
+
+  const safeQuery = normalized.replace(/"/g, '""');
+  const ftsMatch = `"${safeQuery}"*`;
+
+  return { ftsMatch, isTooShort: false };
 }
 
 export const searchThoughtsInFTSQuery = async (db: DB, query: string) => {
   const normalized = query.trim().toLowerCase();
 
-  if (!normalized) {
+  if (!normalized || normalized.length < MIN_FTS_TOKEN_LEN) {
     return [];
   }
 
   try {
-    // 1. Ensure your index/triggers are properly applied
-    // await ensureThoughtFtsIndex(db);
+    const { ftsMatch, isTooShort } = buildFts5PhraseQuery(normalized);
 
-    const ftsMatch = buildFts5PrefixMatchQuery(normalized);
-    if (!ftsMatch) {
+    if (isTooShort || !ftsMatch) {
       return [];
     }
 
-    // 2. Explicitly scope the search to your text columns, bypassing the unindexed ID
     const scopedMatchQuery = `{title summary semantic_label} : ${ftsMatch}`;
 
-    // 3. Use db.run() instead of execute to interface with the op-sqlite driver session
     const rawResult = await db.run(sql`
       SELECT
         t.id as id,
@@ -53,12 +73,18 @@ export const searchThoughtsInFTSQuery = async (db: DB, query: string) => {
       LIMIT 20
     `);
 
-    // 4. Safely extract rows across op-sqlite version types
     const rows =
       (rawResult as any).rows?._array || (rawResult as any).rows || [];
 
-    // 5. Validate and parse through your zod schema
-    return SearchResultsSchema.parse(rows);
+    const filteredRows = rows.filter(
+      (row: {
+        noteTitle: string;
+        thoughtTitle: string;
+        thoughtSummary: string;
+      }) => hasSubStringMatch(getRowSearchableText(row), normalized)
+    );
+
+    return SearchResultsSchema.parse(filteredRows);
   } catch (error) {
     console.error("searchThoughtsInFTSQuery failed:", error);
     throw error;
