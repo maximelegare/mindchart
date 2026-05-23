@@ -1,6 +1,7 @@
 import React from "react";
 import { Typography, TypographyProps } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { StyleProp, TextStyle } from "react-native";
 
 type HighlightProps = TypographyProps & {
   text: string;
@@ -9,6 +10,7 @@ type HighlightProps = TypographyProps & {
   className?: string;
   contextWindow?: number;
   minLengthToTrim?: number;
+  style?: StyleProp<TextStyle>;
 };
 
 type HighlightRange = { start: number; end: number };
@@ -20,6 +22,7 @@ export const Highlight = ({
   variant,
   highlightClassName = "bg-input",
   contextWindow = 20,
+  style,
   ...props
 }: HighlightProps) => {
   const trimmedQuery = query.trim();
@@ -27,7 +30,12 @@ export const Highlight = ({
   // Require minimum 2 characters before rendering highlights
   if (!trimmedQuery || trimmedQuery.length < 2) {
     return (
-      <Typography variant={variant} className={className} {...props}>
+      <Typography
+        variant={variant}
+        className={className}
+        style={style}
+        {...props}
+      >
         {text}
       </Typography>
     );

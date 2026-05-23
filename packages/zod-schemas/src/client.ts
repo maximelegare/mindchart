@@ -91,6 +91,7 @@ export const SearchResultItemSchema = z.object({
   noteTitle: z.string(),
   thoughtTitle: z.string(),
   thoughtSummary: z.string(),
+  categoryId: z.string(),
   createdAt: z.string(),
 });
 

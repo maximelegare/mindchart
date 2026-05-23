@@ -61,6 +61,7 @@ export const searchThoughtsInFTSQuery = async (db: DB, query: string) => {
       SELECT
         t.id as id,
         t.note_id as noteId,
+        t.category_id as categoryId,
         COALESCE(n.title, '') as noteTitle,
         COALESCE(t.title, '') as thoughtTitle,
         COALESCE(t.summary, '') as thoughtSummary,
@@ -70,7 +71,6 @@ export const searchThoughtsInFTSQuery = async (db: DB, query: string) => {
       LEFT JOIN note n ON n.id = t.note_id
       WHERE thought_fts MATCH ${scopedMatchQuery}
       ORDER BY bm25(thought_fts)
-      LIMIT 20
     `);
 
     const rows =

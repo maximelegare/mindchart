@@ -1,11 +1,11 @@
-import { SearchResultItemSchemaModel } from "@repo/zod-schemas";
 import { NoteResult } from "./resultsItems/noteResult";
 import { FC } from "react";
 import { View } from "react-native";
+import { GroupedNoteResult } from "../../searchOptions/groupByNote/groupByNote";
 
 interface SearchResultItemProps {
   query: string;
-  data: SearchResultItemSchemaModel;
+  data: GroupedNoteResult;
 }
 
 export const SearchResultItem: FC<SearchResultItemProps> = ({
