@@ -25,7 +25,7 @@ export const ConventionalSearch = ({
       <Input
         ref={inputRef}
         placeholder="Search"
-        className="w-full mb-2"
+        className="w-full mb-2 bg-card"
         value={searchQuery}
         onChangeText={handleSearch}
       />

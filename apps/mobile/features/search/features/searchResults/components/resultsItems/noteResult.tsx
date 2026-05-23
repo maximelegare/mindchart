@@ -1,8 +1,10 @@
-import { Typography } from "@/components/ui";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { Highlight } from "../highlight";
 import { SearchResultItemSchemaModel } from "@repo/zod-schemas";
+import { DisplayDate } from "@/components/ui/date";
+import { useBottomSheetModal } from "@gorhom/bottom-sheet";
+import { useRouter } from "expo-router";
 
 export const NoteResult = ({
   query,
@@ -11,16 +13,30 @@ export const NoteResult = ({
   query: string;
   data: SearchResultItemSchemaModel;
 }) => {
-  const { noteTitle, thoughtTitle, thoughtSummary, createdAt } = data;
+  const { noteTitle, thoughtTitle, thoughtSummary, createdAt, noteId } = data;
+
+  const { push } = useRouter();
+  const { dismiss } = useBottomSheetModal();
+  const handlePress = () => {
+    dismiss();
+    push({
+      pathname: "/notes/[id]",
+      params: { id: noteId },
+    });
+  };
+
   return (
-    <Pressable className="px-2 py-3 border-b border-input flex-row gap-2 items-center justify-between">
+    <Pressable
+      onPress={handlePress}
+      className="px-2 py-3 flex-row gap-2 items-center justify-between"
+    >
       <View className="flex-col" style={{ maxWidth: "75%" }}>
         <Highlight
           variant="h3"
           className=""
           text={noteTitle}
           query={query}
-          contextWindow={15}
+          contextWindow={20}
         />
         <View className="ml-2">
           <Highlight
@@ -38,7 +54,7 @@ export const NoteResult = ({
       </View>
 
       <View>
-        <Typography variant="small">{createdAt}</Typography>
+        <DisplayDate showCalendarIcon={false} date={createdAt} />
       </View>
     </Pressable>
   );
