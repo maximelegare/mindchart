@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View } from "react-native";
 import {
   BottomSheet,
@@ -12,10 +12,11 @@ import { Icon } from "@/components/ui/icons/icon";
 import { SearchResultsList } from "../features/searchResults/components/searchResultsList";
 import { useSearch } from "../hooks/useSearch";
 import { ConventionalSearch } from "../features/conventionalSearch/search";
+import { useSearchContext } from "../context/search";
 
 export const SearchFeature = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const { searchNotes } = useSearch(searchQuery);
+  const { query, setQuery } = useSearchContext();
+  const { searchNotes } = useSearch(query);
 
   return (
     <BottomSheet>
@@ -35,11 +36,11 @@ export const SearchFeature = () => {
             className="bg-background w-full px-4"
             closeButton={false}
           >
-            <ConventionalSearch onSearch={setSearchQuery} />
+            <ConventionalSearch onSearch={setQuery} />
           </BottomSheetHeader>
         </View>
         <BottomSheetScrollView className="flex-1 bg-background px-4">
-          <SearchResultsList query={searchQuery} data={searchNotes ?? []} />
+          <SearchResultsList query={query} data={searchNotes ?? []} />
         </BottomSheetScrollView>
       </BottomSheetContent>
     </BottomSheet>

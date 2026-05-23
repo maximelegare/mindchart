@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { TextInput, View } from "react-native";
+import { useSearchContext } from "../../context/search";
 
 export const ConventionalSearch = ({
   onSearch,
@@ -13,10 +14,10 @@ export const ConventionalSearch = ({
     inputRef.current?.focus();
   }, []);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const { queryInput, setQueryInput } = useSearchContext();
 
   const handleSearch = (t: string) => {
-    setSearchQuery(t);
+    setQueryInput(t);
     onSearch(t);
   };
 
@@ -26,7 +27,7 @@ export const ConventionalSearch = ({
         ref={inputRef}
         placeholder="Search"
         className="w-full mb-2 bg-card"
-        value={searchQuery}
+        value={queryInput}
         onChangeText={handleSearch}
       />
     </View>
