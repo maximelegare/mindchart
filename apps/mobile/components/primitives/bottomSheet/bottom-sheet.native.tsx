@@ -8,6 +8,7 @@ import {
   BottomSheetModal,
   BottomSheetFlatList as GBottomSheetFlatList,
   BottomSheetFooter as GBottomSheetFooter,
+  BottomSheetScrollView as GBottomSheetScrollView,
   BottomSheetTextInput as GBottomSheetTextInput,
   BottomSheetView as GBottomSheetView,
   useBottomSheetModal,
@@ -282,6 +283,28 @@ const BottomSheetFlatList = React.forwardRef<
   );
 });
 
+type BottomSheetScrollViewRef = React.ElementRef<typeof GBottomSheetScrollView>;
+type BottomSheetScrollViewProps = React.ComponentPropsWithoutRef<
+  typeof GBottomSheetScrollView
+>;
+const BottomSheetScrollView = React.forwardRef<
+  BottomSheetScrollViewRef,
+  BottomSheetScrollViewProps
+>(({ className, children, ...props }, ref) => {
+  const insets = useSafeAreaInsets();
+  return (
+    <GBottomSheetScrollView
+      ref={ref}
+      contentContainerStyle={[{ paddingBottom: insets.bottom }]}
+      className={cn("py-4", className)}
+      keyboardShouldPersistTaps="handled"
+      {...props}
+    >
+      {children}
+    </GBottomSheetScrollView>
+  );
+});
+
 type BottomSheetHeaderRef = React.ElementRef<typeof View>;
 type BottomSheetHeaderProps = React.ComponentPropsWithoutRef<typeof View>;
 
@@ -369,6 +392,7 @@ export {
   BottomSheetCloseTrigger,
   BottomSheetContent,
   BottomSheetFlatList,
+  BottomSheetScrollView,
   BottomSheetFooter,
   BottomSheetHeader,
   BottomSheetOpenTrigger,

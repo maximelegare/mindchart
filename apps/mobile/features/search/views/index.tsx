@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { View } from "react-native";
 import {
   BottomSheet,
   BottomSheetContent,
   BottomSheetHeader,
   BottomSheetOpenTrigger,
-  BottomSheetView,
+  BottomSheetScrollView,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
@@ -28,21 +28,19 @@ export const SearchFeature = () => {
         snapPoints={["100%"]}
         style={{ zIndex: 100 }}
         enableDynamicSizing={false}
+        enableContentPanningGesture={false}
       >
-        <BottomSheetView
-          className="gap-5 pt-6 bg-background h-full"
-          style={{ left: 19 }}
-        >
+        <View className="gap-5 pt-6 bg-background">
           <BottomSheetHeader
-            className="bg-background w-full"
+            className="bg-background w-full px-4"
             closeButton={false}
           >
             <ConventionalSearch onSearch={setSearchQuery} />
           </BottomSheetHeader>
-          <ScrollView>
-            <SearchResultsList query={searchQuery} data={searchNotes ?? []} />
-          </ScrollView>
-        </BottomSheetView>
+        </View>
+        <BottomSheetScrollView className="flex-1 bg-background px-4">
+          <SearchResultsList query={searchQuery} data={searchNotes ?? []} />
+        </BottomSheetScrollView>
       </BottomSheetContent>
     </BottomSheet>
   );
