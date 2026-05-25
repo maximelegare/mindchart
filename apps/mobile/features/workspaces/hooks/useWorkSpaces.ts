@@ -84,13 +84,18 @@ export const useWorkSpaces = () => {
   );
 
   const createWorkspace = useCallback(
-    async (name: string): Promise<Workspace> => {
+    async (
+      name: string,
+      options?: { icon?: string; color?: string }
+    ): Promise<Workspace> => {
       setLoading(true);
       try {
         const id = generateWorkspaceId();
         const workspace: Workspace = {
           id,
           name: name.trim() || "Untitled Workspace",
+          icon: options?.icon,
+          color: options?.color,
           dbFileName: workspaceDbFileName(id),
           createdAt: Date.now(),
         };
@@ -123,10 +128,18 @@ export const useWorkSpaces = () => {
   );
 
   const renameWorkspace = useCallback(
-    async (id: string, name: string) => {
+    async (
+      id: string,
+      name: string,
+      options?: { icon?: string; color?: string }
+    ) => {
       const trimmed = name.trim();
       if (!trimmed) return;
-      updateWorkspace(id, { name: trimmed });
+      updateWorkspace(id, {
+        name: trimmed,
+        ...(options?.icon !== undefined ? { icon: options.icon } : {}),
+        ...(options?.color !== undefined ? { color: options.color } : {}),
+      });
     },
     [updateWorkspace]
   );

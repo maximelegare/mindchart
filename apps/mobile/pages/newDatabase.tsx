@@ -24,9 +24,9 @@ export const NewDatabaseScreen = () => {
           confirmLabel="Create"
           description="Each workspace has its own isolated database."
           onCancel={closeModal}
-          onConfirm={async (name) => {
+          onConfirm={async ({ name, color, icon }) => {
             closeModal();
-            await createWorkspace(name);
+            await createWorkspace(name, { color, icon });
             router.replace("/(tabs)");
           }}
         />

@@ -1,25 +1,64 @@
-import { useState } from "react";
-import { View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Typography } from "@/components/ui/typography";
+import { Icon } from "@/components/ui/icons/icon";
+import type { IconName } from "@/components/ui/icons/icon-registry";
+import { CATEGORIES_COLORS } from "@repo/theme/categories";
+import { cn } from "@/lib/cn";
+import { hsl } from "@/utils/hsl";
+import { useColorScheme } from "@/lib/useColorScheme";
+
+const COLOR_OPTIONS: { key: string; value: string }[] = Object.entries(
+  CATEGORIES_COLORS
+).map(([key, value]) => ({ key, value }));
+
+// Curated subset of the icon registry that makes sense for a workspace.
+const ICON_OPTIONS: IconName[] = [
+  "brain",
+  "sparkles",
+  "database",
+  "notebook-text",
+  "star",
+  "layers",
+  "graph",
+  "cpu",
+  "calendar",
+  "keyboard",
+  "mic",
+  "square",
+  "settings",
+  "brackets-curly",
+];
+
+export type WorkspaceFormValues = {
+  name: string;
+  color: string;
+  icon?: IconName;
+};
 
 type Props = {
   initialName?: string;
+  initialColor?: string;
+  initialIcon?: IconName;
   placeholder?: string;
   description?: string;
   confirmLabel: string;
   cancelLabel?: string;
-  onConfirm: (name: string) => void;
+  onConfirm: (values: WorkspaceFormValues) => void;
   onCancel: () => void;
 };
 
 /**
- * Custom modal body with a single text input + confirm/cancel buttons.
- * Use as the `customContent` of `useModal().openModal`.
+ * Custom modal body to capture a workspace's name, color (required), and
+ * icon (optional). Use as the `customContent` of `useModal().openModal`.
  */
 export const WorkspaceNameInputModal = ({
   initialName = "",
+  initialColor,
+  initialIcon,
   placeholder = "Workspace name",
   description,
   confirmLabel,
@@ -27,32 +66,154 @@ export const WorkspaceNameInputModal = ({
   onConfirm,
   onCancel,
 }: Props) => {
-  const [value, setValue] = useState(initialName);
-  const trimmed = value.trim();
+  const { colorScheme } = useColorScheme();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<WorkspaceFormValues>({
+    mode: "onChange",
+    defaultValues: {
+      name: initialName,
+      color: initialColor ?? COLOR_OPTIONS[0].value,
+      icon: initialIcon,
+    },
+  });
+
+  const submit = handleSubmit((values) => {
+    const trimmed = values.name.trim();
+    if (!trimmed) return;
+    onConfirm({ name: trimmed, color: values.color, icon: values.icon });
+  });
 
   return (
     <View className="flex-col gap-4">
       {description && <Typography variant="muted">{description}</Typography>}
-      <Input
-        value={value}
-        onChangeText={setValue}
-        placeholder={placeholder}
-        autoFocus
-        autoCapitalize="words"
-        returnKeyType="done"
-        onSubmitEditing={() => {
-          if (trimmed) onConfirm(trimmed);
-        }}
+
+      <Controller
+        control={control}
+        name="name"
+        rules={{ validate: (v) => v.trim().length > 0 }}
+        render={({ field: { value, onChange, onBlur } }) => (
+          <View className="flex-col gap-1">
+            <Label nativeID="workspace-name">Name</Label>
+            <Input
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              placeholder={placeholder}
+              autoFocus
+              autoCapitalize="words"
+              returnKeyType="done"
+              onSubmitEditing={submit}
+            />
+          </View>
+        )}
       />
+
+      <Controller
+        control={control}
+        name="color"
+        rules={{ required: true }}
+        render={({ field: { value, onChange } }) => (
+          <View className="flex-col gap-1">
+            <Label nativeID="workspace-color">Color</Label>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
+            >
+              {COLOR_OPTIONS.map(({ key, value: swatch }) => {
+                const selected = value === swatch;
+                return (
+                  <Pressable
+                    key={key}
+                    onPress={() => onChange(swatch)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Color ${key}`}
+                  >
+                    <View
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 18,
+                        backgroundColor: swatch,
+                        borderWidth: selected ? 2 : 0,
+                        borderColor: hsl("foreground", colorScheme),
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {selected && (
+                        <Icon name="check" color="foreground" size={16} />
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="icon"
+        render={({ field: { value, onChange } }) => (
+          <View className="flex-col gap-1">
+            <View className="flex-row items-center justify-between">
+              <Label nativeID="workspace-icon">Icon (optional)</Label>
+              {value && (
+                <Pressable
+                  onPress={() => onChange(undefined)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear icon"
+                >
+                  <Typography variant="muted" className="text-sm">
+                    Clear
+                  </Typography>
+                </Pressable>
+              )}
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
+            >
+              {ICON_OPTIONS.map((iconName) => {
+                const selected = value === iconName;
+                return (
+                  <Pressable
+                    key={iconName}
+                    onPress={() => onChange(selected ? undefined : iconName)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Icon ${iconName}`}
+                    className={cn(
+                      "w-10 h-10 rounded-md items-center justify-center border",
+                      selected
+                        ? "border-primary bg-primary/10"
+                        : "border-input bg-background"
+                    )}
+                  >
+                    <Icon
+                      name={iconName}
+                      color={selected ? "primary" : "foreground"}
+                      size={20}
+                    />
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+      />
+
       <View className="flex-row justify-end gap-2 mt-2">
         <Button variant="default" onPress={onCancel}>
           <Typography>{cancelLabel}</Typography>
         </Button>
-        <Button
-          variant="default"
-          disabled={!trimmed}
-          onPress={() => onConfirm(trimmed)}
-        >
+        <Button variant="default" disabled={!isValid} onPress={submit}>
           <Typography>{confirmLabel}</Typography>
         </Button>
       </View>
