@@ -5,27 +5,34 @@ import {
   APP_DATA_DEFINITIONS,
 } from "../../data/settings";
 import { getOPDatabase } from "./getOPDatabase";
-import { validateIfDBExists } from "../../queries/dbStatus/validateIfDBExists";
+import { sql } from "drizzle-orm";
 
 export const setupDB = async (retries = 10, delay = 200) => {
   const db = getOPDatabase();
 
-  // Retry logic to wait for migrations to complete and check if data already exists
+  // Wait for the migration to have created `app_data`, then decide based on
+  // whether ROWS are present (not just the table). The old logic returned as
+  // soon as the table existed, which after `migrate()` is always true — that
+  // skipped seeding entirely and left fresh workspaces without sync_graph /
+  // graph_data / settings / categories rows.
   for (let i = 0; i < retries; i++) {
     try {
-      // Try to query AppDataTable to check if tables exist and if data is already there
-      const dbExists = await validateIfDBExists();
-      // If data exists, we're done
-      if (dbExists) return;
-      // If table exists but is empty, break and proceed with setup
+      const result = await db.run(sql`SELECT COUNT(*) AS c FROM app_data;`);
+      // Drizzle's op-sqlite driver returns `rows` as a plain array at
+      // runtime even though the `op-sqlite` types expose `.item()`,
+      // so we cast through `unknown` to access by index safely.
+      const rows = result.rows as unknown as Array<{ c?: number }>;
+      const count = Number(rows[0]?.c ?? 0);
+      // Already seeded
+      if (count > 0) return;
+      // Table exists but empty — proceed to seed
       break;
     } catch (err: unknown) {
-      // If table doesn't exist yet (migrations still running), wait and retry
+      // Table doesn't exist yet (migrations still running): wait and retry
       if (i < retries - 1) {
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
-      // If all retries failed, throw the error
       throw err;
     }
   }

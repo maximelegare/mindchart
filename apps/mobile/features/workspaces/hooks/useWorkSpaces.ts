@@ -59,13 +59,18 @@ export const useWorkSpaces = () => {
   }, [queryClient]);
 
   /**
-   * Point the SQLite singleton at the given workspace's file and reset
-   * react-query caches so screens refetch against the new DB.
+   * Point the SQLite singleton at the given workspace's file, run any
+   * pending migrations on it, and only THEN refresh react-query caches
+   * so screens never query an unmigrated DB.
    */
   const activateWorkspace = useCallback(
     async (workspace: Workspace) => {
       await closeOPDatabase();
       await setActiveWorkspaceDb(workspace.dbFileName);
+      // Critical: migrations must complete BEFORE any consumer query fires.
+      // Otherwise refetchQueries({type:"active"}) below races migrate() and
+      // observed queries (e.g. fetch_all_topics) hit a tableless DB.
+      await runMigrations();
       setActiveWorkspaceId(workspace.id);
       bumpDbEpoch();
       await resetCaches();
@@ -87,8 +92,6 @@ export const useWorkSpaces = () => {
         await ensureDatabasesDir();
         addWorkspace(workspace);
         await activateWorkspace(workspace);
-        // Initialize the empty file: drizzle migrations + seed + FTS table.
-        await runMigrations();
         return workspace;
       } finally {
         setLoading(false);
@@ -224,9 +227,9 @@ export const useWorkSpaces = () => {
       await FileSystem.deleteAsync(destUri, { idempotent: true });
       await FileSystem.copyAsync({ from: backupUri, to: destUri });
 
+      // activateWorkspace runs runMigrations internally on the new file
+      // before unblocking observed queries.
       await activateWorkspace(target);
-      // Apply any pending migrations the imported file is missing.
-      await runMigrations();
     },
     [activateWorkspace]
   );

@@ -30,10 +30,13 @@ import { getItem, setItem } from "@/lib/storage";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { useFrameworkReady } from "@/hooks/useFrameworkReady";
 import { cn } from "@/lib/cn";
-import { setActiveWorkspace, validateIfDBExists } from "@repo/sqlite";
+import {
+  runMigrations,
+  setActiveWorkspace,
+  validateIfDBExists,
+} from "@repo/sqlite";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 import { migrateLegacyDatabase } from "@/features/workspaces/utils/migrateLegacyDatabase";
-import { WorkspaceMigrationGate } from "@/features/workspaces/components/workspaceMigrationGate";
 
 import { Buffer } from "buffer";
 import { AutoConnectService } from "@/features/settings/features/ai/autoConnect/services/autoConnectService";
@@ -54,9 +57,6 @@ export default function RootLayout() {
 
   const [isDbChecked, setIsDbChecked] = useState(false);
   const [dbExists, setDbExists] = useState<boolean | null>(null);
-
-  const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId);
-  const dbEpoch = useWorkspacesStore((s) => s.dbEpoch);
 
   useFrameworkReady();
 
@@ -99,6 +99,9 @@ export default function RootLayout() {
         }
 
         await setActiveWorkspace(active.dbFileName);
+        // Idempotent: migrates fresh DBs and no-ops on already-migrated ones.
+        // Runs serially so no concurrent migrate() call can race against it.
+        await runMigrations();
 
         const exists = await validateIfDBExists();
         setDbExists(exists);
@@ -195,12 +198,6 @@ export default function RootLayout() {
 
                     <WhisperProvider>
                       <AutoConnectService>
-                        {activeWorkspaceId && (
-                          <WorkspaceMigrationGate
-                            key={`${activeWorkspaceId}-${dbEpoch}`}
-                            onReady={() => setDbExists(true)}
-                          />
-                        )}
                         <Stack screenOptions={{ headerShown: false }}>
                           <Stack.Screen name="(tabs)" />
                           <Stack.Screen name="(stack)" />
