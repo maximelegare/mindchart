@@ -34,6 +34,8 @@ import {
   BottomSheetOpenTrigger,
   BottomSheetView,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
+import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
+import { CurrentWorkspace } from "./currentWorkspace";
 
 // --- Types ---
 
@@ -69,8 +71,6 @@ export type MoreOptionsMenuProps = {
   links: MoreOptionsMenuLink[];
   state: { open: boolean; setOpen: (open: boolean) => void };
 };
-
-// --- Component ---
 
 export function MoreOptionsMenu({
   links,
@@ -165,14 +165,14 @@ export function MoreOptionsMenu({
           size="icon"
           className="w-14 absolute right-0 -bottom-3"
         >
-          <Icon name="ellipsis-vertical" size={24} color="background" />
+          <WorkspaceAvatar />
         </Button>
       </DropdownMenuTrigger>
 
       {open && (
         <DropdownMenuContent
           forceMount
-          className="w-44 border-none bg-transparent shadow-none top-[-5px] absolute"
+          className="w-52 border-none bg-transparent shadow-none top-[-5px] absolute"
           side="bottom"
           align="end"
         >
@@ -184,6 +184,8 @@ export function MoreOptionsMenu({
                 className="bg-popover rounded-3xl border border-border"
               >
                 <DropdownMenuGroup className="overflow-hidden my-1 w-full">
+                  <CurrentWorkspace />
+                  <DropdownMenuSeparator />
                   {links.map((link, index) => (
                     <React.Fragment key={link.label}>
                       {link.href !== undefined ? (

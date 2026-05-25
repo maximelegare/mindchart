@@ -1,6 +1,6 @@
 import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
-import { useWorkSpaces } from "../hooks/useWorkSpaces";
+import { useWorkSpaces } from "../../../../workspaces/hooks/useWorkSpaces";
 
 type Props = {
   onImported?: () => void;

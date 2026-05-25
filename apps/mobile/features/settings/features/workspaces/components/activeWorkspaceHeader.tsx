@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
-import { useWorkSpaces } from "../hooks/useWorkSpaces";
+import { useWorkSpaces } from "../../../../workspaces/hooks/useWorkSpaces";
 
 export const ActiveWorkspaceHeader = () => {
   const { activeWorkspace } = useWorkSpaces();

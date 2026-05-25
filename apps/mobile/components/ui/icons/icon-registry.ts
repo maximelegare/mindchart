@@ -2,6 +2,7 @@
 
 export type IconName =
   | "arrow-left"
+  | "arrow-right-left"
   | "arrow-up-from-line"
   | "brackets-curly"
   | "brain"
@@ -44,6 +45,10 @@ export const ICON_METADATA: Record<
   "arrow-left": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19l-7-7l7-7m7 7H5"></path>`,
+  },
+  "arrow-right-left": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 3l4 4l-4 4m4-4H4m4 14l-4-4l4-4m-4 4h16"></path>`,
   },
   "arrow-up-from-line": {
     viewBox: "0 0 24 24",

@@ -1,8 +1,8 @@
 import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
-import { useWorkSpaces } from "../hooks/useWorkSpaces";
-import { WorkspaceNameInputModal } from "./workspaceNameInputModal";
+import { useWorkSpaces } from "../../../../workspaces/hooks/useWorkSpaces";
+import { WorkspaceNameInputModal } from "../../../../workspaces/components/workspaceNameInputModal";
 
 type Props = {
   onCreated?: () => void;
