@@ -54,8 +54,13 @@ export const useWorkSpaces = () => {
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
   const resetCaches = useCallback(async () => {
-    queryClient.clear();
-    await queryClient.refetchQueries({ type: "active" });
+    // `queryClient.clear()` removes queries from the cache entirely, which
+    // means a subsequent `refetchQueries({ type: "active" })` finds nothing
+    // to refetch — leaving mounted observers (e.g. NotesListFeature) stuck
+    // showing stale data until something else invalidates them.
+    // `resetQueries()` resets each query to its initial state AND refetches
+    // active observers — exactly the workspace-switch semantics we want.
+    await queryClient.resetQueries();
   }, [queryClient]);
 
   /**
