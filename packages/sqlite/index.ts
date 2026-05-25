@@ -29,9 +29,15 @@ import { getMigratingStatusQuery } from "./src/queries/databaseInspector/getMigr
 import { updateMigratingStatusQuery } from "./src/queries/databaseInspector/updateMigratingStatus";
 import { getNoteByIdWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNoteByIdWithAssociatedThoughts";
 import { exportDatabaseQuery } from "./src/queries/settings/exportDatabase";
-import { closeOPDatabase } from "./src/utils/initialize/getOPDatabase";
+import {
+  closeOPDatabase,
+  setActiveWorkspace,
+  getActiveDbName,
+  getDbLocation,
+} from "./src/utils/initialize/getOPDatabase";
 export * from "./src/data/settings";
 import { useMigrationHelper } from "./src/utils/useMigrationHelper";
+import { runMigrations } from "./src/utils/runMigrations";
 import { validateIfDBExists } from "./src/queries/dbStatus/validateIfDBExists";
 import { insertEmbeddingsQuery } from "./src/queries/embeddings/insertEmbeddings";
 import { seedDatabaseQuery } from "./src/queries/bulk/seedDatabase";
@@ -76,7 +82,11 @@ export {
   EmbeddingTable,
   validateIfDBExists,
   useMigrationHelper,
+  runMigrations,
   closeOPDatabase,
+  setActiveWorkspace,
+  getActiveDbName,
+  getDbLocation,
   seedDatabaseQuery,
   getAllTopicsQuery,
   insertNewTopicQuery,

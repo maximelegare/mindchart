@@ -30,7 +30,10 @@ import { getItem, setItem } from "@/lib/storage";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { useFrameworkReady } from "@/hooks/useFrameworkReady";
 import { cn } from "@/lib/cn";
-import { validateIfDBExists } from "@repo/sqlite";
+import { setActiveWorkspace, validateIfDBExists } from "@repo/sqlite";
+import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
+import { migrateLegacyDatabase } from "@/features/workspaces/utils/migrateLegacyDatabase";
+import { WorkspaceMigrationGate } from "@/features/workspaces/components/workspaceMigrationGate";
 
 import { Buffer } from "buffer";
 import { AutoConnectService } from "@/features/settings/features/ai/autoConnect/services/autoConnectService";
@@ -51,6 +54,9 @@ export default function RootLayout() {
 
   const [isDbChecked, setIsDbChecked] = useState(false);
   const [dbExists, setDbExists] = useState<boolean | null>(null);
+
+  const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId);
+  const dbEpoch = useWorkspacesStore((s) => s.dbEpoch);
 
   useFrameworkReady();
 
@@ -75,8 +81,25 @@ export default function RootLayout() {
         setAndroidNavigationBar(colorScheme);
       }
 
-      // DB Logic
+      // Workspace + DB Logic
       try {
+        await migrateLegacyDatabase();
+
+        const { workspaces, activeWorkspaceId } = useWorkspacesStore.getState();
+        const active =
+          workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0];
+
+        if (!active) {
+          setDbExists(false);
+          return;
+        }
+
+        if (!activeWorkspaceId || activeWorkspaceId !== active.id) {
+          useWorkspacesStore.getState().setActiveWorkspaceId(active.id);
+        }
+
+        await setActiveWorkspace(active.dbFileName);
+
         const exists = await validateIfDBExists();
         setDbExists(exists);
       } catch (e) {
@@ -172,6 +195,12 @@ export default function RootLayout() {
 
                     <WhisperProvider>
                       <AutoConnectService>
+                        {activeWorkspaceId && (
+                          <WorkspaceMigrationGate
+                            key={`${activeWorkspaceId}-${dbEpoch}`}
+                            onReady={() => setDbExists(true)}
+                          />
+                        )}
                         <Stack screenOptions={{ headerShown: false }}>
                           <Stack.Screen name="(tabs)" />
                           <Stack.Screen name="(stack)" />

@@ -14,6 +14,10 @@ type ModalPreset = {
 
 export const MODALS_CONTENT: Record<
   | "DELETE_DATABASE_FILE"
+  | "DELETE_WORKSPACE"
+  | "CREATE_WORKSPACE"
+  | "RENAME_WORKSPACE"
+  | "IMPORT_WORKSPACE_CHOICE"
   | "INITIALIZE_MODEL_ERROR"
   | "DELETE_MODEL_ERROR"
   | "DELETE_MODEL_ACTION"
@@ -27,6 +31,32 @@ export const MODALS_CONTENT: Record<
       "This will permanently delete your database. You can always re-import it later.",
     confirmButton: { text: "Delete", variant: "destructive" },
     cancelButton: { text: "Cancel", variant: "default" },
+  },
+  DELETE_WORKSPACE: {
+    title: "Delete Workspace?",
+    description:
+      "This will permanently delete this workspace's database. You can always re-import it later.",
+    confirmButton: { text: "Delete", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
+  CREATE_WORKSPACE: {
+    title: "New Workspace",
+    description: "Give your new workspace a name.",
+    confirmButton: { text: "Create", variant: "default" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
+  RENAME_WORKSPACE: {
+    title: "Rename Workspace",
+    description: "Choose a new name for this workspace.",
+    confirmButton: { text: "Save", variant: "default" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
+  IMPORT_WORKSPACE_CHOICE: {
+    title: "Import Workspace",
+    description:
+      "Create a new workspace from this file, or overwrite the currently active workspace?",
+    confirmButton: { text: "New workspace", variant: "default" },
+    cancelButton: { text: "Overwrite active", variant: "destructive" },
   },
   INITIALIZE_MODEL_ERROR: {
     title: "Failed to initialize LLM.",

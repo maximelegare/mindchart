@@ -1,23 +1,44 @@
 import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
-import { useDatabaseBackup } from "@/features/settings/features/workspace/features/backup/hooks/useDatabaseBackup";
-import { Migrator } from "@/features/settings/features/developer/features/inspector/components/migrator";
+import { useModal } from "@/components/ui/modal/modal";
+import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
+import { WorkspaceNameInputModal } from "@/features/workspaces/components/workspaceNameInputModal";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { router } from "expo-router";
-import { View } from "react-native";
-import { Image } from "react-native";
+import { View, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const NewDatabaseScreen = () => {
   const { colorScheme } = useColorScheme();
   const { bottom } = useSafeAreaInsets();
 
-  const { importDatabase } = useDatabaseBackup();
+  const { createWorkspace, importWorkspace, loading } = useWorkSpaces();
+  const { openModal, closeModal } = useModal();
 
-  const handleImportDatabase = async () => {
-    await importDatabase();
-    router.replace("/(tabs)");
+  const handleCreateWorkspace = () => {
+    openModal({
+      modalName: "CREATE_WORKSPACE",
+      customContent: () => (
+        <WorkspaceNameInputModal
+          confirmLabel="Create"
+          description="Each workspace has its own isolated database."
+          onCancel={closeModal}
+          onConfirm={async (name) => {
+            closeModal();
+            await createWorkspace(name);
+            router.replace("/(tabs)");
+          }}
+        />
+      ),
+    });
+  };
+
+  const handleImportWorkspace = async () => {
+    const result = await importWorkspace();
+    if (result.success) {
+      router.replace("/(tabs)");
+    }
   };
 
   return (
@@ -36,16 +57,24 @@ export const NewDatabaseScreen = () => {
           style={{ height: "50%", bottom: bottom + 100 }}
         >
           <View className="flex-col gap-4 items-center justify-between">
-            <Migrator button={{ variant: "secondary" }}>
+            <Button
+              variant="secondary"
+              onPress={handleCreateWorkspace}
+              disabled={loading}
+            >
               <View className="flex-row items-center justify-center gap-3">
                 <Icon name="plus" color="background" size={18} />
-                <Typography>New Database</Typography>
+                <Typography>New Workspace</Typography>
               </View>
-            </Migrator>
-            <Button variant="secondary" onPress={() => handleImportDatabase()}>
+            </Button>
+            <Button
+              variant="secondary"
+              onPress={handleImportWorkspace}
+              disabled={loading}
+            >
               <View className="flex-row items-center justify-center gap-3">
                 <Icon name="import" color="background" size={18} />
-                <Typography>Import Database</Typography>
+                <Typography>Import Workspace</Typography>
               </View>
             </Button>
           </View>
