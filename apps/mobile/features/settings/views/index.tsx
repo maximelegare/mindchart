@@ -15,14 +15,14 @@ export const SettingsFeature = () => {
         <ListItem
           className="bg-background"
           itemLeft={() => <Icon name="brain" color="foreground" />} // props adds size and color attributes
-          label="Ai Settings"
+          label="AI"
           onPress={() => push("/settings/ai")}
         />
         <ListItem
           className="bg-background"
           itemLeft={() => <Icon name="layers" color="foreground" />}
           label="Workspaces"
-          onPress={() => push("/settings/workspace")}
+          onPress={() => push("/settings/workspaces")}
         />
         <ListItem
           className="bg-background"

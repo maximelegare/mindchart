@@ -3,7 +3,7 @@ import { WorkspaceSettingsFeature } from "@/features/settings/features/workspace
 
 export const WorkspaceSettingsPage = () => {
   return (
-    <PageContainer headerVariant="tab" title="Workspaces Settings">
+    <PageContainer headerVariant="tab" title="Workspaces">
       <WorkspaceSettingsFeature />
     </PageContainer>
   );

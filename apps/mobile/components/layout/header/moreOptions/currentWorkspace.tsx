@@ -16,7 +16,7 @@ export const CurrentWorkspace = () => {
       className="px-2 flex-row justify-between gap-3 items-center"
       onPress={() => {
         setTimeout(() => {
-          push("/settings/workspace");
+          push("/settings/workspaces");
         }, 150);
       }}
     >

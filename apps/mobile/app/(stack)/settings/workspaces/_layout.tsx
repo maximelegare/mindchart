@@ -5,7 +5,7 @@ export default function WorkspaceLayout() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: "Workspace Settings", headerShown: false }}
+        options={{ title: "Workspace", headerShown: false }}
       />
     </Stack>
   );
