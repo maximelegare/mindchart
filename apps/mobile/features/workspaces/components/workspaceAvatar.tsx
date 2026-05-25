@@ -11,13 +11,17 @@ export const WorkspaceAvatar = ({ size = "md" }: { size?: "sm" | "md" }) => {
   return (
     <View
       className={cn(
-        "w-10 h-10 border-[1px] border-border rounded-full bg-primary items-center justify-center",
-        size === "sm" ? "w-8 h-8" : "w-10 h-10"
+        "border-[1px] border-border rounded-full bg-primary items-center justify-center"
       )}
+      style={{
+        width: size === "sm" ? 28 : 36,
+        height: size === "sm" ? 28 : 36,
+      }}
     >
       <Typography
-        variant={size === "sm" ? "p" : "h3"}
+        variant={size === "sm" ? "lead" : "h3"}
         className="text-popover-foreground"
+        style={{ fontSize: size === "sm" ? 12 : 16 }}
       >
         {activeWorkspace?.name?.slice(0, 2)?.toUpperCase()}
       </Typography>
