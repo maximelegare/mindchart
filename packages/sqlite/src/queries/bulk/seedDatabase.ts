@@ -9,7 +9,6 @@ import type {
 import { insertNoteQuery } from "../notes/insertNote";
 import { insertThoughtsQuery } from "../thoughts/insertThoughts";
 import { insertEmbeddingsQuery } from "../embeddings/insertEmbeddings";
-import { insertNewTopicQuery } from "../topics/insertNewTopic";
 import { insertTopicsQuery } from "../topics/insertTopics";
 
 export async function seedDatabaseQuery(

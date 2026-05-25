@@ -127,6 +127,9 @@
     "tailwindcss",
     "nativewind"
   ],
+  "op-sqlite": {
+    "fts5": true
+  },
   "author": "Maxime Legare",
   "repository": "maximelegare/mindchart"
 }

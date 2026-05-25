@@ -1,12 +1,10 @@
 import { ThoughtTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 
 export const deleteThoughtsByIdsQuery = async (db: DB, ids: string[]) => {
-  // 1. Sanitize input (remove falsy + duplicates)
   const validIds = Array.from(new Set(ids.filter(Boolean)));
 
-  // 2. Early exit (prevents invalid SQL like `IN ()`)
   if (validIds.length === 0) {
     return { deletedCount: 0 };
   }
@@ -16,7 +14,12 @@ export const deleteThoughtsByIdsQuery = async (db: DB, ids: string[]) => {
       const res = await tx
         .delete(ThoughtTable)
         .where(inArray(ThoughtTable.id, validIds))
-        .returning({ id: ThoughtTable.id }); // ✅ works in SQLite (Drizzle)
+        .returning({ id: ThoughtTable.id });
+
+      await tx.run(sql`
+        DELETE FROM thought_fts
+        WHERE id IN (${sql.join(validIds, sql`, `)})
+      `);
 
       return res;
     });

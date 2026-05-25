@@ -85,6 +85,23 @@ export const SeedLocalAIResNoteSchema = z.object({
   thoughts: z.array(LocalAIResThoughtSchema),
 });
 
+export const SearchResultItemSchema = z.object({
+  id: z.string(),
+  noteId: z.string(),
+  noteTitle: z.string(),
+  thoughtTitle: z.string(),
+  thoughtSummary: z.string(),
+  categoryId: z.string(),
+  createdAt: z.string(),
+});
+
+export const SearchResultsSchema = z.array(SearchResultItemSchema);
+
+export type SearchResultsSchemaModel = z.infer<typeof SearchResultsSchema>;
+export type SearchResultItemSchemaModel = z.infer<
+  typeof SearchResultItemSchema
+>;
+
 export type SeedLocalAIResNoteSchemaModel = z.infer<
   typeof SeedLocalAIResNoteSchema
 >;

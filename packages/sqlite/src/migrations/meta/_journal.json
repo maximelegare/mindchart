@@ -29,6 +29,13 @@
       "when": 1779222733870,
       "tag": "0003_puzzling_hitman",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1779298419592,
+      "tag": "0004_mature_sinister_six",
+      "breakpoints": true
     }
   ]
 }

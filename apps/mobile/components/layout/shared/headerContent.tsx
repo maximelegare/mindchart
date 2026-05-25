@@ -44,8 +44,9 @@ export const HeaderContent = ({
           {title ?? "Page"}
         </Typography>
       </View>
-      <View className="flex-row justify-end">
-        {buttons}
+      <View className="flex-row justify-end gap-2">
+        <View className="-translate-x-10 translate-y-3">{buttons}</View>
+
         {links && state && <MoreOptionsMenu links={links} state={state} />}
       </View>
     </View>

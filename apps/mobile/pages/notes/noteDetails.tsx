@@ -4,6 +4,7 @@ import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { EditNoteFeature } from "@/features/notes/editNote/views";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
+import { SearchFeature } from "@/features/search/views";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 
@@ -31,6 +32,7 @@ export const NoteDetailsPage = () => {
     <PageContainer
       headerVariant="tab"
       title="Note"
+      buttons={<SearchFeature />}
       moreOptionsMenu={{
         links: [
           {

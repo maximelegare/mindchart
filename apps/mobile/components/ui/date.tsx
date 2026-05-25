@@ -9,28 +9,27 @@ type DateProps = {
   lang?: "en" | "fr";
   showCalendarIcon?: boolean;
   className?: string;
+  showYear?: boolean;
   size?: "sm" | "md";
 };
 
 export const DisplayDate: React.FC<DateProps> = ({
   date,
   showCalendarIcon = true,
+  showYear = true,
   className,
   size = "sm",
 }) => {
   if (!date) return;
 
-  const dateStr = new Date(date);
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return;
 
-  let formatted: string = "";
-
-  if (typeof date === "string") {
-    formatted = new Intl.DateTimeFormat(`en-CA`, {
-      month: "short",
-      year: "numeric",
-      day: "2-digit",
-    }).format(dateStr);
-  }
+  const formatted = new Intl.DateTimeFormat(`en-CA`, {
+    month: "short",
+    year: showYear ? "numeric" : undefined,
+    day: "2-digit",
+  }).format(dateObj);
 
   return (
     <View

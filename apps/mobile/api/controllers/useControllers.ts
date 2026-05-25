@@ -3,6 +3,7 @@ import { useDatabaseInspectorController } from "./useDatabaseInspectorController
 import { useEmbeddingsController } from "./useEmbeddingsContolller";
 import { useGraphController } from "./useGraphController";
 import { useNotesAndThoughtsController } from "./useNotesAndThoughtsController";
+import { useSearchController } from "./useSearch";
 import { useSettingsController } from "./useSettingsController";
 import { useTopicsController } from "./useTopicsController";
 
@@ -16,4 +17,5 @@ export const useControllers = () => ({
   databaseInspector: useDatabaseInspectorController(),
   settings: useSettingsController(),
   topics: useTopicsController(),
+  search: useSearchController(),
 });
