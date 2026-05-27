@@ -11,13 +11,13 @@ export const ImportWorkspaceRow = ({ onImported }: Props) => {
 
   return (
     <ListItem
-      className="bg-background"
       itemLeft={() => <Icon name="import" color="foreground" />}
       label="Import Workspace"
       onPress={async () => {
         const result = await importWorkspace();
         if (result.success) onImported?.();
       }}
+      borderBottom={false}
       noChevron
     />
   );

@@ -13,6 +13,8 @@ import { Muted } from "@/components/ui/typography";
 import { ChevronRight } from "@/components/Icons";
 import { cn } from "@/lib/cn";
 import { Typography } from "@/components/ui/typography";
+import { hsl } from "@/utils/hsl";
+import { useColorScheme } from "@/lib/useColorScheme";
 
 const listItemTextVariants = cva(
   "text-base font-normal", // base styles
@@ -44,6 +46,7 @@ type ListItemProps = VariantProps<typeof listItemTextVariants> & {
   onPress?: () => void;
   noChevron?: boolean;
   borderTop?: boolean;
+  borderBottom?: boolean;
   /**
    * If true, a detail arrow will appear on the item.
    */
@@ -67,6 +70,7 @@ const ListItem: React.FC<ListItemProps> = ({
   href,
   noChevron = false,
   borderTop = false,
+  borderBottom = true,
   ...props
 }) => {
   // Automatically add ChevronRight if onPress is defined and detail is true
@@ -97,11 +101,13 @@ const ListItem: React.FC<ListItemProps> = ({
   // Remove href from props if it exists, since it's handled separately
   const { ...componentProps } = props as any;
 
+  const { colorScheme } = useColorScheme();
   const body = (
     <Component
       className={cn(
-        "flex-row items-center  border-b-[1px] justify-between w-full px-3 py-3 border-border bg-card",
+        "flex-row items-center border-border  justify-between w-full px-3 py-3",
         borderTop && "border-t-[1px] border-border",
+        borderBottom && "border-b-[1px] border-border",
         pressable ? "web:hover:opacity-90 active:opacity-90" : "",
         listItemTextVariants({ variant }),
         className
@@ -109,6 +115,7 @@ const ListItem: React.FC<ListItemProps> = ({
       accessibilityRole={pressable ? "button" : "none"}
       accessibilityLabel={`${label}${description ? `, ${description}` : ""}`}
       {...componentProps}
+      style={{ backgroundColor: hsl("card", colorScheme) }}
     >
       {itemLeft && (
         <View className="mr-3">

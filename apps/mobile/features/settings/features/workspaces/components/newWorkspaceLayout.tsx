@@ -95,8 +95,6 @@ export const NewWorkspaceLayout = () => {
           </Typography>
         </View>
 
-        {/* Header Section */}
-
         {/* Engine Status Card */}
         <View className="pb-6">
           <Typography className="text-muted-foreground" variant="h4" padding>
