@@ -1,15 +1,23 @@
 import React from "react";
 import { View } from "react-native";
-import { useWorkSpaces } from "../hooks/useWorkSpaces";
+import { useWorkSpaces, Workspace } from "../hooks/useWorkSpaces";
 import { Typography } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 
-export const WorkspaceAvatar = ({ size = "md" }: { size?: "sm" | "md" }) => {
+export const WorkspaceAvatar = ({
+  size = "md",
+  workspace,
+}: {
+  size?: "sm" | "md";
+  workspace?: Workspace;
+}) => {
   const { activeWorkspace } = useWorkSpaces();
 
-  if (!activeWorkspace) return null;
+  const ws = workspace || activeWorkspace;
+
+  if (!ws) return null;
   return (
     <View
       className={cn(
@@ -18,13 +26,13 @@ export const WorkspaceAvatar = ({ size = "md" }: { size?: "sm" | "md" }) => {
       style={{
         width: size === "sm" ? 28 : 36,
         height: size === "sm" ? 28 : 36,
-        backgroundColor: activeWorkspace?.color,
+        backgroundColor: ws?.color,
       }}
     >
       {activeWorkspace?.icon ? (
         <Icon
           color="foreground"
-          name={activeWorkspace?.icon as IconName}
+          name={ws?.icon as IconName}
           size={size === "sm" ? 14 : 18}
         />
       ) : (
@@ -32,7 +40,7 @@ export const WorkspaceAvatar = ({ size = "md" }: { size?: "sm" | "md" }) => {
           variant={size === "sm" ? "lead" : "h3"}
           style={{ fontSize: size === "sm" ? 12 : 16 }}
         >
-          {activeWorkspace?.name?.slice(0, 2)?.toUpperCase()}
+          {ws?.name.slice(0, 2)?.toUpperCase()}
         </Typography>
       )}
     </View>
