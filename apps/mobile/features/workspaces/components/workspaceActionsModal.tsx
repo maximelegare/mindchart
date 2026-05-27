@@ -2,6 +2,8 @@ import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 import type { Workspace } from "../context/workspacesContext";
+import { WorkspaceAvatar } from "./workspaceAvatar";
+import { Card } from "@/components/ui/card";
 
 type Props = {
   workspace: Workspace;
@@ -20,9 +22,8 @@ type Props = {
  */
 export const WorkspaceActionsModal = ({
   workspace,
-  isActive,
   canDelete,
-  onSwitch,
+  isActive,
   onRename,
   onExport,
   onDelete,
@@ -30,31 +31,53 @@ export const WorkspaceActionsModal = ({
 }: Props) => {
   return (
     <View className="flex-col gap-3">
-      <View>
-        <Typography variant="h3">{workspace.name}</Typography>
-        <Typography variant="muted">
-          {isActive ? "Active workspace" : "Tap an action below."}
-        </Typography>
-      </View>
-      {!isActive && (
-        <Button variant="default" onPress={onSwitch}>
-          <Typography>Switch to this workspace</Typography>
+      <Typography variant="muted">Workspace:</Typography>
+      <Card className="p-4" style={{ marginBottom: 30 }}>
+        <View className="flex-row gap-2 w-full items-center justify-between">
+          <View>
+            <View className="flex-row items-center gap-2">
+              <WorkspaceAvatar workspace={workspace} />
+              <View>
+                <Typography variant="h3">{workspace.name}</Typography>
+                <Typography variant="small" className="text-muted-foreground">
+                  {isActive ? "Active" : "Load"}
+                </Typography>
+              </View>
+            </View>
+          </View>
+          <View>
+            <View className="flex-row gap-2 w-full">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-[50%]"
+                onPress={onRename}
+              >
+                <Typography>Rename</Typography>
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                className="w-[50%]"
+                onPress={onExport}
+              >
+                <Typography>Export</Typography>
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Card>
+
+      <View className="flex-row gap-2 w-full items-center justify-center">
+        <Button variant="default" onPress={onCancel}>
+          <Typography>Cancel</Typography>
         </Button>
-      )}
-      <Button variant="secondary" onPress={onRename}>
-        <Typography>Rename</Typography>
-      </Button>
-      <Button variant="secondary" onPress={onExport}>
-        <Typography>Export</Typography>
-      </Button>
-      <Button variant="destructive" disabled={!canDelete} onPress={onDelete}>
-        <Typography>
-          {canDelete ? "Delete" : "Cannot delete last workspace"}
-        </Typography>
-      </Button>
-      <Button variant="default" onPress={onCancel}>
-        <Typography>Cancel</Typography>
-      </Button>
+        <Button variant="destructive" disabled={!canDelete} onPress={onDelete}>
+          <Typography>
+            {canDelete ? "Delete" : "Cannot delete last workspace"}
+          </Typography>
+        </Button>
+      </View>
     </View>
   );
 };

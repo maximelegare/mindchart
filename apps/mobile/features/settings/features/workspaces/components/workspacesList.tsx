@@ -57,24 +57,26 @@ export const WorkspacesList = () => {
     const isActive = workspace.id === activeWorkspaceId;
     const canDelete = workspaces.length > 1 || !isActive;
     openModal({
-      customContent: () => (
-        <WorkspaceActionsModal
-          workspace={workspace}
-          isActive={isActive}
-          canDelete={canDelete}
-          onSwitch={async () => {
-            closeModal();
-            await switchWorkspace(workspace.id);
-          }}
-          onRename={() => openRenameModal(workspace)}
-          onExport={async () => {
-            closeModal();
-            await exportWorkspace(workspace.id);
-          }}
-          onDelete={() => openDeleteModal(workspace)}
-          onCancel={closeModal}
-        />
-      ),
+      title: workspace.name,
+      description: "Choose an action to perform on this workspace.",
+      // customContent: () => (
+      //   <WorkspaceActionsModal
+      //     workspace={workspace}
+      //     isActive={isActive}
+      //     canDelete={canDelete}
+      //     onSwitch={async () => {
+      //       closeModal();
+      //       await switchWorkspace(workspace.id);
+      //     }}
+      //     onRename={() => openRenameModal(workspace)}
+      //     onExport={async () => {
+      //       closeModal();
+      //       await exportWorkspace(workspace.id);
+      //     }}
+      //     onDelete={() => openDeleteModal(workspace)}
+      //     onCancel={closeModal}
+      //   />
+      // ),
     });
   };
 

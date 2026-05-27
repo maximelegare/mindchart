@@ -61,6 +61,7 @@ export const NewWorkspaceLayout = () => {
     const isActive = workspace.id === activeWorkspaceId;
     const canDelete = workspaces.length > 1 || !isActive;
     openModal({
+      title: "More actions",
       customContent: () => (
         <WorkspaceActionsModal
           workspace={workspace}
