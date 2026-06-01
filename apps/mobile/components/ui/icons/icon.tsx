@@ -10,7 +10,7 @@ interface IconProps {
   name: IconName;
   size?: number;
   opacity?: number;
-  color?: Theme;
+  color?: Theme | "text";
   hslColor?: string;
   style?: StyleProp<ViewStyle>;
   // className?: string;
