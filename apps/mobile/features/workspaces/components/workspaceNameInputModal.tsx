@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,14 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { cn } from "@/lib/cn";
-import { hsl } from "@/utils/hsl";
-import { useColorScheme } from "@/lib/useColorScheme";
 
-const COLOR_OPTIONS: { key: string; value: string }[] = Object.entries(
-  CATEGORIES_COLORS
-).map(([key, value]) => ({ key, value }));
+import { PROFILE_COLORS } from "../data/profileColors";
+
+const PROFILE_COLOR_OPTIONS: { key: string; value: [string, string] }[] =
+  Object.entries(PROFILE_COLORS).map(([key, value]) => ({
+    key,
+    value: value as [string, string],
+  }));
 
 // Curated subset of the icon registry that makes sense for a workspace.
 const ICON_OPTIONS: IconName[] = [
@@ -35,13 +37,13 @@ const ICON_OPTIONS: IconName[] = [
 
 export type WorkspaceFormValues = {
   name: string;
-  color: string;
+  color: [string, string];
   icon?: IconName;
 };
 
 type Props = {
   initialName?: string;
-  initialColor?: string;
+  initialColor?: [string, string];
   initialIcon?: IconName;
   placeholder?: string;
   description?: string;
@@ -66,8 +68,6 @@ export const WorkspaceNameInputModal = ({
   onConfirm,
   onCancel,
 }: Props) => {
-  const { colorScheme } = useColorScheme();
-
   const {
     control,
     handleSubmit,
@@ -76,7 +76,7 @@ export const WorkspaceNameInputModal = ({
     mode: "onChange",
     defaultValues: {
       name: initialName,
-      color: initialColor ?? COLOR_OPTIONS[0].value,
+      color: initialColor ?? PROFILE_COLOR_OPTIONS[0].value,
       icon: initialIcon,
     },
   });
@@ -124,32 +124,36 @@ export const WorkspaceNameInputModal = ({
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
             >
-              {COLOR_OPTIONS.map(({ key, value: swatch }) => {
-                const selected = value === swatch;
+              {PROFILE_COLOR_OPTIONS.map(({ key, value: swatch }) => {
+                const selected =
+                  value[0] === swatch[0] && value[1] === swatch[1];
                 return (
-                  <Pressable
+                  <View
                     key={key}
-                    onPress={() => onChange(swatch)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Color ${key}`}
+                    className={cn(
+                      "rounded-lg p-0.5",
+                      selected
+                        ? "border-2 border-primary"
+                        : "border-2 border-transparent"
+                    )}
                   >
-                    <View
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 18,
-                        backgroundColor: swatch,
-                        borderWidth: selected ? 2 : 0,
-                        borderColor: hsl("foreground", colorScheme),
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+                    <Pressable
+                      onPress={() => onChange(swatch)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Color ${key}`}
+                      accessibilityState={{ selected }}
+                      android_ripple={null}
+                      className="overflow-hidden w-10 h-10 rounded-md"
                     >
-                      {selected && (
-                        <Icon name="check" color="foreground" size={16} />
-                      )}
-                    </View>
-                  </Pressable>
+                      <LinearGradient
+                        colors={swatch}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                        pointerEvents="none"
+                      />
+                    </Pressable>
+                  </View>
                 );
               })}
             </ScrollView>

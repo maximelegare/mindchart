@@ -15,6 +15,7 @@ type GradientProps = {
   type?: GradientType;
   style?: StyleProp<ViewStyle>;
   theme: ColorScheme;
+  custom?: [string, string];
 };
 
 export function Gradient({
@@ -24,6 +25,7 @@ export function Gradient({
   type = "linear",
   style,
   theme,
+  custom,
 }: GradientProps) {
   const gradientColors: Record<Exclude<Variant, "none">, [string, string]> = {
     primary: [
@@ -33,11 +35,11 @@ export function Gradient({
     destructive: ["#ed333b", "#a51d2d"],
   };
 
-  if (!variant || variant === "none") {
+  if (variant === "none" && !custom) {
     return <>{children}</>;
   }
 
-  const colors = gradientColors[variant];
+  const colors = custom ?? gradientColors[variant as Exclude<Variant, "none">];
 
   if (type === "radial") {
     return (

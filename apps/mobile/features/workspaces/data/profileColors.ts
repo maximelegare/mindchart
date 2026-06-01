@@ -1,0 +1,15 @@
+export const PROFILE_COLORS = {
+  veryBlue: ["#0575E6", "#021B79"],
+  blueLagoon: ["#43C6AC", "#191654"],
+  honeyDew: ["#43C6AC", "#F8FFAE"],
+  roseanna: ["#FFAFBD", "#ffc3a0"],
+  jaipur: ["#DBE6F6", "#C5796D"],
+  viceCity: ["#3494E6", "#EC6EAD"],
+  mild: ["#67B26F", "#4ca2cd"],
+  dawn: ["#F3904F", "#3B4371"],
+  ibizaSunset: ["#ee0979", "#ff6a00"],
+  "80sPurple": ["#41295a", "#2F0743"],
+  brandyBrandyFunFun: ["#00c3ff", "#ffff1c"],
+  edsSunsetGradient: ["#ff7e5f", "#feb47b"],
+  nepal: ["#de6161", "#2657eb"],
+} as const;

@@ -86,7 +86,7 @@ export const useWorkSpaces = () => {
   const createWorkspace = useCallback(
     async (
       name: string,
-      options?: { icon?: string; color?: string }
+      options?: { icon?: string; color?: [string, string] }
     ): Promise<Workspace> => {
       setLoading(true);
       try {
@@ -131,7 +131,7 @@ export const useWorkSpaces = () => {
     async (
       id: string,
       name: string,
-      options?: { icon?: string; color?: string }
+      options?: { icon?: string; color?: [string, string] }
     ) => {
       const trimmed = name.trim();
       if (!trimmed) return;

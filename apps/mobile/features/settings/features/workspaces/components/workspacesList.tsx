@@ -6,9 +6,11 @@ import type { IconName } from "@/components/ui/icons/icon-registry";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "../../../../workspaces/hooks/useWorkSpaces";
 import { WorkspaceActionsModal } from "../../../../workspaces/components/workspaceActionsModal";
+import { WorkspaceAvatar } from "../../../../workspaces/components/workspaceAvatar";
 import { WorkspaceNameInputModal } from "../../../../workspaces/components/workspaceNameInputModal";
 import type { Workspace } from "../../../../workspaces/context/workspacesContext";
 import { cn } from "@/lib/cn";
+import { parseWorkspaceColor } from "../../../../workspaces/utils/workspaceColor";
 
 export const WorkspacesList = () => {
   const {
@@ -27,7 +29,7 @@ export const WorkspacesList = () => {
       customContent: () => (
         <WorkspaceNameInputModal
           initialName={workspace.name}
-          initialColor={workspace.color}
+          initialColor={parseWorkspaceColor(workspace.color)}
           initialIcon={workspace.icon as IconName | undefined}
           confirmLabel="Save"
           description="Choose a new name, color, and icon for this workspace."
@@ -86,7 +88,6 @@ export const WorkspacesList = () => {
     <List>
       {workspaces.map((workspace) => {
         const isActive = workspace.id === activeWorkspaceId;
-        const iconName = (workspace.icon as IconName | undefined) ?? "database";
         return (
           <ListItem
             key={workspace.id}
@@ -96,14 +97,10 @@ export const WorkspacesList = () => {
             itemLeft={() => (
               <View
                 className={cn(
-                  "flex-row items-center gap-2 w-10 h-10 rounded-full justify-center",
-                  isActive && "border-2 border-popover-foreground"
+                  isActive && "rounded-full border-2 border-popover-foreground"
                 )}
-                style={{ backgroundColor: workspace.color }}
               >
-                {iconName && (
-                  <Icon name={iconName} size={18} color="foreground" />
-                )}
+                <WorkspaceAvatar workspace={workspace} />
               </View>
             )}
             itemRight={() => (
