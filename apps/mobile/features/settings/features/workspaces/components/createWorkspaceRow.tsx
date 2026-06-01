@@ -2,7 +2,7 @@ import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "../../../../workspaces/hooks/useWorkSpaces";
-import { WorkspaceNameInputModal } from "../../../../workspaces/components/workspaceNameInputModal";
+import { WorkspaceEdit } from "../../../../workspaces/components/workspaceEdit";
 
 type Props = {
   onCreated?: () => void;
@@ -16,7 +16,7 @@ export const CreateWorkspaceRow = ({ onCreated }: Props) => {
     openModal({
       modalName: "CREATE_WORKSPACE",
       customContent: () => (
-        <WorkspaceNameInputModal
+        <WorkspaceEdit
           confirmLabel="Create"
           description="Each workspace has its own isolated database."
           onCancel={closeModal}

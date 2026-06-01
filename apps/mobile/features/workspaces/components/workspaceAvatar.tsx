@@ -57,6 +57,7 @@ export const WorkspaceAvatar = ({
       ) : (
         <Typography
           variant={size === "sm" ? "lead" : "h3"}
+          className="text-white"
           style={{ fontSize: size === "sm" ? 12 : 16 }}
         >
           {ws.name.slice(0, 2).toUpperCase()}

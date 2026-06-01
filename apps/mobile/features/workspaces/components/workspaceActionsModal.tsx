@@ -32,7 +32,7 @@ export const WorkspaceActionsModal = ({
   return (
     <View className="flex-col gap-3">
       <Typography variant="muted">Workspace:</Typography>
-      <Card className="p-4" style={{ marginBottom: 30 }}>
+      <Card className="p-2" style={{ marginBottom: 30 }}>
         <View className="flex-row gap-2 w-full items-center justify-between">
           <View>
             <View className="flex-row items-center gap-2">
@@ -53,7 +53,7 @@ export const WorkspaceActionsModal = ({
                 className="w-[50%]"
                 onPress={onRename}
               >
-                <Typography>Rename</Typography>
+                <Typography>Edit</Typography>
               </Button>
               <Button
                 variant="default"

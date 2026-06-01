@@ -2,7 +2,7 @@ import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
-import { WorkspaceNameInputModal } from "@/features/workspaces/components/workspaceNameInputModal";
+import { WorkspaceEdit } from "@/features/workspaces/components/workspaceEdit";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { router } from "expo-router";
@@ -20,7 +20,7 @@ export const NewDatabaseScreen = () => {
     openModal({
       modalName: "CREATE_WORKSPACE",
       customContent: () => (
-        <WorkspaceNameInputModal
+        <WorkspaceEdit
           confirmLabel="Create"
           description="Each workspace has its own isolated database."
           onCancel={closeModal}

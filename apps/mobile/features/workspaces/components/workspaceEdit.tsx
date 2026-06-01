@@ -19,20 +19,22 @@ const PROFILE_COLOR_OPTIONS: { key: string; value: [string, string] }[] =
 
 // Curated subset of the icon registry that makes sense for a workspace.
 const ICON_OPTIONS: IconName[] = [
-  "brain",
-  "sparkles",
-  "database",
-  "notebook-text",
-  "star",
-  "layers",
-  "graph",
-  "cpu",
+  "activity",
+  "book",
+  "briefcase-business",
   "calendar",
-  "keyboard",
+  "headset",
+  "house",
+  "lock-keyhole",
   "mic",
-  "square",
-  "settings",
-  "brackets-curly",
+  "palette",
+  "piggy-bank",
+  "plane",
+  "rocket",
+  "shopping-cart",
+  "sparkles",
+  "sprout",
+  "target",
 ];
 
 export type WorkspaceFormValues = {
@@ -57,7 +59,7 @@ type Props = {
  * Custom modal body to capture a workspace's name, color (required), and
  * icon (optional). Use as the `customContent` of `useModal().openModal`.
  */
-export const WorkspaceNameInputModal = ({
+export const WorkspaceEdit = ({
   initialName = "",
   initialColor,
   initialIcon,

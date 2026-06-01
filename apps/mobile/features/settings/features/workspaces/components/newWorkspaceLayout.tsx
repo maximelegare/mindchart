@@ -3,7 +3,7 @@ import type { IconName } from "@/components/ui/icons/icon-registry";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
 import { WorkspaceActionsModal } from "@/features/workspaces/components/workspaceActionsModal";
-import { WorkspaceNameInputModal } from "@/features/workspaces/components/workspaceNameInputModal";
+import { WorkspaceEdit } from "@/features/workspaces/components/workspaceEdit";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export const NewWorkspaceLayout = () => {
     setModalContent({
       modalName: "RENAME_WORKSPACE",
       customContent: () => (
-        <WorkspaceNameInputModal
+        <WorkspaceEdit
           initialName={workspace.name}
           initialColor={workspace.color}
           initialIcon={workspace.icon as IconName | undefined}
