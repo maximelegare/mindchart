@@ -10,8 +10,10 @@ interface IconProps {
   name: IconName;
   size?: number;
   opacity?: number;
-  color?: Theme | "text";
+  color?: Theme;
+  hslColor?: string;
   style?: StyleProp<ViewStyle>;
+  // className?: string;
 }
 export const Icon = ({
   name,
@@ -19,6 +21,8 @@ export const Icon = ({
   opacity = 100,
   color = "primary",
   style,
+  hslColor,
+  // className,
 }: IconProps) => {
   const icon = ICON_METADATA[name];
   const { colorScheme } = useColorScheme();
@@ -27,7 +31,8 @@ export const Icon = ({
     console.warn(`Icon "${name}" not found in registry.`);
     return null;
   }
-  const resolvedColor = hsl(color, colorScheme);
+
+  const resolvedColor = hslColor ?? hsl(color, colorScheme);
 
   const xml = `
   <svg viewBox="${icon.viewBox}">
@@ -50,6 +55,7 @@ export const Icon = ({
       height={size}
       style={style}
       opacity={opacity / 100}
+      // className={className}
     />
   );
 };

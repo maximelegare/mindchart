@@ -2,6 +2,7 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { buildGraphWithTopics } from "../utils/buildGraphWithTopics";
 import { ThoughtWithEmbedding } from "@repo/zod-schemas";
 import { useEffect, useState, useCallback } from "react";
+import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 
 export type NodeDatum = {
   id: string;
@@ -41,10 +42,15 @@ export const useGraph = () => {
 
   const syncGraph = syncFlag?.data;
 
-  // Thoughts only load when syncing
-  const { data: thoughts } = useFetchAllThoughtsWithEmbeddingsQuery({
-    enabled: syncGraph,
-  });
+  // Thoughts only load when syncing.
+  // `isFetching` is used by the rebuild effect below to wait for fresh data —
+  // without it, `thoughts` would briefly hold the previous (stale) array while
+  // refetching, causing rebuildGraph to build an empty hierarchy and flip
+  // sync_graph=false before the fresh thoughts arrive.
+  const { data: thoughts, isFetching: thoughtsIsFetching } =
+    useFetchAllThoughtsWithEmbeddingsQuery({
+      enabled: syncGraph,
+    });
 
   // Graph loads only when NOT syncing
   const graphQuery = useFetchGraphDataQuery({
@@ -55,34 +61,44 @@ export const useGraph = () => {
 
   const [hierarchy, setHierarchy] = useState<NodeDatum | null>(null);
 
-  // -------------------------------
-  // Rebuild the graph (NOW SIMPLE)
+  // Reset hierarchy whenever the active workspace changes — otherwise the
+  // old workspace's React useState lingers and the graph briefly renders
+  // stale nodes while the new queries refetch.
+  const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId);
+  useEffect(() => {
+    setHierarchy(null);
+  }, [activeWorkspaceId]);
+
   const rebuildGraph = useCallback(async () => {
     if (!thoughts) return;
 
-    // ✅ No filtering needed unless you want to exclude null topics
     const newHierarchy = buildGraphWithTopics(
       thoughts as ThoughtWithEmbedding[]
     ) as NodeDatum;
 
     setHierarchy(newHierarchy);
 
-    // Sync to DB
     await mutateGraph(newHierarchy);
   }, [thoughts, mutateGraph]);
 
-  // Load DB graph when not syncing
+  // Load DB graph when not syncing. Guard against the freshly-seeded
+  // empty `graph_data = "{}"` shape (parsed into `{}` with no `id`),
+  // which would otherwise overwrite a valid hierarchy with an empty
+  // object and break downstream rendering of ThoughtsList/ThoughtItem.
   useEffect(() => {
-    if (!syncGraph && graphData) {
+    if (!syncGraph && graphData && (graphData as NodeDatum).id) {
       setHierarchy(graphData);
     }
   }, [syncGraph, graphData]);
 
-  // Recompute graph when syncing
+  // Recompute graph when syncing. Wait for thoughts to NOT be fetching, so
+  // we don't trigger a rebuild with the previous workspace's / pre-seed stale
+  // thoughts array. After the fresh thoughts settle, this effect re-runs.
   useEffect(() => {
     if (!syncGraph) return;
+    if (thoughtsIsFetching) return;
     rebuildGraph();
-  }, [syncGraph, rebuildGraph]);
+  }, [syncGraph, thoughtsIsFetching, rebuildGraph]);
 
   return {
     syncGraph,

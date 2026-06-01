@@ -56,7 +56,10 @@ const List: React.FC<ListProps> = ({ children, className, ...props }) => {
 
   return (
     <View
-      className={className || ""}
+      className={
+        cn("border-input border-[1px] rounded-lg overflow-hidden", className) ||
+        ""
+      }
       accessibilityRole="list"
       accessibilityLabel="List of items"
       {...props}

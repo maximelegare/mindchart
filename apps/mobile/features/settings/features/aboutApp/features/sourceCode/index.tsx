@@ -10,6 +10,7 @@ export const SourceCodeFeature = () => {
       onPress={() =>
         openExternalURL("https://github.com/maximelegare/mindchart")
       }
+      borderBottom={false}
     />
   );
 };

@@ -5,7 +5,7 @@ export default function SettingsLayout() {
     <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: "AI Settings", headerShown: false }}
+        options={{ title: "AI", headerShown: false }}
       />
     </Stack>
   );

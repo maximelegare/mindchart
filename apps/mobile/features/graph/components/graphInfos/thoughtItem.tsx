@@ -71,7 +71,7 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
         <View className="flex-row justify-between gap-2 p-1 pr-4">
           <View className={cn("flex-1", !summary && "flex-row")}>
             <View className="flex-row items-center gap-2">
-              <Typography variant="h3">{capitalize(name)}</Typography>
+              <Typography variant="h3">{capitalize(name || "")}</Typography>
               {children && (
                 <Typography variant="p">({children?.length})</Typography>
               )}

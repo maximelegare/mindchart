@@ -7,15 +7,18 @@ import List from "@/components/ui/list";
 export const DeveloperSettingsFeature = () => {
   const { push } = useRouter();
   return (
-    <List>
+    <>
       <SeedDatabaseFeature style={{ marginBottom: 20 }} />
-      <ListItem
-        borderTop
-        className="bg-background"
-        itemLeft={() => <Icon name="square-mouse-pointer" color="foreground" />}
-        label="DB Inspector"
-        onPress={() => push("/settings/developer/inspector")}
-      />
-    </List>
+      <List>
+        <ListItem
+          className="bg-background"
+          itemLeft={() => (
+            <Icon name="square-mouse-pointer" color="foreground" />
+          )}
+          label="DB Inspector"
+          onPress={() => push("/settings/developer/inspector")}
+        />
+      </List>
+    </>
   );
 };

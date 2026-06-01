@@ -10,7 +10,7 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="ai"
         options={{
-          title: "AI Settings",
+          title: "AI",
           header: () => null,
         }}
       />
@@ -22,9 +22,9 @@ export default function SettingsLayout() {
         }}
       />
       <Stack.Screen
-        name="workspace"
+        name="workspaces"
         options={{
-          title: "Workspace Settings",
+          title: "Workspaces",
           header: () => null,
         }}
       />
