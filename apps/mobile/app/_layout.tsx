@@ -33,10 +33,16 @@ import { cn } from "@/lib/cn";
 import {
   runMigrations,
   setActiveWorkspace,
+  setWorkspaceEncryptionKey,
   validateIfDBExists,
 } from "@repo/sqlite";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
+import {
+  getKeyForWorkspace,
+  hasKeyForWorkspace,
+} from "@/features/workspaces/keys/workspaceKeyManager";
 import { migrateLegacyDatabase } from "@/features/workspaces/utils/migrateLegacyDatabase";
+import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 
 import { Buffer } from "buffer";
 import { AutoConnectService } from "@/features/settings/features/ai/autoConnect/services/autoConnectService";
@@ -48,6 +54,48 @@ export { ErrorBoundary } from "expo-router";
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+async function resolveWorkspaceWithKey(
+  workspaces: Workspace[],
+  activeWorkspaceId: string | null
+): Promise<Workspace | null> {
+  const preferred =
+    workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0];
+  if (preferred && (await hasKeyForWorkspace(preferred.id))) {
+    return preferred;
+  }
+  for (const workspace of workspaces) {
+    if (await hasKeyForWorkspace(workspace.id)) {
+      return workspace;
+    }
+  }
+  return null;
+}
+
+/** Open the active workspace DB (key + migrations) and return whether app_data exists. */
+async function openActiveWorkspaceAndValidate(): Promise<boolean> {
+  const { workspaces, activeWorkspaceId } = useWorkspacesStore.getState();
+  const active = await resolveWorkspaceWithKey(workspaces, activeWorkspaceId);
+
+  if (!active) {
+    return false;
+  }
+
+  if (!activeWorkspaceId || activeWorkspaceId !== active.id) {
+    useWorkspacesStore.getState().setActiveWorkspaceId(active.id);
+  }
+
+  const encryptionKey = await getKeyForWorkspace(active.id);
+  if (!encryptionKey) {
+    return false;
+  }
+
+  await setActiveWorkspace(active.dbFileName);
+  setWorkspaceEncryptionKey(encryptionKey);
+  await runMigrations();
+
+  return validateIfDBExists();
+}
 
 export default function RootLayout() {
   const { colorScheme, setColorScheme } = useColorScheme();
@@ -84,26 +132,7 @@ export default function RootLayout() {
       // Workspace + DB Logic
       try {
         await migrateLegacyDatabase();
-
-        const { workspaces, activeWorkspaceId } = useWorkspacesStore.getState();
-        const active =
-          workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0];
-
-        if (!active) {
-          setDbExists(false);
-          return;
-        }
-
-        if (!activeWorkspaceId || activeWorkspaceId !== active.id) {
-          useWorkspacesStore.getState().setActiveWorkspaceId(active.id);
-        }
-
-        await setActiveWorkspace(active.dbFileName);
-        // Idempotent: migrates fresh DBs and no-ops on already-migrated ones.
-        // Runs serially so no concurrent migrate() call can race against it.
-        await runMigrations();
-
-        const exists = await validateIfDBExists();
+        const exists = await openActiveWorkspaceAndValidate();
         setDbExists(exists);
       } catch (e) {
         console.warn(e);
@@ -124,9 +153,9 @@ export default function RootLayout() {
 
     const isNavigatingToTabs = segments[0] === "(tabs)";
 
-    // If we're navigating to (tabs) and db was previously false, re-check
+    // If we're navigating to (tabs) and db was previously false, re-open workspace + check
     if (isNavigatingToTabs && dbExists === false) {
-      validateIfDBExists()
+      openActiveWorkspaceAndValidate()
         .then((exists) => {
           if (exists) {
             setDbExists(true);

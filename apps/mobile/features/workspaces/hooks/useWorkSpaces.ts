@@ -1,4 +1,4 @@
-import { useControllers } from "@/api/controllers/useControllers";
+import { useSettingsController } from "@/api/controllers/useSettingsController";
 import {
   closeOPDatabase,
   getActiveDbName,
@@ -6,7 +6,14 @@ import {
   removeDatabaseFile,
   runMigrations,
   setActiveWorkspace as setActiveWorkspaceDb,
+  setWorkspaceEncryptionKey,
 } from "@repo/sqlite";
+import {
+  createKeyForWorkspace,
+  deleteKeyForWorkspace,
+  getKeyForWorkspace,
+  WorkspaceKeyMissingError,
+} from "../keys/workspaceKeyManager";
 import * as FileSystem from "expo-file-system/legacy";
 import { useCallback, useState } from "react";
 import * as Sharing from "expo-sharing";
@@ -38,7 +45,7 @@ export const useWorkSpaces = () => {
   const queryClient = useQueryClient();
   const { openModal, closeModal } = useModal();
 
-  const { useExportDatabaseMutation } = useControllers().settings;
+  const { useExportDatabaseMutation } = useSettingsController();
   const { mutateAsync: exportDatabaseAsync } = useExportDatabaseMutation();
 
   const workspaces = useWorkspacesStore((s) => s.workspaces);
@@ -70,8 +77,14 @@ export const useWorkSpaces = () => {
    */
   const activateWorkspace = useCallback(
     async (workspace: Workspace) => {
+      const key = await getKeyForWorkspace(workspace.id);
+      if (!key) {
+        throw new WorkspaceKeyMissingError(workspace.id);
+      }
+
       await closeOPDatabase();
       await setActiveWorkspaceDb(workspace.dbFileName);
+      setWorkspaceEncryptionKey(key);
       // Critical: migrations must complete BEFORE any consumer query fires.
       // Otherwise refetchQueries({type:"active"}) below races migrate() and
       // observed queries (e.g. fetch_all_topics) hit a tableless DB.
@@ -100,6 +113,7 @@ export const useWorkSpaces = () => {
           createdAt: Date.now(),
         };
         await ensureDatabasesDir();
+        await createKeyForWorkspace(id);
         addWorkspace(workspace);
         await activateWorkspace(workspace);
         return workspace;
@@ -157,6 +171,7 @@ export const useWorkSpaces = () => {
           await closeOPDatabase();
         }
         await removeDatabaseFile(target.dbFileName);
+        await deleteKeyForWorkspace(id);
         removeWorkspaceFromStore(id);
 
         if (isActive) {
@@ -281,6 +296,7 @@ export const useWorkSpaces = () => {
           dbFileName: workspaceDbFileName(id),
           createdAt: Date.now(),
         };
+        await createKeyForWorkspace(id);
         addWorkspace(newWorkspace);
         await writeImportedFile(backupUri, newWorkspace);
         setLoading(false);
@@ -308,6 +324,7 @@ export const useWorkSpaces = () => {
                 dbFileName: workspaceDbFileName(id),
                 createdAt: Date.now(),
               };
+              await createKeyForWorkspace(id);
               addWorkspace(newWorkspace);
               await writeImportedFile(backupUri, newWorkspace);
               closeModal();

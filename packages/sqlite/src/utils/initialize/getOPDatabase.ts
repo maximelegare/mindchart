@@ -1,9 +1,11 @@
 import { open, type SQLiteDatabase } from "@op-engineering/op-sqlite";
 import { drizzle, OPSQLiteDatabase } from "drizzle-orm/op-sqlite";
 import * as FileSystem from "expo-file-system/legacy";
+import { WorkspaceEncryptionKeyMissingError } from "./workspaceEncryptionKeyMissingError";
 
 let instance: OPSQLiteDatabase | null = null;
 let rawSqlite: SQLiteDatabase | null = null;
+let activeEncryptionKey: string | null = null;
 
 // Defaults to the legacy filename so existing installs keep working until
 // a workspace pointer is set explicitly via setActiveWorkspace().
@@ -13,9 +15,20 @@ const dbLocation = FileSystem.documentDirectory + "databases";
 
 export type DB = OPSQLiteDatabase;
 
+export const setWorkspaceEncryptionKey = (key: string | null) => {
+  activeEncryptionKey = key;
+};
+
 export const getOPDatabase = (): OPSQLiteDatabase => {
   if (!instance) {
-    rawSqlite = open({ name: activeDbName, location: dbLocation });
+    if (!activeEncryptionKey) {
+      throw new WorkspaceEncryptionKeyMissingError();
+    }
+    rawSqlite = open({
+      name: activeDbName,
+      location: dbLocation,
+      encryptionKey: activeEncryptionKey,
+    });
 
     rawSqlite.execute("PRAGMA foreign_keys = ON;");
     instance = drizzle(rawSqlite);
@@ -23,15 +36,20 @@ export const getOPDatabase = (): OPSQLiteDatabase => {
   return instance;
 };
 
-/**
- * Safely closes the database and resets the instance
- */
-export const closeOPDatabase = async () => {
+const closeConnection = () => {
   if (rawSqlite) {
     rawSqlite.close();
     rawSqlite = null;
     instance = null;
   }
+};
+
+/**
+ * Safely closes the database and resets the instance
+ */
+export const closeOPDatabase = async () => {
+  closeConnection();
+  activeEncryptionKey = null;
 };
 
 /**
@@ -52,6 +70,6 @@ export const setActiveWorkspace = async (dbName: string) => {
     throw new Error("setActiveWorkspace requires a non-empty dbName");
   }
   if (dbName === activeDbName && instance) return;
-  await closeOPDatabase();
+  closeConnection();
   activeDbName = dbName;
 };

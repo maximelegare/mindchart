@@ -32,9 +32,11 @@ import { exportDatabaseQuery } from "./src/queries/settings/exportDatabase";
 import {
   closeOPDatabase,
   setActiveWorkspace,
+  setWorkspaceEncryptionKey,
   getActiveDbName,
   getDbLocation,
 } from "./src/utils/initialize/getOPDatabase";
+import { WorkspaceEncryptionKeyMissingError } from "./src/utils/initialize/workspaceEncryptionKeyMissingError";
 export * from "./src/data/settings";
 import { useMigrationHelper } from "./src/utils/useMigrationHelper";
 import { runMigrations } from "./src/utils/runMigrations";
@@ -85,8 +87,10 @@ export {
   runMigrations,
   closeOPDatabase,
   setActiveWorkspace,
+  setWorkspaceEncryptionKey,
   getActiveDbName,
   getDbLocation,
+  WorkspaceEncryptionKeyMissingError,
   seedDatabaseQuery,
   getAllTopicsQuery,
   insertNewTopicQuery,
