@@ -12,7 +12,6 @@ export const CurrentWorkspace = () => {
   const { push } = useRouter();
   if (!activeWorkspace) return null;
 
-  const name = "personal";
   return (
     <View className="">
       <DropdownMenuItem
@@ -31,7 +30,9 @@ export const CurrentWorkspace = () => {
               className="text-popover-foreground p-0"
               style={{ lineHeight: 16 }}
             >
-              {name?.length > 14 ? name?.slice(0, 14) + "..." : name}
+              {activeWorkspace.name?.length > 14
+                ? activeWorkspace.name?.slice(0, 14) + "..."
+                : activeWorkspace.name}
             </Typography>
             <View className="flex-row gap-1 items-center">
               <Typography
