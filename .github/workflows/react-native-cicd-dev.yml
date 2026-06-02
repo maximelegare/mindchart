@@ -60,6 +60,11 @@ jobs:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
+      - name: Disk usage before build
+        run: |
+            df -h
+            df -h /tmp
+            
       - name: Free disk space
         run: |
             sudo rm -rf /usr/share/dotnet
