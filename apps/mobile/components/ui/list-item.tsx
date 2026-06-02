@@ -75,12 +75,13 @@ const ListItem: React.FC<ListItemProps> = ({
 }) => {
   // Automatically add ChevronRight if onPress is defined and detail is true
   const ItemRight = () => {
-    if (noChevron) {
-      return null;
-    } else if (itemRight) {
+    if (itemRight) {
       return itemRight({
         className: cn("size-5 opacity-70", listItemTextVariants({ variant })),
       });
+    }
+    if (noChevron) {
+      return null;
     } else if ((props?.onPress && detail) || (href && detail)) {
       return (
         <ChevronRight
