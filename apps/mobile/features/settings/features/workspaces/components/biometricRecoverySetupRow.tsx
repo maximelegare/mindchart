@@ -1,39 +1,23 @@
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { Alert, View } from "react-native";
 import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
 import { Switch } from "@/components/ui/switch";
-import { View } from "react-native";
-import {
-  canUseBiometricRecovery,
-  isBiometricRecoveryEnabled,
-  setupBiometricRecovery,
-} from "@/features/workspaces/keys/workspaceKeyManager";
+import { useWorkspaceKeyRecovery } from "@/features/settings/features/recoveryKeys/hooks/useWorkspaceKeyRecovery";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 
 export const BiometricRecoverySetupRow = () => {
   const workspaces = useWorkspacesStore((s) => s.workspaces);
-  const [biometricAvailable, setBiometricAvailable] = useState(false);
-  const [enabled, setEnabled] = useState(isBiometricRecoveryEnabled);
-  const [busy, setBusy] = useState(false);
-
-  const refresh = useCallback(() => {
-    setEnabled(isBiometricRecoveryEnabled());
-    canUseBiometricRecovery().then(setBiometricAvailable);
-  }, []);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh])
-  );
+  const {
+    biometricRecoveryEnabled,
+    biometricAvailable,
+    busy,
+    setBusy,
+    setupBiometricRecovery,
+  } = useWorkspaceKeyRecovery();
 
   const onToggle = async (next: boolean) => {
+    if (busy || next === biometricRecoveryEnabled) return;
+
     if (!biometricAvailable) {
       Alert.alert(
         "Biometrics unavailable",
@@ -48,7 +32,6 @@ export const BiometricRecoverySetupRow = () => {
         workspaces.map((w) => w.id),
         next
       );
-      setEnabled(next);
     } catch (e) {
       Alert.alert(
         "Biometric recovery",
@@ -71,8 +54,8 @@ export const BiometricRecoverySetupRow = () => {
       itemRight={() => (
         <View pointerEvents={busy ? "none" : "auto"}>
           <Switch
-            checked={enabled}
-            disabled={!biometricAvailable}
+            checked={biometricRecoveryEnabled}
+            disabled={!biometricAvailable || busy}
             onCheckedChange={onToggle}
             accessibilityLabel="Enable biometric recovery"
           />

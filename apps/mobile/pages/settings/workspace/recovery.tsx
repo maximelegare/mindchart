@@ -2,23 +2,26 @@ import { useEffect } from "react";
 import { useRouter } from "expo-router";
 import { PageContainer } from "@/components/layout/page/pageContainer";
 import { DatabaseRecoveryFeature } from "@/features/settings/features/workspaces/views/databaseRecovery";
-import { isBiometricRecoveryEnabled } from "@/features/workspaces/keys/workspaceKeyManager";
+import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 
 export const DatabaseRecoveryPage = () => {
   const router = useRouter();
+  const biometricRecoveryEnabled = useSecuritySettingsPreferences(
+    (s) => s.biometricRecoveryEnabled
+  );
 
   useEffect(() => {
-    if (!isBiometricRecoveryEnabled()) {
+    if (!biometricRecoveryEnabled) {
       router.replace("/settings/workspaces");
     }
-  }, [router]);
+  }, [biometricRecoveryEnabled, router]);
 
-  if (!isBiometricRecoveryEnabled()) {
+  if (!biometricRecoveryEnabled) {
     return null;
   }
 
   return (
-    <PageContainer headerVariant="tab" title="Database key recovery">
+    <PageContainer headerVariant="tab" title="Recovery Keys">
       <DatabaseRecoveryFeature />
     </PageContainer>
   );

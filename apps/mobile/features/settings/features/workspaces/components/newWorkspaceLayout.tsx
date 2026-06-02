@@ -13,10 +13,8 @@ import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
 import { Icon } from "@/components/ui/icons/icon";
-import {
-  hasKeyForWorkspace,
-  WorkspaceKeyMissingError,
-} from "@/features/workspaces/keys/workspaceKeyManager";
+import { hasKeyForWorkspace } from "@/features/settings/features/recoveryKeys/workspaceKeyService";
+import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/workspaceKeyErrors";
 
 export const NewWorkspaceLayout = () => {
   const {

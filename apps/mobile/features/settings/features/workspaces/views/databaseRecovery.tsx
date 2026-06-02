@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
-import { recoverDatabaseKey } from "@/features/workspaces/keys/workspaceKeyManager";
+import { useWorkspaceKeyRecovery } from "@/features/settings/features/recoveryKeys/hooks/useWorkspaceKeyRecovery";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Typography } from "@/components/ui/typography";
+
 export const DatabaseRecoveryFeature = () => {
   const workspaces = useWorkspacesStore((s) => s.workspaces);
+  const { recoverDatabaseKey } = useWorkspaceKeyRecovery();
   const [revealedKeyById, setRevealedKeyById] = useState<
     Record<string, string | undefined>
   >({});

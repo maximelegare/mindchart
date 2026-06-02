@@ -40,7 +40,7 @@ import { useWorkspacesStore } from "@/features/workspaces/context/workspacesCont
 import {
   getKeyForWorkspace,
   hasKeyForWorkspace,
-} from "@/features/workspaces/keys/workspaceKeyManager";
+} from "@/features/settings/features/recoveryKeys/workspaceKeyService";
 import { migrateLegacyDatabase } from "@/features/workspaces/utils/migrateLegacyDatabase";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 

@@ -10,12 +10,6 @@ const baseOptions: SecureStore.SecureStoreOptions = {
   keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
 };
 
-const recoveryOptions: SecureStore.SecureStoreOptions = {
-  ...baseOptions,
-  requireAuthentication: true,
-  authenticationPrompt: "Authenticate to recover database key",
-};
-
 export async function getPrimaryKey(
   workspaceId: string
 ): Promise<string | null> {
@@ -41,18 +35,15 @@ export async function hasPrimaryKey(workspaceId: string): Promise<boolean> {
 export async function getRecoveryKey(
   workspaceId: string
 ): Promise<string | null> {
-  return SecureStore.getItemAsync(recoveryKey(workspaceId), recoveryOptions);
+  return SecureStore.getItemAsync(recoveryKey(workspaceId), baseOptions);
 }
 
+/** Writes recovery backups without prompting (biometric gate is in the manager). */
 export async function setRecoveryKey(
   workspaceId: string,
   key: string
 ): Promise<void> {
-  await SecureStore.setItemAsync(
-    recoveryKey(workspaceId),
-    key,
-    recoveryOptions
-  );
+  await SecureStore.setItemAsync(recoveryKey(workspaceId), key, baseOptions);
 }
 
 export async function deleteRecoveryKey(workspaceId: string): Promise<void> {

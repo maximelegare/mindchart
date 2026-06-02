@@ -12,8 +12,8 @@ import {
   createKeyForWorkspace,
   deleteKeyForWorkspace,
   getKeyForWorkspace,
-  WorkspaceKeyMissingError,
-} from "../keys/workspaceKeyManager";
+} from "@/features/settings/features/recoveryKeys/workspaceKeyService";
+import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/workspaceKeyErrors";
 import * as FileSystem from "expo-file-system/legacy";
 import { useCallback, useState } from "react";
 import * as Sharing from "expo-sharing";
