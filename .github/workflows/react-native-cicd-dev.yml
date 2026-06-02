@@ -61,10 +61,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Free disk space
-        uses: insightsengineering/disk-space-reclaimer@v1
-        with:
-          dotnet: true
-          haskell: true
+        run: |
+            sudo rm -rf /usr/share/dotnet
+            sudo rm -rf /opt/ghc
 
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
