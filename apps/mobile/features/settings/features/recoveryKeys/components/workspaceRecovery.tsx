@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { Alert, Pressable, ScrollView, View } from "react-native";
-import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
+import { Alert, Pressable, View } from "react-native";
 import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
 import { useWorkspaceKeyRecovery } from "@/features/settings/features/recoveryKeys/hooks/useWorkspaceKeyRecovery";
 import { Button } from "@/components/ui/button";
+import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
+import { Typography } from "@/components/ui";
 import { Card } from "@/components/ui/card";
-import { Typography } from "@/components/ui/typography";
 
-export const DatabaseRecoveryFeature = () => {
+export const WorkspaceRecovery = () => {
   const workspaces = useWorkspacesStore((s) => s.workspaces);
-  const { recoverDatabaseKey } = useWorkspaceKeyRecovery();
   const [revealedKeyById, setRevealedKeyById] = useState<
     Record<string, string | undefined>
   >({});
   const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const { biometricRecoveryEnabled, recoverDatabaseKey } =
+    useWorkspaceKeyRecovery();
 
   const handleRecover = async (workspaceId: string) => {
     setLoadingId(workspaceId);
@@ -47,18 +49,13 @@ export const DatabaseRecoveryFeature = () => {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
-      <Typography variant="muted" padding>
-        Tap Recover key and authenticate with biometrics to view a workspace
-        database encryption key. Keys stay hidden until you recover them.
-      </Typography>
-
+    <>
       {workspaces.map((workspace) => {
         const revealed = revealedKeyById[workspace.id];
         const loading = loadingId === workspace.id;
 
         return (
-          <Card key={workspace.id} className="p-3 gap-3">
+          <Card key={workspace.id} className="p-2 gap-3 bg-muted">
             <View className="flex-row items-center gap-3">
               <WorkspaceAvatar workspace={workspace} />
               <Typography variant="h3" className="flex-1">
@@ -94,7 +91,7 @@ export const DatabaseRecoveryFeature = () => {
               <Button
                 variant="default"
                 size="sm"
-                disabled={loading}
+                disabled={loading || !biometricRecoveryEnabled}
                 onPress={() => handleRecover(workspace.id)}
               >
                 <Typography>
@@ -105,6 +102,6 @@ export const DatabaseRecoveryFeature = () => {
           </Card>
         );
       })}
-    </ScrollView>
+    </>
   );
 };

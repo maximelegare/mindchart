@@ -8,11 +8,9 @@ export const DatabaseRecoveryRow = () => {
 
   return (
     <ListItem
-      itemLeft={() => <Icon name="lock-keyhole" color="foreground" />}
+      itemLeft={() => <Icon name="key-round" color="foreground" />}
       label="Database key recovery"
-      description="View workspace encryption keys after biometric authentication"
       onPress={() => router.push("/settings/workspaces/recovery")}
-      borderBottom={false}
     />
   );
 };
