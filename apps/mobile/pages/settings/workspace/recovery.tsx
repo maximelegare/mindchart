@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { PageContainer } from "@/components/layout/page/pageContainer";
 import { DatabaseRecoveryFeature } from "@/features/settings/features/workspaces/views/databaseRecovery";
@@ -9,14 +9,25 @@ export const DatabaseRecoveryPage = () => {
   const biometricRecoveryEnabled = useSecuritySettingsPreferences(
     (s) => s.biometricRecoveryEnabled
   );
+  const [persistReady, setPersistReady] = useState(() =>
+    useSecuritySettingsPreferences.persist.hasHydrated()
+  );
 
   useEffect(() => {
+    if (persistReady) return;
+    return useSecuritySettingsPreferences.persist.onFinishHydration(() => {
+      setPersistReady(true);
+    });
+  }, [persistReady]);
+
+  useEffect(() => {
+    if (!persistReady) return;
     if (!biometricRecoveryEnabled) {
       router.replace("/settings/workspaces");
     }
-  }, [biometricRecoveryEnabled, router]);
+  }, [persistReady, biometricRecoveryEnabled, router]);
 
-  if (!biometricRecoveryEnabled) {
+  if (!persistReady || !biometricRecoveryEnabled) {
     return null;
   }
 

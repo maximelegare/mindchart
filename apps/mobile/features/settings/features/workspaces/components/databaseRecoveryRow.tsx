@@ -1,13 +1,10 @@
 import { useRouter } from "expo-router";
 import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
-import { useWorkspaceKeyRecovery } from "@/features/settings/features/recoveryKeys/hooks/useWorkspaceKeyRecovery";
 
+/** Render only when biometric recovery is enabled (parent gates mounting). */
 export const DatabaseRecoveryRow = () => {
   const router = useRouter();
-  const { biometricRecoveryEnabled } = useWorkspaceKeyRecovery();
-
-  if (!biometricRecoveryEnabled) return null;
 
   return (
     <ListItem

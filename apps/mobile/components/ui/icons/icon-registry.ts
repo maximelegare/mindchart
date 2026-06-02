@@ -25,6 +25,7 @@ export type IconName =
   | "house"
   | "import"
   | "info"
+  | "key-round"
   | "keyboard"
   | "layers"
   | "lock-keyhole"
@@ -152,6 +153,10 @@ export const ICON_METADATA: Record<
   info: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4m0-4h.01"></path></g>`,
+  },
+  "key-round": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle></g>`,
   },
   keyboard: {
     viewBox: "0 0 24 24",
