@@ -10,6 +10,7 @@ export const DatabaseRecoveryRow = () => {
     <ListItem
       itemLeft={() => <Icon name="key-round" color="foreground" />}
       label="Database key recovery"
+      borderBottom={false}
       onPress={() => router.push("/settings/workspaces/recovery")}
     />
   );

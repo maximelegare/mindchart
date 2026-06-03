@@ -16,7 +16,7 @@ import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspac
 import { Icon } from "@/components/ui/icons/icon";
 import { hasKeyForWorkspace } from "@/features/settings/features/recoveryKeys/services/workspaceKeyService";
 import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
-export const NewWorkspaceLayout = () => {
+export const ManageWorkspaceLayout = () => {
   const {
     workspaces,
     activeWorkspaceId,
