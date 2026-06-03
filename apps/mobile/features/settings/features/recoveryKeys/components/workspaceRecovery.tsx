@@ -49,7 +49,7 @@ export const WorkspaceRecovery = () => {
   }
 
   return (
-    <>
+    <View className="flex-col gap-3">
       {workspaces.map((workspace) => {
         const revealed = revealedKeyById[workspace.id];
         const loading = loadingId === workspace.id;
@@ -102,6 +102,6 @@ export const WorkspaceRecovery = () => {
           </Card>
         );
       })}
-    </>
+    </View>
   );
 };

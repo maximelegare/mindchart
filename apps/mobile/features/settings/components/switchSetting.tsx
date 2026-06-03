@@ -22,7 +22,7 @@ export const SwitchSetting = ({
   accessibilityLabel,
 }: SwitchSettingProps) => {
   return (
-    <Card className="py-2">
+    <Card>
       <Gutter size="md" className="py-3 flex-row gap-4">
         <View className="flex-1">
           <Typography variant="h3" padding>
