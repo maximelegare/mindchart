@@ -9,7 +9,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
 import { cn } from "@/lib/cn";
 
-import { PROFILE_COLORS } from "../data/profileColors";
+import { PROFILE_COLORS } from "../../data/profileColors";
 
 const PROFILE_COLOR_OPTIONS: { key: string; value: [string, string] }[] =
   Object.entries(PROFILE_COLORS).map(([key, value]) => ({

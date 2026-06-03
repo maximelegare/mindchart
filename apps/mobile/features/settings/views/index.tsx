@@ -26,6 +26,12 @@ export const SettingsFeature = () => {
         />
         <ListItem
           className="bg-background"
+          itemLeft={() => <Icon name="key-round" color="foreground" />}
+          label="Recovery Keys"
+          onPress={() => push("/settings/workspaces/recovery")}
+        />
+        <ListItem
+          className="bg-background"
           itemLeft={() => <Icon name="brackets-curly" color="foreground" />}
           label="Developer Options"
           onPress={() => push("/settings/developer")}

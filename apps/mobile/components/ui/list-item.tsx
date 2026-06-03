@@ -73,23 +73,16 @@ const ListItem: React.FC<ListItemProps> = ({
   borderBottom = true,
   ...props
 }) => {
-  // Automatically add ChevronRight if onPress is defined and detail is true
-  const ItemRight = () => {
-    if (noChevron) {
-      return null;
-    } else if (itemRight) {
-      return itemRight({
-        className: cn("size-5 opacity-70", listItemTextVariants({ variant })),
-      });
-    } else if ((props?.onPress && detail) || (href && detail)) {
-      return (
-        <ChevronRight
-          className={cn("size-5 opacity-70", listItemTextVariants({ variant }))}
-        />
-      );
-    }
-    return null;
-  };
+  const rightClassName = cn(
+    "size-5 opacity-70",
+    listItemTextVariants({ variant })
+  );
+  let rightContent: React.ReactNode;
+  if (itemRight) {
+    rightContent = itemRight({ className: rightClassName });
+  } else if (!noChevron && ((props?.onPress && detail) || (href && detail))) {
+    rightContent = <ChevronRight className={rightClassName} />;
+  }
   const pressable = props?.onPress || href;
   // When href is provided, use View since Link will wrap it
   // When onPress is provided, use Pressable
@@ -131,9 +124,9 @@ const ListItem: React.FC<ListItemProps> = ({
         >
           {label}
         </Typography>
-        {description && <Muted>{description}</Muted>}
+        {description ? <Muted>{description}</Muted> : undefined}
       </View>
-      <ItemRight />
+      {rightContent}
     </Component>
   );
   if (href) {

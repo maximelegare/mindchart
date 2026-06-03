@@ -7,6 +7,10 @@ export default function WorkspaceLayout() {
         name="index"
         options={{ title: "Workspace", headerShown: false }}
       />
+      <Stack.Screen
+        name="recovery"
+        options={{ title: "Database key recovery", headerShown: false }}
+      />
     </Stack>
   );
 }

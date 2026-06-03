@@ -1,8 +1,9 @@
-import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
-import { useWorkSpaces } from "../../../../workspaces/hooks/useWorkSpaces";
-import { WorkspaceEdit } from "../../../../workspaces/components/workspaceEdit";
+import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
+import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
+import { Button, Typography } from "@/components/ui";
+import { View } from "react-native";
 
 type Props = {
   onCreated?: () => void;
@@ -31,12 +32,15 @@ export const CreateWorkspaceRow = ({ onCreated }: Props) => {
   };
 
   return (
-    <ListItem
-      className="bg-background"
-      itemLeft={() => <Icon name="plus" color="foreground" />}
-      label="New Workspace"
+    <Button
+      variant="default"
+      // style={{ backgroundColor: hsl("primary", colorScheme, -100) }}
       onPress={open}
-      noChevron
-    />
+    >
+      <View className="flex-row items-center gap-3">
+        <Icon name="plus" color="background" />
+        <Typography>New Workspace</Typography>
+      </View>
+    </Button>
   );
 };

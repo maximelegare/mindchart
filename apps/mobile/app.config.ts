@@ -63,6 +63,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-font",
     "expo-web-browser",
     [
+      "expo-secure-store",
+      {
+        faceIDPermission:
+          "Allow MindChart to use Face ID to recover workspace database keys.",
+      },
+    ],
+    [
       "llama.rn",
       {
         enableEntitlements: true,

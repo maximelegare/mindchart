@@ -1,19 +1,22 @@
-import { View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, View } from "react-native";
 import type { IconName } from "@/components/ui/icons/icon-registry";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
-import { WorkspaceActionsModal } from "@/features/workspaces/components/workspaceActionsModal";
-import { WorkspaceEdit } from "@/features/workspaces/components/workspaceEdit";
+import { WorkspaceActionsModal } from "@/features/workspaces/components/modals/workspaceActionsModal";
+import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
+import { WorkspacePasswordModal } from "@/features/workspaces/components/modals/workspacePasswordModal";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
-import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
+import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspaces/workspaceAvatar";
 import { Icon } from "@/components/ui/icons/icon";
-
-export const NewWorkspaceLayout = () => {
+import { hasKeyForWorkspace } from "@/features/settings/features/recoveryKeys/services/workspaceKeyService";
+import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
+export const ManageWorkspaceLayout = () => {
   const {
     workspaces,
     activeWorkspaceId,
@@ -24,6 +27,43 @@ export const NewWorkspaceLayout = () => {
     deleteWorkspace,
   } = useWorkSpaces();
   const { openModal, closeModal, setModalContent } = useModal();
+
+  const [hasKeyByWorkspaceId, setHasKeyByWorkspaceId] = useState<
+    Record<string, boolean>
+  >({});
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        workspaces.map(
+          async (w) =>
+            [w.id, await hasKeyForWorkspace(w.id)] as [string, boolean]
+        )
+      );
+      if (!cancelled) {
+        setHasKeyByWorkspaceId(Object.fromEntries(entries));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaces]);
+
+  const handleSwitch = async (workspace: Workspace) => {
+    try {
+      await switchWorkspace(workspace.id);
+    } catch (error) {
+      if (error instanceof WorkspaceKeyMissingError) {
+        Alert.alert(
+          "Workspace unavailable",
+          "This workspace has no encryption key on this device."
+        );
+        return;
+      }
+      throw error;
+    }
+  };
 
   const openRenameModal = (workspace: Workspace) => {
     setModalContent({
@@ -42,6 +82,47 @@ export const NewWorkspaceLayout = () => {
           }}
         />
       ),
+    });
+  };
+
+  const openExportPasswordModal = (workspace: Workspace) => {
+    // Use setModalContent (like rename/delete) — closeModal + openModal races
+    // because closeModal sets isVisible false in its animation callback.
+    setModalContent({
+      title: "Export Workspace",
+      modalName: undefined,
+      description: undefined,
+      customContent: () => (
+        <WorkspacePasswordModal
+          mode="export"
+          onCancel={closeModal}
+          onConfirm={async (password) => {
+            try {
+              const result = await exportWorkspace(workspace.id, password);
+              if (!result.success) {
+                const detail =
+                  result.error instanceof Error
+                    ? result.error.message
+                    : "Could not export this workspace. Please try again.";
+                Alert.alert("Export failed", detail);
+                return;
+              }
+              closeModal();
+            } catch (error) {
+              const err = error as Error;
+              Alert.alert(
+                "Export failed",
+                err?.message ||
+                  "Could not export this workspace. Please try again."
+              );
+            }
+          }}
+        />
+      ),
+      onConfirm: undefined,
+      onCancel: undefined,
+      confirmButton: undefined,
+      cancelButton: undefined,
     });
   };
 
@@ -69,13 +150,10 @@ export const NewWorkspaceLayout = () => {
           canDelete={canDelete}
           onSwitch={async () => {
             closeModal();
-            await switchWorkspace(workspace.id);
+            await handleSwitch(workspace);
           }}
           onRename={() => openRenameModal(workspace)}
-          onExport={async () => {
-            closeModal();
-            await exportWorkspace(workspace.id);
-          }}
+          onExport={() => openExportPasswordModal(workspace)}
           onDelete={() => openDeleteModal(workspace)}
           onCancel={closeModal}
         />
@@ -124,6 +202,7 @@ export const NewWorkspaceLayout = () => {
           <View className="flex-col gap-4">
             {workspaces.map((workspace) => {
               const isActive = workspace.id === activeWorkspace?.id;
+              const hasKey = hasKeyByWorkspaceId[workspace.id] ?? false;
               return (
                 <Card
                   key={workspace.id}
@@ -142,20 +221,26 @@ export const NewWorkspaceLayout = () => {
                         variant="small"
                         className="text-muted-foreground"
                       >
-                        {isActive ? "Active" : "Load"}
+                        {isActive ? "Active" : hasKey ? "Load" : "Key missing"}
                       </Typography>
                     </View>
                   </View>
 
                   <View className="flex-row items-center">
                     <Button
-                      onPress={() => switchWorkspace(workspace.id)}
-                      disabled={isActive}
+                      onPress={() => handleSwitch(workspace)}
+                      disabled={isActive || !hasKey}
                       size="sm"
                       variant="default"
                       className="flex-row items-center gap-2"
                     >
-                      <Typography>{isActive ? "Active" : "Switch"}</Typography>
+                      <Typography>
+                        {isActive
+                          ? "Active"
+                          : hasKey
+                            ? "Switch"
+                            : "Unavailable"}
+                      </Typography>
                       {!isActive && (
                         <Icon
                           name="arrow-right-left"

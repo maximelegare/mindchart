@@ -24,7 +24,8 @@ interface ListProps extends ViewProps {
 }
 
 const List: React.FC<ListProps> = ({ children, className, ...props }) => {
-  const childrenArray = React.Children.toArray(children);
+  // Omit null/false children so Android never gets empty native slots in the list ViewGroup.
+  const childrenArray = React.Children.toArray(children).filter(Boolean);
   const modifiedChildren = childrenArray.map((child, index) => {
     if (!React.isValidElement(child)) {
       return child;

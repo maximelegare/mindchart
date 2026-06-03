@@ -1,7 +1,8 @@
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, View } from "react-native";
-import { useWorkSpaces, Workspace } from "../hooks/useWorkSpaces";
+import type { Workspace } from "../../context/workspacesContext";
+import { useWorkspacesStore } from "../../context/workspacesContext";
 import { Typography } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { Icon } from "@/components/ui/icons/icon";
@@ -9,7 +10,7 @@ import { IconName } from "@/components/ui/icons/icon-registry";
 import {
   DEFAULT_WORKSPACE_COLOR,
   parseWorkspaceColor,
-} from "../utils/workspaceColor";
+} from "../../utils/workspaceColor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 
@@ -20,7 +21,9 @@ export const WorkspaceAvatar = ({
   size?: "sm" | "md";
   workspace?: Workspace;
 }) => {
-  const { activeWorkspace } = useWorkSpaces();
+  const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId);
+  const workspaces = useWorkspacesStore((s) => s.workspaces);
+  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const { colorScheme } = useColorScheme();
   const ws = workspace ?? activeWorkspace;
 

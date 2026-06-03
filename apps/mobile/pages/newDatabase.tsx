@@ -2,7 +2,7 @@ import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
-import { WorkspaceEdit } from "@/features/workspaces/components/workspaceEdit";
+import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { router } from "expo-router";
@@ -74,7 +74,7 @@ export const NewDatabaseScreen = () => {
             >
               <View className="flex-row items-center justify-center gap-3">
                 <Icon name="import" color="background" size={18} />
-                <Typography>Import Workspace</Typography>
+                <Typography>Import Workspace (.zip)</Typography>
               </View>
             </Button>
           </View>

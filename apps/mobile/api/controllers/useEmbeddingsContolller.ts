@@ -12,12 +12,10 @@ import { Embedding } from "@repo/zod-schemas/src/schemas";
 import { useGenerateLocalEmbeddingsService } from "../../features/embeddings/services/useGenerateLocalEmbeddingService";
 
 export const useEmbeddingsController = () => {
-  const db = getOPDatabase();
-
   const useFetchPendingEmbeddings = async () => await fetchPendingEmbeddings();
 
   const insertPendingEmbeddings = async (data: Array<Thought>) =>
-    await insertPendingEmbeddingsQuery(db, data);
+    await insertPendingEmbeddingsQuery(getOPDatabase(), data);
 
   const useInsertEmbeddingsMutation = () =>
     useMutation<

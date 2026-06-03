@@ -1,16 +1,17 @@
 import { View } from "react-native";
-import { CreateWorkspaceRow } from "@/features/settings/features/workspaces/components/createWorkspaceRow";
-import { ImportWorkspaceRow } from "@/features/settings/features/workspaces/components/importWorkspaceRow";
 import List from "@/components/ui/list";
-import { NewWorkspaceLayout } from "../components/newWorkspaceLayout";
+import { ManageWorkspaceLayout } from "../components/manageWorkspace";
+import { DatabaseRecoveryRow } from "../components/databaseRecoveryRow";
+import { NewWorkspace } from "../components/newWorkspaces/newWorkspace";
 
 export const WorkspaceSettingsFeature = () => {
   return (
     <View className="flex-col gap-4">
-      <NewWorkspaceLayout />
+      <NewWorkspace />
+
+      <ManageWorkspaceLayout />
       <List>
-        <CreateWorkspaceRow />
-        <ImportWorkspaceRow />
+        <DatabaseRecoveryRow />
       </List>
     </View>
   );

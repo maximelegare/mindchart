@@ -1,7 +1,7 @@
 import { Typography } from "@/components/ui";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icons/icon";
-import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
+import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspaces/workspaceAvatar";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
 import { useRouter } from "expo-router";
 import React from "react";
