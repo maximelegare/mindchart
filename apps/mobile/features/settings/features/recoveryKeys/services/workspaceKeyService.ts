@@ -1,6 +1,6 @@
 import * as Crypto from "expo-crypto";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
-import * as keyStore from "./components/workspaceKeyStore";
+import * as keyStore from "../components/workspaceKeyStore";
 import { WorkspaceKeyMissingError } from "./workspaceKeyErrors";
 
 async function generateEncryptionKey(): Promise<string> {

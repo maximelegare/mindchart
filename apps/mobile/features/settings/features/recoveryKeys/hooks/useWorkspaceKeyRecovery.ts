@@ -3,7 +3,7 @@ import * as LocalAuthentication from "expo-local-authentication";
 import * as SecureStore from "expo-secure-store";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 import * as keyStore from "../components/workspaceKeyStore";
-import { WorkspaceRecoveryError } from "../workspaceKeyErrors";
+import { WorkspaceRecoveryError } from "../services/workspaceKeyErrors";
 
 async function checkBiometricAvailability(): Promise<boolean> {
   const hasHardware = await LocalAuthentication.hasHardwareAsync();
