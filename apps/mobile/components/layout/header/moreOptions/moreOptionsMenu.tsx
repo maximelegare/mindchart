@@ -34,7 +34,7 @@ import {
   BottomSheetOpenTrigger,
   BottomSheetView,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
-import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
+import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspaces/workspaceAvatar";
 import { CurrentWorkspace } from "./currentWorkspace";
 
 // --- Types ---

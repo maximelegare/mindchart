@@ -1,8 +1,8 @@
 import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
-import type { Workspace } from "../context/workspacesContext";
-import { WorkspaceAvatar } from "./workspaceAvatar";
+import type { Workspace } from "../../context/workspacesContext";
+import { WorkspaceAvatar } from "../manageWorkspaces/workspaceAvatar";
 import { Card } from "@/components/ui/card";
 
 type Props = {

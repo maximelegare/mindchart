@@ -2,7 +2,7 @@ import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
-import { WorkspaceEdit } from "@/features/workspaces/components/workspaceEdit";
+import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { router } from "expo-router";

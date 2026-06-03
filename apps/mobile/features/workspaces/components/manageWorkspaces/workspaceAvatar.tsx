@@ -1,8 +1,8 @@
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, View } from "react-native";
-import type { Workspace } from "../context/workspacesContext";
-import { useWorkspacesStore } from "../context/workspacesContext";
+import type { Workspace } from "../../context/workspacesContext";
+import { useWorkspacesStore } from "../../context/workspacesContext";
 import { Typography } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { Icon } from "@/components/ui/icons/icon";
@@ -10,7 +10,7 @@ import { IconName } from "@/components/ui/icons/icon-registry";
 import {
   DEFAULT_WORKSPACE_COLOR,
   parseWorkspaceColor,
-} from "../utils/workspaceColor";
+} from "../../utils/workspaceColor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 

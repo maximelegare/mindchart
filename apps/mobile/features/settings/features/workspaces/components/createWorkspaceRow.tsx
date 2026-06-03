@@ -2,7 +2,7 @@ import ListItem from "@/components/ui/list-item";
 import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "../../../../workspaces/hooks/useWorkSpaces";
-import { WorkspaceEdit } from "../../../../workspaces/components/workspaceEdit";
+import { WorkspaceEdit } from "../../../../workspaces/components/manageWorkspaces/workspaceEdit";
 
 type Props = {
   onCreated?: () => void;

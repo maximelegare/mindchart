@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Alert, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
-import type { Workspace } from "../context/workspacesContext";
-import { extractWorkspaceExportZip } from "../services/workspaceExportZip";
-import { decryptSqlCipherKey } from "../services/workspaceExportCrypto";
+import type { Workspace } from "../../context/workspacesContext";
+import { extractWorkspaceExportZip } from "../../services/workspaceExportZip";
+import { decryptSqlCipherKey } from "../../services/workspaceExportCrypto";
 import { WorkspacePasswordModal } from "./workspacePasswordModal";
-import { ImportDecryptingContent } from "./importDecryptingContent";
-import { WorkspaceEdit, type WorkspaceFormValues } from "./workspaceEdit";
+import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import {
+  WorkspaceEdit,
+  type WorkspaceFormValues,
+} from "../manageWorkspaces/workspaceEdit";
 
 export type ImportPayload = {
   dbBytes: Uint8Array;
@@ -137,7 +140,7 @@ export const ImportWorkspaceFlowModal = ({
   }
 
   if (step === "decrypting" || step === "applying") {
-    return <ImportDecryptingContent />;
+    return <LoadingState title="Decrypting workspace..." size="large" />;
   }
 
   if (step === "newWorkspace" && payload) {

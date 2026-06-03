@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert, Pressable, View } from "react-native";
-import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvatar";
+import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspaces/workspaceAvatar";
 import { useWorkspaceKeyRecovery } from "@/features/settings/features/recoveryKeys/hooks/useWorkspaceKeyRecovery";
 import { Button } from "@/components/ui/button";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";

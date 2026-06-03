@@ -18,7 +18,7 @@ import {
 import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
 import * as FileSystem from "expo-file-system/legacy";
 import React, { useCallback, useState } from "react";
-import { ImportWorkspaceFlowModal } from "../components/importWorkspaceFlowModal";
+import { ImportWorkspaceFlowModal } from "../components/modals/workspaceImportFlowModal";
 import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import { useQueryClient } from "@tanstack/react-query";
