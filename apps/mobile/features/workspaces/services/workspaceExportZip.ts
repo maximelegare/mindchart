@@ -8,7 +8,6 @@ import {
   type WorkspaceExportMetadata,
 } from "./workspaceExportCrypto";
 import { WorkspaceExportInvalidArchiveError } from "./workspaceExportErrors";
-import { debugExportLog } from "../utils/debugExportLog";
 
 export const WORKSPACE_DB_ENTRY = "workspace.db";
 export const METADATA_ENTRY = "metadata.json";
@@ -61,45 +60,16 @@ export const buildWorkspaceExportZip = async (
   dbUri: string,
   metadata: WorkspaceExportMetadata
 ): Promise<string> => {
-  try {
-    debugExportLog(
-      "workspaceExportZip.ts:build:start",
-      "read db for zip",
-      { dbUri, path: filePathFromUri(dbUri) },
-      "C"
-    );
-    const dbBytes = await readFileAsBytes(dbUri);
-    debugExportLog(
-      "workspaceExportZip.ts:build:read-ok",
-      "db read ok",
-      { byteLength: dbBytes.length },
-      "C"
-    );
-    const metadataBytes = new TextEncoder().encode(metadataToJson(metadata));
-    const zipBytes = await zipAsync({
-      [WORKSPACE_DB_ENTRY]: dbBytes,
-      [METADATA_ENTRY]: metadataBytes,
-    });
-    debugExportLog(
-      "workspaceExportZip.ts:build:zip-ok",
-      "zip created",
-      { zipByteLength: zipBytes.length },
-      "C"
-    );
+  const dbBytes = await readFileAsBytes(dbUri);
+  const metadataBytes = new TextEncoder().encode(metadataToJson(metadata));
+  const zipBytes = await zipAsync({
+    [WORKSPACE_DB_ENTRY]: dbBytes,
+    [METADATA_ENTRY]: metadataBytes,
+  });
 
-    const zipUri = `${FileSystem.cacheDirectory}workspace-export-${Date.now()}.zip`;
-    await writeBytesToFile(zipUri, zipBytes);
-    return zipUri;
-  } catch (error) {
-    const err = error as Error;
-    debugExportLog(
-      "workspaceExportZip.ts:build:catch",
-      "zip build failed",
-      { name: err?.name, message: err?.message },
-      "C"
-    );
-    throw error;
-  }
+  const zipUri = `${FileSystem.cacheDirectory}workspace-export-${Date.now()}.zip`;
+  await writeBytesToFile(zipUri, zipBytes);
+  return zipUri;
 };
 
 export type ExtractedWorkspaceExport = {

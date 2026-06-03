@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { debugExportLog } from "../utils/debugExportLog";
+import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -85,15 +84,6 @@ const ExportPasswordForm = ({
     mode: "onChange",
     defaultValues: { password: "", confirmPassword: "" },
   });
-
-  useEffect(() => {
-    debugExportLog(
-      "workspacePasswordModal.tsx:export:mount",
-      "export password form mounted",
-      {},
-      "E"
-    );
-  }, []);
 
   const password = watch("password");
 
@@ -209,15 +199,6 @@ const ImportPasswordForm = ({
       setSubmitting(false);
     }
   });
-
-  useEffect(() => {
-    debugExportLog(
-      "workspacePasswordModal.tsx:import:mount",
-      "import password form mounted",
-      {},
-      "I"
-    );
-  }, []);
 
   return (
     <View className="flex-col gap-4">

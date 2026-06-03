@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 import type { Workspace } from "../context/workspacesContext";
 import { extractWorkspaceExportZip } from "../services/workspaceExportZip";
 import { decryptSqlCipherKey } from "../services/workspaceExportCrypto";
-import { debugExportLog } from "../utils/debugExportLog";
 import { WorkspacePasswordModal } from "./workspacePasswordModal";
 import { ImportDecryptingContent } from "./importDecryptingContent";
 import { WorkspaceEdit, type WorkspaceFormValues } from "./workspaceEdit";
@@ -25,6 +24,7 @@ type ImportResult = {
 type Props = {
   zipUri: string;
   hasActiveWorkspace: boolean;
+  activeWorkspaceName: string;
   onCancel: () => void;
   onComplete: (result: ImportResult) => void;
   onApplyNew: (
@@ -45,6 +45,7 @@ export type ImportFlowStep =
 export const ImportWorkspaceFlowModal = ({
   zipUri,
   hasActiveWorkspace,
+  activeWorkspaceName,
   onCancel,
   onComplete,
   onApplyNew,
@@ -54,23 +55,8 @@ export const ImportWorkspaceFlowModal = ({
   const [step, setStep] = useState<ImportFlowStep>("password");
   const [payload, setPayload] = useState<ImportPayload | null>(null);
 
-  useEffect(() => {
-    debugExportLog(
-      "importWorkspaceFlowModal.tsx:mount",
-      "import flow modal mounted",
-      { hasActiveWorkspace, zipUri },
-      "I"
-    );
-  }, [hasActiveWorkspace, zipUri]);
-
   const handlePassword = async (password: string) => {
     setStep("decrypting");
-    debugExportLog(
-      "importWorkspaceFlowModal.tsx:decrypt-start",
-      "decrypting zip",
-      { zipUri },
-      "I"
-    );
     try {
       const extracted = await extractWorkspaceExportZip(zipUri);
       const sqlcipherKey = await decryptSqlCipherKey(
@@ -81,13 +67,6 @@ export const ImportWorkspaceFlowModal = ({
         dbBytes: extracted.dbBytes,
         sqlcipherKey,
       };
-      debugExportLog(
-        "importWorkspaceFlowModal.tsx:decrypt-ok",
-        "zip decrypted",
-        { byteLength: data.dbBytes.length, hasActiveWorkspace },
-        "I"
-      );
-
       setPayload(data);
       if (!hasActiveWorkspace) {
         setStep("newWorkspace");
@@ -95,12 +74,6 @@ export const ImportWorkspaceFlowModal = ({
       }
 
       setStep("choice");
-      debugExportLog(
-        "importWorkspaceFlowModal.tsx:choice-step",
-        "showing new vs overwrite",
-        {},
-        "I"
-      );
     } catch (error) {
       console.error("Workspace import decrypt failed:", error);
       Alert.alert("Import failed", importErrorMessage(error));
@@ -130,8 +103,24 @@ export const ImportWorkspaceFlowModal = ({
     } catch (error) {
       console.error("Workspace import apply failed:", error);
       Alert.alert("Import failed", importErrorMessage(error));
+      setStep("choice");
       onComplete({ success: false, error });
     }
+  };
+
+  const confirmOverwrite = () => {
+    Alert.alert(
+      "Overwrite workspace?",
+      `All notes and data in "${activeWorkspaceName}" will be permanently replaced with the imported file. This cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Overwrite",
+          style: "destructive",
+          onPress: () => void runApplyOverwrite(),
+        },
+      ]
+    );
   };
 
   if (step === "password") {
@@ -184,7 +173,7 @@ export const ImportWorkspaceFlowModal = ({
           <Button onPress={() => setStep("newWorkspace")}>
             <Typography>New workspace</Typography>
           </Button>
-          <Button variant="destructive" onPress={runApplyOverwrite}>
+          <Button variant="destructive" onPress={confirmOverwrite}>
             <Typography>Overwrite active</Typography>
           </Button>
           <Button variant="outline" onPress={onCancel}>

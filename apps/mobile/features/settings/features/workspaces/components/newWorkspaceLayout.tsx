@@ -16,8 +16,6 @@ import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvata
 import { Icon } from "@/components/ui/icons/icon";
 import { hasKeyForWorkspace } from "@/features/settings/features/recoveryKeys/services/workspaceKeyService";
 import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
-import { debugExportLog } from "@/features/workspaces/utils/debugExportLog";
-
 export const NewWorkspaceLayout = () => {
   const {
     workspaces,
@@ -88,12 +86,6 @@ export const NewWorkspaceLayout = () => {
   };
 
   const openExportPasswordModal = (workspace: Workspace) => {
-    debugExportLog(
-      "newWorkspaceLayout.tsx:openExportPasswordModal",
-      "swapping modal to export password",
-      { workspaceId: workspace.id },
-      "E"
-    );
     // Use setModalContent (like rename/delete) — closeModal + openModal races
     // because closeModal sets isVisible false in its animation callback.
     setModalContent({
@@ -105,30 +97,8 @@ export const NewWorkspaceLayout = () => {
           mode="export"
           onCancel={closeModal}
           onConfirm={async (password) => {
-            debugExportLog(
-              "newWorkspaceLayout.tsx:onConfirm",
-              "export confirm pressed",
-              { workspaceId: workspace.id },
-              "E"
-            );
             try {
               const result = await exportWorkspace(workspace.id, password);
-              debugExportLog(
-                "newWorkspaceLayout.tsx:onConfirm:result",
-                "exportWorkspace returned",
-                {
-                  success: result.success,
-                  errorName:
-                    result.error instanceof Error
-                      ? result.error.name
-                      : typeof result.error,
-                  errorMessage:
-                    result.error instanceof Error
-                      ? result.error.message
-                      : String(result.error ?? ""),
-                },
-                "E"
-              );
               if (!result.success) {
                 const detail =
                   result.error instanceof Error
@@ -140,12 +110,6 @@ export const NewWorkspaceLayout = () => {
               closeModal();
             } catch (error) {
               const err = error as Error;
-              debugExportLog(
-                "newWorkspaceLayout.tsx:onConfirm:throw",
-                "exportWorkspace threw",
-                { name: err?.name, message: err?.message },
-                "E"
-              );
               Alert.alert(
                 "Export failed",
                 err?.message ||
