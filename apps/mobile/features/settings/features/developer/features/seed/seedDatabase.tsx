@@ -10,6 +10,7 @@ import fakeData from "@/seed/data/mock.json" with { type: "json" };
 import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 import { cn } from "@/lib/cn";
+import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 
 export const SeedDatabaseFeature = ({
   className,
@@ -25,6 +26,7 @@ export const SeedDatabaseFeature = ({
   const { useSeedDatabaseMutation } = useNotesAndThoughtsController();
   const { mutateAsync: seedDatabaseAsync } = useSeedDatabaseMutation();
 
+  const { isReady: isLlamaReady } = useLlamaEmbeddings();
   const seedDatabase = async () => {
     if (numberOfNotes === "") {
       Alert.alert("Please enter a number of notes");
@@ -56,7 +58,11 @@ export const SeedDatabaseFeature = ({
           notes is <Span className="font-bold">{fakeData.length}</Span>.
         </Typography>
         <View className="flex-row gap-2">
-          <Button variant="default" onPress={() => seedDatabase()}>
+          <Button
+            variant="default"
+            onPress={() => seedDatabase()}
+            disabled={!isLlamaReady}
+          >
             <Typography>Seed</Typography>
           </Button>
           <Input
