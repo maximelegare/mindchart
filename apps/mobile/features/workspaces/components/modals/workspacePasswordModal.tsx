@@ -29,6 +29,8 @@ type Props =
       mode: "import";
       description?: string;
       confirmLabel?: string;
+      errorMessage?: string | null;
+      onPasswordChange?: () => void;
       onConfirm: (password: string) => void | Promise<void>;
       onCancel: () => void;
     };
@@ -53,14 +55,20 @@ export const WorkspacePasswordModal = (props: Props) => {
     );
   }
 
-  return (
-    <ImportPasswordForm
-      description={description}
-      confirmLabel={confirmLabel}
-      onConfirm={onConfirm}
-      onCancel={onCancel}
-    />
-  );
+  if (mode === "import") {
+    return (
+      <ImportPasswordForm
+        description={description}
+        confirmLabel={confirmLabel}
+        errorMessage={props.errorMessage}
+        onPasswordChange={props.onPasswordChange}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    );
+  }
+
+  return null;
 };
 
 const ExportPasswordForm = ({
@@ -173,11 +181,15 @@ const ExportPasswordForm = ({
 const ImportPasswordForm = ({
   description = "Enter the password you used when exporting this workspace.",
   confirmLabel,
+  errorMessage,
+  onPasswordChange,
   onConfirm,
   onCancel,
 }: {
   description?: string;
   confirmLabel: string;
+  errorMessage?: string | null;
+  onPasswordChange?: () => void;
   onConfirm: (password: string) => void | Promise<void>;
   onCancel: () => void;
 }) => {
@@ -204,6 +216,12 @@ const ImportPasswordForm = ({
     <View className="flex-col gap-4">
       <Typography variant="muted">{description}</Typography>
 
+      {errorMessage ? (
+        <Typography className="text-destructive-foreground" variant="p">
+          {errorMessage}
+        </Typography>
+      ) : null}
+
       <Controller
         control={control}
         name="password"
@@ -215,7 +233,10 @@ const ImportPasswordForm = ({
             <Label nativeID="import-password">Password</Label>
             <Input
               value={value}
-              onChangeText={onChange}
+              onChangeText={(text) => {
+                onPasswordChange?.();
+                onChange(text);
+              }}
               onBlur={onBlur}
               secureTextEntry
               autoCapitalize="none"

@@ -33,10 +33,7 @@ import {
   buildWorkspaceExportZip,
   writeDbBytesToUri,
 } from "../services/workspaceExportZip";
-import {
-  WorkspaceExportDecryptError,
-  WorkspaceExportInvalidArchiveError,
-} from "../services/workspaceExportErrors";
+import { getWorkspaceImportErrorMessage } from "../services/workspaceExportErrors";
 import {
   deleteWorkspaceDatabaseFiles,
   toFileUri,
@@ -56,16 +53,6 @@ const ensureDatabasesDir = async () => {
 
 const dbPathFor = (workspace: Workspace) =>
   `${getDbLocation()}/${workspace.dbFileName}`;
-
-const importErrorMessage = (error: unknown): string => {
-  if (error instanceof WorkspaceExportDecryptError) {
-    return "Wrong password or corrupted export metadata.";
-  }
-  if (error instanceof WorkspaceExportInvalidArchiveError) {
-    return error.message;
-  }
-  return "Import failed. Please try again.";
-};
 
 export const useWorkSpaces = () => {
   const [loading, setLoading] = useState(false);
@@ -357,7 +344,7 @@ export const useWorkSpaces = () => {
               zipUri,
               hasActiveWorkspace: hasActive,
               activeWorkspaceName: activeForOverwrite?.name ?? "this workspace",
-              importErrorMessage,
+              importErrorMessage: getWorkspaceImportErrorMessage,
               onCancel: () => {
                 closeModal();
                 setLoading(false);

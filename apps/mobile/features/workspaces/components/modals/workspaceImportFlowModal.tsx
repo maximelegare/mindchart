@@ -5,12 +5,17 @@ import { Typography } from "@/components/ui/typography";
 import type { Workspace } from "../../context/workspacesContext";
 import { extractWorkspaceExportZip } from "../../services/workspaceExportZip";
 import { decryptSqlCipherKey } from "../../services/workspaceExportCrypto";
+import {
+  getWorkspaceImportErrorMessage,
+  isWorkspaceExportDecryptError,
+} from "../../services/workspaceExportErrors";
 import { WorkspacePasswordModal } from "./workspacePasswordModal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import {
   WorkspaceEdit,
   type WorkspaceFormValues,
 } from "../manageWorkspaces/workspaceEdit";
+import { ModalTitle } from "@/components/ui/modal/components/modalTitle";
 
 export type ImportPayload = {
   dbBytes: Uint8Array;
@@ -42,6 +47,7 @@ export type ImportFlowStep =
   | "password"
   | "decrypting"
   | "choice"
+  | "confirmOverwrite"
   | "newWorkspace"
   | "applying";
 
@@ -57,8 +63,10 @@ export const ImportWorkspaceFlowModal = ({
 }: Props) => {
   const [step, setStep] = useState<ImportFlowStep>("password");
   const [payload, setPayload] = useState<ImportPayload | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const handlePassword = async (password: string) => {
+    setPasswordError(null);
     setStep("decrypting");
     try {
       const extracted = await extractWorkspaceExportZip(zipUri);
@@ -78,9 +86,11 @@ export const ImportWorkspaceFlowModal = ({
 
       setStep("choice");
     } catch (error) {
-      console.error("Workspace import decrypt failed:", error);
-      Alert.alert("Import failed", importErrorMessage(error));
-      onCancel();
+      if (!isWorkspaceExportDecryptError(error)) {
+        console.error("Workspace import decrypt failed:", error);
+      }
+      setPasswordError(getWorkspaceImportErrorMessage(error));
+      setStep("password");
     }
   };
 
@@ -111,27 +121,14 @@ export const ImportWorkspaceFlowModal = ({
     }
   };
 
-  const confirmOverwrite = () => {
-    Alert.alert(
-      "Overwrite workspace?",
-      `All notes and data in "${activeWorkspaceName}" will be permanently replaced with the imported file. This cannot be undone.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Overwrite",
-          style: "destructive",
-          onPress: () => void runApplyOverwrite(),
-        },
-      ]
-    );
-  };
-
   if (step === "password") {
     return (
       <View className="flex-col gap-4">
-        <Typography variant="h3">Import Workspace</Typography>
+        <ModalTitle title="Import Workspace" />
         <WorkspacePasswordModal
           mode="import"
+          errorMessage={passwordError}
+          onPasswordChange={() => setPasswordError(null)}
           onCancel={onCancel}
           onConfirm={handlePassword}
         />
@@ -139,14 +136,18 @@ export const ImportWorkspaceFlowModal = ({
     );
   }
 
-  if (step === "decrypting" || step === "applying") {
+  if (step === "decrypting") {
     return <LoadingState title="Decrypting workspace..." size="large" />;
+  }
+
+  if (step === "applying") {
+    return <LoadingState title="Importing workspace..." size="large" />;
   }
 
   if (step === "newWorkspace" && payload) {
     return (
       <View className="flex-col gap-4">
-        <Typography variant="h3">New Workspace</Typography>
+        <ModalTitle title="New Workspace" />
         <WorkspaceEdit
           initialName="Imported Workspace"
           confirmLabel="Import"
@@ -164,10 +165,35 @@ export const ImportWorkspaceFlowModal = ({
     );
   }
 
+  if (step === "confirmOverwrite" && payload) {
+    return (
+      <View className="flex-col gap-4">
+        <ModalTitle title="Overwrite workspace?" />
+        <Typography variant="p">
+          All notes and data in &quot;{activeWorkspaceName}&quot; will be
+          permanently replaced with the contents of this import. Your current
+          workspace name, icon, and color will stay the same. This cannot be
+          undone.
+        </Typography>
+        <View className="flex-row justify-end gap-2 mt-2">
+          <Button variant="default" onPress={() => setStep("choice")}>
+            <Typography>Cancel</Typography>
+          </Button>
+          <Button
+            variant="destructive"
+            onPress={() => void runApplyOverwrite()}
+          >
+            <Typography>Overwrite</Typography>
+          </Button>
+        </View>
+      </View>
+    );
+  }
+
   if (step === "choice" && payload) {
     return (
       <View className="flex-col gap-4">
-        <Typography variant="h3">Import Workspace</Typography>
+        <ModalTitle title="Import Workspace" />
         <Typography variant="p">
           Create a new workspace from this file, or overwrite the currently
           active workspace?
@@ -176,7 +202,10 @@ export const ImportWorkspaceFlowModal = ({
           <Button onPress={() => setStep("newWorkspace")}>
             <Typography>New workspace</Typography>
           </Button>
-          <Button variant="destructive" onPress={confirmOverwrite}>
+          <Button
+            variant="destructive"
+            onPress={() => setStep("confirmOverwrite")}
+          >
             <Typography>Overwrite active</Typography>
           </Button>
           <Button variant="outline" onPress={onCancel}>
