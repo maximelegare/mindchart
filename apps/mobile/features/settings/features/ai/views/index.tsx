@@ -5,7 +5,7 @@ import { AiProvidersSettings } from "../aiProvidersSettings/aiProvidersSettings"
 import { LlamaChatSettings } from "../llamaChat/llamaChatSettings";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { LlamaEmbeddingsSettings } from "../llamaEmbeddingsSettings/llamaEmbeddingsSettings";
-import { ExpandableSetting } from "@/features/settings/components/ExpandableSetting";
+import { ExpandableSetting } from "@/features/settings/components/expandableSetting";
 import { AutoConnectSettings } from "../autoConnect/components/autoConnect";
 import { useWhisper } from "@/features/whisper/hooks/useWhisperModels";
 import { useLlamaChat } from "@/features/llama/hooks/useLlamaChat";

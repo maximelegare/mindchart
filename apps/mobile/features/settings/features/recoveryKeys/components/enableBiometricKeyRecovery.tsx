@@ -1,10 +1,7 @@
-import { Alert, View } from "react-native";
-import { Switch } from "@/components/ui/switch";
+import { Alert } from "react-native";
 import { useWorkspaceKeyRecovery } from "@/features/settings/features/recoveryKeys/hooks/useWorkspaceKeyRecovery";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
-import { Card } from "@/components/ui/card";
-import { Gutter } from "@/components/ui/gutter";
-import { Typography } from "@/components/ui/typography";
+import { SwitchSetting } from "@/features/settings/components/switchSetting";
 
 export const EnableBiometricKeyRecovery = () => {
   const workspaces = useWorkspacesStore((s) => s.workspaces);
@@ -44,24 +41,13 @@ export const EnableBiometricKeyRecovery = () => {
   };
 
   return (
-    <Card className="py-2">
-      <Gutter size="md" className="py-3 flex-row gap-4">
-        <View className="flex-1">
-          <Typography variant="h3" padding>
-            Biometric Recovery
-          </Typography>
-          <Typography variant="p" padding>
-            Enable biometric recovery to recover database keys for your
-            workspaces.
-          </Typography>
-        </View>
-        <Switch
-          checked={biometricRecoveryEnabled}
-          disabled={!biometricAvailable || busy}
-          onCheckedChange={onToggle}
-          accessibilityLabel="Enable biometric recovery"
-        />
-      </Gutter>
-    </Card>
+    <SwitchSetting
+      title="Biometric Recovery"
+      description="Enable biometric recovery to recover database keys for your workspaces."
+      checked={biometricRecoveryEnabled}
+      disabled={!biometricAvailable || busy}
+      onCheckedChange={onToggle}
+      accessibilityLabel="Enable biometric recovery"
+    />
   );
 };
