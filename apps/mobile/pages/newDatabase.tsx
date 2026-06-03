@@ -74,7 +74,7 @@ export const NewDatabaseScreen = () => {
             >
               <View className="flex-row items-center justify-center gap-3">
                 <Icon name="import" color="background" size={18} />
-                <Typography>Import Workspace</Typography>
+                <Typography>Import Workspace (.zip)</Typography>
               </View>
             </Button>
           </View>

@@ -24,9 +24,16 @@ export async function createKeyForWorkspace(
   workspaceId: string
 ): Promise<string> {
   const key = await generateEncryptionKey();
+  await storeKeyForWorkspace(workspaceId, key);
+  return key;
+}
+
+export async function storeKeyForWorkspace(
+  workspaceId: string,
+  key: string
+): Promise<void> {
   await keyStore.setPrimaryKey(workspaceId, key);
   await syncRecoveryBackup(workspaceId, key);
-  return key;
 }
 
 export async function getKeyForWorkspace(

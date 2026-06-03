@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.1.6",
+    "@noble/ciphers": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
     "@op-engineering/op-sqlite": "^15.2.3",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
@@ -58,6 +60,7 @@
     "expo-system-ui": "~6.0.7",
     "expo-updates": "^29.0.16",
     "expo-web-browser": "~15.0.8",
+    "fflate": "^0.8.3",
     "jsonrepair": "^3.13.2",
     "llama.rn": "^0.11.0",
     "lucide-react-native": "^0.514.0",

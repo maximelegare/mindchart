@@ -26,7 +26,7 @@ type ModalOptions = {
   confirmButton?: Partial<ModalButtonConfig>;
   onConfirm?: () => void;
   dismissOnBackgroundPress?: boolean;
-  customContent?: () => ReactNode | ReactElement;
+  customContent?: (() => ReactNode | ReactElement) | null;
 };
 
 type ModalContextType = {
@@ -41,6 +41,7 @@ const modalFunctionsRef = React.createRef<ModalContextType>();
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [modalOptions, setModalOptions] = useState<ModalOptions>({});
+  const [contentKey, setContentKey] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -48,6 +49,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
 
   // Open modal
   const openModal = useCallback((options: ModalOptions) => {
+    setContentKey((k) => k + 1);
     setModalOptions(options);
     setIsVisible(true);
   }, []);
@@ -68,9 +70,16 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     ]).start(() => setIsVisible(false));
   }, [slideAnim, backdropOpacity]);
 
-  // Update modal content
+  // Update modal content (pass customContent: null to clear a prior custom body)
   const setModalContent = useCallback((newOptions: Partial<ModalOptions>) => {
-    setModalOptions((prev) => ({ ...prev, ...newOptions }));
+    setContentKey((k) => k + 1);
+    setModalOptions((prev) => {
+      const next = { ...prev, ...newOptions };
+      if ("customContent" in newOptions && newOptions.customContent === null) {
+        delete next.customContent;
+      }
+      return next;
+    });
   }, []);
 
   // Animate when modal opens
@@ -208,7 +217,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
               )}
 
               {customContent ? (
-                <View>{customContent()}</View>
+                <View key={contentKey}>{customContent()}</View>
               ) : (
                 <View>
                   <Typography variant="p">

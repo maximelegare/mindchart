@@ -12,7 +12,7 @@ export const ImportWorkspaceRow = ({ onImported }: Props) => {
   return (
     <ListItem
       itemLeft={() => <Icon name="import" color="foreground" />}
-      label="Import Workspace"
+      label="Import Workspace (.zip)"
       onPress={async () => {
         const result = await importWorkspace();
         if (result.success) onImported?.();

@@ -9,13 +9,16 @@ import {
   setWorkspaceEncryptionKey,
 } from "@repo/sqlite";
 import {
+  assertKeyExists,
   createKeyForWorkspace,
   deleteKeyForWorkspace,
   getKeyForWorkspace,
+  storeKeyForWorkspace,
 } from "@/features/settings/features/recoveryKeys/services/workspaceKeyService";
 import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
 import * as FileSystem from "expo-file-system/legacy";
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
+import { ImportWorkspaceFlowModal } from "../components/importWorkspaceFlowModal";
 import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,6 +28,17 @@ import {
   type Workspace,
 } from "../context/workspacesContext";
 import { generateWorkspaceId, workspaceDbFileName } from "../utils/workspaceId";
+import { encryptSqlCipherKey } from "../services/workspaceExportCrypto";
+import {
+  buildWorkspaceExportZip,
+  writeDbBytesToUri,
+} from "../services/workspaceExportZip";
+import {
+  WorkspaceExportDecryptError,
+  WorkspaceExportInvalidArchiveError,
+} from "../services/workspaceExportErrors";
+import { debugExportLog } from "../utils/debugExportLog";
+import { toFileUri, toNativePath } from "../utils/workspaceFilePaths";
 
 export type { Workspace } from "../context/workspacesContext";
 
@@ -39,6 +53,16 @@ const ensureDatabasesDir = async () => {
 
 const dbPathFor = (workspace: Workspace) =>
   `${getDbLocation()}/${workspace.dbFileName}`;
+
+const importErrorMessage = (error: unknown): string => {
+  if (error instanceof WorkspaceExportDecryptError) {
+    return "Wrong password or corrupted export metadata.";
+  }
+  if (error instanceof WorkspaceExportInvalidArchiveError) {
+    return error.message;
+  }
+  return "Import failed. Please try again.";
+};
 
 export const useWorkSpaces = () => {
   const [loading, setLoading] = useState(false);
@@ -199,43 +223,147 @@ export const useWorkSpaces = () => {
   );
 
   const exportWorkspace = useCallback(
-    async (id?: string) => {
+    async (id: string, password: string) => {
       setLoading(true);
+      let dbCacheUri: string | null = null;
+      let shareZipUri: string | null = null;
+      let exportSucceeded = false;
       try {
         const state = useWorkspacesStore.getState();
-        const target = state.workspaces.find(
-          (w) => w.id === (id ?? state.activeWorkspaceId)
+        const target = state.workspaces.find((w) => w.id === id);
+        const isActive = state.activeWorkspaceId === target?.id;
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:start",
+          "export started",
+          {
+            workspaceId: id,
+            hasTarget: !!target,
+            isActive,
+            cacheDirectory: FileSystem.cacheDirectory ?? null,
+          },
+          "D"
         );
         if (!target) {
-          setLoading(false);
           return { success: false, error: new Error("No workspace selected") };
         }
 
-        const isActive = state.activeWorkspaceId === target.id;
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:pre-crypto",
+          "before encryptSqlCipherKey",
+          { workspaceId: id },
+          "A"
+        );
+        const hexKey = await assertKeyExists(target.id);
+        const metadata = await encryptSqlCipherKey(hexKey, password);
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:post-crypto",
+          "after encryptSqlCipherKey",
+          { metadataVersion: metadata.version },
+          "A"
+        );
+
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const exportFileName = `${target.name.replace(/[^a-z0-9-_]+/gi, "_")}-${timestamp}.db`;
-        const exportUri = FileSystem.cacheDirectory + exportFileName;
+        dbCacheUri = `${FileSystem.cacheDirectory}workspace-export-${timestamp}.db`;
 
         if (isActive) {
-          // VACUUM INTO via the live connection produces a clean snapshot.
-          const sqlitePath = exportUri.replace("file://", "");
+          const sqlitePath = toNativePath(dbCacheUri);
+          debugExportLog(
+            "useWorkSpaces.ts:exportWorkspace:pre-vacuum",
+            "before VACUUM INTO",
+            { sqlitePath, dbCacheUri },
+            "B"
+          );
           await exportDatabaseAsync(sqlitePath);
+          const dbInfo = await FileSystem.getInfoAsync(dbCacheUri);
+          debugExportLog(
+            "useWorkSpaces.ts:exportWorkspace:post-vacuum",
+            "after VACUUM INTO",
+            { exists: dbInfo.exists, size: dbInfo.exists ? dbInfo.size : null },
+            "B"
+          );
+          if (!dbInfo.exists || !("size" in dbInfo) || !dbInfo.size) {
+            throw new Error("Database snapshot was not created");
+          }
         } else {
-          // Inactive workspaces aren't open; copy the file directly.
-          await FileSystem.copyAsync({
-            from: `file://${dbPathFor(target)}`,
-            to: exportUri,
-          });
+          const fromPath = toFileUri(dbPathFor(target));
+          debugExportLog(
+            "useWorkSpaces.ts:exportWorkspace:pre-copy",
+            "before inactive copy",
+            { fromPath, to: dbCacheUri },
+            "B"
+          );
+          await FileSystem.copyAsync({ from: fromPath, to: dbCacheUri });
+          const dbInfo = await FileSystem.getInfoAsync(dbCacheUri);
+          debugExportLog(
+            "useWorkSpaces.ts:exportWorkspace:post-copy",
+            "after inactive copy",
+            { exists: dbInfo.exists, size: dbInfo.exists ? dbInfo.size : null },
+            "B"
+          );
         }
 
-        await Sharing.shareAsync(exportUri);
-        await FileSystem.deleteAsync(exportUri, { idempotent: true });
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:pre-zip",
+          "before buildWorkspaceExportZip",
+          { dbCacheUri },
+          "C"
+        );
+        const tempZipUri = await buildWorkspaceExportZip(dbCacheUri, metadata);
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:post-zip",
+          "after buildWorkspaceExportZip",
+          { tempZipUri },
+          "C"
+        );
+        const zipFileName = `${target.name.replace(/[^a-z0-9-_]+/gi, "_")}-${timestamp}.zip`;
+        shareZipUri = `${FileSystem.cacheDirectory}${zipFileName}`;
+        await FileSystem.copyAsync({ from: tempZipUri, to: shareZipUri });
+        await FileSystem.deleteAsync(tempZipUri, { idempotent: true });
 
+        const canShare = await Sharing.isAvailableAsync();
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:pre-share",
+          "before shareAsync",
+          { shareZipUri, canShare },
+          "E"
+        );
+        if (!canShare) {
+          throw new Error("Sharing is not available on this device");
+        }
+        await Sharing.shareAsync(shareZipUri, {
+          mimeType: "application/zip",
+          dialogTitle: "Export workspace",
+        });
+        exportSucceeded = true;
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:success",
+          "export completed",
+          { shareZipUri },
+          "E"
+        );
         return { success: true };
       } catch (error) {
+        const err = error as Error;
+        debugExportLog(
+          "useWorkSpaces.ts:exportWorkspace:catch",
+          "export failed",
+          {
+            name: err?.name,
+            message: err?.message,
+            stack: err?.stack?.slice(0, 500),
+          },
+          "A,B,C,D"
+        );
         console.error("Workspace export failed:", error);
         return { success: false, error };
       } finally {
+        if (dbCacheUri) {
+          await FileSystem.deleteAsync(dbCacheUri, { idempotent: true });
+        }
+        // Keep the shared zip on success — deleting it in finally broke the share sheet.
+        if (shareZipUri && !exportSucceeded) {
+          await FileSystem.deleteAsync(shareZipUri, { idempotent: true });
+        }
         setLoading(false);
       }
     },
@@ -243,11 +371,12 @@ export const useWorkSpaces = () => {
   );
 
   /**
-   * Internal: copy the picked file into the destination workspace's slot,
+   * Copy decrypted DB bytes into the destination workspace slot,
    * close/reopen the DB singleton, and refetch queries.
+   * Caller must have stored the SQLCipher key via storeKeyForWorkspace first.
    */
-  const writeImportedFile = useCallback(
-    async (backupUri: string, target: Workspace) => {
+  const writeImportedDb = useCallback(
+    async (dbBytes: Uint8Array, target: Workspace) => {
       await ensureDatabasesDir();
 
       const state = useWorkspacesStore.getState();
@@ -256,119 +385,134 @@ export const useWorkSpaces = () => {
         await closeOPDatabase();
       }
 
-      const destUri = `file://${dbPathFor(target)}`;
+      const destUri = toFileUri(dbPathFor(target));
+      debugExportLog(
+        "useWorkSpaces.ts:writeImportedDb",
+        "writing imported db",
+        { destUri, dbFileName: target.dbFileName },
+        "I"
+      );
       await FileSystem.deleteAsync(destUri, { idempotent: true });
-      await FileSystem.copyAsync({ from: backupUri, to: destUri });
+      await writeDbBytesToUri(destUri, dbBytes);
 
-      // activateWorkspace runs runMigrations internally on the new file
-      // before unblocking observed queries.
       await activateWorkspace(target);
     },
     [activateWorkspace]
   );
 
+  const applyImport = useCallback(
+    async (dbBytes: Uint8Array, sqlcipherKey: string, target: Workspace) => {
+      await storeKeyForWorkspace(target.id, sqlcipherKey);
+      await writeImportedDb(dbBytes, target);
+    },
+    [writeImportedDb]
+  );
+
   /**
-   * DocumentPicker -> ask user "new workspace" vs "overwrite active" -> apply.
+   * DocumentPicker (.zip) -> password -> decrypt key -> new vs overwrite -> apply.
    */
   const importWorkspace = useCallback(async () => {
-    setLoading(true);
     try {
+      debugExportLog(
+        "useWorkSpaces.ts:importWorkspace:start",
+        "document picker opening",
+        {},
+        "I"
+      );
       const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*",
+        type: ["application/zip", "application/x-zip-compressed", "*/*"],
         copyToCacheDirectory: true,
       });
 
       if (result.canceled) {
-        setLoading(false);
         return { success: false, canceled: true };
       }
 
-      const backupUri = result.assets[0].uri;
-      const state = useWorkspacesStore.getState();
-      const hasActive = !!state.activeWorkspaceId;
+      const zipUri = result.assets[0].uri;
+      const hasActive = !!useWorkspacesStore.getState().activeWorkspaceId;
+      debugExportLog(
+        "useWorkSpaces.ts:importWorkspace:zip-picked",
+        "zip selected, opening flow modal",
+        { zipUri, hasActive },
+        "I"
+      );
 
-      // No active workspace: import always creates a new one.
-      if (!hasActive) {
-        const id = generateWorkspaceId();
-        const newWorkspace: Workspace = {
-          id,
-          name: "Imported Workspace",
-          dbFileName: workspaceDbFileName(id),
-          createdAt: Date.now(),
-        };
-        await createKeyForWorkspace(id);
-        addWorkspace(newWorkspace);
-        await writeImportedFile(backupUri, newWorkspace);
-        setLoading(false);
-        return { success: true, workspace: newWorkspace };
-      }
-
+      setLoading(true);
       return await new Promise<{
         success: boolean;
         workspace?: Workspace;
+        canceled?: boolean;
         error?: unknown;
       }>((resolve) => {
         openModal({
-          modalName: "IMPORT_WORKSPACE_CHOICE",
-          confirmButton: { text: "New workspace" },
-          cancelButton: {
-            text: "Overwrite active",
-            variant: "destructive",
-          },
-          onConfirm: async () => {
-            try {
-              const id = generateWorkspaceId();
-              const newWorkspace: Workspace = {
-                id,
-                name: "Imported Workspace",
-                dbFileName: workspaceDbFileName(id),
-                createdAt: Date.now(),
-              };
-              await createKeyForWorkspace(id);
-              addWorkspace(newWorkspace);
-              await writeImportedFile(backupUri, newWorkspace);
-              closeModal();
-              resolve({ success: true, workspace: newWorkspace });
-            } catch (error) {
-              console.error("Import (new workspace) failed:", error);
-              closeModal();
-              resolve({ success: false, error });
-            } finally {
-              setLoading(false);
-            }
-          },
-          onCancel: async () => {
-            try {
-              const active = useWorkspacesStore
-                .getState()
-                .workspaces.find(
-                  (w) =>
-                    w.id === useWorkspacesStore.getState().activeWorkspaceId
+          dismissOnBackgroundPress: false,
+          customContent: () =>
+            React.createElement(ImportWorkspaceFlowModal, {
+              zipUri,
+              hasActiveWorkspace: hasActive,
+              importErrorMessage,
+              onCancel: () => {
+                closeModal();
+                setLoading(false);
+                resolve({ success: false, canceled: true });
+              },
+              onComplete: (importResult) => {
+                closeModal();
+                setLoading(false);
+                resolve(importResult);
+              },
+              onApplyNew: async (
+                { dbBytes, sqlcipherKey },
+                { name, color, icon }
+              ) => {
+                const id = generateWorkspaceId();
+                const newWorkspace: Workspace = {
+                  id,
+                  name: name.trim() || "Imported Workspace",
+                  icon,
+                  color,
+                  dbFileName: workspaceDbFileName(id),
+                  createdAt: Date.now(),
+                };
+                addWorkspace(newWorkspace);
+                await applyImport(dbBytes, sqlcipherKey, newWorkspace);
+                debugExportLog(
+                  "useWorkSpaces.ts:importWorkspace:success",
+                  "imported as new workspace",
+                  { workspaceId: id },
+                  "I"
                 );
-              if (!active) {
-                resolve({
-                  success: false,
-                  error: new Error("No active workspace"),
-                });
-                return;
-              }
-              await writeImportedFile(backupUri, active);
-              resolve({ success: true, workspace: active });
-            } catch (error) {
-              console.error("Import (overwrite) failed:", error);
-              resolve({ success: false, error });
-            } finally {
-              setLoading(false);
-            }
-          },
+                return newWorkspace;
+              },
+              onApplyOverwrite: async ({ dbBytes, sqlcipherKey }) => {
+                const active = useWorkspacesStore
+                  .getState()
+                  .workspaces.find(
+                    (w) =>
+                      w.id === useWorkspacesStore.getState().activeWorkspaceId
+                  );
+                if (!active) {
+                  throw new Error("No active workspace");
+                }
+                await applyImport(dbBytes, sqlcipherKey, active);
+                debugExportLog(
+                  "useWorkSpaces.ts:importWorkspace:success",
+                  "overwrote active workspace",
+                  { workspaceId: active.id },
+                  "I"
+                );
+                return active;
+              },
+            }),
         });
       });
     } catch (error) {
       console.error("Workspace import failed:", error);
+      closeModal();
       setLoading(false);
       return { success: false, error };
     }
-  }, [addWorkspace, closeModal, openModal, writeImportedFile]);
+  }, [addWorkspace, applyImport, closeModal, openModal]);
 
   return {
     workspaces,

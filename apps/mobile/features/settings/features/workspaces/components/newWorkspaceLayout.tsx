@@ -5,6 +5,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
 import { WorkspaceActionsModal } from "@/features/workspaces/components/workspaceActionsModal";
 import { WorkspaceEdit } from "@/features/workspaces/components/workspaceEdit";
+import { WorkspacePasswordModal } from "@/features/workspaces/components/workspacePasswordModal";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { WorkspaceAvatar } from "@/features/workspaces/components/workspaceAvata
 import { Icon } from "@/components/ui/icons/icon";
 import { hasKeyForWorkspace } from "@/features/settings/features/recoveryKeys/services/workspaceKeyService";
 import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
+import { debugExportLog } from "@/features/workspaces/utils/debugExportLog";
 
 export const NewWorkspaceLayout = () => {
   const {
@@ -85,6 +87,81 @@ export const NewWorkspaceLayout = () => {
     });
   };
 
+  const openExportPasswordModal = (workspace: Workspace) => {
+    debugExportLog(
+      "newWorkspaceLayout.tsx:openExportPasswordModal",
+      "swapping modal to export password",
+      { workspaceId: workspace.id },
+      "E"
+    );
+    // Use setModalContent (like rename/delete) — closeModal + openModal races
+    // because closeModal sets isVisible false in its animation callback.
+    setModalContent({
+      title: "Export Workspace",
+      modalName: undefined,
+      description: undefined,
+      customContent: () => (
+        <WorkspacePasswordModal
+          mode="export"
+          onCancel={closeModal}
+          onConfirm={async (password) => {
+            debugExportLog(
+              "newWorkspaceLayout.tsx:onConfirm",
+              "export confirm pressed",
+              { workspaceId: workspace.id },
+              "E"
+            );
+            try {
+              const result = await exportWorkspace(workspace.id, password);
+              debugExportLog(
+                "newWorkspaceLayout.tsx:onConfirm:result",
+                "exportWorkspace returned",
+                {
+                  success: result.success,
+                  errorName:
+                    result.error instanceof Error
+                      ? result.error.name
+                      : typeof result.error,
+                  errorMessage:
+                    result.error instanceof Error
+                      ? result.error.message
+                      : String(result.error ?? ""),
+                },
+                "E"
+              );
+              if (!result.success) {
+                const detail =
+                  result.error instanceof Error
+                    ? result.error.message
+                    : "Could not export this workspace. Please try again.";
+                Alert.alert("Export failed", detail);
+                return;
+              }
+              closeModal();
+            } catch (error) {
+              const err = error as Error;
+              debugExportLog(
+                "newWorkspaceLayout.tsx:onConfirm:throw",
+                "exportWorkspace threw",
+                { name: err?.name, message: err?.message },
+                "E"
+              );
+              Alert.alert(
+                "Export failed",
+                err?.message ||
+                  "Could not export this workspace. Please try again."
+              );
+            }
+          }}
+        />
+      ),
+      onConfirm: undefined,
+      onCancel: undefined,
+      confirmButton: undefined,
+      cancelButton: undefined,
+    });
+  };
+
   const openDeleteModal = (workspace: Workspace) => {
     setModalContent({
       modalName: "DELETE_WORKSPACE",
@@ -112,10 +189,7 @@ export const NewWorkspaceLayout = () => {
             await handleSwitch(workspace);
           }}
           onRename={() => openRenameModal(workspace)}
-          onExport={async () => {
-            closeModal();
-            await exportWorkspace(workspace.id);
-          }}
+          onExport={() => openExportPasswordModal(workspace)}
           onDelete={() => openDeleteModal(workspace)}
           onCancel={closeModal}
         />
