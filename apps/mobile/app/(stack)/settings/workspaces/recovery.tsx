@@ -1,2 +1,2 @@
-import { DatabaseRecoveryPage } from "@/pages/settings/workspace/recovery";
-export default DatabaseRecoveryPage;
+import { RecoveryPasswordPage } from "@/pages/settings/workspace/recovery";
+export default RecoveryPasswordPage;

@@ -1,5 +1,5 @@
 export const WORKSPACE_IMPORT_WRONG_PASSWORD_MESSAGE =
-  "Incorrect password. Enter the same password you used when exporting this workspace.";
+  "Incorrect password or recovery passphrase. Enter the export password you used when exporting, or the recovery passphrase you saved in settings.";
 
 export class WorkspaceExportInvalidArchiveError extends Error {
   constructor(message: string) {

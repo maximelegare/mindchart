@@ -1,5 +1,4 @@
 import * as Crypto from "expo-crypto";
-import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 import * as keyStore from "./workspaceKeyStore";
 import { WorkspaceKeyMissingError } from "./workspaceKeyErrors";
 
@@ -8,16 +7,6 @@ async function generateEncryptionKey(): Promise<string> {
   return Array.from(bytes as Uint8Array, (b: number) =>
     b.toString(16).padStart(2, "0")
   ).join("");
-}
-
-async function syncRecoveryBackup(
-  workspaceId: string,
-  key: string
-): Promise<void> {
-  const { biometricRecoveryEnabled } =
-    useSecuritySettingsPreferences.getState();
-  if (!biometricRecoveryEnabled) return;
-  await keyStore.setRecoveryKey(workspaceId, key);
 }
 
 export async function createKeyForWorkspace(
@@ -33,7 +22,6 @@ export async function storeKeyForWorkspace(
   key: string
 ): Promise<void> {
   await keyStore.setPrimaryKey(workspaceId, key);
-  await syncRecoveryBackup(workspaceId, key);
 }
 
 export async function getKeyForWorkspace(
@@ -46,7 +34,6 @@ export async function deleteKeyForWorkspace(
   workspaceId: string
 ): Promise<void> {
   await keyStore.deletePrimaryKey(workspaceId);
-  await keyStore.deleteRecoveryKey(workspaceId);
 }
 
 export async function hasKeyForWorkspace(

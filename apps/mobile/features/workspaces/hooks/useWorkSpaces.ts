@@ -14,8 +14,8 @@ import {
   deleteKeyForWorkspace,
   getKeyForWorkspace,
   storeKeyForWorkspace,
-} from "@/features/settings/features/recoveryKeys/services/workspaceKeyService";
-import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
+} from "@/features/workspaces/services/workspaceKeyService";
+import { WorkspaceKeyMissingError } from "@/features/workspaces/services/workspaceKeyErrors";
 import * as FileSystem from "expo-file-system/legacy";
 import React, { useCallback, useState } from "react";
 import { ImportWorkspaceFlowModal } from "../components/modals/workspaceImportFlowModal";
@@ -28,7 +28,9 @@ import {
   type Workspace,
 } from "../context/workspacesContext";
 import { generateWorkspaceId, workspaceDbFileName } from "../utils/workspaceId";
-import { encryptSqlCipherKey } from "../services/workspaceExportCrypto";
+import { buildExportMetadata } from "../services/workspaceExportCrypto";
+import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
+import { getStoredRecoveryPassphrase } from "@/features/settings/features/recoveryPassword/services/recoveryPassphraseService";
 import {
   buildWorkspaceExportZip,
   writeDbBytesToUri,
@@ -227,7 +229,22 @@ export const useWorkSpaces = () => {
         }
 
         const hexKey = await assertKeyExists(target.id);
-        const metadata = await encryptSqlCipherKey(hexKey, password);
+
+        let recoveryPassphrase: string | undefined;
+        if (
+          useSecuritySettingsPreferences.getState().recoveryPassphraseEnabled
+        ) {
+          const stored = await getStoredRecoveryPassphrase();
+          if (!stored) {
+            throw new Error("Re-enable Recovery Password in settings.");
+          }
+          recoveryPassphrase = stored;
+        }
+        const metadata = await buildExportMetadata(
+          hexKey,
+          password,
+          recoveryPassphrase
+        );
 
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
         dbCacheUri = `${FileSystem.cacheDirectory}workspace-export-${timestamp}.db`;

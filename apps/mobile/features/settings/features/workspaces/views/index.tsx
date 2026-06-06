@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import List from "@/components/ui/list";
 import { ManageWorkspaceLayout } from "../components/manageWorkspace";
-import { DatabaseRecoveryRow } from "../components/databaseRecoveryRow";
+import { RecoveryPasswordRow } from "../components/databaseRecoveryRow";
 import { NewWorkspace } from "../components/newWorkspaces/newWorkspace";
 
 export const WorkspaceSettingsFeature = () => {
@@ -11,7 +11,7 @@ export const WorkspaceSettingsFeature = () => {
 
       <ManageWorkspaceLayout />
       <List>
-        <DatabaseRecoveryRow />
+        <RecoveryPasswordRow />
       </List>
     </View>
   );

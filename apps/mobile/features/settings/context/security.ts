@@ -3,22 +3,22 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type UserSecuritySettingsPreferences = {
-  biometricRecoveryEnabled: boolean;
-  setBiometricRecoveryEnabled: (biometricRecoveryEnabled: boolean) => void;
+  recoveryPassphraseEnabled: boolean;
+  setRecoveryPassphraseEnabled: (recoveryPassphraseEnabled: boolean) => void;
 };
 
 export const useSecuritySettingsPreferences =
   create<UserSecuritySettingsPreferences>()(
     persist(
       (set) => ({
-        biometricRecoveryEnabled: false,
-        setBiometricRecoveryEnabled: (biometricRecoveryEnabled: boolean) =>
-          set({ biometricRecoveryEnabled }),
+        recoveryPassphraseEnabled: false,
+        setRecoveryPassphraseEnabled: (recoveryPassphraseEnabled: boolean) =>
+          set({ recoveryPassphraseEnabled }),
       }),
       {
         ...mmkv("security"),
         partialize: (state) => ({
-          biometricRecoveryEnabled: state.biometricRecoveryEnabled,
+          recoveryPassphraseEnabled: state.recoveryPassphraseEnabled,
         }),
         merge: (persistedState, currentState) => {
           const persisted = (persistedState ??

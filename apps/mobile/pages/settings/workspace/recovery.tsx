@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { PageContainer } from "@/components/layout/page/pageContainer";
-import { DatabaseRecoveryFeature } from "@/features/settings/features/recoveryKeys/views/databaseRecovery";
+import { RecoveryPasswordFeature } from "@/features/settings/features/recoveryPassword/views/recoveryPassword";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 
-export const DatabaseRecoveryPage = () => {
+export const RecoveryPasswordPage = () => {
   const [persistReady, setPersistReady] = useState(() =>
     useSecuritySettingsPreferences.persist.hasHydrated()
   );
@@ -16,8 +16,8 @@ export const DatabaseRecoveryPage = () => {
   }, [persistReady]);
 
   return (
-    <PageContainer headerVariant="tab" title="Recovery Keys">
-      <DatabaseRecoveryFeature />
+    <PageContainer headerVariant="tab" title="Recovery Password">
+      <RecoveryPasswordFeature />
     </PageContainer>
   );
 };
