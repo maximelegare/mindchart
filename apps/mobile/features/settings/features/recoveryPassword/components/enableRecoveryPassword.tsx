@@ -1,4 +1,3 @@
-import { Alert } from "react-native";
 import { SwitchSetting } from "@/features/settings/components/switchSetting";
 import { useModal } from "@/components/ui/modal/modal";
 import { useRecoveryPassphrase } from "../hooks/useRecoveryPassphrase";
@@ -15,18 +14,37 @@ export const EnableRecoveryPassword = () => {
     disableRecoveryPassphrase,
   } = useRecoveryPassphrase();
 
+  const openErrorModal = (message: string) => {
+    openModal({
+      title: "Recovery Password",
+      description: message,
+      confirmButton: { text: "Ok", variant: "default" },
+      cancelButton: { text: "Cancel", variant: "default" },
+      onConfirm: closeModal,
+      onCancel: closeModal,
+    });
+  };
+
   const runDisable = async () => {
+    closeModal();
     setBusy(true);
     try {
       await disableRecoveryPassphrase();
     } catch (e) {
-      Alert.alert(
-        "Recovery Password",
-        e instanceof Error ? e.message : "Unknown error"
-      );
+      openErrorModal(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setBusy(false);
     }
+  };
+
+  const openDisableModal = () => {
+    openModal({
+      modalName: "DISABLE_RECOVERY_PASSWORD",
+      onConfirm: () => {
+        void runDisable();
+      },
+      onCancel: closeModal,
+    });
   };
 
   const openSetupModal = () => {
@@ -42,20 +60,13 @@ export const EnableRecoveryPassword = () => {
               await enableRecoveryPassphrase(passphrase);
               closeModal();
             } catch (e) {
-              Alert.alert(
-                "Recovery Password",
-                e instanceof Error ? e.message : "Unknown error"
-              );
+              openErrorModal(e instanceof Error ? e.message : "Unknown error");
             } finally {
               setBusy(false);
             }
           }}
         />
       ),
-      onConfirm: undefined,
-      onCancel: undefined,
-      confirmButton: undefined,
-      cancelButton: undefined,
     });
   };
 
@@ -63,28 +74,16 @@ export const EnableRecoveryPassword = () => {
     if (busy || next === recoveryPassphraseEnabled) return;
 
     if (!biometricAvailable) {
-      Alert.alert(
-        "Biometrics unavailable",
-        "Use a device with Face ID or fingerprint enrolled, and a development build (not Expo Go)."
-      );
+      openModal({
+        modalName: "BIOMETRICS_UNAVAILABLE",
+        onConfirm: closeModal,
+        onCancel: closeModal,
+      });
       return;
     }
 
     if (!next) {
-      Alert.alert(
-        "Disable Recovery Password",
-        "This deletes your recovery passphrase. Exports made with recovery enabled won't unlock with recovery unless you remember the passphrase you chose.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Disable",
-            style: "destructive",
-            onPress: () => {
-              void runDisable();
-            },
-          },
-        ]
-      );
+      openDisableModal();
       return;
     }
 
