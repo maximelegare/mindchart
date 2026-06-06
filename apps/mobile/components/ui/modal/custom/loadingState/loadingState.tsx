@@ -8,17 +8,24 @@ type LoadingStateProps = {
   color?: Theme;
   size?: "small" | "large";
   title?: string;
+  description?: string;
 };
 
 export const LoadingState = ({
   color = "primary",
   size = "small",
   title,
+  description,
 }: LoadingStateProps) => {
   return (
-    <View className="flex-col items-center gap-3 justify-center h-20">
-      {title && <Typography variant="h3">{title}</Typography>}
+    <View className="flex-col items-center gap-3 justify-center py-8 min-h-[120px]">
+      {title ? <Typography variant="h3">{title}</Typography> : null}
       <ActivityIndicator size={size} color={hsl(color, "light")} />
+      {description ? (
+        <Typography variant="muted" className="text-center px-4">
+          {description}
+        </Typography>
+      ) : null}
     </View>
   );
 };

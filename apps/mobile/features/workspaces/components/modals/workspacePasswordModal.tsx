@@ -17,6 +17,10 @@ type ImportFormValues = {
   password: string;
 };
 
+type ImportRecoveryFormValues = {
+  passphrase: string;
+};
+
 type Props =
   | {
       mode: "export";
@@ -32,6 +36,15 @@ type Props =
       errorMessage?: string | null;
       onPasswordChange?: () => void;
       onConfirm: (password: string) => void | Promise<void>;
+      onCancel: () => void;
+    }
+  | {
+      mode: "import-recovery";
+      description?: string;
+      confirmLabel?: string;
+      errorMessage?: string | null;
+      onPassphraseChange?: () => void;
+      onConfirm: (passphrase: string) => void | Promise<void>;
       onCancel: () => void;
     };
 
@@ -62,6 +75,19 @@ export const WorkspacePasswordModal = (props: Props) => {
         confirmLabel={confirmLabel}
         errorMessage={props.errorMessage}
         onPasswordChange={props.onPasswordChange}
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    );
+  }
+
+  if (mode === "import-recovery") {
+    return (
+      <ImportRecoveryForm
+        description={description}
+        confirmLabel={confirmLabel}
+        errorMessage={props.errorMessage}
+        onPassphraseChange={props.onPassphraseChange}
         onConfirm={onConfirm}
         onCancel={onCancel}
       />
@@ -243,6 +269,102 @@ const ImportPasswordForm = ({
               autoCorrect={false}
               autoFocus
               placeholder="Export password"
+              onSubmitEditing={submit}
+            />
+          </View>
+        )}
+      />
+
+      <View className="flex-row justify-end gap-2 mt-2 items-center">
+        <Button variant="default" onPress={onCancel} disabled={submitting}>
+          <Typography>Cancel</Typography>
+        </Button>
+        <Button
+          variant="default"
+          disabled={!isValid || submitting}
+          onPress={submit}
+        >
+          {submitting ? (
+            <View className="flex-row items-center gap-2">
+              <ActivityIndicator size="small" />
+              <Typography>Importing…</Typography>
+            </View>
+          ) : (
+            <Typography>{confirmLabel}</Typography>
+          )}
+        </Button>
+      </View>
+    </View>
+  );
+};
+
+const ImportRecoveryForm = ({
+  description = "Enter the recovery passphrase you chose when you enabled Recovery Password.",
+  confirmLabel,
+  errorMessage,
+  onPassphraseChange,
+  onConfirm,
+  onCancel,
+}: {
+  description?: string;
+  confirmLabel: string;
+  errorMessage?: string | null;
+  onPassphraseChange?: () => void;
+  onConfirm: (passphrase: string) => void | Promise<void>;
+  onCancel: () => void;
+}) => {
+  const [submitting, setSubmitting] = useState(false);
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<ImportRecoveryFormValues>({
+    mode: "onChange",
+    defaultValues: { passphrase: "" },
+  });
+
+  const submit = handleSubmit(async ({ passphrase }) => {
+    setSubmitting(true);
+    try {
+      await onConfirm(passphrase);
+    } finally {
+      setSubmitting(false);
+    }
+  });
+
+  return (
+    <View className="flex-col gap-4">
+      <Typography variant="muted">{description}</Typography>
+
+      {errorMessage ? (
+        <Typography className="text-destructive-foreground" variant="p">
+          {errorMessage}
+        </Typography>
+      ) : null}
+
+      <Controller
+        control={control}
+        name="passphrase"
+        rules={{
+          validate: (v) => v.length > 0 || "Recovery passphrase is required",
+        }}
+        render={({ field: { value, onChange, onBlur } }) => (
+          <View className="flex-col gap-1">
+            <Label nativeID="import-recovery-passphrase">
+              Recovery passphrase
+            </Label>
+            <Input
+              value={value}
+              onChangeText={(text) => {
+                onPassphraseChange?.();
+                onChange(text);
+              }}
+              onBlur={onBlur}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoFocus
+              placeholder="Recovery passphrase"
               onSubmitEditing={submit}
             />
           </View>

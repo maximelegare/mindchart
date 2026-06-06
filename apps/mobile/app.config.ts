@@ -66,7 +66,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-secure-store",
       {
         faceIDPermission:
-          "Allow MindChart to use Face ID to recover workspace database keys.",
+          "Allow MindChart to use Face ID to enable and reveal your recovery passphrase.",
       },
     ],
     [

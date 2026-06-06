@@ -9,7 +9,7 @@ export default function WorkspaceLayout() {
       />
       <Stack.Screen
         name="recovery"
-        options={{ title: "Database key recovery", headerShown: false }}
+        options={{ title: "Recovery Password", headerShown: false }}
       />
     </Stack>
   );

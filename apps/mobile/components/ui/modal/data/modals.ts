@@ -22,7 +22,9 @@ export const MODALS_CONTENT: Record<
   | "DELETE_MODEL_ERROR"
   | "DELETE_MODEL_ACTION"
   | "AI_SETUP_REQUIRED"
-  | "DELETE_NOTE_CONFIRMATION",
+  | "DELETE_NOTE_CONFIRMATION"
+  | "DISABLE_RECOVERY_PASSWORD"
+  | "BIOMETRICS_UNAVAILABLE",
   ModalPreset
 > = {
   DELETE_DATABASE_FILE: {
@@ -88,6 +90,20 @@ export const MODALS_CONTENT: Record<
     description:
       "This will permanently delete this note and all associated thoughts.",
     confirmButton: { text: "Delete", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
+  DISABLE_RECOVERY_PASSWORD: {
+    title: "Disable Recovery Password",
+    description:
+      "This deletes your recovery passphrase. Exports made with recovery enabled won't unlock with recovery unless you remember the passphrase you chose.",
+    confirmButton: { text: "Disable", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
+  BIOMETRICS_UNAVAILABLE: {
+    title: "Biometrics unavailable",
+    description:
+      "Use a device with Face ID or fingerprint enrolled, and a development build (not Expo Go).",
+    confirmButton: { text: "Ok", variant: "default" },
     cancelButton: { text: "Cancel", variant: "default" },
   },
 };

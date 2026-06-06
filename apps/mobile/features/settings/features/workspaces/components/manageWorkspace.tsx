@@ -14,8 +14,8 @@ import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspaces/workspaceAvatar";
 import { Icon } from "@/components/ui/icons/icon";
-import { hasKeyForWorkspace } from "@/features/settings/features/recoveryKeys/services/workspaceKeyService";
-import { WorkspaceKeyMissingError } from "@/features/settings/features/recoveryKeys/services/workspaceKeyErrors";
+import { hasKeyForWorkspace } from "@/features/workspaces/services/workspaceKeyService";
+import { WorkspaceKeyMissingError } from "@/features/workspaces/services/workspaceKeyErrors";
 export const ManageWorkspaceLayout = () => {
   const {
     workspaces,
