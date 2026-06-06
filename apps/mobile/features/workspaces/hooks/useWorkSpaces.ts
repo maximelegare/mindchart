@@ -30,7 +30,7 @@ import {
 import { generateWorkspaceId, workspaceDbFileName } from "../utils/workspaceId";
 import { buildExportMetadata } from "../services/workspaceExportCrypto";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
-import { getStoredRecoveryPassphrase } from "@/features/settings/features/recoveryPassword/services/recoveryPassphraseService";
+import { getRecoveryExportMaterial } from "@/features/settings/features/recoveryPassword/services/recoveryPassphraseService";
 import {
   buildWorkspaceExportZip,
   writeDbBytesToUri,
@@ -230,20 +230,19 @@ export const useWorkSpaces = () => {
 
         const hexKey = await assertKeyExists(target.id);
 
-        let recoveryPassphrase: string | undefined;
+        let recoveryMaterial;
         if (
           useSecuritySettingsPreferences.getState().recoveryPassphraseEnabled
         ) {
-          const stored = await getStoredRecoveryPassphrase();
-          if (!stored) {
+          recoveryMaterial = await getRecoveryExportMaterial();
+          if (!recoveryMaterial) {
             throw new Error("Re-enable Recovery Password in settings.");
           }
-          recoveryPassphrase = stored;
         }
         const metadata = await buildExportMetadata(
           hexKey,
           password,
-          recoveryPassphrase
+          recoveryMaterial
         );
 
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

@@ -152,6 +152,37 @@ export const hasRecoveryEnvelope = (
   metadata: WorkspaceExportMetadata
 ): boolean => metadata.recovery !== undefined;
 
+export type RecoveryExportMaterial = {
+  saltBase64: string;
+  derivedKey: Uint8Array;
+};
+
+export const deriveRecoveryExportKey = async (
+  passphrase: string,
+  saltBytes: Uint8Array
+): Promise<Uint8Array> => {
+  return deriveExportKey(passphrase, saltBytes, EXPORT_ARGON2_PARAMS);
+};
+
+export const buildRecoveryEnvelopeWithDerivedKey = async (
+  hexKey: string,
+  material: RecoveryExportMaterial
+): Promise<KeyEnvelope> => {
+  const nonceBytes = await Crypto.getRandomBytesAsync(GCM_NONCE_LENGTH);
+  const keyBytes = hexToBytes(hexKey);
+  const cipher = gcm(material.derivedKey, nonceBytes);
+  const ciphertext = cipher.encrypt(keyBytes);
+
+  return {
+    salt: material.saltBase64,
+    argon2: { ...EXPORT_ARGON2_PARAMS },
+    encryptedKey: {
+      ciphertext: toBase64(ciphertext),
+      nonce: toBase64(nonceBytes),
+    },
+  };
+};
+
 export const encryptSqlCipherKeyWithEnvelope = async (
   hexKey: string,
   secret: string
@@ -181,7 +212,7 @@ export const encryptSqlCipherKeyWithEnvelope = async (
 export const buildExportMetadata = async (
   hexKey: string,
   password: string,
-  recoveryPassphrase?: string
+  recoveryMaterial?: RecoveryExportMaterial
 ): Promise<WorkspaceExportMetadata> => {
   const passwordEnvelope = await encryptSqlCipherKeyWithEnvelope(
     hexKey,
@@ -193,10 +224,10 @@ export const buildExportMetadata = async (
     ...passwordEnvelope,
   };
 
-  if (recoveryPassphrase) {
-    metadata.recovery = await encryptSqlCipherKeyWithEnvelope(
+  if (recoveryMaterial) {
+    metadata.recovery = await buildRecoveryEnvelopeWithDerivedKey(
       hexKey,
-      recoveryPassphrase
+      recoveryMaterial
     );
   }
 

@@ -1,12 +1,11 @@
-import { useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert } from "react-native";
 import { SwitchSetting } from "@/features/settings/components/switchSetting";
-import { CustomSettingComponent } from "@/features/settings/components/customSettingComponent";
+import { useModal } from "@/components/ui/modal/modal";
 import { useRecoveryPassphrase } from "../hooks/useRecoveryPassphrase";
 import { RecoveryPassphraseSetupForm } from "./recoveryPassphraseSetupForm";
 
 export const EnableRecoveryPassword = () => {
-  const [setupVisible, setSetupVisible] = useState(false);
+  const { openModal, closeModal } = useModal();
   const {
     recoveryPassphraseEnabled,
     biometricAvailable,
@@ -28,6 +27,36 @@ export const EnableRecoveryPassword = () => {
     } finally {
       setBusy(false);
     }
+  };
+
+  const openSetupModal = () => {
+    openModal({
+      title: "Recovery Password",
+      dismissOnBackgroundPress: false,
+      customContent: () => (
+        <RecoveryPassphraseSetupForm
+          onCancel={closeModal}
+          onConfirm={async (passphrase) => {
+            setBusy(true);
+            try {
+              await enableRecoveryPassphrase(passphrase);
+              closeModal();
+            } catch (e) {
+              Alert.alert(
+                "Recovery Password",
+                e instanceof Error ? e.message : "Unknown error"
+              );
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      ),
+      onConfirm: undefined,
+      onCancel: undefined,
+      confirmButton: undefined,
+      cancelButton: undefined,
+    });
   };
 
   const onToggle = async (next: boolean) => {
@@ -59,46 +88,17 @@ export const EnableRecoveryPassword = () => {
       return;
     }
 
-    setSetupVisible(true);
-  };
-
-  const handleSetupConfirm = async (passphrase: string) => {
-    setBusy(true);
-    try {
-      await enableRecoveryPassphrase(passphrase);
-      setSetupVisible(false);
-    } catch (e) {
-      Alert.alert(
-        "Recovery Password",
-        e instanceof Error ? e.message : "Unknown error"
-      );
-    } finally {
-      setBusy(false);
-    }
+    openSetupModal();
   };
 
   return (
-    <View className="gap-3">
-      <SwitchSetting
-        title="Recovery Password"
-        description="Enable Recovery Password to add a second unlock option to exported workspaces."
-        checked={recoveryPassphraseEnabled}
-        disabled={!biometricAvailable || busy}
-        onCheckedChange={onToggle}
-        accessibilityLabel="Enable Recovery Password"
-      />
-
-      {setupVisible ? (
-        <CustomSettingComponent
-          title="Choose recovery passphrase"
-          description="Pick a passphrase you can remember. You will use it to import workspaces if you forget the export password."
-        >
-          <RecoveryPassphraseSetupForm
-            onCancel={() => setSetupVisible(false)}
-            onConfirm={handleSetupConfirm}
-          />
-        </CustomSettingComponent>
-      ) : null}
-    </View>
+    <SwitchSetting
+      title="Recovery Password"
+      description="Enable Recovery Password to add a second unlock option to exported workspaces."
+      checked={recoveryPassphraseEnabled}
+      disabled={!biometricAvailable || busy}
+      onCheckedChange={onToggle}
+      accessibilityLabel="Enable Recovery Password"
+    />
   );
 };

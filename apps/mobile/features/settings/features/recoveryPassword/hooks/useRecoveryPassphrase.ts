@@ -5,7 +5,7 @@ import { useSecuritySettingsPreferences } from "@/features/settings/context/secu
 import { WorkspaceRecoveryError } from "@/features/workspaces/services/workspaceKeyErrors";
 import {
   clearRecoveryPassphrase,
-  storeRecoveryPassphrase,
+  setupRecoveryCredentials,
 } from "../services/recoveryPassphraseService";
 import * as recoveryPassphraseStore from "../services/recoveryPassphraseStore";
 
@@ -57,7 +57,7 @@ export function useRecoveryPassphrase() {
       }
 
       await authenticateOnce("Authenticate to enable Recovery Password");
-      await storeRecoveryPassphrase(trimmed);
+      await setupRecoveryCredentials(trimmed);
       setRecoveryPassphraseEnabled(true);
     },
     [setRecoveryPassphraseEnabled]
