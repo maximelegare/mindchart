@@ -1,9 +1,8 @@
 import * as Crypto from "expo-crypto";
-import { argon2idAsync } from "@noble/hashes/argon2.js";
 import { gcm } from "@noble/ciphers/aes.js";
-import { utf8ToBytes } from "@noble/hashes/utils.js";
 import { z } from "zod";
 import { Buffer } from "buffer";
+import { argon2idDerive } from "./argon2idDerive";
 import {
   WorkspaceExportDecryptError,
   WorkspaceExportInvalidArchiveError,
@@ -13,7 +12,7 @@ export const EXPORT_FORMAT_VERSION = 1;
 
 export const EXPORT_ARGON2_PARAMS = {
   type: "argon2id" as const,
-  // Lower than desktop defaults so Argon2id runs reliably on mobile JS heaps.
+  // Tuned for mobile; native Argon2 (iOS/Android) makes these params practical.
   memoryKiB: 8192,
   iterations: 3,
   parallelism: 1,
@@ -82,20 +81,17 @@ const fromBase64 = (b64: string): Uint8Array => {
   }
 };
 
-const deriveExportKey = async (
+const deriveExportKey = (
   secret: string,
   salt: Uint8Array,
   params: KeyEnvelope["argon2"]
-): Promise<Uint8Array> => {
-  const secretBytes = utf8ToBytes(secret);
-  return argon2idAsync(secretBytes, salt, {
-    t: params.iterations,
-    m: params.memoryKiB,
-    p: params.parallelism,
-    dkLen: params.hashLength,
-    asyncTick: 10,
+): Promise<Uint8Array> =>
+  argon2idDerive(secret, salt, {
+    iterations: params.iterations,
+    memoryKiB: params.memoryKiB,
+    parallelism: params.parallelism,
+    hashLength: params.hashLength,
   });
-};
 
 const decryptFromEnvelope = async (
   envelope: KeyEnvelope,

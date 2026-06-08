@@ -12602,6 +12602,7 @@ __metadata:
     react-dom: "npm:19.1.0"
     react-hook-form: "npm:^7.71.1"
     react-native: "npm:0.81.4"
+    react-native-argon2: "npm:4.0.0"
     react-native-audio-api: "npm:^0.11.4"
     react-native-blob-util: "npm:^0.24.7"
     react-native-gesture-handler: "npm:~2.28.0"
@@ -13887,6 +13888,13 @@ __metadata:
   version: 19.2.3
   resolution: "react-is@npm:19.2.3"
   checksum: 10c0/2b54c422c21b8dbd68a435a1cce21ecd5b6f06f48659531f7d53dd7368365da5a67e946f352fb2010d11ca40658aa67bec90995f0f1ec5556c0f71dbffe54994
+  languageName: node
+  linkType: hard
+
+"react-native-argon2@npm:4.0.0":
+  version: 4.0.0
+  resolution: "react-native-argon2@npm:4.0.0"
+  checksum: 10c0/f4996fac9ebc61e08af93a512fa5f2a7ec1d4aac58ca0d1e129d2dd2ca8c5bb970e6c9c61cc5afb394d61a63b85f7cc5ebe58aaea72da40ab9bd1584981af0b1
   languageName: node
   linkType: hard
 

@@ -71,6 +71,7 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.71.1",
     "react-native": "0.81.4",
+    "react-native-argon2": "4.0.0",
     "react-native-audio-api": "^0.11.4",
     "react-native-blob-util": "^0.24.7",
     "react-native-gesture-handler": "~2.28.0",
@@ -110,7 +111,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "main": "expo-router/entry",
   "name": "mobile",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "scripts": {
     "android": "expo run:android",
     "build:web": "expo export --platform web",
