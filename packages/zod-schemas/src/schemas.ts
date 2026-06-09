@@ -20,6 +20,15 @@ export const TopicSchema = z.object({
   createdAt: z.string(),
 });
 
+export const TopicWithNotesInfosSchema = TopicSchema.extend({
+  noteCount: z.number(),
+}).omit({
+  embedding: true,
+  isNew: true,
+});
+
+export type TopicWithNotesInfos = z.infer<typeof TopicWithNotesInfosSchema>;
+
 export const ThoughtSchema = z.object({
   id: z.string(),
   title: z.string(),

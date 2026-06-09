@@ -1,7 +1,7 @@
 // import { Topic } from "@repo/zod-schemas";
 
 import { useControllers } from "@/api/controllers/useControllers";
-import { findClosestEmbedding } from "./utils/cosineComparison";
+import { findClosestEmbedding } from "../utils/cosineComparison";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 import { Topic } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";

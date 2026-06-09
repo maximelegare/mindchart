@@ -5,7 +5,7 @@ import { QUERIES } from "@/features/llama/data/models/chat/queries/queries";
 import { stringToJson } from "@/features/llama/utils/stringToJson";
 import { ServiceResponse } from "@/api/utils/responseObject";
 import { formatNote } from "../utils/formatNote";
-import { useTopicService } from "@/features/topic/topicService";
+import { useTopicService } from "@/features/topic/services/topicService";
 import { Note, Thought, Topic } from "@repo/zod-schemas";
 
 export const useGenerateLocalNote = () => {

@@ -1,6 +1,10 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
-import { getAllTopics, insertNewTopic } from "../endpoints/topics";
+import {
+  getAllTopics,
+  getAllTopicsWithNotesInfos,
+  insertNewTopic,
+} from "../endpoints/topics";
 import { Topic } from "@repo/zod-schemas";
 
 export const useTopicsController = () => {
@@ -21,8 +25,16 @@ export const useTopicsController = () => {
       mutationFn: ({ data }) => insertNewTopic(data),
     });
 
+  const useFetchAllTopicsWithNotesInfosQuery = (options?: ReactQueryOptions) =>
+    useQuery<Awaited<ReturnType<typeof getAllTopicsWithNotesInfos>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchAllTopicsWithNotesInfos],
+      queryFn: getAllTopicsWithNotesInfos,
+      ...options,
+    });
+
   return {
     useFetchAllTopicsQuery,
     useInsertNewTopicMutation,
+    useFetchAllTopicsWithNotesInfosQuery,
   };
 };

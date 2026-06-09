@@ -1,5 +1,6 @@
 import {
   getAllTopicsQuery,
+  getAllTopicsWithNotesInfosQuery,
   getOPDatabase,
   insertNewTopicQuery,
 } from "@repo/sqlite";
@@ -8,6 +9,11 @@ import { Topic } from "@repo/zod-schemas";
 export const getAllTopics = async () => {
   const db = getOPDatabase();
   return await getAllTopicsQuery(db);
+};
+
+export const getAllTopicsWithNotesInfos = async () => {
+  const db = getOPDatabase();
+  return await getAllTopicsWithNotesInfosQuery(db);
 };
 
 export const insertNewTopic = async (data: Topic) => {
