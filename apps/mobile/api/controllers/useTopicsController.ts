@@ -5,6 +5,7 @@ import {
   getAllTopics,
   getAllTopicsWithNotesInfos,
   insertNewTopic,
+  updateTopicById,
 } from "../endpoints/topics";
 import { Topic } from "@repo/zod-schemas";
 import { useGraphController } from "./useGraphController";
@@ -72,10 +73,38 @@ export const useTopicsController = () => {
       },
     });
   };
+
+  const useUpdateTopicByIdMutation = () => {
+    const queryClient = useQueryClient();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
+    return useMutation<
+      Awaited<ReturnType<typeof updateTopicById>>,
+      Error,
+      { id: string; name: string; embedding: Float32Array }
+    >({
+      mutationKey: [REACT_QUERY_KEYS.updateTopicById],
+      mutationFn: (data) => updateTopicById(data),
+      onSuccess: async () => {
+        await mutateAsyncGraphData(true);
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchAllTopicsWithNotesInfos],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchAllTopics],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
+        });
+      },
+    });
+  };
   return {
     useFetchAllTopicsQuery,
     useInsertNewTopicMutation,
     useFetchAllTopicsWithNotesInfosQuery,
     useDeleteTopicByIdMutation,
+    useUpdateTopicByIdMutation,
   };
 };

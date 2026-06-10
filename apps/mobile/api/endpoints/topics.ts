@@ -4,6 +4,7 @@ import {
   getAllTopicsWithNotesInfosQuery,
   getOPDatabase,
   insertNewTopicQuery,
+  updateTopicByIdQuery,
 } from "@repo/sqlite";
 import { Topic } from "@repo/zod-schemas";
 
@@ -26,4 +27,13 @@ export const insertNewTopic = async (data: Topic) => {
 export const deleteTopicById = async (id: string) => {
   const db = getOPDatabase();
   return await deleteTopicByIdQuery(db, id);
+};
+
+export const updateTopicById = async (data: {
+  id: string;
+  name: string;
+  embedding: Float32Array;
+}) => {
+  const db = getOPDatabase();
+  return await updateTopicByIdQuery(db, data);
 };
