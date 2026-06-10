@@ -10,6 +10,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import { DeleteTopic } from "../deleteTopic";
 import { EditTopic } from "../editTopic";
 import { TopicWithNotesInfos } from "@repo/zod-schemas/src/schemas";
+import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 
 type TopicBottomSheetProps = {
   topic: TopicWithNotesInfos;
@@ -20,6 +21,8 @@ export const TopicBottomSheet = ({
   topic,
   onEditPress,
 }: TopicBottomSheetProps) => {
+  const { isReady } = useLlamaEmbeddings();
+
   return (
     <>
       <BottomSheet>
@@ -34,7 +37,7 @@ export const TopicBottomSheet = ({
           enableContentPanningGesture={false}
         >
           <BottomSheetView className="gap-3 pt-6 bg-background">
-            <EditTopic onPress={onEditPress} />
+            <EditTopic onPress={onEditPress} disabled={!isReady} />
             <DeleteTopic topicId={topic.id} />
           </BottomSheetView>
         </BottomSheetContent>

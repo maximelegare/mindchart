@@ -5,9 +5,10 @@ import { View } from "react-native";
 
 type EditTopicProps = {
   onPress: () => void;
+  disabled?: boolean;
 };
 
-export const EditTopic = ({ onPress }: EditTopicProps) => {
+export const EditTopic = ({ onPress, disabled }: EditTopicProps) => {
   const { dismiss } = useBottomSheetModal();
 
   const handlePress = () => {
@@ -16,7 +17,12 @@ export const EditTopic = ({ onPress }: EditTopicProps) => {
   };
 
   return (
-    <Button variant="outline" size="default" onPress={handlePress}>
+    <Button
+      variant="outline"
+      size="default"
+      onPress={handlePress}
+      disabled={disabled}
+    >
       <View className="flex-row items-center gap-2">
         <Icon name="pencil" color="foreground" size={18} />
         <Typography variant="h3">Edit topic</Typography>
