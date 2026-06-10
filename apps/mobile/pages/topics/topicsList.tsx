@@ -1,5 +1,5 @@
 import { PageContainer } from "@/components/layout/page/pageContainer";
-import { TopicsListFeature } from "@/features/topic/features/topicsList/views";
+import { TopicsListFeature } from "@/features/topics/features/topicsList/views";
 
 export const TopicsListPage = () => {
   return (
