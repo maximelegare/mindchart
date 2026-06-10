@@ -52,6 +52,7 @@ import { deleteThoughtsByIdsQuery } from "./src/queries/thoughts/deleteThoughtsB
 import { deleteNoteByIdQuery } from "./src/queries/notes/deleteNoteById";
 import { searchThoughtsInFTSQuery } from "./src/queries/search/fts5/search";
 import { getAllTopicsWithNotesInfosQuery } from "./src/queries/topics/getAllTopicsWithNotesInfos";
+import { deleteTopicByIdQuery } from "./src/queries/topics/deleteTopicById";
 export {
   getMigratingStatusQuery,
   updateMigratingStatusQuery,
@@ -102,4 +103,5 @@ export {
   deleteNoteByIdQuery,
   searchThoughtsInFTSQuery,
   getAllTopicsWithNotesInfosQuery,
+  deleteTopicByIdQuery,
 };

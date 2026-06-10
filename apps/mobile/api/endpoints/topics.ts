@@ -1,4 +1,5 @@
 import {
+  deleteTopicByIdQuery,
   getAllTopicsQuery,
   getAllTopicsWithNotesInfosQuery,
   getOPDatabase,
@@ -20,4 +21,9 @@ export const insertNewTopic = async (data: Topic) => {
   const db = getOPDatabase();
   console.log("embedding", data.embedding);
   return await insertNewTopicQuery(db, data);
+};
+
+export const deleteTopicById = async (id: string) => {
+  const db = getOPDatabase();
+  return await deleteTopicByIdQuery(db, id);
 };

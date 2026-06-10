@@ -24,9 +24,17 @@ export const MODALS_CONTENT: Record<
   | "AI_SETUP_REQUIRED"
   | "DELETE_NOTE_CONFIRMATION"
   | "DISABLE_RECOVERY_PASSWORD"
-  | "BIOMETRICS_UNAVAILABLE",
+  | "BIOMETRICS_UNAVAILABLE"
+  | "DELETE_TOPIC_CONFIRMATION",
   ModalPreset
 > = {
+  DELETE_TOPIC_CONFIRMATION: {
+    title: "Delete Topic?",
+    description:
+      "This will permanently delete this topic and all associated notes.",
+    confirmButton: { text: "Delete", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
   DELETE_DATABASE_FILE: {
     title: "Delete Workspace?",
     description:

@@ -6,7 +6,7 @@ import { TopicWithNotesInfos } from "@repo/zod-schemas/src/schemas";
 import { TopicBottomSheet } from "../../topicBottomSheet";
 
 export const TopicItem: React.FC<TopicWithNotesInfos> = memo(
-  ({ name, noteCount, createdAt }) => {
+  ({ name, noteCount, createdAt, id }) => {
     return (
       <>
         <View className="bg-card border-border border w-full rounded-lg p-2">
@@ -21,7 +21,7 @@ export const TopicItem: React.FC<TopicWithNotesInfos> = memo(
                   <Typography variant="h3">{name.toUpperCase()}</Typography>
                 </View>
                 <View>
-                  <TopicBottomSheet />
+                  <TopicBottomSheet topicId={id} />
                 </View>
               </View>
 

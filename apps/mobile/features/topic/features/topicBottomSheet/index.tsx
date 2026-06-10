@@ -9,8 +9,9 @@ import {
 import { Button, Typography } from "@/components/ui";
 // import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { Icon } from "@/components/ui/icons/icon";
+import { DeleteTopic } from "../deleteTopic";
 
-export const TopicBottomSheet = () => {
+export const TopicBottomSheet = ({ topicId }: { topicId: string }) => {
   // const { dismiss } = useBottomSheetModal();
 
   return (
@@ -37,16 +38,7 @@ export const TopicBottomSheet = () => {
                 <Typography variant="h3">Edit topic</Typography>
               </View>
             </Button>
-            <Button
-              variant="destructive"
-              size="default"
-              onPress={() => console.log("delete topic")}
-            >
-              <View className="flex-row items-center gap-2">
-                <Icon name="trash-2" color="destructive-foreground" size={18} />
-                <Typography variant="h3">Delete topic</Typography>
-              </View>
-            </Button>
+            <DeleteTopic topicId={topicId} />
           </BottomSheetView>
         </BottomSheetContent>
       </BottomSheet>
