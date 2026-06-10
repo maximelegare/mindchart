@@ -51,7 +51,7 @@ export const NoteTable = sqliteTable(
     foreignKey({
       columns: [note.topicId],
       foreignColumns: [TopicTable.id],
-    }),
+    }).onDelete("cascade"),
   ]
 );
 

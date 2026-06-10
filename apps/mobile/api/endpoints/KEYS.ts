@@ -18,6 +18,9 @@ export type InferMutationOptions<F extends (...args: any) => any> =
   >;
 
 export const REACT_QUERY_KEYS = {
+  fetchAllTopicsWithNotesInfos: "fetch_all_topics_with_notes_infos",
+  deleteTopicById: "delete_topic_by_id",
+  updateTopicById: "update_topic_by_id",
   searchNotes: "search_notes",
   deleteNoteById: "delete_note_by_id",
   deleteThoughtsByIds: "delete_thoughts_by_ids",
