@@ -8,6 +8,7 @@ import { parseNoteAndThoughts } from "../../shared/utils/parseNoteAndThoughts";
 import { useControllers } from "@/api/controllers/useControllers";
 import { H4 } from "@/components/ui/typography";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
+import { OptionsBar } from "../components/optionsBar";
 
 export const NotesListFeature = () => {
   const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
@@ -23,6 +24,13 @@ export const NotesListFeature = () => {
 
   return (
     <View className="flex-1">
+      <OptionsBar
+        options={{
+          sortBy: "newest",
+          groupBy: "topics",
+          display: ["notes", "topics", "categories"],
+        }}
+      />
       <View className="gap-2">
         {parsedData?.map((n) => (
           <ExpandableNoteWithThoughts

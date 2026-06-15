@@ -42,6 +42,7 @@ export type IconName =
   | "search"
   | "settings"
   | "shopping-cart"
+  | "sliders-horizontal"
   | "sparkles"
   | "sprout"
   | "square-dashed-mouse-pointer"
@@ -222,6 +223,10 @@ export const ICON_METADATA: Record<
   "shopping-cart": {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></g>`,
+  },
+  "sliders-horizontal": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 5H3m9 14H3M14 3v4m2 10v4m5-9h-9m9 7h-5m5-14h-7m-6 5v4m0-2H3"></path>`,
   },
   sparkles: {
     viewBox: "0 0 24 24",
