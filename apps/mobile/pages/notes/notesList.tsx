@@ -1,6 +1,6 @@
 import { MoreOptionsMenuProps } from "@/components/layout/header/moreOptions/moreOptionsMenu";
 import { PageContainer } from "@/components/layout/page/pageContainer";
-import { NotesListFeature } from "@/features/notes/notesList/views";
+import { ContentListFeature } from "@/features/notes/contentList/views";
 import { SearchFeature } from "@/features/search/views";
 import { useState } from "react";
 
@@ -22,7 +22,7 @@ export const NotesListPage = () => {
         state: { open, setOpen },
       }}
     >
-      <NotesListFeature />
+      <ContentListFeature />
     </PageContainer>
   );
 };

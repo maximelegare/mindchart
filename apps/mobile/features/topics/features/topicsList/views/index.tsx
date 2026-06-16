@@ -3,7 +3,11 @@ import List from "@/components/ui/list";
 import { TopicItem } from "../components/topicItem";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 
-export const TopicsListFeature = () => {
+export const TopicsListFeature = ({
+  withSpaceFiller = true,
+}: {
+  withSpaceFiller?: boolean;
+}) => {
   const { useFetchAllTopicsWithNotesInfosQuery } = useControllers().topics;
 
   const { data } = useFetchAllTopicsWithNotesInfosQuery();
@@ -13,9 +17,11 @@ export const TopicsListFeature = () => {
       {data?.map((topic) => (
         <TopicItem key={topic.id} {...topic} />
       ))}
-      <SpaceFiller
-        sizes={{ marginBottom: ["TAB_BAR_HEIGHT", "HEADER_OVERLAP"] }}
-      />
+      {withSpaceFiller ? (
+        <SpaceFiller
+          sizes={{ marginBottom: ["TAB_BAR_HEIGHT", "HEADER_OVERLAP"] }}
+        />
+      ) : null}
     </List>
   );
 };

@@ -1,6 +1,6 @@
 import { Button, Typography } from "@/components/ui";
 import { Pressable, View } from "react-native";
-import { OptionsBar as OptionsBarType } from "../types";
+import { OptionsBar as OptionsBarType } from "../../../types";
 import { Card } from "@/components/ui/card";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { useState } from "react";
@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { H4 } from "@/components/ui/typography";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useOptionsBar } from "../context/optionBarContext";
 
 const SORT_OPTIONS: {
   value: OptionsBarType["sortBy"];
@@ -26,7 +27,6 @@ const GROUP_OPTIONS: {
   label: string;
 }[] = [
   { value: "topics", label: "By topic" },
-  { value: "notes", label: "By note" },
   { value: "categories", label: "By category" },
   { value: "none", label: "None" },
 ];
@@ -118,11 +118,18 @@ function DisplayCheckboxes({ value, onValueChange }: DisplayCheckboxesProps) {
   );
 }
 
-export const OptionsBar = ({ options }: { options: OptionsBarType }) => {
+export const OptionsBar = () => {
   const [expanded, setExpanded] = useState(false);
-  const [sortBy, setSortBy] = useState(options.sortBy);
-  const [groupBy, setGroupBy] = useState(options.groupBy);
-  const [display, setDisplay] = useState(options.display);
+  const sortBy = useOptionsBar((state) => state.sortBy);
+  const groupBy = useOptionsBar((state) => state.groupBy);
+  const display = useOptionsBar((state) => state.display);
+  const handleSortByChange = useOptionsBar((state) => state.handleSortByChange);
+  const handleGroupByChange = useOptionsBar(
+    (state) => state.handleGroupByChange
+  );
+  const handleDisplayChange = useOptionsBar(
+    (state) => state.handleDisplayChange
+  );
 
   const sortLabel =
     SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? sortBy;
@@ -171,7 +178,7 @@ export const OptionsBar = ({ options }: { options: OptionsBarType }) => {
                   idPrefix="sort"
                   options={SORT_OPTIONS}
                   value={sortBy}
-                  onValueChange={setSortBy}
+                  onValueChange={handleSortByChange}
                 />
               </View>
             </View>
@@ -182,14 +189,17 @@ export const OptionsBar = ({ options }: { options: OptionsBarType }) => {
                   idPrefix="group"
                   options={GROUP_OPTIONS}
                   value={groupBy}
-                  onValueChange={setGroupBy}
+                  onValueChange={handleGroupByChange}
                 />
               </View>
             </View>
             <View className="gap-2">
               <H4>Display</H4>
               <View style={{ paddingLeft: 10 }}>
-                <DisplayCheckboxes value={display} onValueChange={setDisplay} />
+                <DisplayCheckboxes
+                  value={display}
+                  onValueChange={handleDisplayChange}
+                />
               </View>
             </View>
           </View>
