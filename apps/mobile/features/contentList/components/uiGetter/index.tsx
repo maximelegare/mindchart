@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useDeferredValue, useMemo } from "react";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
 import { resolveContentView } from "./contentViewRegistry";
 import { getUiKey } from "./getUiKey";
@@ -15,7 +15,13 @@ export const UiGetter = memo(function UiGetter() {
   const groupBy = useOptionsBar((state) => state.groupBy);
   const display = useOptionsBar((state) => state.display);
 
-  const uiKey = useMemo(() => getUiKey(groupBy, display), [groupBy, display]);
+  const deferredGroupBy = useDeferredValue(groupBy);
+  const deferredDisplay = useDeferredValue(display);
+
+  const uiKey = useMemo(
+    () => getUiKey(deferredGroupBy, deferredDisplay),
+    [deferredGroupBy, deferredDisplay]
+  );
 
   const ViewComponent = useMemo(() => resolveContentView(uiKey), [uiKey]);
 

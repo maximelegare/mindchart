@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   deleteNoteById,
   fetchAllNotes,
@@ -196,6 +201,8 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchNotesAndThoughts>>>({
       queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
       queryFn: fetchNotesAndThoughts,
+      staleTime: 60_000,
+      placeholderData: keepPreviousData,
       ...options,
     });
 
@@ -203,6 +210,8 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchAllNotes>>>({
       queryKey: [REACT_QUERY_KEYS.fetchNotes],
       queryFn: fetchAllNotes,
+      staleTime: 60_000,
+      placeholderData: keepPreviousData,
       ...options,
     });
 

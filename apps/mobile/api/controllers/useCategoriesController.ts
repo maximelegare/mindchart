@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import {
   fetchAllCategories,
   fetchAllCategoriesWithThoughtsInfos,
@@ -19,6 +19,8 @@ export const useCategoriesController = () => {
     useQuery<Awaited<ReturnType<typeof fetchAllCategoriesWithThoughtsInfos>>>({
       queryKey: [REACT_QUERY_KEYS.fetchAllCategoriesWithThoughtsInfos],
       queryFn: fetchAllCategoriesWithThoughtsInfos,
+      staleTime: 60_000,
+      placeholderData: keepPreviousData,
       ...options,
     });
 

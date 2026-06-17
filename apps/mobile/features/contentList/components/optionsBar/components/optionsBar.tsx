@@ -63,16 +63,14 @@ function RadioOptionRow<T extends string>({
       {options.map((option) => {
         const labelId = `${idPrefix}-${option.value}`;
         return (
-          <Pressable
-            key={option.value}
-            className="flex-row items-center gap-2"
-            onPress={() => onValueChange(option.value)}
-          >
+          <View key={option.value} className="flex-row items-center gap-2">
             <RadioGroupItem aria-labelledby={labelId} value={option.value} />
-            <Typography nativeID={labelId} variant="p" className="text-sm">
-              {option.label}
-            </Typography>
-          </Pressable>
+            <Pressable onPress={() => onValueChange(option.value)}>
+              <Typography nativeID={labelId} variant="p" className="text-sm">
+                {option.label}
+              </Typography>
+            </Pressable>
+          </View>
         );
       })}
     </RadioGroup>
@@ -99,19 +97,17 @@ function DisplayCheckboxes({ value, onValueChange }: DisplayCheckboxesProps) {
         const labelId = `display-${option.value}`;
         const checked = value.includes(option.value);
         return (
-          <Pressable
-            key={option.value}
-            className="flex-row items-center gap-2"
-            onPress={() => toggle(option.value)}
-          >
+          <View key={option.value} className="flex-row items-center gap-2">
             <Checkbox
               checked={checked}
               onCheckedChange={() => toggle(option.value)}
             />
-            <Typography nativeID={labelId} variant="p" className="text-sm">
-              {option.label}
-            </Typography>
-          </Pressable>
+            <Pressable onPress={() => toggle(option.value)}>
+              <Typography nativeID={labelId} variant="p" className="text-sm">
+                {option.label}
+              </Typography>
+            </Pressable>
+          </View>
         );
       })}
     </View>
@@ -120,9 +116,6 @@ function DisplayCheckboxes({ value, onValueChange }: DisplayCheckboxesProps) {
 
 export const OptionsBar = () => {
   const [expanded, setExpanded] = useState(false);
-  const sortBy = useOptionsBar((state) => state.sortBy);
-  const groupBy = useOptionsBar((state) => state.groupBy);
-  const display = useOptionsBar((state) => state.display);
   const handleSortByChange = useOptionsBar((state) => state.handleSortByChange);
   const handleGroupByChange = useOptionsBar(
     (state) => state.handleGroupByChange
@@ -130,6 +123,29 @@ export const OptionsBar = () => {
   const handleDisplayChange = useOptionsBar(
     (state) => state.handleDisplayChange
   );
+
+  const [sortBy, setSortBy] = useState(() => useOptionsBar.getState().sortBy);
+  const [groupBy, setGroupBy] = useState(
+    () => useOptionsBar.getState().groupBy
+  );
+  const [display, setDisplay] = useState(
+    () => useOptionsBar.getState().display
+  );
+
+  const onSortByChange = (value: OptionsBarType["sortBy"]) => {
+    setSortBy(value);
+    handleSortByChange(value);
+  };
+
+  const onGroupByChange = (value: OptionsBarType["groupBy"]) => {
+    setGroupBy(value);
+    handleGroupByChange(value);
+  };
+
+  const onDisplayChange = (value: OptionsBarType["display"]) => {
+    setDisplay(value);
+    handleDisplayChange(value);
+  };
 
   const sortLabel =
     SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? sortBy;
@@ -178,7 +194,7 @@ export const OptionsBar = () => {
                   idPrefix="sort"
                   options={SORT_OPTIONS}
                   value={sortBy}
-                  onValueChange={handleSortByChange}
+                  onValueChange={onSortByChange}
                 />
               </View>
             </View>
@@ -189,7 +205,7 @@ export const OptionsBar = () => {
                   idPrefix="group"
                   options={GROUP_OPTIONS}
                   value={groupBy}
-                  onValueChange={handleGroupByChange}
+                  onValueChange={onGroupByChange}
                 />
               </View>
             </View>
@@ -198,7 +214,7 @@ export const OptionsBar = () => {
               <View style={{ paddingLeft: 10 }}>
                 <DisplayCheckboxes
                   value={display}
-                  onValueChange={handleDisplayChange}
+                  onValueChange={onDisplayChange}
                 />
               </View>
             </View>

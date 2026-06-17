@@ -15,11 +15,9 @@ export const NotesListWithoutOverviewFeature = () => {
     return result.success ? result.data : null;
   }, [data]);
 
-  if (!parsedData) return null;
-
   return (
     <View className="gap-2">
-      {parsedData.map((n) => (
+      {parsedData?.map((n) => (
         <NoteWithoutOverview key={n.id} {...n} />
       ))}
     </View>

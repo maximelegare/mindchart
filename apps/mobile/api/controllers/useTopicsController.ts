@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
 import {
   deleteTopicById,
@@ -32,6 +37,8 @@ export const useTopicsController = () => {
     useQuery<Awaited<ReturnType<typeof getAllTopicsWithNotesInfos>>>({
       queryKey: [REACT_QUERY_KEYS.fetchAllTopicsWithNotesInfos],
       queryFn: getAllTopicsWithNotesInfos,
+      staleTime: 60_000,
+      placeholderData: keepPreviousData,
       ...options,
     });
 
