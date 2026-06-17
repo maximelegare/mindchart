@@ -31,15 +31,22 @@ const GROUP_OPTIONS: {
   { value: "none", label: "None" },
 ];
 
-const DISPLAY_OPTIONS: {
-  value: OptionsBarType["display"][number];
+const TOP_LEVEL_DISPLAY_OPTIONS: {
+  value: Exclude<OptionsBarType["display"][number], "overview">;
   label: string;
 }[] = [
-  { value: "notes", label: "Notes" },
   { value: "topics", label: "Topics" },
   { value: "categories", label: "Categories" },
-  { value: "overview", label: "Overview" },
 ];
+
+const OVERVIEW_OPTION = { value: "overview" as const, label: "Note Overview" };
+
+const normalizeDisplay = (
+  display: OptionsBarType["display"]
+): OptionsBarType["display"] =>
+  display.includes("notes")
+    ? display
+    : display.filter((item) => item !== "overview");
 
 type RadioOptionRowProps<T extends string> = {
   options: { value: T; label: string }[];
@@ -82,8 +89,73 @@ type DisplayCheckboxesProps = {
   onValueChange: (value: OptionsBarType["display"]) => void;
 };
 
+type DisplayItem = OptionsBarType["display"][number];
+
+function DisplayCheckboxRow({
+  labelId,
+  label,
+  checked,
+  disabled = false,
+  onToggle,
+  className,
+}: {
+  labelId: string;
+  label: string;
+  checked: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+  className?: string;
+}) {
+  return (
+    <View className={className}>
+      <View className="flex-row items-center gap-2">
+        <Checkbox
+          checked={checked}
+          disabled={disabled}
+          onCheckedChange={() => {
+            if (!disabled) onToggle();
+          }}
+        />
+        <Pressable disabled={disabled} onPress={onToggle}>
+          <Typography
+            nativeID={labelId}
+            variant="p"
+            className={
+              disabled ? "text-sm text-muted-foreground/50" : "text-sm"
+            }
+          >
+            {label}
+          </Typography>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function DisplayCheckboxes({ value, onValueChange }: DisplayCheckboxesProps) {
-  const toggle = (item: OptionsBarType["display"][number]) => {
+  const notesChecked = value.includes("notes");
+  const overviewChecked = value.includes("overview");
+
+  const toggle = (item: DisplayItem) => {
+    if (item === "notes") {
+      if (value.includes("notes")) {
+        onValueChange(value.filter((v) => v !== "notes" && v !== "overview"));
+      } else {
+        onValueChange([...value, "notes", "overview"]);
+      }
+      return;
+    }
+
+    if (item === "overview") {
+      if (!notesChecked) return;
+      if (value.includes("overview")) {
+        onValueChange(value.filter((v) => v !== "overview"));
+      } else {
+        onValueChange([...value, "overview"]);
+      }
+      return;
+    }
+
     if (value.includes(item)) {
       onValueChange(value.filter((v) => v !== item));
     } else {
@@ -92,22 +164,36 @@ function DisplayCheckboxes({ value, onValueChange }: DisplayCheckboxesProps) {
   };
 
   return (
-    <View className="flex-col  gap-4">
-      {DISPLAY_OPTIONS.map((option) => {
+    <View className="flex-col gap-4">
+      <View className="gap-2">
+        <DisplayCheckboxRow
+          labelId="display-notes"
+          label="Notes"
+          checked={notesChecked}
+          onToggle={() => toggle("notes")}
+        />
+        <View className="ml-3 border-l border-border pl-4">
+          <DisplayCheckboxRow
+            labelId="display-overview"
+            label={OVERVIEW_OPTION.label}
+            checked={overviewChecked}
+            disabled={!notesChecked}
+            onToggle={() => toggle("overview")}
+          />
+        </View>
+      </View>
+
+      {TOP_LEVEL_DISPLAY_OPTIONS.map((option) => {
         const labelId = `display-${option.value}`;
         const checked = value.includes(option.value);
         return (
-          <View key={option.value} className="flex-row items-center gap-2">
-            <Checkbox
-              checked={checked}
-              onCheckedChange={() => toggle(option.value)}
-            />
-            <Pressable onPress={() => toggle(option.value)}>
-              <Typography nativeID={labelId} variant="p" className="text-sm">
-                {option.label}
-              </Typography>
-            </Pressable>
-          </View>
+          <DisplayCheckboxRow
+            key={option.value}
+            labelId={labelId}
+            label={option.label}
+            checked={checked}
+            onToggle={() => toggle(option.value)}
+          />
         );
       })}
     </View>
@@ -143,8 +229,9 @@ export const OptionsBar = () => {
   };
 
   const onDisplayChange = (value: OptionsBarType["display"]) => {
-    setDisplay(value);
-    handleDisplayChange(value);
+    const normalized = normalizeDisplay(value);
+    setDisplay(normalized);
+    handleDisplayChange(normalized);
   };
 
   const sortLabel =
