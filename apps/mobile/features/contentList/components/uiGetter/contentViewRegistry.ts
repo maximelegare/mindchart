@@ -1,11 +1,11 @@
 import { ComponentType } from "react";
 import { UiKey } from "../../types";
-import { NotesListWithOverviewFeature } from "@/features/notes/contentList/features/groupByNone/withOverview/views";
-import { TopicsOnlyViewFeature } from "@/features/notes/contentList/features/groupByTopics/topicsOnly";
+import { NotesListWithOverviewFeature } from "@/features/contentList/features/groupByNone/withOverview/views";
+import { TopicsOnlyViewFeature } from "@/features/contentList/features/groupByTopics/topicsOnly";
 import { getUiKey } from "./getUiKey";
 
-import { NotesListWithoutOverviewFeature } from "@/features/notes/contentList/features/groupByNone/withoutOverview/views";
-import { CategoriesOnlyViewFeature } from "@/features/notes/contentList/features/groupByCategories/categoriesOnly";
+import { NotesListWithoutOverviewFeature } from "@/features/contentList/features/groupByNone/withoutOverview/views";
+import { CategoriesOnlyViewFeature } from "@/features/contentList/features/groupByCategories/categoriesOnly";
 /**
  * Maps each options-bar combination to a dedicated view.
  * Add a new entry here whenever a unique groupBy + display combo needs its own UI.

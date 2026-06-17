@@ -1,6 +1,6 @@
 import { MoreOptionsMenuProps } from "@/components/layout/header/moreOptions/moreOptionsMenu";
 import { PageContainer } from "@/components/layout/page/pageContainer";
-import { ContentListFeature } from "@/features/notes/contentList/views";
+import { ContentListFeature } from "@/features/contentList/views";
 import { SearchFeature } from "@/features/search/views";
 import { useState } from "react";
 
