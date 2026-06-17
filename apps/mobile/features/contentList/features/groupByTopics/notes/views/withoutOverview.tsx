@@ -20,7 +20,7 @@ export const NotesListGroupByTopicsWithoutOverviewFeature = () => {
               summary={note.summary}
               rawText={note.rawText}
               topicId={topic.id}
-              createdAt={note.created_at ?? ""}
+              createdAt={note.createdAt ?? ""}
             />
           ))}
         </TopicSection>

@@ -13,7 +13,7 @@ export const parseNoteAndThoughts = (
     title: row.note_title ?? "",
     summary: row.note_summary ?? "",
     rawText: row.note_raw_text ?? "",
-    created_at: row.note_created_at,
+    createdAt: row.note_created_at,
     thoughts: (typeof row.thoughts_json === "string"
       ? JSON.parse(row.thoughts_json)
       : Array.isArray(row.thoughts_json)

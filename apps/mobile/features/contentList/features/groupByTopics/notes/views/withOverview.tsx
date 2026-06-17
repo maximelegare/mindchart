@@ -28,7 +28,7 @@ export const NotesListGroupByTopicsWithOverviewFeature = () => {
               id={note.id}
               title={note.title}
               category="idea"
-              date={note.created_at}
+              date={note.createdAt ?? ""}
               expanded={expandedCardId === note.id}
               onPress={handleExpandableCardPress}
             >

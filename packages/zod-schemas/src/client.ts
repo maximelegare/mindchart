@@ -40,7 +40,7 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   id: z.string(),
   title: z.string(),
   summary: z.string(),
-  created_at: z.string().nullable(),
+  createdAt: z.string().optional(),
   rawText: z.string(),
   thoughts: z.array(ThoughtSchema),
 });

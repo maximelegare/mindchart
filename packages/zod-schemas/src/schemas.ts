@@ -22,7 +22,7 @@ export const TopicSchema = z.object({
   name: z.string(),
   embedding: z.custom<Float32Array>(),
   isNew: z.boolean().optional(),
-  createdAt: z.string(),
+  createdAt: z.string().optional(),
 });
 
 export const TopicWithNotesInfosSchema = TopicSchema.extend({
@@ -71,7 +71,7 @@ export const NoteSchema = z.object({
   summary: z.string(),
   rawText: z.string().default(""),
   topicId: z.string(),
-  createdAt: z.string(),
+  createdAt: z.string().optional(),
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);

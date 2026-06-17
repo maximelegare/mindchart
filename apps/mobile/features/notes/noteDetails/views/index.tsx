@@ -18,7 +18,7 @@ export const NoteDetailsFeature = () => {
   const parsedData = parseNoteAndThoughts(data);
 
   if (!parsedData) return;
-  const { title, created_at, rawText, thoughts } = parsedData[0];
+  const { title, createdAt, rawText, thoughts } = parsedData[0];
 
   return (
     <View className="flex-col w-full">
@@ -29,7 +29,7 @@ export const NoteDetailsFeature = () => {
           </Typography>
           {rawText ? <RawTextViewer rawText={rawText} /> : null}
         </View>
-        <DisplayDate size="md" date={created_at} className="pb-4" />
+        <DisplayDate size="md" date={createdAt} className="pb-4" />
 
         <Typography variant="h4" className="text-border">
           Thoughts

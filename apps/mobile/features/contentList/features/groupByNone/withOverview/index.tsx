@@ -27,7 +27,7 @@ export const NotesListWithOverviewFeature = () => {
           id={n.id}
           title={n.title}
           category="idea"
-          date={n.created_at}
+          date={n.createdAt ?? ""}
           expanded={expandedCardId === n.id}
           onPress={handleExpandableCardPress}
         >

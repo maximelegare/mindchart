@@ -103,6 +103,7 @@ export const GenerateNotePreview = ({
         summary: summary,
         rawText: note.rawText,
         topicId: topic.id,
+        createdAt: note.createdAt ?? new Date().toISOString(),
       };
 
       // Call the onGeneratedNote callback to handle the note and thoughts
