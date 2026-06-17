@@ -5,6 +5,7 @@ import { TopicsOnlyViewFeature } from "@/features/notes/contentList/features/gro
 import { getUiKey } from "./getUiKey";
 
 import { NotesListWithoutOverviewFeature } from "@/features/notes/contentList/features/groupByNone/withoutOverview/views";
+import { CategoriesOnlyViewFeature } from "@/features/notes/contentList/features/groupByCategories/categoriesOnly";
 /**
  * Maps each options-bar combination to a dedicated view.
  * Add a new entry here whenever a unique groupBy + display combo needs its own UI.
@@ -28,6 +29,7 @@ export const CONTENT_VIEW_REGISTRY = {
     NotesListWithoutOverviewFeature,
   "groupBy=none&display=categories-notes-overview-topics":
     NotesListWithOverviewFeature,
+  "groupBy=none&display=categories": CategoriesOnlyViewFeature,
 
   "groupBy=topics&display=notes-overview-topics": NotesListWithOverviewFeature,
 } as const satisfies Partial<Record<UiKey, ComponentType>>;
