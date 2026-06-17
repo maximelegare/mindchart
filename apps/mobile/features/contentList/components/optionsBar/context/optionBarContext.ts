@@ -4,14 +4,17 @@ import { OptionsBar } from "../../../types";
 export type OptionsBarStore = OptionsBar & {
   handleSortByChange: (sortBy: OptionsBar["sortBy"]) => void;
   handleGroupByChange: (groupBy: OptionsBar["groupBy"]) => void;
-  handleDisplayChange: (display: OptionsBar["display"]) => void;
+  handleDisplayModeChange: (displayMode: OptionsBar["displayMode"]) => void;
+  handleShowOverviewChange: (showOverview: boolean) => void;
 };
 
 export const useOptionsBar = create<OptionsBarStore>((set) => ({
   sortBy: "newest",
   groupBy: "topics",
-  display: ["notes"],
+  displayMode: "notes",
+  showOverview: true,
   handleSortByChange: (sortBy) => set({ sortBy }),
   handleGroupByChange: (groupBy) => set({ groupBy }),
-  handleDisplayChange: (display) => set({ display }),
+  handleDisplayModeChange: (displayMode) => set({ displayMode }),
+  handleShowOverviewChange: (showOverview) => set({ showOverview }),
 }));

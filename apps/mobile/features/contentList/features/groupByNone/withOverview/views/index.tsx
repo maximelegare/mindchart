@@ -38,7 +38,6 @@ export const NotesListWithOverviewFeature = () => {
               bulletColor="border"
               items={n.thoughts.map((t, idx: number) => (
                 <View key={idx}>
-                  <Typography variant="h4">{t.title}</Typography>
                   <Typography variant="p">{t.summary}</Typography>
                 </View>
               ))}

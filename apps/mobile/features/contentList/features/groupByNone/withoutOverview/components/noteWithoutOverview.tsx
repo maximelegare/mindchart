@@ -14,7 +14,7 @@ export const NoteWithoutOverview: React.FC<Note> = memo(
 
     return (
       <>
-        <View className="bg-card border-border border w-full rounded-lg p-2">
+        <View className="bg-card border-border border w-full rounded-lg p-2 pb-3">
           <View>
             <View className="flex-row items-center justify-between mb-1">
               <DisplayDate date={createdAt} />

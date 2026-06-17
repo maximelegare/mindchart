@@ -1,6 +1,6 @@
 import { Button, Typography } from "@/components/ui";
 import { Pressable, View } from "react-native";
-import { OptionsBar as OptionsBarType } from "../../../types";
+import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
 import { Card } from "@/components/ui/card";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { useState } from "react";
@@ -31,22 +31,12 @@ const GROUP_OPTIONS: {
   { value: "none", label: "None" },
 ];
 
-const TOP_LEVEL_DISPLAY_OPTIONS: {
-  value: Exclude<OptionsBarType["display"][number], "overview">;
-  label: string;
-}[] = [
+const DISPLAY_MODE_OPTIONS: { value: DisplayMode; label: string }[] = [
   { value: "topics", label: "Topics" },
   { value: "categories", label: "Categories" },
 ];
 
-const OVERVIEW_OPTION = { value: "overview" as const, label: "Note Overview" };
-
-const normalizeDisplay = (
-  display: OptionsBarType["display"]
-): OptionsBarType["display"] =>
-  display.includes("notes")
-    ? display
-    : display.filter((item) => item !== "overview");
+const OVERVIEW_LABEL = "Note Overview";
 
 type RadioOptionRowProps<T extends string> = {
   options: { value: T; label: string }[];
@@ -84,119 +74,87 @@ function RadioOptionRow<T extends string>({
   );
 }
 
-type DisplayCheckboxesProps = {
-  value: OptionsBarType["display"];
-  onValueChange: (value: OptionsBarType["display"]) => void;
+type DisplayOptionsProps = {
+  displayMode: DisplayMode;
+  showOverview: boolean;
+  onDisplayModeChange: (value: DisplayMode) => void;
+  onShowOverviewChange: (value: boolean) => void;
 };
 
-type DisplayItem = OptionsBarType["display"][number];
+function DisplayOptions({
+  displayMode,
+  showOverview,
+  onDisplayModeChange,
+  onShowOverviewChange,
+}: DisplayOptionsProps) {
+  const notesSelected = displayMode === "notes";
 
-function DisplayCheckboxRow({
-  labelId,
-  label,
-  checked,
-  disabled = false,
-  onToggle,
-  className,
-}: {
-  labelId: string;
-  label: string;
-  checked: boolean;
-  disabled?: boolean;
-  onToggle: () => void;
-  className?: string;
-}) {
-  return (
-    <View className={className}>
-      <View className="flex-row items-center gap-2">
-        <Checkbox
-          checked={checked}
-          disabled={disabled}
-          onCheckedChange={() => {
-            if (!disabled) onToggle();
-          }}
-        />
-        <Pressable disabled={disabled} onPress={onToggle}>
-          <Typography
-            nativeID={labelId}
-            variant="p"
-            className={
-              disabled ? "text-sm text-muted-foreground/50" : "text-sm"
-            }
-          >
-            {label}
-          </Typography>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
-function DisplayCheckboxes({ value, onValueChange }: DisplayCheckboxesProps) {
-  const notesChecked = value.includes("notes");
-  const overviewChecked = value.includes("overview");
-
-  const toggle = (item: DisplayItem) => {
-    if (item === "notes") {
-      if (value.includes("notes")) {
-        onValueChange(value.filter((v) => v !== "notes" && v !== "overview"));
-      } else {
-        onValueChange([...value, "notes", "overview"]);
-      }
-      return;
-    }
-
-    if (item === "overview") {
-      if (!notesChecked) return;
-      if (value.includes("overview")) {
-        onValueChange(value.filter((v) => v !== "overview"));
-      } else {
-        onValueChange([...value, "overview"]);
-      }
-      return;
-    }
-
-    if (value.includes(item)) {
-      onValueChange(value.filter((v) => v !== item));
-    } else {
-      onValueChange([...value, item]);
-    }
+  const onModeChange = (mode: DisplayMode) => {
+    onDisplayModeChange(mode);
   };
 
   return (
-    <View className="flex-col gap-4">
+    <RadioGroup
+      className="flex-col gap-4"
+      value={displayMode}
+      onValueChange={(v) => onModeChange(v as DisplayMode)}
+    >
       <View className="gap-2">
-        <DisplayCheckboxRow
-          labelId="display-notes"
-          label="Notes"
-          checked={notesChecked}
-          onToggle={() => toggle("notes")}
-        />
+        <View className="flex-row items-center gap-2">
+          <RadioGroupItem aria-labelledby="display-notes" value="notes" />
+          <Pressable onPress={() => onModeChange("notes")}>
+            <Typography
+              nativeID="display-notes"
+              variant="p"
+              className="text-sm"
+            >
+              Notes
+            </Typography>
+          </Pressable>
+        </View>
         <View className="ml-3 border-l border-border pl-4">
-          <DisplayCheckboxRow
-            labelId="display-overview"
-            label={OVERVIEW_OPTION.label}
-            checked={overviewChecked}
-            disabled={!notesChecked}
-            onToggle={() => toggle("overview")}
-          />
+          <View className="flex-row items-center gap-2">
+            <Checkbox
+              checked={showOverview}
+              disabled={!notesSelected}
+              onCheckedChange={(checked) => {
+                if (notesSelected) onShowOverviewChange(checked);
+              }}
+            />
+            <Pressable
+              disabled={!notesSelected}
+              onPress={() => {
+                if (notesSelected) onShowOverviewChange(!showOverview);
+              }}
+            >
+              <Typography
+                nativeID="display-overview"
+                variant="p"
+                className={
+                  notesSelected ? "text-sm" : "text-sm text-muted-foreground/50"
+                }
+              >
+                {OVERVIEW_LABEL}
+              </Typography>
+            </Pressable>
+          </View>
         </View>
       </View>
 
-      {TOP_LEVEL_DISPLAY_OPTIONS.map((option) => {
+      {DISPLAY_MODE_OPTIONS.map((option) => {
         const labelId = `display-${option.value}`;
-        const checked = value.includes(option.value);
         return (
-          <DisplayCheckboxRow
-            key={option.value}
-            labelId={labelId}
-            label={option.label}
-            checked={checked}
-            onToggle={() => toggle(option.value)}
-          />
+          <View key={option.value} className="flex-row items-center gap-2">
+            <RadioGroupItem aria-labelledby={labelId} value={option.value} />
+            <Pressable onPress={() => onModeChange(option.value)}>
+              <Typography nativeID={labelId} variant="p" className="text-sm">
+                {option.label}
+              </Typography>
+            </Pressable>
+          </View>
         );
       })}
-    </View>
+    </RadioGroup>
   );
 }
 
@@ -206,16 +164,22 @@ export const OptionsBar = () => {
   const handleGroupByChange = useOptionsBar(
     (state) => state.handleGroupByChange
   );
-  const handleDisplayChange = useOptionsBar(
-    (state) => state.handleDisplayChange
+  const handleDisplayModeChange = useOptionsBar(
+    (state) => state.handleDisplayModeChange
+  );
+  const handleShowOverviewChange = useOptionsBar(
+    (state) => state.handleShowOverviewChange
   );
 
   const [sortBy, setSortBy] = useState(() => useOptionsBar.getState().sortBy);
   const [groupBy, setGroupBy] = useState(
     () => useOptionsBar.getState().groupBy
   );
-  const [display, setDisplay] = useState(
-    () => useOptionsBar.getState().display
+  const [displayMode, setDisplayMode] = useState(
+    () => useOptionsBar.getState().displayMode
+  );
+  const [showOverview, setShowOverview] = useState(
+    () => useOptionsBar.getState().showOverview
   );
 
   const onSortByChange = (value: OptionsBarType["sortBy"]) => {
@@ -228,10 +192,14 @@ export const OptionsBar = () => {
     handleGroupByChange(value);
   };
 
-  const onDisplayChange = (value: OptionsBarType["display"]) => {
-    const normalized = normalizeDisplay(value);
-    setDisplay(normalized);
-    handleDisplayChange(normalized);
+  const onDisplayModeChange = (value: DisplayMode) => {
+    setDisplayMode(value);
+    handleDisplayModeChange(value);
+  };
+
+  const onShowOverviewChange = (value: boolean) => {
+    setShowOverview(value);
+    handleShowOverviewChange(value);
   };
 
   const sortLabel =
@@ -299,9 +267,11 @@ export const OptionsBar = () => {
             <View className="gap-2">
               <H4>Display</H4>
               <View style={{ paddingLeft: 10 }}>
-                <DisplayCheckboxes
-                  value={display}
-                  onValueChange={onDisplayChange}
+                <DisplayOptions
+                  displayMode={displayMode}
+                  showOverview={showOverview}
+                  onDisplayModeChange={onDisplayModeChange}
+                  onShowOverviewChange={onShowOverviewChange}
                 />
               </View>
             </View>

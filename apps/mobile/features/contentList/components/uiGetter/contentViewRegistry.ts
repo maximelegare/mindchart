@@ -6,32 +6,26 @@ import { getUiKey } from "./getUiKey";
 
 import { NotesListWithoutOverviewFeature } from "@/features/contentList/features/groupByNone/withoutOverview/views";
 import { CategoriesOnlyViewFeature } from "@/features/contentList/features/groupByCategories/categoriesOnly";
+
 /**
- * Maps each options-bar combination to a dedicated view.
- * Add a new entry here whenever a unique groupBy + display combo needs its own UI.
- *
- * Example — overview toggled off switches to a different view entirely:
- *   "groupBy=none&display=notes-overview-topics" → NotesListWithOverviewFeature
- *   "groupBy=none&display=notes-topics"          → NotesListWithoutOverviewFeature
+ * Maps each groupBy + display combination to a dedicated view.
+ * display is one of: notes, notes-overview, topics, categories.
  */
 export const CONTENT_VIEW_REGISTRY = {
-  "groupBy=topics&display=topics": TopicsOnlyViewFeature,
-
-  //Group By None
   "groupBy=none&display=notes": NotesListWithoutOverviewFeature,
-  "groupBy=none&display=topics": TopicsOnlyViewFeature,
-
-  // "groupBy=none&display=categories": CategoriesOnlyViewFeature,
-  "groupBy=none&display=notes-overview-topics": NotesListWithOverviewFeature,
   "groupBy=none&display=notes-overview": NotesListWithOverviewFeature,
-  "groupBy=none&display=notes-topics": NotesListWithoutOverviewFeature,
-  "groupBy=none&display=categories-notes-topics":
-    NotesListWithoutOverviewFeature,
-  "groupBy=none&display=categories-notes-overview-topics":
-    NotesListWithOverviewFeature,
+  "groupBy=none&display=topics": TopicsOnlyViewFeature,
   "groupBy=none&display=categories": CategoriesOnlyViewFeature,
 
-  "groupBy=topics&display=notes-overview-topics": NotesListWithOverviewFeature,
+  "groupBy=topics&display=topics": TopicsOnlyViewFeature,
+  "groupBy=topics&display=notes": NotesListWithoutOverviewFeature,
+  "groupBy=topics&display=notes-overview": NotesListWithOverviewFeature,
+  "groupBy=topics&display=categories": CategoriesOnlyViewFeature,
+
+  "groupBy=categories&display=categories": CategoriesOnlyViewFeature,
+  "groupBy=categories&display=notes": NotesListWithoutOverviewFeature,
+  "groupBy=categories&display=notes-overview": NotesListWithOverviewFeature,
+  "groupBy=categories&display=topics": TopicsOnlyViewFeature,
 } as const satisfies Partial<Record<UiKey, ComponentType>>;
 
 export type RegisteredUiKey = keyof typeof CONTENT_VIEW_REGISTRY;
@@ -56,5 +50,7 @@ export const resolveContentView = (uiKey: UiKey | null): ComponentType => {
 
 export const resolveContentViewFromOptions = (
   groupBy: Parameters<typeof getUiKey>[0],
-  display: Parameters<typeof getUiKey>[1]
-): ComponentType => resolveContentView(getUiKey(groupBy, display));
+  displayMode: Parameters<typeof getUiKey>[1],
+  showOverview: Parameters<typeof getUiKey>[2]
+): ComponentType =>
+  resolveContentView(getUiKey(groupBy, displayMode, showOverview));
