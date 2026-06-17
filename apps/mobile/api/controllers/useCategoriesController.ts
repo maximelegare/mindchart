@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllCategories } from "@/api/endpoints/categories";
+import {
+  fetchAllCategories,
+  fetchAllCategoriesWithThoughtsInfos,
+} from "@/api/endpoints/categories";
 import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
 
 export const useCategoriesController = () => {
@@ -10,7 +13,17 @@ export const useCategoriesController = () => {
       ...options,
     });
 
+  const useFetchAllCategoriesWithThoughtsInfosQuery = (
+    options?: ReactQueryOptions
+  ) =>
+    useQuery<Awaited<ReturnType<typeof fetchAllCategoriesWithThoughtsInfos>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchAllCategoriesWithThoughtsInfos],
+      queryFn: fetchAllCategoriesWithThoughtsInfos,
+      ...options,
+    });
+
   return {
     useFetchAllCategoriesQuery,
+    useFetchAllCategoriesWithThoughtsInfosQuery,
   };
 };

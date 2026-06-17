@@ -5,19 +5,21 @@ import { useMemo } from "react";
 import { CategorySchema } from "@repo/zod-schemas";
 import z from "zod";
 import { CategoryItem } from "../components/categoriesList";
+import { CategoryWithThoughtsInfosSchema } from "@repo/zod-schemas/src/schemas";
 
 export const CategoriesListFeature = ({
   withSpaceFiller = true,
 }: {
   withSpaceFiller?: boolean;
 }) => {
-  const { useFetchAllCategoriesQuery } = useControllers().categories;
+  const { useFetchAllCategoriesWithThoughtsInfosQuery } =
+    useControllers().categories;
 
-  const { data } = useFetchAllCategoriesQuery();
+  const { data } = useFetchAllCategoriesWithThoughtsInfosQuery();
 
   const parsedData = useMemo(() => {
     if (!data || !Array.isArray(data)) return null;
-    const result = z.array(CategorySchema).safeParse(data);
+    const result = z.array(CategoryWithThoughtsInfosSchema).safeParse(data);
     return result.success ? result.data : null;
   }, [data]);
 

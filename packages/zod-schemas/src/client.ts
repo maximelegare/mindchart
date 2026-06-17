@@ -23,12 +23,6 @@ export const GenerateEmbeddingsResponseSchema = z.object({
   }),
 });
 
-export const CategorySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  createdAt: z.string(),
-});
-
 export type GenerateEmbeddingsResponseSchemaModel = z.infer<
   typeof GenerateEmbeddingsResponseSchema
 >;
@@ -110,7 +104,7 @@ export type LocalAIResNoteSchemaModel = z.infer<typeof LocalAIResNoteSchema>;
 export type LocalAIResThought = z.infer<typeof LocalAIResThoughtSchema>;
 export type PendingEmbedding = z.infer<typeof PendingEmbeddingSchema>;
 // Re-export shared schemas for convenience
-export { NoteSchema, ThoughtSchema } from "./schemas";
+export { NoteSchema, ThoughtSchema, CategorySchema } from "./schemas";
 
 export type {
   Note,

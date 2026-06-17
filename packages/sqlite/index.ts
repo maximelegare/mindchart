@@ -54,6 +54,7 @@ import { searchThoughtsInFTSQuery } from "./src/queries/search/fts5/search";
 import { getAllTopicsWithNotesInfosQuery } from "./src/queries/topics/getAllTopicsWithNotesInfos";
 import { deleteTopicByIdQuery } from "./src/queries/topics/deleteTopicById";
 import { updateTopicByIdQuery } from "./src/queries/topics/updateTopicById";
+import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
 export {
   getMigratingStatusQuery,
   updateMigratingStatusQuery,
@@ -106,4 +107,5 @@ export {
   getAllTopicsWithNotesInfosQuery,
   deleteTopicByIdQuery,
   updateTopicByIdQuery,
+  getAllCategoriesWithThoughtsInfosQuery,
 };

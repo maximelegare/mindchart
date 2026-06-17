@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { CategorySchema } from "./client";
+
+export const CategorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+});
 
 export type Note = z.infer<typeof NoteSchema>;
 
@@ -26,6 +31,15 @@ export const TopicWithNotesInfosSchema = TopicSchema.extend({
   embedding: true,
   isNew: true,
 });
+
+export const CategoryWithThoughtsInfosSchema = CategorySchema.extend({
+  thoughtCount: z.number(),
+  topicsCount: z.number(),
+});
+
+export type CategoryWithThoughtsInfos = z.infer<
+  typeof CategoryWithThoughtsInfosSchema
+>;
 
 export type TopicWithNotesInfos = z.infer<typeof TopicWithNotesInfosSchema>;
 
