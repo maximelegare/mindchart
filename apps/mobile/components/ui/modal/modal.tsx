@@ -24,7 +24,7 @@ type ModalOptions = {
   onCancel?: () => void;
   cancelButton?: Partial<ModalButtonConfig>;
   confirmButton?: Partial<ModalButtonConfig>;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
   dismissOnBackgroundPress?: boolean;
   customContent?: (() => ReactNode | ReactElement) | null;
 };
@@ -239,7 +239,10 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
                     <Typography>{cancelButton.text}</Typography>
                   </Button>
                   {onConfirm && (
-                    <Button variant={confirmButton.variant} onPress={onConfirm}>
+                    <Button
+                      variant={confirmButton.variant}
+                      onPress={() => void onConfirm()}
+                    >
                       <Typography>{confirmButton.text}</Typography>
                     </Button>
                   )}

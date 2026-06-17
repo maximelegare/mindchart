@@ -17,12 +17,12 @@ export const NoteDetailsPage = () => {
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
 
-  const handleDeleteNote = async () => {
+  const handleDeleteNote = () => {
     openModal({
       modalName: "DELETE_NOTE_CONFIRMATION",
-      onConfirm() {
-        deleteNoteAction(local.id as string);
+      onConfirm: async () => {
         closeModal();
+        await deleteNoteAction(local.id as string);
         router.replace("/notes");
       },
     });
