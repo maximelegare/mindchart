@@ -190,6 +190,9 @@ export const OptionsBar = () => {
   const onGroupByChange = (value: OptionsBarType["groupBy"]) => {
     setGroupBy(value);
     handleGroupByChange(value);
+    if (value !== "none") {
+      setDisplayMode("notes");
+    }
   };
 
   const onDisplayModeChange = (value: DisplayMode) => {

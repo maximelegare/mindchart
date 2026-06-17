@@ -1,6 +1,7 @@
 import {
   deleteTopicByIdQuery,
   getAllTopicsQuery,
+  getAllTopicsWithAssociatedNotesAndThoughtsQuery,
   getAllTopicsWithNotesInfosQuery,
   getOPDatabase,
   insertNewTopicQuery,
@@ -36,4 +37,9 @@ export const updateTopicById = async (data: {
 }) => {
   const db = getOPDatabase();
   return await updateTopicByIdQuery(db, data);
+};
+
+export const getAllTopicsWithAssociatedNotesAndThoughts = async () => {
+  const db = getOPDatabase();
+  return await getAllTopicsWithAssociatedNotesAndThoughtsQuery(db);
 };

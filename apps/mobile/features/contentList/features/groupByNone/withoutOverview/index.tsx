@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { useMemo } from "react";
-import { NoteWithoutOverview } from "../components/noteWithoutOverview";
+import { NoteWithoutOverview } from "@/features/contentList/components/cards/noteWithoutOverview";
 import { useControllers } from "@/api/controllers/useControllers";
 import { NoteSchema } from "@repo/zod-schemas";
 import z from "zod";

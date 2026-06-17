@@ -1,6 +1,6 @@
 import { View } from "react-native";
 import { BulletList } from "@/components/ui/bulletList";
-import { ExpandableNoteWithThoughts } from "../components/expandableNoteWithThoughts";
+import { ExpandableNoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 import { useMemo, useState } from "react";

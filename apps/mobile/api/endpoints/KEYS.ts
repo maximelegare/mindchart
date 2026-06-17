@@ -21,6 +21,8 @@ export const REACT_QUERY_KEYS = {
   fetchAllCategoriesWithThoughtsInfos:
     "fetch_all_categories_with_thoughts_infos",
   fetchAllTopicsWithNotesInfos: "fetch_all_topics_with_notes_infos",
+  fetchAllTopicsWithAssociatedNotesAndThoughts:
+    "fetch_all_topics_with_associated_notes_and_thoughts",
   deleteTopicById: "delete_topic_by_id",
   updateTopicById: "update_topic_by_id",
   searchNotes: "search_notes",

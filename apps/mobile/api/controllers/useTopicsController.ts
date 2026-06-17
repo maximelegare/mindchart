@@ -8,6 +8,7 @@ import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
 import {
   deleteTopicById,
   getAllTopics,
+  getAllTopicsWithAssociatedNotesAndThoughts,
   getAllTopicsWithNotesInfos,
   insertNewTopic,
   updateTopicById,
@@ -66,6 +67,11 @@ export const useTopicsController = () => {
           queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
         });
         queryClient.invalidateQueries({
+          queryKey: [
+            REACT_QUERY_KEYS.fetchAllTopicsWithAssociatedNotesAndThoughts,
+          ],
+        });
+        queryClient.invalidateQueries({
           queryKey: [REACT_QUERY_KEYS.fetchThoughts],
         });
         queryClient.invalidateQueries({
@@ -80,6 +86,17 @@ export const useTopicsController = () => {
       },
     });
   };
+
+  const useFetchAllTopicsWithAssociatedNotesAndThoughtsQuery = (
+    options?: ReactQueryOptions
+  ) =>
+    useQuery<
+      Awaited<ReturnType<typeof getAllTopicsWithAssociatedNotesAndThoughts>>
+    >({
+      queryKey: [REACT_QUERY_KEYS.fetchAllTopicsWithAssociatedNotesAndThoughts],
+      queryFn: getAllTopicsWithAssociatedNotesAndThoughts,
+      ...options,
+    });
 
   const useUpdateTopicByIdMutation = () => {
     const queryClient = useQueryClient();
@@ -107,11 +124,13 @@ export const useTopicsController = () => {
       },
     });
   };
+
   return {
     useFetchAllTopicsQuery,
     useInsertNewTopicMutation,
     useFetchAllTopicsWithNotesInfosQuery,
     useDeleteTopicByIdMutation,
     useUpdateTopicByIdMutation,
+    useFetchAllTopicsWithAssociatedNotesAndThoughtsQuery,
   };
 };

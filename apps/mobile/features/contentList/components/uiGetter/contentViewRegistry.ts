@@ -1,10 +1,12 @@
 import { ComponentType } from "react";
 import { UiKey } from "../../types";
-import { NotesListWithOverviewFeature } from "@/features/contentList/features/groupByNone/withOverview/views";
+import { NotesListWithOverviewFeature } from "@/features/contentList/features/groupByNone/withOverview";
 import { TopicsOnlyViewFeature } from "@/features/contentList/features/groupByTopics/topicsOnly";
+import { NotesListGroupByTopicsWithoutOverviewFeature } from "@/features/contentList/features/groupByTopics/notes/views/withoutOverview";
+import { NotesListGroupByTopicsWithOverviewFeature } from "@/features/contentList/features/groupByTopics/notes/views/withOverview";
 import { getUiKey } from "./getUiKey";
 
-import { NotesListWithoutOverviewFeature } from "@/features/contentList/features/groupByNone/withoutOverview/views";
+import { NotesListWithoutOverviewFeature } from "@/features/contentList/features/groupByNone/withoutOverview";
 import { CategoriesOnlyViewFeature } from "@/features/contentList/features/groupByCategories/categoriesOnly";
 
 /**
@@ -18,8 +20,9 @@ export const CONTENT_VIEW_REGISTRY = {
   "groupBy=none&display=categories": CategoriesOnlyViewFeature,
 
   "groupBy=topics&display=topics": TopicsOnlyViewFeature,
-  "groupBy=topics&display=notes": NotesListWithoutOverviewFeature,
-  "groupBy=topics&display=notes-overview": NotesListWithOverviewFeature,
+  "groupBy=topics&display=notes": NotesListGroupByTopicsWithoutOverviewFeature,
+  "groupBy=topics&display=notes-overview":
+    NotesListGroupByTopicsWithOverviewFeature,
   "groupBy=topics&display=categories": CategoriesOnlyViewFeature,
 
   "groupBy=categories&display=categories": CategoriesOnlyViewFeature,

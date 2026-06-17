@@ -14,7 +14,11 @@ export const useOptionsBar = create<OptionsBarStore>((set) => ({
   displayMode: "notes",
   showOverview: true,
   handleSortByChange: (sortBy) => set({ sortBy }),
-  handleGroupByChange: (groupBy) => set({ groupBy }),
+  handleGroupByChange: (groupBy) =>
+    set((state) => ({
+      groupBy,
+      displayMode: groupBy !== "none" ? "notes" : state.displayMode,
+    })),
   handleDisplayModeChange: (displayMode) => set({ displayMode }),
   handleShowOverviewChange: (showOverview) => set({ showOverview }),
 }));
