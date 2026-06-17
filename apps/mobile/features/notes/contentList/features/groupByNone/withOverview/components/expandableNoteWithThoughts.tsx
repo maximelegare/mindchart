@@ -16,6 +16,7 @@ type ListItemProps = {
   category?: string | null;
   onPress?: (id: string) => void;
   expanded: boolean;
+  topic?: string | null;
 };
 
 export const ExpandableNoteWithThoughts: React.FC<ListItemProps> = memo(

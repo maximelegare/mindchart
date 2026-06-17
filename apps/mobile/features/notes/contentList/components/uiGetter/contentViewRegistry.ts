@@ -1,9 +1,10 @@
 import { ComponentType } from "react";
 import { UiKey } from "../../types";
-import { NotesListWithOverviewFeature } from "../../features/groupByNone/withOverview/views";
-import { TopicsOnlyViewFeature } from "../../features/groupByTopics/topicsOnly";
+import { NotesListWithOverviewFeature } from "@/features/notes/contentList/features/groupByNone/withOverview/views";
+import { TopicsOnlyViewFeature } from "@/features/notes/contentList/features/groupByTopics/topicsOnly";
 import { getUiKey } from "./getUiKey";
 
+import { NotesListWithoutOverviewFeature } from "@/features/notes/contentList/features/groupByNone/withoutOverview/views";
 /**
  * Maps each options-bar combination to a dedicated view.
  * Add a new entry here whenever a unique groupBy + display combo needs its own UI.
@@ -13,9 +14,22 @@ import { getUiKey } from "./getUiKey";
  *   "groupBy=none&display=notes-topics"          → NotesListWithoutOverviewFeature
  */
 export const CONTENT_VIEW_REGISTRY = {
-  "groupBy=none&display=notes": NotesListWithOverviewFeature,
-  "groupBy=none&display=topics": TopicsOnlyViewFeature,
   "groupBy=topics&display=topics": TopicsOnlyViewFeature,
+
+  //Group By None
+  "groupBy=none&display=notes": NotesListWithoutOverviewFeature,
+  "groupBy=none&display=topics": TopicsOnlyViewFeature,
+
+  // "groupBy=none&display=categories": CategoriesOnlyViewFeature,
+  "groupBy=none&display=notes-overview-topics": NotesListWithOverviewFeature,
+  "groupBy=none&display=notes-overview": NotesListWithOverviewFeature,
+  "groupBy=none&display=notes-topics": NotesListWithoutOverviewFeature,
+  "groupBy=none&display=categories-notes-topics":
+    NotesListWithoutOverviewFeature,
+  "groupBy=none&display=categories-notes-overview-topics":
+    NotesListWithOverviewFeature,
+
+  "groupBy=topics&display=notes-overview-topics": NotesListWithOverviewFeature,
 } as const satisfies Partial<Record<UiKey, ComponentType>>;
 
 export type RegisteredUiKey = keyof typeof CONTENT_VIEW_REGISTRY;

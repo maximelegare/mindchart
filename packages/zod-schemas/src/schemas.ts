@@ -57,6 +57,7 @@ export const NoteSchema = z.object({
   summary: z.string(),
   rawText: z.string().default(""),
   topicId: z.string(),
+  createdAt: z.string(),
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);

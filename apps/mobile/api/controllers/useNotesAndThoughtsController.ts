@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteNoteById,
+  fetchAllNotes,
   insertNoteAndThoughts,
   updateNoteAndThoughts,
 } from "@/api/endpoints/notes";
@@ -198,6 +199,13 @@ export const useNotesAndThoughtsController = () => {
       ...options,
     });
 
+  const useFetchAllNotesQuery = (options?: ReactQueryOptions) =>
+    useQuery<Awaited<ReturnType<typeof fetchAllNotes>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchNotes],
+      queryFn: fetchAllNotes,
+      ...options,
+    });
+
   const useFetchNoteDetails = (id: string, options?: ReactQueryOptions) =>
     useQuery<Awaited<ReturnType<typeof fetchNoteDetails>>>({
       queryKey: [REACT_QUERY_KEYS.fetchNoteDetails, id],
@@ -247,5 +255,6 @@ export const useNotesAndThoughtsController = () => {
     useUpdateNoteAndThoughtsMutation,
     useDeleteThoughtsByIdsMutation,
     useDeleteNoteByIdMutation,
+    useFetchAllNotesQuery,
   };
 };
