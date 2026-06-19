@@ -5,11 +5,17 @@ import { useMemo } from "react";
 import z from "zod";
 import { CategoryItem } from "../components/categoriesList";
 import { CategoryWithThoughtsInfosSchema } from "@repo/zod-schemas/src/schemas";
+import {
+  SortBy,
+  sortContentList,
+} from "@/features/contentList/utils/sortContentList";
 
 export const CategoriesListFeature = ({
   withSpaceFiller = true,
+  sortBy,
 }: {
   withSpaceFiller?: boolean;
+  sortBy?: SortBy;
 }) => {
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
@@ -19,18 +25,25 @@ export const CategoriesListFeature = ({
   const parsedData = useMemo(() => {
     if (!data || !Array.isArray(data)) return null;
     const result = z.array(CategoryWithThoughtsInfosSchema).safeParse(data);
-    return result.success ? result.data : null;
-  }, [data]);
+    if (!result.success) return null;
+
+    const categoriesWithContent = result.data.filter(
+      (category) => category.thoughtCount > 0
+    );
+
+    if (!sortBy) return categoriesWithContent;
+
+    return sortContentList(categoriesWithContent, sortBy, {
+      getName: (category) => category.name,
+      getDate: (category) => category.createdAt,
+    });
+  }, [data, sortBy]);
 
   if (!parsedData) return null;
 
-  const categoriesWithContent = parsedData.filter(
-    (category) => category.thoughtCount > 0
-  );
-
   return (
     <List className="gap-2 border-[0px]">
-      {categoriesWithContent.map((category) => (
+      {parsedData.map((category) => (
         <CategoryItem key={category.id} {...category} />
       ))}
       {withSpaceFiller ? (

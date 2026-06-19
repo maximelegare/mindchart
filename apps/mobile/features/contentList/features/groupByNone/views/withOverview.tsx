@@ -5,13 +5,25 @@ import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 import { useMemo, useState } from "react";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
+import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
+import { sortContentList } from "@/features/contentList/utils/sortContentList";
 import { useControllers } from "@/api/controllers/useControllers";
 
 export const NotesListWithOverviewFeature = () => {
+  const sortBy = useContentListSort();
   const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
   const { data } = useFetchNotesAndThoughtsQuery();
 
-  const parsedData = useMemo(() => parseNoteAndThoughts(data), [data]);
+  const parsedData = useMemo(() => {
+    const notes = parseNoteAndThoughts(data);
+    if (!notes) return null;
+
+    return sortContentList(notes, sortBy, {
+      getName: (note) => note.title,
+      getDate: (note) => note.createdAt,
+    });
+  }, [data, sortBy]);
+
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
 
   const handleExpandableCardPress = (id: string) => {
