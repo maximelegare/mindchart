@@ -4,10 +4,10 @@ import { REACT_QUERY_KEYS } from "../endpoints/KEYS";
 const NOTES_LIST_QUERY_KEYS = [
   REACT_QUERY_KEYS.fetchNotesAndThoughts,
   REACT_QUERY_KEYS.fetchNotes,
-  REACT_QUERY_KEYS.fetchAllTopicsWithAssociatedNotesAndThoughts,
   REACT_QUERY_KEYS.fetchAllTopicsWithNotesInfos,
   REACT_QUERY_KEYS.fetchAllTopics,
   REACT_QUERY_KEYS.fetchNoteDetails,
+  REACT_QUERY_KEYS.fetchAllThoughtsGroupByCategory,
 ] as const;
 
 const NOTES_AND_THOUGHTS_QUERY_KEYS = [

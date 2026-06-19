@@ -64,6 +64,24 @@ export type TopicsJoinNotesThoughtsParsedSchemaModel = z.infer<
   typeof TopicsJoinNotesThoughtsParsedSchema
 >;
 
+export const CategoriesJoinThoughtsPageSchema = z.object({
+  category_id: z.string(),
+  category_name: z.string(),
+  category_created_at: z.string(),
+  thoughts_json: z.string(),
+});
+
+export const CategoriesJoinThoughtsParsedSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string().optional(),
+  thoughts: z.array(ThoughtSchema),
+});
+
+export type CategoriesJoinThoughtsParsedSchemaModel = z.infer<
+  typeof CategoriesJoinThoughtsParsedSchema
+>;
+
 export const PendingEmbeddingSchema = z.object({
   id: z.string(),
   semanticLabel: z.string(),

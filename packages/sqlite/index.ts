@@ -4,6 +4,7 @@ import { updatePendingEmbeddingsQuery } from "./src/queries/embeddings/updatePen
 import { getAllNotesQuery } from "./src/queries/notes/getAllNotes";
 import { insertNoteQuery } from "./src/queries/notes/insertNote";
 import { getAllThoughtsQuery } from "./src/queries/thoughts/getAllThoughts";
+import { getAllThoughtsGroupByCategoryQuery } from "./src/queries/thoughts/getAllThoughtsGroupByCategory";
 import { insertThoughtsQuery } from "./src/queries/thoughts/insertThoughts";
 import { getNotesWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNotesWithAssociatedThoughts";
 import { getAllThoughtsWithEmbeddingsQuery } from "./src/queries/thoughts/getAllThoughtsWithEmbeddings";
@@ -66,6 +67,7 @@ export {
   getAllNotesQuery,
   insertNoteQuery,
   getAllThoughtsQuery,
+  getAllThoughtsGroupByCategoryQuery,
   insertThoughtsQuery,
   getNotesWithAssociatedThoughtsQuery,
   emptyDB,

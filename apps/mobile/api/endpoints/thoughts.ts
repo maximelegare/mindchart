@@ -1,6 +1,7 @@
 import {
   deleteThoughByIdQuery,
   deleteThoughtsByIdsQuery,
+  getAllThoughtsGroupByCategoryQuery,
   getOPDatabase,
 } from "@repo/sqlite";
 import { getAllThoughtsWithEmbeddingsQuery } from "@repo/sqlite";
@@ -18,4 +19,9 @@ export const deleteThoughtsByIds = async ({ ids }: { ids: string[] }) => {
 export const deleteThoughById = async (id: string) => {
   const db = getOPDatabase();
   return await deleteThoughByIdQuery(db, id);
+};
+
+export const getAllThoughtsGroupByCategory = async () => {
+  const db = getOPDatabase();
+  return await getAllThoughtsGroupByCategoryQuery(db);
 };

@@ -4,6 +4,7 @@ import {
   fetchAllCategoriesWithThoughtsInfos,
 } from "@/api/endpoints/categories";
 import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
+import { getAllThoughtsGroupByCategory } from "../endpoints/thoughts";
 
 export const useCategoriesController = () => {
   const useFetchAllCategoriesQuery = (options?: ReactQueryOptions) =>
@@ -24,8 +25,20 @@ export const useCategoriesController = () => {
       ...options,
     });
 
+  const useFetchAllThoughtsGroupByCategoryQuery = (
+    options?: ReactQueryOptions
+  ) =>
+    useQuery<Awaited<ReturnType<typeof getAllThoughtsGroupByCategory>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsGroupByCategory],
+      queryFn: getAllThoughtsGroupByCategory,
+      refetchOnMount: "always",
+      structuralSharing: false,
+      ...options,
+    });
+
   return {
     useFetchAllCategoriesQuery,
     useFetchAllCategoriesWithThoughtsInfosQuery,
+    useFetchAllThoughtsGroupByCategoryQuery,
   };
 };

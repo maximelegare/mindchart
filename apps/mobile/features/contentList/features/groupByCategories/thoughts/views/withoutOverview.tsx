@@ -1,0 +1,26 @@
+import { View } from "react-native";
+import { CategorySection } from "../components/categorySection";
+import { ThoughtWithoutOverview } from "../components/thoughtWithoutOverview";
+import { useGroupByCategoriesThoughtsData } from "../hooks/useGroupByCategoriesThoughtsData";
+
+export const ThoughtsListGroupByCategoriesWithoutOverviewFeature = () => {
+  const parsedData = useGroupByCategoriesThoughtsData();
+
+  if (!parsedData) return null;
+
+  return (
+    <View className="gap-4">
+      {parsedData.map((category) => (
+        <CategorySection
+          key={category.id}
+          id={category.id}
+          name={category.name}
+        >
+          {category.thoughts.map((thought) => (
+            <ThoughtWithoutOverview key={thought.id} {...thought} />
+          ))}
+        </CategorySection>
+      ))}
+    </View>
+  );
+};
