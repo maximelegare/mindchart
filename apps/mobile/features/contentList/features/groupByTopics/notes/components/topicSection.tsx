@@ -1,4 +1,4 @@
-import { Typography } from "@/components/ui/typography";
+import { GroupingLabel } from "@/features/contentList/components/labels/groupingLabel";
 import { ReactNode } from "react";
 import { View } from "react-native";
 
@@ -9,13 +9,7 @@ type TopicSectionProps = {
 
 export const TopicSection = ({ name, children }: TopicSectionProps) => (
   <View className="gap-2">
-    <Typography
-      variant="muted"
-      className="rounded-full bg-border px-2"
-      style={{ alignSelf: "flex-start", flexGrow: 0 }}
-    >
-      {name.toUpperCase()}
-    </Typography>
+    <GroupingLabel label={name} />
     {children}
   </View>
 );

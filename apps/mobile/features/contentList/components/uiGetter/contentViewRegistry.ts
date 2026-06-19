@@ -1,12 +1,12 @@
 import { ComponentType } from "react";
 import { UiKey } from "../../types";
-import { NotesListWithOverviewFeature } from "@/features/contentList/features/groupByNone/withOverview";
+import { NotesListWithOverviewFeature } from "@/features/contentList/features/groupByNone/views/withOverview";
 import { TopicsOnlyViewFeature } from "@/features/contentList/features/groupByTopics/topicsOnly";
 import { NotesListGroupByTopicsWithoutOverviewFeature } from "@/features/contentList/features/groupByTopics/notes/views/withoutOverview";
 import { NotesListGroupByTopicsWithOverviewFeature } from "@/features/contentList/features/groupByTopics/notes/views/withOverview";
 import { getUiKey } from "./getUiKey";
 
-import { NotesListWithoutOverviewFeature } from "@/features/contentList/features/groupByNone/withoutOverview";
+import { NotesListWithoutOverviewFeature } from "@/features/contentList/features/groupByNone/views/withoutOverview";
 import { CategoriesOnlyViewFeature } from "@/features/contentList/features/groupByCategories/categoriesOnly";
 import { ThoughtsListGroupByCategoriesWithoutOverviewFeature } from "@/features/contentList/features/groupByCategories/thoughts/views/withoutOverview";
 import { ThoughtsListGroupByCategoriesWithOverviewFeature } from "@/features/contentList/features/groupByCategories/thoughts/views/withOverview";
