@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { ThoughtTable, NoteTable } from "../../schema.root";
+import { ThoughtTable, NoteTable, TopicTable } from "../../schema.root";
 import { eq } from "drizzle-orm";
 
 export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
@@ -12,7 +12,8 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
         note_summary: NoteTable.summary,
         note_raw_text: NoteTable.rawText,
         note_created_at: NoteTable.createdAt,
-        // We aggregate the thoughts into a JSON array string
+        topic_id: NoteTable.topicId,
+        topic_name: TopicTable.name,
         thoughts_json: sql<string>`
           json_group_array(
             json_object(
@@ -29,9 +30,8 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
         `.as("thoughts_json"),
       })
       .from(NoteTable)
-      // Use a Left Join so we get notes even if they have no thoughts
       .leftJoin(ThoughtTable, eq(NoteTable.id, ThoughtTable.noteId))
-      // Group by the note ID to collapse the join into one row per note
+      .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id))
       .groupBy(NoteTable.id);
   } catch (error) {
     console.error("Database fetch error:", error);

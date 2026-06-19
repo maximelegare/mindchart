@@ -55,7 +55,6 @@ import { getAllTopicsWithNotesInfosQuery } from "./src/queries/topics/getAllTopi
 import { deleteTopicByIdQuery } from "./src/queries/topics/deleteTopicById";
 import { updateTopicByIdQuery } from "./src/queries/topics/updateTopicById";
 import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
-import { getAllTopicsWithAssociatedNotesAndThoughtsQuery } from "./src/queries/topics/getAllTopicsWithAssociatedNotesAndThoughtsQuery";
 export {
   getMigratingStatusQuery,
   updateMigratingStatusQuery,
@@ -109,5 +108,4 @@ export {
   deleteTopicByIdQuery,
   updateTopicByIdQuery,
   getAllCategoriesWithThoughtsInfosQuery,
-  getAllTopicsWithAssociatedNotesAndThoughtsQuery,
 };

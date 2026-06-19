@@ -70,7 +70,8 @@ export const NoteSchema = z.object({
   title: z.string(),
   summary: z.string(),
   rawText: z.string().default(""),
-  topicId: z.string(),
+  topicId: z.string().nullable().optional(),
+  topicName: z.string().nullable().optional(),
   createdAt: z.string().optional(),
 });
 

@@ -1,13 +1,13 @@
 import { useControllers } from "@/api/controllers/useControllers";
+import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 import { useFocusEffect } from "expo-router";
-import { useCallback } from "react";
-import { parseTopicsWithNotesAndThoughts } from "../utils/parseTopicsWithNotesAndThoughts";
+import { useCallback, useMemo } from "react";
+import { groupNotesByTopic } from "../utils/groupNotesByTopic";
+import { normalizeNotesFromQuery } from "../utils/normalizeNotesFromQuery";
 
-export const useGroupByTopicsNotesData = () => {
-  const { useFetchAllTopicsWithAssociatedNotesAndThoughtsQuery } =
-    useControllers().topics;
-  const { data, refetch } =
-    useFetchAllTopicsWithAssociatedNotesAndThoughtsQuery();
+export const useGroupByTopicsNotesWithOverviewData = () => {
+  const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
+  const { data, refetch } = useFetchNotesAndThoughtsQuery();
 
   useFocusEffect(
     useCallback(() => {
@@ -15,5 +15,24 @@ export const useGroupByTopicsNotesData = () => {
     }, [refetch])
   );
 
-  return parseTopicsWithNotesAndThoughts(data);
+  return useMemo(() => {
+    const notes = parseNoteAndThoughts(data);
+    return groupNotesByTopic(notes ?? []);
+  }, [data]);
+};
+
+export const useGroupByTopicsNotesWithoutOverviewData = () => {
+  const { useFetchAllNotesQuery } = useControllers().notesAndThoughts;
+  const { data, refetch } = useFetchAllNotesQuery();
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
+
+  return useMemo(() => {
+    const notes = normalizeNotesFromQuery(data);
+    return groupNotesByTopic(notes ?? []);
+  }, [data]);
 };

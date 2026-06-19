@@ -1,10 +1,10 @@
 import { View } from "react-native";
 import { NoteWithoutOverview } from "@/features/contentList/components/cards/noteWithoutOverview";
 import { TopicSection } from "../components/topicSection";
-import { useGroupByTopicsNotesData } from "../hooks/useGroupByTopicsNotesData";
+import { useGroupByTopicsNotesWithoutOverviewData } from "../hooks/useGroupByTopicsNotesData";
 
 export const NotesListGroupByTopicsWithoutOverviewFeature = () => {
-  const parsedData = useGroupByTopicsNotesData();
+  const parsedData = useGroupByTopicsNotesWithoutOverviewData();
 
   if (!parsedData) return null;
 
@@ -19,7 +19,8 @@ export const NotesListGroupByTopicsWithoutOverviewFeature = () => {
               title={note.title}
               summary={note.summary}
               rawText={note.rawText}
-              topicId={topic.id}
+              topicId={note.topicId ?? topic.id}
+              topicName={note.topicName ?? topic.name}
               createdAt={note.createdAt ?? ""}
             />
           ))}

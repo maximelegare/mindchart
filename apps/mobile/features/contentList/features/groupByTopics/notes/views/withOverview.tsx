@@ -5,10 +5,10 @@ import { Typography } from "@/components/ui/typography";
 import { useState } from "react";
 import { ExpandableNoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { TopicSection } from "../components/topicSection";
-import { useGroupByTopicsNotesData } from "../hooks/useGroupByTopicsNotesData";
+import { useGroupByTopicsNotesWithOverviewData } from "../hooks/useGroupByTopicsNotesData";
 
 export const NotesListGroupByTopicsWithOverviewFeature = () => {
-  const parsedData = useGroupByTopicsNotesData();
+  const parsedData = useGroupByTopicsNotesWithOverviewData();
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
 
   const handleExpandableCardPress = (id: string) => {
@@ -29,6 +29,7 @@ export const NotesListGroupByTopicsWithOverviewFeature = () => {
               title={note.title}
               category="idea"
               date={note.createdAt ?? ""}
+              topic={note.topicName ?? topic.name}
               expanded={expandedCardId === note.id}
               onPress={handleExpandableCardPress}
             >

@@ -9,7 +9,6 @@ import { invalidateNotesListQueries } from "@/api/utils/invalidateNotesAndThough
 import {
   deleteTopicById,
   getAllTopics,
-  getAllTopicsWithAssociatedNotesAndThoughts,
   getAllTopicsWithNotesInfos,
   insertNewTopic,
   updateTopicById,
@@ -82,19 +81,6 @@ export const useTopicsController = () => {
     });
   };
 
-  const useFetchAllTopicsWithAssociatedNotesAndThoughtsQuery = (
-    options?: ReactQueryOptions
-  ) =>
-    useQuery<
-      Awaited<ReturnType<typeof getAllTopicsWithAssociatedNotesAndThoughts>>
-    >({
-      queryKey: [REACT_QUERY_KEYS.fetchAllTopicsWithAssociatedNotesAndThoughts],
-      queryFn: getAllTopicsWithAssociatedNotesAndThoughts,
-      refetchOnMount: "always",
-      structuralSharing: false,
-      ...options,
-    });
-
   const useUpdateTopicByIdMutation = () => {
     const queryClient = useQueryClient();
     const { useUpdateSyncGraphDataMutation } = useGraphController();
@@ -128,6 +114,5 @@ export const useTopicsController = () => {
     useFetchAllTopicsWithNotesInfosQuery,
     useDeleteTopicByIdMutation,
     useUpdateTopicByIdMutation,
-    useFetchAllTopicsWithAssociatedNotesAndThoughtsQuery,
   };
 };

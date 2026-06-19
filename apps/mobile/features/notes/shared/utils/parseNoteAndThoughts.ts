@@ -14,6 +14,8 @@ export const parseNoteAndThoughts = (
     summary: row.note_summary ?? "",
     rawText: row.note_raw_text ?? "",
     createdAt: row.note_created_at,
+    topicId: row.topic_id ?? undefined,
+    topicName: row.topic_name ?? undefined,
     thoughts: (typeof row.thoughts_json === "string"
       ? JSON.parse(row.thoughts_json)
       : Array.isArray(row.thoughts_json)

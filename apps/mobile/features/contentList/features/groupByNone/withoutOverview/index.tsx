@@ -11,7 +11,12 @@ export const NotesListWithoutOverviewFeature = () => {
 
   const parsedData = useMemo(() => {
     if (!data || !Array.isArray(data)) return null;
-    const result = z.array(NoteSchema).safeParse(data);
+    const normalized = data.map((row) => ({
+      ...row,
+      topicId: row.topic_id ?? undefined,
+      topicName: row.topic_name ?? undefined,
+    }));
+    const result = z.array(NoteSchema).safeParse(normalized);
     return result.success ? result.data : null;
   }, [data]);
 
