@@ -1,5 +1,5 @@
 import { memo, ReactElement, ReactNode } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { Separator } from "@/components/ui/separator";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { Typography } from "@/components/ui/typography";

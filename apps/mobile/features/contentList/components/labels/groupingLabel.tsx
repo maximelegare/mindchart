@@ -1,7 +1,5 @@
 import { Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
-import { useColorScheme } from "@/lib/useColorScheme";
-import { hsl } from "@/utils/hsl";
 import { Link } from "expo-router";
 import { LinkProps } from "expo-router";
 import { ReactNode } from "react";

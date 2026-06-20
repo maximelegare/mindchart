@@ -24,7 +24,10 @@ export const TopicItem: React.FC<TopicWithNotesInfos> = memo((topic) => {
           <TopicBottomSheet topic={topic} onEditPress={openEditTopicModal} />
         }
       />
-      <View className="flex-row items-center justify-between mt-2">
+      <View
+        className="flex-row items-center justify-between"
+        style={{ marginTop: 12 }}
+      >
         <Typography variant="muted">Associated notes: {noteCount}</Typography>
       </View>
     </View>

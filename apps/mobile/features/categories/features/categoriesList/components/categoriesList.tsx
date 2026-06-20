@@ -5,17 +5,14 @@ import { DisplayDate } from "@/components/ui/date";
 import { CategoryWithThoughtsInfos } from "@repo/zod-schemas/src/schemas";
 import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { CategoryKey } from "@repo/sqlite";
-import { Button } from "@/components/ui";
-import { useRouter } from "expo-router";
-import { Icon } from "@/components/ui/icons/icon";
 import { Separator } from "@/components/ui/separator";
 import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
 import { CategoryBottomSheet } from "../../categoryBottomSheet";
+import { GraphButton } from "@/components/ui/buttons/graphButton";
 
 export const CategoryItem: React.FC<CategoryWithThoughtsInfos> = memo(
   (category) => {
     const { name, id, thoughtCount, createdAt } = category;
-    const { push } = useRouter();
 
     return (
       <View className="bg-card border-border border w-full rounded-lg p-2 pb-3">
@@ -33,34 +30,15 @@ export const CategoryItem: React.FC<CategoryWithThoughtsInfos> = memo(
           <View className="flex-1">
             <CardTitleRow
               title={name}
-              trailingActions={
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className="px-4"
-                  onPress={() =>
-                    push({
-                      pathname: "/graph/[id]",
-                      params: {
-                        id: `category-${id}`,
-                        _t: Date.now(),
-                      },
-                    })
-                  }
-                >
-                  <Icon
-                    size={20}
-                    color="text"
-                    name="graph"
-                    style={{ opacity: 0.8 }}
-                  />
-                </Button>
-              }
+              trailingActions={<GraphButton id={id} elementType="category" />}
               menu={<CategoryBottomSheet category={category} />}
             />
           </View>
         </View>
-        <View className="flex-row items-center justify-between mt-2">
+        <View
+          className="flex-row items-center justify-between"
+          style={{ marginTop: 12 }}
+        >
           <Typography variant="muted">
             Associated thoughts: {thoughtCount}
           </Typography>
