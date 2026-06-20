@@ -29,7 +29,7 @@ export const NotesListWithoutOverviewFeature = () => {
   }, [data, sortBy]);
 
   return (
-    <View className="gap-2">
+    <View className="gap-2" style={{ paddingTop: 20 }}>
       {parsedData?.map((n) => (
         <NoteWithoutOverview key={n.id} {...n} />
       ))}

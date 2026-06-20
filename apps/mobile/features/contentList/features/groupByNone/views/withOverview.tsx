@@ -32,7 +32,7 @@ export const NotesListWithOverviewFeature = () => {
   };
 
   return (
-    <View className="gap-2">
+    <View className="gap-2" style={{ paddingTop: 20 }}>
       {parsedData?.map((n) => (
         <ExpandableNoteWithThoughts
           key={n.id}

@@ -42,7 +42,7 @@ export const CategoriesListFeature = ({
   if (!parsedData) return null;
 
   return (
-    <List className="gap-2 border-[0px]">
+    <List className="gap-2 border-[0px]" style={{ paddingTop: 20 }}>
       {parsedData.map((category) => (
         <CategoryItem key={category.id} {...category} />
       ))}

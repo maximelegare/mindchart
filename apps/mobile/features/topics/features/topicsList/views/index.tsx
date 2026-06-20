@@ -30,7 +30,7 @@ export const TopicsListFeature = ({
   }, [data, sortBy]);
 
   return (
-    <List className="gap-2 border-[0px]">
+    <List className="gap-2 border-[0px]" style={{ paddingTop: 20 }}>
       {sortedData?.map((topic) => (
         <TopicItem key={topic.id} {...topic} />
       ))}

@@ -19,7 +19,7 @@ export const NotesListGroupByTopicsWithOverviewFeature = () => {
   if (!parsedData) return null;
 
   return (
-    <View style={{ gap: 24 }}>
+    <View style={{ gap: 30, paddingTop: 20 }}>
       {parsedData.map((topic) => (
         <TopicSection key={topic.id} name={topic.name}>
           {topic.notes.map((note) => (

@@ -18,7 +18,7 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
   if (!parsedData) return null;
 
   return (
-    <View style={{ gap: 24 }}>
+    <View style={{ gap: 30, paddingTop: 20 }}>
       {parsedData.map((category) => (
         <CategorySection
           key={category.id}
