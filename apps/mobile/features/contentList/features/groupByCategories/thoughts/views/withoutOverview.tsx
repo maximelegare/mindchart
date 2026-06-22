@@ -15,6 +15,7 @@ export const ThoughtsListGroupByCategoriesWithoutOverviewFeature = () => {
           key={category.id}
           id={category.id}
           name={category.name}
+          numberOfItems={category.thoughts.length}
         >
           {category.thoughts.map((thought) => (
             <ThoughtWithoutOverview key={thought.id} {...thought} />

@@ -24,6 +24,7 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
           key={category.id}
           id={category.id}
           name={category.name}
+          numberOfItems={category.thoughts.length}
         >
           {category.thoughts.map((thought) => (
             <ExpandableThoughtWithOverview
