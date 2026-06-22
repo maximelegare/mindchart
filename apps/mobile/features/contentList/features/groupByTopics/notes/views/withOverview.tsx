@@ -23,6 +23,7 @@ export const NotesListGroupByTopicsWithOverviewFeature = () => {
       {parsedData.map((topic) => (
         <TopicSection
           key={topic.id}
+          id={topic.id}
           name={topic.name}
           numberOfItems={topic.notes.length}
         >

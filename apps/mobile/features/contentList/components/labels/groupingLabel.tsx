@@ -1,9 +1,9 @@
 import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
-import { Link } from "expo-router";
+import { Href, router } from "expo-router";
 import { LinkProps } from "expo-router";
 import { ReactNode } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
 type GroupingLabelProps = {
   colorBadge?: string;
@@ -23,10 +23,18 @@ export const GroupingLabel = ({
   numberOfItems,
   onPress,
 }: GroupingLabelProps) => {
+  const handlePress = () => {
+    if (href) {
+      router.push(href as Href);
+      return;
+    }
+    onPress?.();
+  };
   return (
     <View className="flex-row items-center gap-2">
       <View className="flex-1 min-w-0 flex-row items-center">
-        <View
+        <Pressable
+          onPress={handlePress}
           className="flex-row items-center gap-2 rounded-full border border-popover bg-popover px-2 py-1"
           style={{ alignSelf: "flex-start", flexGrow: 0 }}
         >
@@ -46,12 +54,7 @@ export const GroupingLabel = ({
               ({numberOfItems})
             </Typography>
           ) : null}
-          {href ? (
-            <Link href={href} asChild>
-              <Icon name="chevron-right" color="text" />
-            </Link>
-          ) : null}
-        </View>
+        </Pressable>
         <View
           className="bg-popover"
           style={{ flexGrow: 1, height: 1, alignSelf: "center" }}
