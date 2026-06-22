@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { CategorySchema } from "./client";
+
+export const CategorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string(),
+});
 
 export type Note = z.infer<typeof NoteSchema>;
 
@@ -17,7 +22,7 @@ export const TopicSchema = z.object({
   name: z.string(),
   embedding: z.custom<Float32Array>(),
   isNew: z.boolean().optional(),
-  createdAt: z.string(),
+  createdAt: z.string().optional(),
 });
 
 export const TopicWithNotesInfosSchema = TopicSchema.extend({
@@ -26,6 +31,15 @@ export const TopicWithNotesInfosSchema = TopicSchema.extend({
   embedding: true,
   isNew: true,
 });
+
+export const CategoryWithThoughtsInfosSchema = CategorySchema.extend({
+  thoughtCount: z.number(),
+  topicsCount: z.number(),
+});
+
+export type CategoryWithThoughtsInfos = z.infer<
+  typeof CategoryWithThoughtsInfosSchema
+>;
 
 export type TopicWithNotesInfos = z.infer<typeof TopicWithNotesInfosSchema>;
 
@@ -56,7 +70,9 @@ export const NoteSchema = z.object({
   title: z.string(),
   summary: z.string(),
   rawText: z.string().default(""),
-  topicId: z.string(),
+  topicId: z.string().nullable().optional(),
+  topicName: z.string().nullable().optional(),
+  createdAt: z.string().optional(),
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);

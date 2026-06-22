@@ -27,7 +27,7 @@ export const TopicBottomSheet = ({
     <>
       <BottomSheet>
         <BottomSheetOpenTrigger asChild className="w-fit">
-          <TouchableOpacity className="rounded-full px-2 pw-1 flex-row items-center gap-2 w-fit">
+          <TouchableOpacity className="rounded-full flex-row items-center gap-2 w-fit">
             <Icon name="ellipsis-vertical" color="text" size={20} />
           </TouchableOpacity>
         </BottomSheetOpenTrigger>

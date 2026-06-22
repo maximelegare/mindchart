@@ -4,6 +4,7 @@ import { updatePendingEmbeddingsQuery } from "./src/queries/embeddings/updatePen
 import { getAllNotesQuery } from "./src/queries/notes/getAllNotes";
 import { insertNoteQuery } from "./src/queries/notes/insertNote";
 import { getAllThoughtsQuery } from "./src/queries/thoughts/getAllThoughts";
+import { getAllThoughtsGroupByCategoryQuery } from "./src/queries/thoughts/getAllThoughtsGroupByCategory";
 import { insertThoughtsQuery } from "./src/queries/thoughts/insertThoughts";
 import { getNotesWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNotesWithAssociatedThoughts";
 import { getAllThoughtsWithEmbeddingsQuery } from "./src/queries/thoughts/getAllThoughtsWithEmbeddings";
@@ -54,6 +55,7 @@ import { searchThoughtsInFTSQuery } from "./src/queries/search/fts5/search";
 import { getAllTopicsWithNotesInfosQuery } from "./src/queries/topics/getAllTopicsWithNotesInfos";
 import { deleteTopicByIdQuery } from "./src/queries/topics/deleteTopicById";
 import { updateTopicByIdQuery } from "./src/queries/topics/updateTopicById";
+import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
 export {
   getMigratingStatusQuery,
   updateMigratingStatusQuery,
@@ -65,6 +67,7 @@ export {
   getAllNotesQuery,
   insertNoteQuery,
   getAllThoughtsQuery,
+  getAllThoughtsGroupByCategoryQuery,
   insertThoughtsQuery,
   getNotesWithAssociatedThoughtsQuery,
   emptyDB,
@@ -106,4 +109,5 @@ export {
   getAllTopicsWithNotesInfosQuery,
   deleteTopicByIdQuery,
   updateTopicByIdQuery,
+  getAllCategoriesWithThoughtsInfosQuery,
 };

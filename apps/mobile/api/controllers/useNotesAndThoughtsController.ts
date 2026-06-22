@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deleteNoteById,
+  fetchAllNotes,
   insertNoteAndThoughts,
   updateNoteAndThoughts,
 } from "@/api/endpoints/notes";
@@ -17,6 +18,7 @@ import {
   deleteThoughtsByIds,
   fetchAllThoughtsWithEmbeddings,
 } from "@/api/endpoints/thoughts";
+import { invalidateNotesAndThoughtsQueries } from "@/api/utils/invalidateNotesAndThoughtsQueries";
 import { useGraphController } from "./useGraphController";
 
 import { useGenerateNoteService } from "@/features/notes/noteCreation/features/generateNote/useGenerateNoteService";
@@ -38,24 +40,11 @@ export const useNotesAndThoughtsController = () => {
       mutationKey: [REACT_QUERY_KEYS.seedDatabase],
       mutationFn: (numberOfNotes: number) => seedDatabaseService(numberOfNotes),
       onSuccess: async () => {
-        // Runs embeddings service before fetching the rest of the data
-        // await runEmbeddingsService();
-        await mutateAsyncGraphData(true);
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.seedDatabase],
-        });
+        try {
+          await mutateAsyncGraphData(true);
+        } finally {
+          await invalidateNotesAndThoughtsQueries(queryClient);
+        }
       },
     });
   };
@@ -82,29 +71,17 @@ export const useNotesAndThoughtsController = () => {
       useUpdateSyncGraphDataMutation();
 
     return useMutation({
-      mutationKey: [REACT_QUERY_KEYS.insertNoteAndThoughts], // unique mutation key
+      mutationKey: [REACT_QUERY_KEYS.insertNoteAndThoughts],
       mutationFn: insertNoteAndThoughts,
-      onSuccess: async () => {
-        // Runs embeddings service before fetching the rest of the data
-        // await runEmbeddingsService();
-        await mutateAsyncGraphData(true);
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.seedDatabase],
-        });
-      },
       ...options,
+      onSuccess: async (...args) => {
+        try {
+          await mutateAsyncGraphData(true);
+        } finally {
+          await invalidateNotesAndThoughtsQueries(queryClient);
+        }
+        await options?.onSuccess?.(...args);
+      },
     });
   };
 
@@ -119,28 +96,15 @@ export const useNotesAndThoughtsController = () => {
     return useMutation({
       mutationKey: [REACT_QUERY_KEYS.deleteThoughtsByIds],
       mutationFn: deleteThoughtsByIds,
-      onSuccess: async () => {
-        await mutateAsyncGraphData(true);
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.seedDatabase],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails],
-        });
-      },
       ...options,
+      onSuccess: async (...args) => {
+        try {
+          await mutateAsyncGraphData(true);
+        } finally {
+          await invalidateNotesAndThoughtsQueries(queryClient);
+        }
+        await options?.onSuccess?.(...args);
+      },
     });
   };
 
@@ -153,32 +117,17 @@ export const useNotesAndThoughtsController = () => {
       useUpdateSyncGraphDataMutation();
 
     return useMutation({
-      mutationKey: [REACT_QUERY_KEYS.updateNoteAndThoughts], // unique mutation key
+      mutationKey: [REACT_QUERY_KEYS.updateNoteAndThoughts],
       mutationFn: updateNoteAndThoughts,
-      onSuccess: async () => {
-        // Runs embeddings service before fetching the rest of the data
-        // await runEmbeddingsService();
-        await mutateAsyncGraphData(true);
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.seedDatabase],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails],
-        });
-      },
       ...options,
+      onSuccess: async (...args) => {
+        try {
+          await mutateAsyncGraphData(true);
+        } finally {
+          await invalidateNotesAndThoughtsQueries(queryClient);
+        }
+        await options?.onSuccess?.(...args);
+      },
     });
   };
 
@@ -195,6 +144,17 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchNotesAndThoughts>>>({
       queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
       queryFn: fetchNotesAndThoughts,
+      refetchOnMount: "always",
+      structuralSharing: false,
+      ...options,
+    });
+
+  const useFetchAllNotesQuery = (options?: ReactQueryOptions) =>
+    useQuery<Awaited<ReturnType<typeof fetchAllNotes>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchNotes],
+      queryFn: fetchAllNotes,
+      refetchOnMount: "always",
+      structuralSharing: false,
       ...options,
     });
 
@@ -215,25 +175,15 @@ export const useNotesAndThoughtsController = () => {
     return useMutation({
       mutationKey: [REACT_QUERY_KEYS.deleteNoteById],
       mutationFn: deleteNoteById,
-      onSuccess: async () => {
-        await mutateAsyncGraphData(true);
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchGraphData],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.fetchThoughts],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [REACT_QUERY_KEYS.seedDatabase],
-        });
-      },
       ...options,
+      onSuccess: async (...args) => {
+        try {
+          await mutateAsyncGraphData(true);
+        } finally {
+          await invalidateNotesAndThoughtsQueries(queryClient);
+        }
+        await options?.onSuccess?.(...args);
+      },
     });
   };
 
@@ -247,5 +197,6 @@ export const useNotesAndThoughtsController = () => {
     useUpdateNoteAndThoughtsMutation,
     useDeleteThoughtsByIdsMutation,
     useDeleteNoteByIdMutation,
+    useFetchAllNotesQuery,
   };
 };

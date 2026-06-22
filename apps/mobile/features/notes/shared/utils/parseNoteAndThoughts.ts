@@ -10,15 +10,23 @@ export const parseNoteAndThoughts = (
 
   const transformed = data.map((row) => ({
     id: row.note_id,
-    title: row.note_title,
-    summary: row.note_summary,
+    title: row.note_title ?? "",
+    summary: row.note_summary ?? "",
     rawText: row.note_raw_text ?? "",
-    created_at: row.note_created_at,
-    // SQLite returns a stringified array from json_group_array
-    thoughts:
-      typeof row.thoughts_json === "string"
-        ? JSON.parse(row.thoughts_json)
-        : [],
+    createdAt: row.note_created_at,
+    topicId: row.topic_id ?? undefined,
+    topicName: row.topic_name ?? undefined,
+    thoughts: (typeof row.thoughts_json === "string"
+      ? JSON.parse(row.thoughts_json)
+      : Array.isArray(row.thoughts_json)
+        ? row.thoughts_json
+        : []
+    ).map((thought: Record<string, unknown>) => ({
+      ...thought,
+      title: thought.title ?? "",
+      summary: thought.summary ?? "",
+      semanticLabel: thought.semanticLabel ?? "",
+    })),
   }));
 
   // Keep the Zod validation here to ensure your UI remains type-safe

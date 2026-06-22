@@ -34,7 +34,7 @@ export const NoteEditor = ({ noteId, setOpen, onAction }: NoteEditorProps) => {
 
   if (!parsedData) return null;
 
-  const { title, thoughts, summary, rawText, id } = parsedData[0];
+  const { title, thoughts, summary, rawText, id, createdAt } = parsedData[0];
 
   const note: Note = {
     id,
@@ -42,6 +42,7 @@ export const NoteEditor = ({ noteId, setOpen, onAction }: NoteEditorProps) => {
     topicId: "test",
     summary: summary,
     rawText: rawText ?? "",
+    createdAt: createdAt ?? new Date().toISOString(),
   };
 
   const onActionHandler = async (
@@ -76,7 +77,6 @@ export const NoteEditor = ({ noteId, setOpen, onAction }: NoteEditorProps) => {
       topic={{
         id: "test",
         name: "test",
-        createdAt: "test",
         embedding: new Float32Array(),
       }}
       onAction={onActionHandler}

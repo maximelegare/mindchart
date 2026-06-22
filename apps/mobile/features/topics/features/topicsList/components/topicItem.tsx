@@ -1,44 +1,35 @@
 import { memo } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
+import { Separator } from "@/components/ui/separator";
 import { TopicWithNotesInfos } from "@repo/zod-schemas/src/schemas";
 import { TopicBottomSheet } from "../../topicBottomSheet";
 import { useEditTopic } from "../../editTopic/services/useEditTopic";
+import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
 
 export const TopicItem: React.FC<TopicWithNotesInfos> = memo((topic) => {
   const { name, noteCount, createdAt } = topic;
   const { openEditTopicModal } = useEditTopic(topic);
-  return (
-    <>
-      <View className="bg-card border-border border w-full rounded-lg p-2">
-        <Pressable>
-          <View>
-            <View className="pb-1 flex-row items-center justify-between">
-              <DisplayDate date={createdAt} />
-            </View>
-            {/* <Separator className="mb-2" color="border" /> */}
-            <View className="pb-2 flex-row gap-2 justify-between items-center">
-              <View className="flex-1">
-                <Typography variant="h3">{name.toUpperCase()}</Typography>
-              </View>
-              <View>
-                {/* Passing the onEditPress function to the TopicBottomSheet because it generates the embedding in the modal */}
-                <TopicBottomSheet
-                  topic={topic}
-                  onEditPress={openEditTopicModal}
-                />
-              </View>
-            </View>
 
-            <View className="flex-row items-center justify-between">
-              <Typography variant="muted">
-                Associated notes: {noteCount}
-              </Typography>
-            </View>
-          </View>
-        </Pressable>
+  return (
+    <View className="bg-card border-border border w-full rounded-lg p-2 pb-3">
+      <View className="flex-row items-center justify-between mb-1">
+        <DisplayDate date={createdAt} />
       </View>
-    </>
+      <Separator className="mb-2" color="border" />
+      <CardTitleRow
+        title={name}
+        menu={
+          <TopicBottomSheet topic={topic} onEditPress={openEditTopicModal} />
+        }
+      />
+      <View
+        className="flex-row items-center justify-between"
+        style={{ marginTop: 12 }}
+      >
+        <Typography variant="muted">Associated notes: {noteCount}</Typography>
+      </View>
+    </View>
   );
 });

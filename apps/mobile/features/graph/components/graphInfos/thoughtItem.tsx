@@ -29,7 +29,6 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
   const { setParams, push } = useRouter();
 
   const handleZoom = () => {
-    // Make sure this matches whatever field is used in CirclePackSkia for dbId
     const targetId = thought.id;
     setParams({
       id: targetId,
@@ -54,10 +53,13 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
   };
 
   return (
-    <Pressable onPress={children && handleZoom} id={thought.thoughtId}>
+    <Pressable
+      onPress={children ? handleZoom : undefined}
+      id={thought.thoughtId}
+    >
       <Card
         className={cn(
-          "h-fit flex-row gap-2 w-full items-center overflow-hidden bg-muted",
+          "w-full flex-row overflow-hidden bg-muted",
           isHighlighted && "border-2"
         )}
         style={{
@@ -66,29 +68,60 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
       >
         <View
           style={{ backgroundColor: categoryColor }}
-          className="w-3 h-full"
-        ></View>
-        <View className="flex-row justify-between gap-2 p-1 pr-4">
-          <View className={cn("flex-1", !summary && "flex-row")}>
+          className="w-3 self-stretch"
+        />
+        <View
+          className={cn(
+            "flex-1 min-w-0 flex-row gap-2 p-2",
+            noteId ? "items-start" : "items-center"
+          )}
+        >
+          <View className="flex-1 min-w-0">
             <View className="flex-row items-center gap-2">
-              <Typography variant="h3">{capitalize(name || "")}</Typography>
-              {children && (
-                <Typography variant="p">({children?.length})</Typography>
-              )}
+              <Typography variant="h3" numberOfLines={1}>
+                {capitalize(name || "")}
+              </Typography>
+              {children ? (
+                <Typography variant="p">({children.length})</Typography>
+              ) : null}
             </View>
-            {summary && <Typography variant="p">{summary}</Typography>}
+            {summary ? (
+              <Typography variant="p" numberOfLines={2}>
+                {summary}
+              </Typography>
+            ) : null}
           </View>
-          <View>
-            {children && (
-              <View className="p-2">
-                <Icon color="text" name="graph" />
+          <View
+            className={cn(
+              "flex-row shrink-0",
+              noteId ? "items-start" : "items-center"
+            )}
+          >
+            {children ? (
+              <View className="h-9 w-9 items-center justify-center">
+                <Icon
+                  size={20}
+                  color="text"
+                  name="graph"
+                  style={{ opacity: 0.8 }}
+                />
               </View>
-            )}
-            {noteId && (
-              <Button className="p-2" variant="ghost" onPress={navigateToNote}>
-                <Icon color="text" name="notebook-text" />
+            ) : null}
+            {noteId ? (
+              <Button
+                className="h-9 w-9 p-0"
+                variant="ghost"
+                size="icon"
+                onPress={navigateToNote}
+              >
+                <Icon
+                  size={20}
+                  color="text"
+                  name="notebook-text"
+                  style={{ opacity: 0.8 }}
+                />
               </Button>
-            )}
+            ) : null}
           </View>
         </View>
       </Card>

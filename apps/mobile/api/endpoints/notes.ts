@@ -1,6 +1,7 @@
 import { ClientOpenAIRoutes } from "@repo/constants";
 import {
   deleteNoteByIdQuery,
+  getAllNotesQuery,
   insertNoteQuery,
   updateNoteQuery,
   updateThoughtsQuery,
@@ -65,4 +66,9 @@ export const generateNote = async (body: FormData) => {
     console.error("Response was not JSON:", text);
     throw err;
   }
+};
+
+export const fetchAllNotes = async () => {
+  const db = getOPDatabase();
+  return await getAllNotesQuery(db);
 };
