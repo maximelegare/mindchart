@@ -30,6 +30,7 @@ import { getMigratingStatusQuery } from "./src/queries/databaseInspector/getMigr
 import { updateMigratingStatusQuery } from "./src/queries/databaseInspector/updateMigratingStatus";
 import { getNoteByIdWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNoteByIdWithAssociatedThoughts";
 import { exportDatabaseQuery } from "./src/queries/settings/exportDatabase";
+import { getNotesByTopicWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNotesByTopicWithAssociatedThoughts";
 import {
   closeOPDatabase,
   setActiveWorkspace,
@@ -110,4 +111,5 @@ export {
   deleteTopicByIdQuery,
   updateTopicByIdQuery,
   getAllCategoriesWithThoughtsInfosQuery,
+  getNotesByTopicWithAssociatedThoughtsQuery,
 };

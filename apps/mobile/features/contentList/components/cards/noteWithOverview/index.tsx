@@ -1,4 +1,4 @@
-import { memo, ReactElement, ReactNode } from "react";
+import { memo, ReactElement, ReactNode, useState } from "react";
 import { View } from "react-native";
 import { Separator } from "@/components/ui/separator";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
@@ -17,13 +17,32 @@ type ListItemProps = {
   date?: string | null;
   category?: string | null;
   onPress?: (id: string) => void;
-  expanded: boolean;
+  expanded?: boolean;
+  defaultInternalExpanded?: boolean;
   topic?: string | null;
 };
 
 export const ExpandableNoteWithThoughts: React.FC<ListItemProps> = memo(
-  ({ children, title, id, date, onPress, expanded }) => {
+  ({
+    children,
+    title,
+    id,
+    date,
+    onPress,
+    expanded,
+    defaultInternalExpanded = false,
+  }) => {
     const { push } = useRouter();
+    const [internalExpanded, setInternalExpanded] = useState(
+      defaultInternalExpanded
+    );
+    const isControlled = expanded !== undefined;
+    const isExpanded = isControlled ? expanded : internalExpanded;
+
+    const handleToggle = () => {
+      if (isControlled) onPress?.(id);
+      else setInternalExpanded((prev) => !prev);
+    };
 
     return (
       <View className="bg-card border-border border w-full rounded-lg p-2 pb-3">
@@ -44,21 +63,21 @@ export const ExpandableNoteWithThoughts: React.FC<ListItemProps> = memo(
             variant="outline"
             size="xs"
             className="flex-row items-center gap-2 px-1"
-            onPress={() => onPress?.(id)}
+            onPress={handleToggle}
           >
             <Icon
-              name={expanded ? "chevron-up" : "chevron-down"}
+              name={isExpanded ? "chevron-up" : "chevron-down"}
               color="text"
               style={{ marginTop: 4 }}
               size={15}
             />
             <Typography style={{ fontSize: 10 }} variant="p">
-              {expanded ? "Hide Overview" : "Show Overview"}
+              {isExpanded ? "Hide Overview" : "Show Overview"}
             </Typography>
           </Button>
         </View>
 
-        <CollapsibleContainer expanded={expanded}>
+        <CollapsibleContainer expanded={isExpanded}>
           {children}
         </CollapsibleContainer>
       </View>
