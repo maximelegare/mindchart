@@ -29,8 +29,8 @@ export function Gradient({
 }: GradientProps) {
   const gradientColors: Record<Exclude<Variant, "none">, [string, string]> = {
     primary: [
-      hsl("primary", "theme", theme, 10),
-      hsl("foreground", "theme", theme, -70),
+      hsl("foreground", "theme", theme),
+      hsl("primary", "theme", theme, 45),
     ],
     destructive: ["#ed333b", "#a51d2d"],
   };

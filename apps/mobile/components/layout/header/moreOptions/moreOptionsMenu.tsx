@@ -168,7 +168,7 @@ export function MoreOptionsMenu({
       {open && (
         <DropdownMenuContent
           forceMount
-          className="w-52 border-none bg-transparent shadow-none top-[-5px] absolute"
+          className="w-52 border-none bg-transparent shadow-none mt-[6px]"
           side="bottom"
           align="end"
         >

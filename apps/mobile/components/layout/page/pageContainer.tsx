@@ -18,6 +18,7 @@ type HeaderVariant = "stack" | "tab" | "none";
 
 type PageContainerProps = {
   title?: string;
+  showLogo?: boolean;
   headerVariant?: HeaderVariant;
   buttons?: React.ReactNode;
   children: React.ReactNode;
@@ -30,6 +31,7 @@ type PageContainerProps = {
 
 export const PageContainer = ({
   title,
+  showLogo = false,
   headerVariant = "stack",
   buttons,
   children,
@@ -84,6 +86,7 @@ export const PageContainer = ({
           <Gutter size="sm">
             <HeaderContent
               title={displayTitle}
+              showLogo={showLogo}
               hideBackButton={headerVariant === "stack" || !canGoBack}
               buttons={buttons}
               moreOptionsMenu={moreOptionsMenu}

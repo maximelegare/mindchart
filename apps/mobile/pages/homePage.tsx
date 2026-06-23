@@ -15,8 +15,8 @@ export const HomeScreen = () => {
 
   return (
     <PageContainer
+      showLogo={true}
       headerVariant="stack"
-      title="Home"
       buttons={<SearchFeature />}
       moreOptionsMenu={{
         links: moreOptionsMenuLinks,
