@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { MoreOptionsMenuProps } from "../header/moreOptions/moreOptionsMenu";
+import { IconName } from "@/components/ui/icons/icon-registry";
 
 const { HEADER_HEIGHT, HEADER_OVERLAP } = LAYOUT_SIZES;
 
@@ -18,6 +19,10 @@ type HeaderVariant = "stack" | "tab" | "none";
 
 type PageContainerProps = {
   title?: string;
+  subtitle?: {
+    text: string;
+    icon?: IconName;
+  };
   showLogo?: boolean;
   headerVariant?: HeaderVariant;
   buttons?: React.ReactNode;
@@ -31,6 +36,7 @@ type PageContainerProps = {
 
 export const PageContainer = ({
   title,
+  subtitle,
   showLogo = false,
   headerVariant = "stack",
   buttons,
@@ -48,8 +54,8 @@ export const PageContainer = ({
   const canGoBack = navigation.canGoBack();
   const resolvedTitle = title ?? "";
   const displayTitle =
-    resolvedTitle.length > 15
-      ? `${resolvedTitle.slice(0, 15)}...`
+    resolvedTitle.length > 25
+      ? `${resolvedTitle.slice(0, 25)}...`
       : resolvedTitle;
 
   return (
@@ -86,6 +92,7 @@ export const PageContainer = ({
           <Gutter size="sm">
             <HeaderContent
               title={displayTitle}
+              subtitle={subtitle}
               showLogo={showLogo}
               hideBackButton={headerVariant === "stack" || !canGoBack}
               buttons={buttons}

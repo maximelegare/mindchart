@@ -12,6 +12,7 @@ export const TopicDetailsPage = () => {
     <PageContainer
       headerVariant="tab"
       title={topicName ?? ""}
+      subtitle={{ text: "Topic", icon: "tag" }}
       buttons={<SearchFeature />}
       moreOptionsMenu={{
         links: [{ label: "Settings", icon: "settings", href: "/settings" }],

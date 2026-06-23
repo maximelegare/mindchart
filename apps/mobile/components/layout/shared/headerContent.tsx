@@ -9,9 +9,14 @@ import {
   MoreOptionsMenuProps,
 } from "../header/moreOptions/moreOptionsMenu";
 import { LogoWithText } from "@/components/ui/logo";
+import { IconName } from "@/components/ui/icons/icon-registry";
 
 type HeaderContentProps = {
   title?: string;
+  subtitle?: {
+    text: string;
+    icon?: IconName;
+  };
   hideBackButton?: boolean;
   showLogo?: boolean;
   buttons?: React.ReactNode;
@@ -27,6 +32,7 @@ export const HeaderContent = ({
   buttons,
   moreOptionsMenu,
   showLogo = false,
+  subtitle,
 }: HeaderContentProps) => {
   const { links, state } = moreOptionsMenu ?? {};
   const { back } = useRouter();
@@ -40,15 +46,31 @@ export const HeaderContent = ({
             <Icon color="background" name="arrow-left" />
           </Button>
         )}
-        {title && (
-          <Typography
-            variant="h1"
-            numberOfLines={1}
-            className="shrink text-popover-foreground leading-tight"
-          >
-            {title}
-          </Typography>
-        )}
+        <View>
+          {title && (
+            <Typography
+              variant="h3"
+              numberOfLines={1}
+              className="shrink text-popover-foreground font-light"
+            >
+              {title}
+            </Typography>
+          )}
+          <View className="flex-row items-center gap-1">
+            {subtitle?.icon && (
+              <Icon size={12} color="background" name={subtitle.icon} />
+            )}
+            {subtitle && (
+              <Typography
+                variant="h4"
+                numberOfLines={1}
+                className="shrink text-sm text-popover-foreground leading-tight"
+              >
+                {subtitle.text}
+              </Typography>
+            )}
+          </View>
+        </View>
       </View>
       <View className="shrink-0 flex-row items-center">
         {buttons}
