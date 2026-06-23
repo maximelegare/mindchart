@@ -16,7 +16,11 @@ export const RecoveryPasswordPage = () => {
   }, [persistReady]);
 
   return (
-    <PageContainer headerVariant="tab" title="Recovery Password">
+    <PageContainer
+      headerVariant="tab"
+      title="Recovery Password"
+      subtitle={{ text: "Settings", icon: "settings" }}
+    >
       <RecoveryPasswordFeature />
     </PageContainer>
   );

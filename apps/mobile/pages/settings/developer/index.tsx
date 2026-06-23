@@ -4,7 +4,11 @@ import { DeveloperSettingsFeature } from "@/features/settings/features/developer
 
 export const DeveloperSettingsPage = () => {
   return (
-    <PageContainer headerVariant="tab" title="Developer Options">
+    <PageContainer
+      headerVariant="tab"
+      title="Developer Options"
+      subtitle={{ text: "Settings", icon: "settings" }}
+    >
       <DeveloperSettingsFeature />
     </PageContainer>
   );

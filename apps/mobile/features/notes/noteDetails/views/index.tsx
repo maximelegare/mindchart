@@ -1,7 +1,5 @@
-import { useControllers } from "@/api/controllers/useControllers";
 import React from "react";
 import { ScrollView, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
 import { Typography } from "@/components/ui/typography";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 import { DisplayDate } from "@/components/ui/date";
@@ -9,16 +7,19 @@ import { Card } from "@/components/ui/card";
 import ThoughtsList from "@/features/notes/noteDetails/components/ThoughtsList";
 import { RawTextViewer } from "@/features/notes/noteDetails/components/RawText";
 
-export const NoteDetailsFeature = () => {
-  const local = useLocalSearchParams();
-  const { useFetchNoteDetails } = useControllers().notesAndThoughts;
+type NoteDetailsFeatureProps = {
+  isPending: boolean;
+  note: ReturnType<typeof parseNoteAndThoughts>;
+};
 
-  const { data } = useFetchNoteDetails(local.id as string);
+export const NoteDetailsFeature = ({
+  isPending,
+  note,
+}: NoteDetailsFeatureProps) => {
+  if (isPending) return null;
+  if (!note) return null;
 
-  const parsedData = parseNoteAndThoughts(data);
-
-  if (!parsedData) return;
-  const { title, createdAt, rawText, thoughts } = parsedData[0];
+  const { title, createdAt, rawText, thoughts } = note[0];
 
   return (
     <View className="flex-col w-full">
