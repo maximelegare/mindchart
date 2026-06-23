@@ -44,6 +44,11 @@ export const PageContainer = ({
 
   const { colorScheme } = useColorScheme();
   const canGoBack = navigation.canGoBack();
+  const resolvedTitle = title ?? "";
+  const displayTitle =
+    resolvedTitle.length > 15
+      ? `${resolvedTitle.slice(0, 15)}...`
+      : resolvedTitle;
 
   return (
     <View style={styles.root}>
@@ -78,7 +83,7 @@ export const PageContainer = ({
         >
           <Gutter size="sm">
             <HeaderContent
-              title={title ?? ""}
+              title={displayTitle}
               hideBackButton={headerVariant === "stack" || !canGoBack}
               buttons={buttons}
               moreOptionsMenu={moreOptionsMenu}
@@ -128,7 +133,7 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1,
     justifyContent: "flex-end",
-    paddingBottom: 40,
+    paddingBottom: 35,
   },
 
   body: {

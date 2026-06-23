@@ -2,13 +2,19 @@ import { BulletList } from "@/components/ui/bulletList";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 import { ExpandableNoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
-import { useTopicDetailsData } from "@/features/topics/features/topicDetails/hooks/useTopicDetailsData";
+import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 import { View } from "react-native";
 
-export const TopicDetailsFeature = () => {
-  const { topicId, isPending, notes } = useTopicDetailsData();
+type TopicDetailsFeatureProps = {
+  isPending: boolean;
+  notes: ReturnType<typeof parseNoteAndThoughts>;
+};
 
-  if (isPending || !topicId) return null;
+export const TopicDetailsFeature = ({
+  isPending,
+  notes,
+}: TopicDetailsFeatureProps) => {
+  if (isPending) return null;
   if (!notes) return null;
 
   if (notes.length === 0) {
@@ -20,7 +26,7 @@ export const TopicDetailsFeature = () => {
   }
 
   return (
-    <View className="gap-2" style={{ paddingTop: 20 }}>
+    <View className="gap-2">
       {notes.map((note) => (
         <ExpandableNoteWithThoughts
           key={note.id}

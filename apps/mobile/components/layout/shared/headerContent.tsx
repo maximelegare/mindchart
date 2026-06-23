@@ -30,24 +30,31 @@ export const HeaderContent = ({
   const { back } = useRouter();
 
   return (
-    <View className="w-full h-full flex-row items-end justify-between">
-      <View className="w-fit flex-row  items-center">
+    <View className="w-full flex-row items-center justify-between">
+      <View className="min-w-0 flex-1 flex-row items-center">
         {!hideBackButton && (
-          <Button variant="ghost" onPress={() => back()}>
+          <Button variant="ghost" size="icon" onPress={() => back()}>
             <Icon color="background" name="arrow-left" />
           </Button>
         )}
         <Typography
           variant="h1"
-          className={cn(hideBackButton && "pl-4", "text-popover-foreground")}
+          numberOfLines={1}
+          className={cn(
+            hideBackButton && "pl-4",
+            "shrink text-popover-foreground leading-tight"
+          )}
         >
           {title ?? "Page"}
         </Typography>
       </View>
-      <View className="flex-row justify-end gap-2">
-        <View className="-translate-x-10 translate-y-3">{buttons}</View>
-
-        {links && state && <MoreOptionsMenu links={links} state={state} />}
+      <View className="shrink-0 flex-row items-center">
+        {buttons}
+        {links && state && (
+          <View className="-ml-2">
+            <MoreOptionsMenu links={links} state={state} />
+          </View>
+        )}
       </View>
     </View>
   );
