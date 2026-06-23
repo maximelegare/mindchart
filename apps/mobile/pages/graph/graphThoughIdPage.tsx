@@ -12,7 +12,7 @@ export const GraphThoughIdPage = () => {
   return (
     <PageContainer
       headerVariant="stack"
-      title="Graph"
+      showLogo={true}
       buttons={<SearchFeature />}
       moreOptionsMenu={{
         links: [{ label: "Settings", icon: "settings", href: "/settings" }],

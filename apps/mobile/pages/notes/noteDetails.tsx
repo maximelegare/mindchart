@@ -3,15 +3,16 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { EditNoteFeature } from "@/features/notes/editNote/views";
+import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import { SearchFeature } from "@/features/search/views";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 
 export const NoteDetailsPage = () => {
   const router = useRouter();
-  const local = useLocalSearchParams();
   const [open, setOpen] = useState(false);
+  const { noteId, noteTitle, isPending, note } = useNoteDetailsData();
 
   const { editNoteAction } = useEditNote();
   const { deleteNoteAction } = useDeleteNote();
@@ -22,7 +23,7 @@ export const NoteDetailsPage = () => {
       modalName: "DELETE_NOTE_CONFIRMATION",
       onConfirm: async () => {
         closeModal();
-        await deleteNoteAction(local.id as string);
+        await deleteNoteAction(noteId ?? "");
         router.replace("/notes");
       },
     });
@@ -31,7 +32,8 @@ export const NoteDetailsPage = () => {
   return (
     <PageContainer
       headerVariant="tab"
-      title="Note"
+      title={noteTitle ?? ""}
+      subtitle={{ text: "Note", icon: "notebook-text" }}
       buttons={<SearchFeature />}
       moreOptionsMenu={{
         links: [
@@ -40,7 +42,7 @@ export const NoteDetailsPage = () => {
             icon: "pencil",
             component: (
               <EditNoteFeature
-                noteId={local.id as string}
+                noteId={noteId ?? ""}
                 setOpen={setOpen}
                 onAction={editNoteAction}
               />
@@ -52,7 +54,7 @@ export const NoteDetailsPage = () => {
         state: { open, setOpen },
       }}
     >
-      <NoteDetailsFeature />
+      <NoteDetailsFeature isPending={isPending} note={note} />
     </PageContainer>
   );
 };

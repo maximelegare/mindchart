@@ -5,7 +5,11 @@ import { AboutAppFeature } from "@/features/settings/features/aboutApp/views";
 
 export const AboutAppPage = () => {
   return (
-    <PageContainer headerVariant="tab" title="About App">
+    <PageContainer
+      headerVariant="tab"
+      title="About App"
+      subtitle={{ text: "Settings", icon: "settings" }}
+    >
       <AboutAppFeature />
     </PageContainer>
   );

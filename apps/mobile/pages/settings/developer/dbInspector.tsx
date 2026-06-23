@@ -4,7 +4,11 @@ import { DatabaseInspectorFeature } from "@/features/settings/features/developer
 
 export const DatabaseInspectorPage = () => {
   return (
-    <PageContainer headerVariant="tab" title="SQLite Inspector">
+    <PageContainer
+      headerVariant="tab"
+      title="SQLite Inspector"
+      subtitle={{ text: "Settings / Developer Options", icon: "settings" }}
+    >
       <DatabaseInspectorFeature />
     </PageContainer>
   );

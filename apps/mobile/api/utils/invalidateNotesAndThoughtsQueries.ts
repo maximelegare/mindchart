@@ -15,6 +15,7 @@ const NOTES_AND_THOUGHTS_QUERY_KEYS = [
   REACT_QUERY_KEYS.fetchThoughts,
   REACT_QUERY_KEYS.fetchGraphData,
   REACT_QUERY_KEYS.seedDatabase,
+  REACT_QUERY_KEYS.fetchNoteByTopic,
 ] as const;
 
 export const invalidateNotesListQueries = async (queryClient: QueryClient) => {

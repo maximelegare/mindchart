@@ -7,6 +7,7 @@ import { TopicWithNotesInfos } from "@repo/zod-schemas/src/schemas";
 import { TopicBottomSheet } from "../../topicBottomSheet";
 import { useEditTopic } from "../../editTopic/services/useEditTopic";
 import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
+import { router } from "expo-router";
 
 export const TopicItem: React.FC<TopicWithNotesInfos> = memo((topic) => {
   const { name, noteCount, createdAt } = topic;
@@ -19,6 +20,14 @@ export const TopicItem: React.FC<TopicWithNotesInfos> = memo((topic) => {
       </View>
       <Separator className="mb-2" color="border" />
       <CardTitleRow
+        onTitlePress={() =>
+          router.push({
+            pathname: "/topics/[id]",
+            params: {
+              id: topic.id,
+            },
+          })
+        }
         title={name}
         menu={
           <TopicBottomSheet topic={topic} onEditPress={openEditTopicModal} />

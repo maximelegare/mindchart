@@ -5,7 +5,11 @@ import { AISettingsFeature } from "@/features/settings/features/ai/views";
 
 export const AiSettingsPage = () => {
   return (
-    <PageContainer headerVariant="tab" title="AI">
+    <PageContainer
+      headerVariant="tab"
+      title="AI Options"
+      subtitle={{ text: "Settings", icon: "settings" }}
+    >
       <AISettingsFeature />
     </PageContainer>
   );

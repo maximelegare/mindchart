@@ -14,8 +14,8 @@ export const NotesListPage = () => {
 
   return (
     <PageContainer
+      showLogo={true}
       headerVariant="stack"
-      title="Notes"
       buttons={<SearchFeature />}
       moreOptionsMenu={{
         links: moreOptionsMenuLinks,

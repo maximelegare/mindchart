@@ -13,7 +13,7 @@ export const parseNoteAndThoughts = (
     title: row.note_title ?? "",
     summary: row.note_summary ?? "",
     rawText: row.note_raw_text ?? "",
-    createdAt: row.note_created_at,
+    createdAt: row.note_created_at ?? undefined,
     topicId: row.topic_id ?? undefined,
     topicName: row.topic_name ?? undefined,
     thoughts: (typeof row.thoughts_json === "string"
@@ -29,6 +29,8 @@ export const parseNoteAndThoughts = (
     })),
   }));
 
-  // Keep the Zod validation here to ensure your UI remains type-safe
-  return z.array(NotesJoinThoughtsParsedJSONPageSchema).parse(transformed);
+  const result = z
+    .array(NotesJoinThoughtsParsedJSONPageSchema)
+    .safeParse(transformed);
+  return result.success ? result.data : null;
 };

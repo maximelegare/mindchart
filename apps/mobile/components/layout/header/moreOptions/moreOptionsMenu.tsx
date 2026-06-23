@@ -160,11 +160,7 @@ export function MoreOptionsMenu({
       className="relative"
     >
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-14 absolute right-0 -bottom-3"
-        >
+        <Button variant="ghost" size="icon" className="w-14">
           <WorkspaceAvatar />
         </Button>
       </DropdownMenuTrigger>
@@ -172,7 +168,7 @@ export function MoreOptionsMenu({
       {open && (
         <DropdownMenuContent
           forceMount
-          className="w-52 border-none bg-transparent shadow-none top-[-5px] absolute"
+          className="w-52 border-none bg-transparent shadow-none mt-[6px]"
           side="bottom"
           align="end"
         >
@@ -183,9 +179,9 @@ export function MoreOptionsMenu({
                 exiting={CustomExiting}
                 className="bg-popover rounded-3xl border border-border"
               >
-                <DropdownMenuGroup className="overflow-hidden my-1 w-full">
+                <DropdownMenuGroup className="overflow-hidden w-full">
                   <CurrentWorkspace />
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="my-0" />
                   {links.map((link, index) => (
                     <React.Fragment key={link.label}>
                       {link.href !== undefined ? (

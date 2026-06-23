@@ -4,12 +4,14 @@ import { ReactNode, useState } from "react";
 import { View } from "react-native";
 
 type TopicSectionProps = {
+  id: string;
   name: string;
   children: ReactNode;
   numberOfItems?: number;
 };
 
 export const TopicSection = ({
+  id,
   name,
   numberOfItems,
   children,
@@ -18,6 +20,7 @@ export const TopicSection = ({
   return (
     <View className="gap-2">
       <GroupingLabel
+        href={`/topics/${id}`}
         numberOfItems={numberOfItems}
         label={name}
         expanded={expanded}
