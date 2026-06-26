@@ -12,6 +12,7 @@ import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { MoreOptionsMenuProps } from "../header/moreOptions/moreOptionsMenu";
 import { IconName } from "@/components/ui/icons/icon-registry";
+import { PageOptionsHeaderContainer } from "./pageOptionsHeaderContainer";
 
 const { HEADER_HEIGHT, HEADER_OVERLAP } = LAYOUT_SIZES;
 
@@ -32,6 +33,7 @@ type PageContainerProps = {
     state: { open: boolean; setOpen: (open: boolean) => void };
     links: MoreOptionsMenuProps["links"];
   };
+  optionsHeader?: React.ReactNode;
 };
 
 export const PageContainer = ({
@@ -43,6 +45,7 @@ export const PageContainer = ({
   children,
   noScrollView = false,
   moreOptionsMenu,
+  optionsHeader,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -103,13 +106,20 @@ export const PageContainer = ({
       )}
 
       <View
-        className={cn("relative  z-10 flex-1  bg-background rounded-t-3xl")}
+        className={cn(
+          "relative  z-10 flex-1 overflow-hidden bg-background rounded-t-3xl"
+        )}
         style={{
           ...gutter(),
           marginTop: HEADER_HEIGHT + insets.top - HEADER_OVERLAP,
         }}
       >
-        <View className="relative flex-1 mt-6">
+        <View className="relative flex-1">
+          {optionsHeader && (
+            <PageOptionsHeaderContainer>
+              {optionsHeader}
+            </PageOptionsHeaderContainer>
+          )}
           {!noScrollView ? (
             <ScrollView className="gap-y-6" ref={scrollRef}>
               <Gutter size="md">{children}</Gutter>
