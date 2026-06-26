@@ -1,7 +1,6 @@
 import { Button, Typography } from "@/components/ui";
 import { Pressable, View } from "react-native";
 import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
-import { Card } from "@/components/ui/card";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { useState } from "react";
 import { Icon } from "@/components/ui/icons/icon";
@@ -211,12 +210,13 @@ export const OptionsBar = () => {
     GROUP_OPTIONS.find((o) => o.value === groupBy)?.label ?? groupBy;
 
   return (
-    <Card className="border-border" style={{ marginBottom: 10 }}>
+    <View>
       <Gutter size="md" className="py-2">
         <View className="flex-row items-center justify-between gap-3">
           <Button
             variant="outline"
             size="sm"
+            cornerRadius="full"
             className="flex-row items-center gap-2"
             onPress={() => setExpanded(!expanded)}
           >
@@ -281,6 +281,6 @@ export const OptionsBar = () => {
           </View>
         </CollapsibleContainer>
       </Gutter>
-    </Card>
+    </View>
   );
 };

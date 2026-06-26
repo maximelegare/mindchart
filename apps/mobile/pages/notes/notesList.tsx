@@ -1,5 +1,6 @@
 import { MoreOptionsMenuProps } from "@/components/layout/header/moreOptions/moreOptionsMenu";
 import { PageContainer } from "@/components/layout/page/pageContainer";
+import { OptionsBar } from "@/features/contentList/components/optionsBar/components/optionsBar";
 import { ContentListFeature } from "@/features/contentList/views";
 import { SearchFeature } from "@/features/search/views";
 import { useState } from "react";
@@ -15,6 +16,7 @@ export const NotesListPage = () => {
   return (
     <PageContainer
       showLogo={true}
+      optionsHeader={<OptionsBar />}
       headerVariant="stack"
       buttons={<SearchFeature />}
       moreOptionsMenu={{
