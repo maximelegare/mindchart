@@ -27,7 +27,7 @@ import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
 import { NodeDatum } from "@/features/graph/types/types";
-import { CategoryKey } from "@repo/sqlite";
+import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIZE = SCREEN_WIDTH - 24;
@@ -351,11 +351,7 @@ export default function CirclePackSkia({
     if (!node.hasChildren) return "white";
     if (node.depth === 0) return hsl("card", colorScheme);
 
-    const rawCat =
-      node.rawData.categoryId ||
-      (node.rawData.children && node.rawData.children[0]?.categoryId);
-
-    const cat = rawCat?.toLowerCase() as CategoryKey;
+    const cat = resolveNodeCategoryKey(node.rawData);
 
     if (!cat) return hsl("border", colorScheme);
 

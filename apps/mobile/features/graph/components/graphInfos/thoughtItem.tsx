@@ -7,7 +7,10 @@ import React from "react";
 import { Pressable, View } from "react-native";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { CategoryKey } from "@repo/sqlite";
+import {
+  resolveListItemCategoryShade,
+  resolveNodeCategoryKey,
+} from "../../utils/resolveNodeCategoryKey";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui";
 import capitalize from "@/utils/stringManipulations/capitalize";
@@ -23,7 +26,7 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
   parentNodeId,
   isHighlighted,
 }) => {
-  const { summary, categoryId, name, children, noteId } = thought;
+  const { summary, name, children, noteId } = thought;
 
   const { colorScheme } = useColorScheme();
   const { setParams, push } = useRouter();
@@ -36,13 +39,15 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
     });
   };
 
-  const categoryColor = hsl(
-    (categoryId?.toLowerCase() as CategoryKey) ??
-      (name?.toLowerCase() as CategoryKey),
-    colorScheme,
-    parentNodeId === "root" ? 0 : 50,
-    "categories"
-  );
+  const categoryKey = resolveNodeCategoryKey(thought);
+  const categoryColor = categoryKey
+    ? hsl(
+        categoryKey,
+        colorScheme,
+        resolveListItemCategoryShade(parentNodeId),
+        "categories"
+      )
+    : hsl("border", colorScheme);
 
   const navigateToNote = () => {
     if (!noteId) return;

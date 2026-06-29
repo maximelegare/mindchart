@@ -30,6 +30,7 @@ export function buildGraphWithTopics(thoughts: ThoughtWithEmbedding[]) {
         return {
           id: `category-${categoryId}`,
           name: categoryThoughts[0].categoryId ?? "Untitled",
+          categoryId,
           children: Array.from(byTopic.entries()).map(
             ([topicId, topicThoughts]) => ({
               id: `topic-${categoryId}-${topicId}`,

@@ -27,7 +27,7 @@ const GraphInfos = ({ activeNode, parentNode, focusedThoughtId }: Props) => {
         <ScrollView showsVerticalScrollIndicator={false}>
           {listData.length > 0 ? (
             <ThoughtsList
-              parentNodeId={parentNode?.id || "root"}
+              parentNodeId={activeNode?.id ?? "root"}
               thoughts={listData}
               focusedThoughtId={focusedThoughtId}
             />
