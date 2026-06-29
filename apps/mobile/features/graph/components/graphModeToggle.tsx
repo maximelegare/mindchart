@@ -12,7 +12,7 @@ export const GraphModeToggle = () => {
       <View className="flex-row items-center justify-end">
         <ModeToggle
           values={{
-            first: { name: "category", icon: "layers" },
+            first: { name: "category", icon: "shapes" },
             second: { name: "topic", icon: "tag" },
           }}
           currentMode={mode}
