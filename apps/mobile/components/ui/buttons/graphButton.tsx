@@ -1,8 +1,9 @@
+import { useGraphStore } from "@/features/graph/context/graphContext";
+import { GraphMode } from "@/features/graph/types/types";
 import { useRouter } from "expo-router";
 import { Button } from "../button";
 import { Icon } from "../icons/icon";
 import { View } from "react-native";
-import { GraphMode } from "@/features/graph/types/types";
 
 export const GraphButton = ({
   id,
@@ -23,7 +24,8 @@ export const GraphButton = ({
         variant="ghost"
         size="xs"
         className="px-4"
-        onPress={() =>
+        onPress={() => {
+          useGraphStore.getState().setGraphMode(graph);
           push({
             pathname: "/graph/[id]",
             params: {
@@ -31,8 +33,8 @@ export const GraphButton = ({
               graph,
               _t: Date.now(),
             },
-          })
-        }
+          });
+        }}
       >
         <Icon
           size={20}

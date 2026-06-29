@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
-import { GraphMode, NodeDatum } from "@/features/graph/types/types";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { NodeDatum } from "@/features/graph/types/types";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { hsl } from "@/utils/hsl";
@@ -19,26 +19,21 @@ type ThoughtItem = {
   thought: NodeDatum & { idx: number };
   parentNodeId: string;
   isHighlighted: boolean;
-  graphMode: GraphMode;
 };
 
 export const ThoughtItem: React.FC<ThoughtItem> = ({
   thought,
   parentNodeId,
   isHighlighted,
-  graphMode,
 }) => {
   const { summary, name, children, noteId } = thought;
 
   const { colorScheme } = useColorScheme();
   const { setParams, push } = useRouter();
-  const { graph } = useLocalSearchParams<{ graph?: string }>();
 
   const handleZoom = () => {
-    const targetId = thought.id;
     setParams({
-      id: targetId,
-      graph: graph ?? graphMode,
+      id: thought.id,
       _t: Date.now().toString(),
     });
   };

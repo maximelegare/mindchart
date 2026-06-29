@@ -1,24 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useFocusEffect } from "expo-router";
+import { useGraphStore } from "../context/graphContext";
 import { useGraph } from "../hooks/useGraph";
 import CirclePackSkia from "../components/graphSkia";
 import GraphInfos from "../components/graphInfos/graphInfos";
-import { GraphMode, NodeDatum } from "../types/types";
+import { NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
-import ModeToggle from "@/components/ui/modeToggle";
 
 export const GraphFeature = ({
-  mode,
-  onModeChange,
   focusedThoughtId,
   trigger,
 }: {
-  mode: GraphMode;
-  onModeChange: (mode: GraphMode) => void;
   focusedThoughtId?: string;
   trigger?: string;
 }) => {
+  const mode = useGraphStore((state) => state.mode);
   const { hierarchy, refetchGraph, refetchSyncFlag } = useGraph(mode);
 
   const [selection, setSelection] = useState<{
@@ -43,13 +40,6 @@ export const GraphFeature = ({
     []
   );
 
-  const handleModeToggle = useCallback(
-    (nextMode: string) => {
-      onModeChange(nextMode === "topic" ? "topic" : "category");
-    },
-    [onModeChange]
-  );
-
   useEffect(() => {
     setSelection({ active: null, parent: null });
   }, [mode]);
@@ -58,17 +48,6 @@ export const GraphFeature = ({
 
   return (
     <View className="flex-col gap-4 items-center flex-1">
-      <View className="w-full flex-row justify-end px-3">
-        <ModeToggle
-          values={{
-            first: { name: "category", icon: "layers" },
-            second: { name: "topic", icon: "tag" },
-          }}
-          currentMode={mode}
-          onToggle={handleModeToggle}
-        />
-      </View>
-
       <CirclePackSkia
         key={mode}
         data={hierarchy}
@@ -80,7 +59,6 @@ export const GraphFeature = ({
       <View className="w-full flex-1">
         <GraphInfos
           hierarchy={hierarchy}
-          graphMode={mode}
           activeNode={selection.active}
           focusedThoughtId={focusedThoughtId}
         />

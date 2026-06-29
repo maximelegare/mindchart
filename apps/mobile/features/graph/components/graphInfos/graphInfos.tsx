@@ -2,23 +2,17 @@ import React from "react";
 import { ScrollView } from "react-native";
 import { Card } from "@/components/ui/card";
 import { Typography } from "@/components/ui/typography";
-import { GraphMode, NodeDatum } from "@/features/graph/types/types";
+import { NodeDatum } from "@/features/graph/types/types";
 import { ThoughtsList } from "./thoughtsList";
 import { GraphBreadcrumbs } from "./graphBreadcrumbs";
 
 interface Props {
   hierarchy: NodeDatum;
-  graphMode: GraphMode;
   activeNode: NodeDatum | null;
   focusedThoughtId?: string;
 }
 
-const GraphInfos = ({
-  hierarchy,
-  graphMode,
-  activeNode,
-  focusedThoughtId,
-}: Props) => {
+const GraphInfos = ({ hierarchy, activeNode, focusedThoughtId }: Props) => {
   const listData = React.useMemo(() => {
     if (!activeNode) return [];
     return activeNode.children ? activeNode.children : [activeNode];
@@ -27,11 +21,7 @@ const GraphInfos = ({
   return (
     <>
       <Card className="p-4" style={{ flex: 1 }}>
-        <GraphBreadcrumbs
-          hierarchy={hierarchy}
-          activeNode={activeNode}
-          graphMode={graphMode}
-        />
+        <GraphBreadcrumbs hierarchy={hierarchy} activeNode={activeNode} />
 
         <ScrollView showsVerticalScrollIndicator={false}>
           {listData.length > 0 ? (
@@ -39,7 +29,6 @@ const GraphInfos = ({
               parentNodeId={activeNode?.id ?? "root"}
               thoughts={listData}
               focusedThoughtId={focusedThoughtId}
-              graphMode={graphMode}
             />
           ) : (
             <Typography className="text-center py-10 opacity-50">

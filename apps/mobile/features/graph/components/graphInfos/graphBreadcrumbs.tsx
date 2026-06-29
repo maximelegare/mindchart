@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { GraphMode, NodeDatum } from "../../types/types";
+import { NodeDatum } from "../../types/types";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Icon } from "@/components/ui/icons/icon";
 import { cn } from "@/lib/cn";
 import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
@@ -11,13 +11,11 @@ import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
 type GraphBreadcrumbsProps = {
   hierarchy: NodeDatum;
   activeNode: NodeDatum | null;
-  graphMode: GraphMode;
 };
 
 export const GraphBreadcrumbs = ({
   hierarchy,
   activeNode,
-  graphMode,
 }: GraphBreadcrumbsProps) => {
   const breadcrumbs = useMemo(() => {
     const targetId = activeNode?.id ?? "root";
@@ -28,12 +26,10 @@ export const GraphBreadcrumbs = ({
   }, [activeNode?.id, hierarchy]);
 
   const { setParams } = useRouter();
-  const { graph } = useLocalSearchParams<{ graph?: string }>();
 
   const updateGraphParams = (targetId: string) => {
     setParams({
       id: targetId,
-      graph: graph ?? graphMode,
       _t: Date.now().toString(),
     });
   };
