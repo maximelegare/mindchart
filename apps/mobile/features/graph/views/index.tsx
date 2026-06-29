@@ -46,6 +46,8 @@ export const GraphFeature = ({
 
   if (!hierarchy) return null;
 
+  const activeNode = selection.active ?? hierarchy;
+
   return (
     <View className="flex-col gap-4 items-center flex-1">
       <CirclePackSkia
@@ -59,7 +61,7 @@ export const GraphFeature = ({
       <View className="w-full flex-1">
         <GraphInfos
           hierarchy={hierarchy}
-          activeNode={selection.active}
+          activeNode={activeNode}
           focusedThoughtId={focusedThoughtId}
         />
       </View>
