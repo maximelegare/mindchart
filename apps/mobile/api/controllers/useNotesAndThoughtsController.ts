@@ -22,7 +22,7 @@ import {
 import { invalidateNotesAndThoughtsQueries } from "@/api/utils/invalidateNotesAndThoughtsQueries";
 import { useGraphController } from "./useGraphController";
 
-import { useGenerateNoteService } from "@/features/notes/noteCreation/features/generateNote/useGenerateNoteService";
+import { useGenerateNoteService } from "@/features/notes/noteCreation/features/generateNote/services/generateNoteService";
 import { GenerateNoteService } from "@/features/notes/noteCreation/features/generateNote/types";
 import { useSeedDatabaseService } from "@/seed/useSeedDatabaseService";
 

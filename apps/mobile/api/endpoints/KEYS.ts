@@ -18,6 +18,8 @@ export type InferMutationOptions<F extends (...args: any) => any> =
   >;
 
 export const REACT_QUERY_KEYS = {
+  transcribeService: "transcribe_service",
+  generateContentService: "generate_content_service",
   fetchAllCategoriesWithThoughtsInfos:
     "fetch_all_categories_with_thoughts_infos",
   fetchNoteByTopic: "fetch_note_by_topic",
