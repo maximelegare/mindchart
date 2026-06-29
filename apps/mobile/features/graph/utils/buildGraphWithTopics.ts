@@ -1,7 +1,7 @@
 import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
+import { mapThoughtToLeaf } from "./mapThoughtToLeaf";
 
 export function buildGraphWithTopics(thoughts: ThoughtWithEmbedding[]) {
-  // 1. Group by category
   const byCategory = new Map<string, ThoughtWithEmbedding[]>();
 
   thoughts.forEach((t) => {
@@ -11,13 +11,11 @@ export function buildGraphWithTopics(thoughts: ThoughtWithEmbedding[]) {
     byCategory.get(t.categoryId)!.push(t);
   });
 
-  // 2. Build hierarchy
   return {
     id: "root",
     name: "root",
     children: Array.from(byCategory.entries()).map(
       ([categoryId, categoryThoughts]) => {
-        // 3. Group inside category by topic
         const byTopic = new Map<string, ThoughtWithEmbedding[]>();
 
         categoryThoughts.forEach((t) => {
@@ -38,22 +36,7 @@ export function buildGraphWithTopics(thoughts: ThoughtWithEmbedding[]) {
               name: topicThoughts[0].topicName ?? "Untitled",
               categoryId,
               topicId,
-              children: topicThoughts.map((t) => ({
-                id: t.thoughtId,
-                name: t.title || "Untitled",
-                value: 1,
-
-                // full payload
-                thoughtId: t.thoughtId,
-                title: t.title,
-                summary: t.summary,
-                noteId: t.noteId,
-                categoryId: t.categoryId,
-                topicId: t.topicId,
-                topicName: t.topicName,
-                createdAt: t.createdAt,
-                embedding: t.embedding,
-              })),
+              children: topicThoughts.map(mapThoughtToLeaf),
             })
           ),
         };

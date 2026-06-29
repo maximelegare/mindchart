@@ -1,20 +1,25 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useGraph } from "../hooks/useGraph";
 import CirclePackSkia from "../components/graphSkia";
 import GraphInfos from "../components/graphInfos/graphInfos";
-import { NodeDatum } from "../types/types";
+import { GraphMode, NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
+import ModeToggle from "@/components/ui/modeToggle";
 
 export const GraphFeature = ({
+  mode,
+  onModeChange,
   focusedThoughtId,
   trigger,
 }: {
+  mode: GraphMode;
+  onModeChange: (mode: GraphMode) => void;
   focusedThoughtId?: string;
   trigger?: string;
 }) => {
-  const { hierarchy, refetchGraph, refetchSyncFlag } = useGraph();
+  const { hierarchy, refetchGraph, refetchSyncFlag } = useGraph(mode);
 
   const [selection, setSelection] = useState<{
     active: NodeDatum | null;
@@ -25,7 +30,7 @@ export const GraphFeature = ({
     useCallback(() => {
       refetchGraph();
       refetchSyncFlag();
-    }, [])
+    }, [refetchGraph, refetchSyncFlag])
   );
 
   const handleNodeSelected = useCallback(
@@ -38,11 +43,34 @@ export const GraphFeature = ({
     []
   );
 
+  const handleModeToggle = useCallback(
+    (nextMode: string) => {
+      onModeChange(nextMode === "topic" ? "topic" : "category");
+    },
+    [onModeChange]
+  );
+
+  useEffect(() => {
+    setSelection({ active: null, parent: null });
+  }, [mode]);
+
   if (!hierarchy) return null;
 
   return (
     <View className="flex-col gap-4 items-center flex-1">
+      <View className="w-full flex-row justify-end px-3">
+        <ModeToggle
+          values={{
+            first: { name: "category", icon: "layers" },
+            second: { name: "topic", icon: "tag" },
+          }}
+          currentMode={mode}
+          onToggle={handleModeToggle}
+        />
+      </View>
+
       <CirclePackSkia
+        key={mode}
         data={hierarchy}
         focusedThoughtId={focusedThoughtId}
         trigger={trigger}

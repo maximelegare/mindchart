@@ -1,14 +1,28 @@
 import { PageContainer } from "@/components/layout/page/pageContainer";
 import { GraphFeature } from "@/features/graph/views";
+import { parseGraphMode } from "@/features/graph/types/types";
 import { SearchFeature } from "@/features/search/views";
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 
 export const GraphThoughIdPage = () => {
-  // Destructure both id and the timestamp
-  const { id, _t } = useLocalSearchParams<{ id: string; _t: string }>();
+  const { id, _t, graph } = useLocalSearchParams<{
+    id: string;
+    _t?: string;
+    graph?: string;
+  }>();
+  const router = useRouter();
+  const mode = parseGraphMode(graph);
 
   const [open, setOpen] = useState(false);
+
+  const handleModeChange = useCallback(
+    (nextMode: "category" | "topic") => {
+      router.setParams({ graph: nextMode });
+    },
+    [router]
+  );
+
   return (
     <PageContainer
       headerVariant="stack"
@@ -19,7 +33,12 @@ export const GraphThoughIdPage = () => {
         state: { open, setOpen },
       }}
     >
-      <GraphFeature focusedThoughtId={id} trigger={_t} />
+      <GraphFeature
+        mode={mode}
+        onModeChange={handleModeChange}
+        focusedThoughtId={id}
+        trigger={_t}
+      />
     </PageContainer>
   );
 };

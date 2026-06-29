@@ -2,15 +2,18 @@ import { useRouter } from "expo-router";
 import { Button } from "../button";
 import { Icon } from "../icons/icon";
 import { View } from "react-native";
+import { GraphMode } from "@/features/graph/types/types";
 
 export const GraphButton = ({
   id,
   elementType,
   type = "button",
+  graph = "category",
 }: {
   type?: "button" | "icon";
   id: string;
-  elementType: "category" | "thought" | "note";
+  elementType: "category" | "thought" | "note" | "topic";
+  graph?: GraphMode;
 }) => {
   const { push } = useRouter();
 
@@ -25,6 +28,7 @@ export const GraphButton = ({
             pathname: "/graph/[id]",
             params: {
               id: `${elementType}-${id}`,
+              graph,
               _t: Date.now(),
             },
           })

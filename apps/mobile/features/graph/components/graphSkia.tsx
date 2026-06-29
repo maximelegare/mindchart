@@ -151,15 +151,14 @@ const computeLayout = (data: NodeDatum, padding: number): Layout => {
   return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
 };
 
-const isCategoryNode = (node: NodeInfo) =>
-  node.depth === 1 &&
-  node.hasChildren &&
-  node.rawData.id.startsWith("category-");
-const isTopicNode = (node: NodeInfo) =>
-  node.hasChildren && node.rawData.id.startsWith("topic-");
-
 const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
   allNodes.filter((n) => n.parentId === parent.internalId).length;
+
+const isFirstLevelGroup = (node: NodeInfo) =>
+  node.depth === 1 && node.hasChildren;
+
+const isSecondLevelGroup = (node: NodeInfo, parentInternalId: string) =>
+  node.depth === 2 && node.hasChildren && node.parentId === parentInternalId;
 
 const formatLabel = (name: string) => {
   if (!name) return "";
@@ -233,30 +232,6 @@ export default function CirclePackSkia({
   ) => {
     if (dismissFocusHighlight && hatchHighlightActive) {
       setHatchHighlightActive(false);
-      // #region agent log
-      fetch(
-        "http://127.0.0.1:7896/ingest/7a3c8f38-74e4-4a91-a5fb-eff7ecdcfe85",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Debug-Session-Id": "16f523",
-          },
-          body: JSON.stringify({
-            sessionId: "16f523",
-            location: "graphSkia.tsx:navigateToNode",
-            message: "dismissed focused hatch",
-            data: {
-              targetDbId: node.dbId,
-              targetInternalId: node.internalId,
-            },
-            timestamp: Date.now(),
-            hypothesisId: "H5",
-            runId: "post-fix",
-          }),
-        }
-      ).catch(() => {});
-      // #endregion
     }
 
     if (!isToggleBack) {
@@ -401,7 +376,7 @@ export default function CirclePackSkia({
 
     if (atRoot) {
       for (const node of allNodes) {
-        if (!isCategoryNode(node)) continue;
+        if (!isFirstLevelGroup(node)) continue;
         if (countDirectChildren(node, allNodes) >= 2) {
           labels.set(node.internalId, formatLabel(node.rawData.name));
         }
@@ -409,16 +384,15 @@ export default function CirclePackSkia({
       return labels;
     }
 
-    if (isCategoryNode(activeViewNode)) {
+    if (isFirstLevelGroup(activeViewNode)) {
       for (const node of allNodes) {
-        if (isTopicNode(node) && node.parentId === activeViewNode.internalId) {
-          labels.set(node.internalId, formatLabel(node.rawData.name));
-        }
+        if (!isSecondLevelGroup(node, activeViewNode.internalId)) continue;
+        labels.set(node.internalId, formatLabel(node.rawData.name));
       }
     }
 
     return labels;
-  }, [activeViewNode, allNodes, nodeMap, rootNode]);
+  }, [activeViewNode, allNodes, rootNode]);
 
   const labelColor = hsl("foreground", colorScheme);
   const labelBgColor = hsl("background", colorScheme);
