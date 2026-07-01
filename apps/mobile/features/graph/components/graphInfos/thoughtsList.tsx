@@ -23,7 +23,7 @@ export const ThoughtsList: React.FC<ThoughtsListProps> = ({
   ];
 
   return (
-    <View className="flex-col gap-3 p-2">
+    <View className="flex-col gap-3">
       {sortedThoughts.map((t, idx) => (
         <ThoughtItem
           key={t.thoughtId ?? t.id}

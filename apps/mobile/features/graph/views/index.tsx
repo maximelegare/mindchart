@@ -60,7 +60,6 @@ export const GraphFeature = ({
 
       <View className="w-full flex-1">
         <GraphInfos
-          hierarchy={hierarchy}
           activeNode={activeNode}
           focusedThoughtId={focusedThoughtId}
         />

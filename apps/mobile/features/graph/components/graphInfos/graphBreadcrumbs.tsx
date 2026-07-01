@@ -45,60 +45,62 @@ export const GraphBreadcrumbs = ({
   };
 
   return (
-    <View className="mb-3 mx-2 gap-1 rounded-md bg-muted border-input border">
-      <View className="flex-row items-center min-h-10">
-        <TouchableOpacity
-          disabled={breadcrumbs.length <= 1}
-          onPress={handleGoBack}
-          className={cn(
-            "h-10 w-8 shrink-0 bg-input rounded-sm items-center justify-center",
-            breadcrumbs.length <= 1 ? "opacity-50" : ""
-          )}
-        >
-          <Icon
-            name="chevron-left"
-            color="text"
-            opacity={breadcrumbs.length <= 1 ? 50 : 100}
-          />
-        </TouchableOpacity>
+    <View>
+      <View className="gap-1 bg-muted border-t border-input">
+        <View className="flex-row items-center min-h-10">
+          <TouchableOpacity
+            disabled={breadcrumbs.length <= 1}
+            onPress={handleGoBack}
+            className={cn(
+              "h-10 w-8 shrink-0 bg-input rounded-sm items-center justify-center",
+              breadcrumbs.length <= 1 ? "opacity-50" : ""
+            )}
+          >
+            <Icon
+              name="chevron-left"
+              color="text"
+              opacity={breadcrumbs.length <= 1 ? 50 : 100}
+            />
+          </TouchableOpacity>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            alignItems: "center",
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            flexGrow: 1,
-          }}
-          className="flex-1"
-        >
-          {breadcrumbs.map((breadcrumb, index) => (
-            <View
-              key={breadcrumb.id}
-              className="flex-row items-center shrink-0"
-            >
-              {index > 0 && (
-                <Typography variant="p" className="mx-1 opacity-50">
-                  /
-                </Typography>
-              )}
-              <Button
-                variant="ghost"
-                size="xs"
-                className={cn(
-                  "opacity-50 shrink-0",
-                  index === breadcrumbs.length - 1 ? "opacity-100" : ""
-                )}
-                onPress={() => handleZoom(breadcrumb)}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              alignItems: "center",
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              flexGrow: 1,
+            }}
+            className="flex-1"
+          >
+            {breadcrumbs.map((breadcrumb, index) => (
+              <View
+                key={breadcrumb.id}
+                className="flex-row items-center shrink-0"
               >
-                <Typography variant="h3" numberOfLines={1}>
-                  {breadcrumb.name}
-                </Typography>
-              </Button>
-            </View>
-          ))}
-        </ScrollView>
+                {index > 0 && (
+                  <Typography variant="p" className="mx-1 opacity-50">
+                    /
+                  </Typography>
+                )}
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  className={cn(
+                    "opacity-50 shrink-0",
+                    index === breadcrumbs.length - 1 ? "opacity-100" : ""
+                  )}
+                  onPress={() => handleZoom(breadcrumb)}
+                >
+                  <Typography variant="h3" numberOfLines={1}>
+                    {breadcrumb.name}
+                  </Typography>
+                </Button>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
       </View>
     </View>
   );

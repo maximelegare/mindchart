@@ -28,6 +28,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
 import { NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
+import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const SIZE = SCREEN_WIDTH - 24;
@@ -415,67 +416,82 @@ export default function CirclePackSkia({
           },
         ]}
       >
-        <GestureDetector gesture={tap}>
-          <Canvas style={styles.canvas}>
-            {allNodes.map((node) => (
-              <SkCircle
-                key={node.internalId}
-                node={node}
-                viewX={viewX}
-                viewY={viewY}
-                viewR={viewR}
-                color={getNodeColor(node)}
-                isFocusedThought={
-                  hatchHighlightActive &&
-                  !!focusedDbId &&
-                  !node.hasChildren &&
-                  node.dbId === focusedDbId
-                }
-                hatchLineColor={hsl("border", colorScheme, 10)}
-              />
-            ))}
-            {labeledNodes.map(({ node, text }) => (
-              <SkLabel
-                key={`label-${node.internalId}`}
-                node={node}
-                text={text}
-                color={labelColor}
-                backgroundColor={labelBgColor}
-                viewX={viewX}
-                viewY={viewY}
-                viewR={viewR}
-              />
-            ))}
-          </Canvas>
-        </GestureDetector>
+        <View style={styles.canvasContainer}>
+          <GestureDetector gesture={tap}>
+            <Canvas style={styles.canvas}>
+              {allNodes.map((node) => (
+                <SkCircle
+                  key={node.internalId}
+                  node={node}
+                  viewX={viewX}
+                  viewY={viewY}
+                  viewR={viewR}
+                  color={getNodeColor(node)}
+                  isFocusedThought={
+                    hatchHighlightActive &&
+                    !!focusedDbId &&
+                    !node.hasChildren &&
+                    node.dbId === focusedDbId
+                  }
+                  hatchLineColor={hsl("border", colorScheme, 10)}
+                />
+              ))}
+              {labeledNodes.map(({ node, text }) => (
+                <SkLabel
+                  key={`label-${node.internalId}`}
+                  node={node}
+                  text={text}
+                  color={labelColor}
+                  backgroundColor={labelBgColor}
+                  viewX={viewX}
+                  viewY={viewY}
+                  viewR={viewR}
+                />
+              ))}
+            </Canvas>
+          </GestureDetector>
 
-        <View
-          className="absolute gap-2 p-2 m-2"
-          style={{ bottom: 0, right: 0 }}
-        >
-          <TouchableOpacity
-            onPress={handleZoomBack}
-            disabled={isAtRoot}
-            style={{
-              ...styles.zoomBtn,
-              backgroundColor: hsl("background", colorScheme),
-              opacity: isAtRoot ? 0.4 : 1,
-            }}
+          <View
+            className="absolute gap-2 p-2 m-2"
+            style={{ bottom: 0, right: 0 }}
           >
-            <Icon name="undo-dot" color="text" opacity={isAtRoot ? 50 : 100} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleZoomOut}
-            disabled={isAtRoot}
-            style={{
-              ...styles.zoomBtn,
-              backgroundColor: hsl("background", colorScheme),
-              opacity: isAtRoot ? 0.4 : 1,
-            }}
-          >
-            <Icon name="zoom-out" color="text" opacity={isAtRoot ? 50 : 100} />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleZoomBack}
+              disabled={isAtRoot}
+              style={{
+                ...styles.zoomBtn,
+                backgroundColor: hsl("background", colorScheme),
+                opacity: isAtRoot ? 0.4 : 1,
+              }}
+            >
+              <Icon
+                name="undo-dot"
+                color="text"
+                opacity={isAtRoot ? 50 : 100}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleZoomOut}
+              disabled={isAtRoot}
+              style={{
+                ...styles.zoomBtn,
+                backgroundColor: hsl("background", colorScheme),
+                opacity: isAtRoot ? 0.4 : 1,
+              }}
+            >
+              <Icon
+                name="zoom-out"
+                color="text"
+                opacity={isAtRoot ? 50 : 100}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
+
+        <GraphBreadcrumbs
+          hierarchy={data}
+          activeNode={activeViewNode.rawData}
+        />
       </View>
     </GestureHandlerRootView>
   );
@@ -615,12 +631,15 @@ const SkCircle = ({
 const styles = StyleSheet.create({
   wrapper: {
     width: SIZE,
-    height: SIZE,
     borderWidth: 1,
     borderRadius: 12,
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,
+  },
+  canvasContainer: {
+    width: SIZE,
+    height: SIZE,
   },
   canvas: {
     width: SIZE,

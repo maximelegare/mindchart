@@ -3,15 +3,12 @@ import { ScrollView, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { ThoughtsList } from "./thoughtsList";
-import { GraphBreadcrumbs } from "./graphBreadcrumbs";
-
 interface Props {
-  hierarchy: NodeDatum;
   activeNode: NodeDatum | null;
   focusedThoughtId?: string;
 }
 
-const GraphInfos = ({ hierarchy, activeNode, focusedThoughtId }: Props) => {
+const GraphInfos = ({ activeNode, focusedThoughtId }: Props) => {
   const listData = React.useMemo(() => {
     if (!activeNode) return [];
     return activeNode.children ? activeNode.children : [activeNode];
@@ -20,8 +17,6 @@ const GraphInfos = ({ hierarchy, activeNode, focusedThoughtId }: Props) => {
   return (
     <>
       <View className="p-4" style={{ flex: 1 }}>
-        <GraphBreadcrumbs hierarchy={hierarchy} activeNode={activeNode} />
-
         <ScrollView showsVerticalScrollIndicator={false}>
           {listData.length > 0 ? (
             <ThoughtsList
