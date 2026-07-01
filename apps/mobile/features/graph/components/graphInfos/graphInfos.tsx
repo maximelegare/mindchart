@@ -1,6 +1,5 @@
 import React from "react";
-import { ScrollView } from "react-native";
-import { Card } from "@/components/ui/card";
+import { ScrollView, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { ThoughtsList } from "./thoughtsList";
@@ -20,7 +19,7 @@ const GraphInfos = ({ hierarchy, activeNode, focusedThoughtId }: Props) => {
 
   return (
     <>
-      <Card className="p-4" style={{ flex: 1 }}>
+      <View className="p-4" style={{ flex: 1 }}>
         <GraphBreadcrumbs hierarchy={hierarchy} activeNode={activeNode} />
 
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -36,7 +35,7 @@ const GraphInfos = ({ hierarchy, activeNode, focusedThoughtId }: Props) => {
             </Typography>
           )}
         </ScrollView>
-      </Card>
+      </View>
     </>
   );
 };

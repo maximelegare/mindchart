@@ -114,7 +114,7 @@ export const PageContainer = ({
           marginTop: HEADER_HEIGHT + insets.top - HEADER_OVERLAP,
         }}
       >
-        <View className="relative flex-1">
+        <View className={cn("relative flex-1", !optionsHeader && "mt-6")}>
           {optionsHeader && (
             <PageOptionsHeaderContainer>
               {optionsHeader}

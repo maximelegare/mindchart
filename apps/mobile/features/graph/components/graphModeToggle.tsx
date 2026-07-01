@@ -8,7 +8,7 @@ export const GraphModeToggle = () => {
   const setGraphMode = useGraphStore((state) => state.setGraphMode);
 
   return (
-    <Gutter size="md" className="py-2">
+    <Gutter size="md">
       <View className="flex-row items-center justify-end">
         <ModeToggle
           values={{

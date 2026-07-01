@@ -63,7 +63,7 @@ export const ThoughtItem: React.FC<ThoughtItem> = ({
     >
       <Card
         className={cn(
-          "w-full flex-row overflow-hidden bg-muted",
+          "w-full flex-row overflow-hidden",
           isHighlighted && "border-2"
         )}
         style={{

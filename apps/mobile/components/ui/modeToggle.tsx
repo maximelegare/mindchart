@@ -70,13 +70,13 @@ const ModeToggle = ({ onToggle, currentMode, values }: ModeToggleProps) => {
 
   return (
     <Pressable
-      className="w-[100] relative h-[42] border-border border-solid border-[1px] overflow-hidden bg-card rounded-full flex-row items-center justify-between"
+      className="w-[90] relative h-[36] border-border border-solid border-[1px] overflow-hidden bg-card rounded-full flex-row items-center justify-between"
       onPress={handlePress}
       onLayout={onLayout}
     >
       {/* The Sliding Background */}
       <Animated.View
-        className="absolute w-[54%] h-full bg-border border-solid border-4 border-card rounded-full"
+        className="absolute w-[54%] h-full bg-border border-solid border-[3px] border-card rounded-full"
         style={sliderStyle}
       />
 

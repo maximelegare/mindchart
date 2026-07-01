@@ -211,7 +211,7 @@ export const OptionsBar = () => {
 
   return (
     <View>
-      <Gutter size="md" className="py-2">
+      <Gutter size="md">
         <View className="flex-row items-center justify-between gap-3">
           <Button
             variant="outline"
