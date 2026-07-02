@@ -9,7 +9,7 @@ export const GraphModeToggle = () => {
 
   return (
     <Gutter size="md">
-      <View className="flex-row items-center justify-end">
+      <View className="flex-row items-center justify-start">
         <ModeToggle
           values={{
             first: { name: "category", icon: "shapes" },
