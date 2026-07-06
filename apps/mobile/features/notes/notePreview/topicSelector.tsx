@@ -19,9 +19,11 @@ import { Icon } from "@/components/ui/icons/icon";
 export const TopicSelector = ({
   onSelect,
   selectedTopic,
+  maxChars,
 }: {
   onSelect: (topic: Topic) => void;
   selectedTopic: Topic;
+  maxChars?: number;
 }) => {
   const { useFetchAllTopicsQuery } = useControllers().topics;
   const { data: topics } = useFetchAllTopicsQuery();
@@ -32,19 +34,25 @@ export const TopicSelector = ({
     dismiss();
   };
 
+  const displayName =
+    maxChars && selectedTopic.name.length > maxChars
+      ? `${selectedTopic.name.slice(0, maxChars)}…`
+      : selectedTopic.name;
+
   return (
     <>
       <BottomSheet>
         <BottomSheetOpenTrigger asChild className="w-fit">
-          <TouchableOpacity className="flex-row items-center gap-2">
+          <TouchableOpacity className="flex-row items-center gap-1.5 rounded-lg bg-card border border-input px-3 py-2 min-h-[40px]">
             {selectedTopic.isNew && (
               <Icon name="plus" size={16} color="foreground" />
             )}
             <Typography
               variant="h4"
-              className="text-foreground px-2 py-1 bg-card border border-input rounded-lg"
+              className="text-foreground"
+              numberOfLines={1}
             >
-              {selectedTopic.name}
+              {displayName}
             </Typography>
           </TouchableOpacity>
         </BottomSheetOpenTrigger>

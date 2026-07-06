@@ -54,6 +54,9 @@ const createEmptyThought = (noteId: string) => {
   };
 };
 
+const TITLE_SCROLL_PADDING = 12;
+const FIELD_CHIP_HEIGHT = 40;
+
 export const ManualNoteForm = ({
   noteId,
   defaultTopic,
@@ -61,6 +64,7 @@ export const ManualNoteForm = ({
   onSubmit,
 }: ManualNoteFormProps) => {
   const [showTitles, setShowTitles] = React.useState(false);
+  const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
 
   const { control, handleSubmit } = useForm<ManualNoteFormData>({
     defaultValues: {
@@ -186,41 +190,72 @@ export const ManualNoteForm = ({
 
   return (
     <View className="flex-1 flex-col gap-4 w-full">
-      <View className="flex-col gap-2">
-        <Label nativeID="topic">Topic</Label>
-        <Controller
-          control={control}
-          name="topic"
-          render={({ field: { onChange, value } }) => (
-            <TopicSelector
-              selectedTopic={{ ...value }}
-              onSelect={(topic) => onChange({ ...topic })}
-            />
-          )}
-        />
-      </View>
+      <View className="flex-row gap-3 items-start w-full">
+        <View className="flex-1 min-w-0 flex-col gap-1">
+          <Label nativeID="title">Title</Label>
+          <Controller
+            control={control}
+            name="title"
+            rules={{ required: true }}
+            render={({ field: { onChange, value } }) => (
+              <View
+                className="rounded-lg bg-card border border-input overflow-hidden justify-center"
+                style={{ minHeight: FIELD_CHIP_HEIGHT }}
+                onLayout={(event) =>
+                  setTitleContainerWidth(event.nativeEvent.layout.width)
+                }
+              >
+                <ScrollView
+                  horizontal
+                  nestedScrollEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{
+                    paddingHorizontal: TITLE_SCROLL_PADDING,
+                    alignItems: "center",
+                    minHeight: FIELD_CHIP_HEIGHT,
+                  }}
+                >
+                  <EditableField
+                    className="p-0 m-0 bg-transparent border-0"
+                    style={{
+                      minWidth: Math.max(
+                        titleContainerWidth - TITLE_SCROLL_PADDING * 2,
+                        Math.max(value.length, 12) * 9 + 8
+                      ),
+                      minHeight: 24,
+                      paddingVertical: 0,
+                      textAlignVertical: "center",
+                    }}
+                    onChange={onChange}
+                    value={value}
+                    id="manual-note-title"
+                    title="Title"
+                    fontSize="md"
+                    placeholder="Enter a title"
+                    multiline={false}
+                  />
+                </ScrollView>
+              </View>
+            )}
+          />
+        </View>
 
-      <Controller
-        control={control}
-        name="title"
-        rules={{ required: true }}
-        render={({ field: { onChange, value } }) => (
-          <View className="flex-col gap-1 relative w-full">
-            <Label nativeID="title">Title</Label>
-            <View className="relative">
-              <EditableField
-                className="p-2 rounded-lg bg-card border border-input relative"
-                onChange={onChange}
-                value={value}
-                id="manual-note-title"
-                title="Title"
-                fontSize="lg"
-                placeholder="Enter a title"
+        <View className="shrink-0 flex-col gap-1">
+          <Label nativeID="topic">Topic</Label>
+          <Controller
+            control={control}
+            name="topic"
+            render={({ field: { onChange, value } }) => (
+              <TopicSelector
+                selectedTopic={{ ...value }}
+                onSelect={(topic) => onChange({ ...topic })}
+                maxChars={18}
               />
-            </View>
-          </View>
-        )}
-      />
+            )}
+          />
+        </View>
+      </View>
 
       <View className="flex-col gap-1 flex-1">
         <View className="flex-row items-center justify-between">

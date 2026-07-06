@@ -24,6 +24,7 @@ type EditableFieldProps = {
   placeholder?: string;
   onInsertNewItem?: () => void;
   onBackspaceAtStart?: () => void;
+  multiline?: boolean;
 };
 
 export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
@@ -42,6 +43,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
       placeholder = "Enter text",
       onInsertNewItem,
       onBackspaceAtStart,
+      multiline = true,
     },
     ref
   ) {
@@ -91,7 +93,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
         onChangeText={handleChangeText}
         onKeyPress={handleKeyPress}
         value={value}
-        multiline
+        multiline={multiline}
         placeholder={placeholder}
         blurOnSubmit={false}
       />
@@ -109,7 +111,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
         onChangeText={handleChangeText}
         onKeyPress={handleKeyPress}
         value={value}
-        multiline
+        multiline={multiline}
         placeholder={placeholder}
         blurOnSubmit={false}
       />
