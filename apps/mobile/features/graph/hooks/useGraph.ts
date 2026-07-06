@@ -1,11 +1,12 @@
 import { useControllers } from "@/api/controllers/useControllers";
+import { warmupGraphLayouts } from "../components/graphSkia";
 import { buildGraphByTopic } from "../utils/buildGraphByTopic";
 import { buildGraphWithTopics } from "../utils/buildGraphWithTopics";
 import { normalizeGraphData } from "../utils/parseGraphData";
 import { ThoughtWithEmbedding } from "@repo/zod-schemas";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
-import { GraphDataCache, GraphMode, NodeDatum } from "../types/types";
+import { GraphDataCache, NodeDatum } from "../types/types";
 
 export type { NodeDatum };
 
@@ -18,7 +19,7 @@ export type NodeType = {
   children: boolean;
 };
 
-export const useGraph = (mode: GraphMode) => {
+export const useGraph = () => {
   const { graph, notesAndThoughts } = useControllers();
 
   const {
@@ -51,50 +52,64 @@ export const useGraph = (mode: GraphMode) => {
   const graphData = graphQuery.data?.data;
 
   const [hierarchies, setHierarchies] = useState<GraphDataCache | null>(null);
-
-  const hierarchy = useMemo(
-    () => (hierarchies ? hierarchies[mode] : null),
-    [hierarchies, mode]
-  );
+  const builtForRef = useRef<string | null>(null);
 
   const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId);
   useEffect(() => {
     setHierarchies(null);
+    builtForRef.current = null;
   }, [activeWorkspaceId]);
 
-  const rebuildGraph = useCallback(async () => {
-    if (!thoughts) return;
-
-    const typedThoughts = thoughts as ThoughtWithEmbedding[];
-    const cache: GraphDataCache = {
-      category: buildGraphWithTopics(typedThoughts) as NodeDatum,
-      topic: buildGraphByTopic(typedThoughts) as NodeDatum,
-    };
-
+  const applyCache = (cache: GraphDataCache, cacheKey: string) => {
+    builtForRef.current = cacheKey;
     setHierarchies(cache);
-    await mutateGraph(cache);
-  }, [thoughts, mutateGraph]);
+    warmupGraphLayouts(cache);
+  };
 
   useEffect(() => {
-    if (!syncGraph && graphData) {
-      const normalized = normalizeGraphData(graphData);
-      if (normalized) {
-        setHierarchies(normalized);
-      }
-    }
-  }, [syncGraph, graphData]);
+    if (syncGraph || !graphData) return;
+
+    const normalized = normalizeGraphData(graphData);
+    if (!normalized) return;
+
+    const cacheKey = `cached:${activeWorkspaceId}`;
+    if (builtForRef.current === cacheKey) return;
+
+    const id = setTimeout(() => {
+      applyCache(normalized, cacheKey);
+    }, 0);
+
+    return () => clearTimeout(id);
+  }, [syncGraph, graphData, activeWorkspaceId]);
 
   useEffect(() => {
-    if (!syncGraph) return;
-    if (thoughtsIsFetching) return;
-    rebuildGraph();
-  }, [syncGraph, thoughtsIsFetching, rebuildGraph]);
+    if (!syncGraph || thoughtsIsFetching || !thoughts) return;
+
+    const cacheKey = `thoughts:${activeWorkspaceId}:${thoughts.length}`;
+    if (builtForRef.current === cacheKey) return;
+
+    const id = setTimeout(() => {
+      const typedThoughts = thoughts as ThoughtWithEmbedding[];
+      const cache: GraphDataCache = {
+        category: buildGraphWithTopics(typedThoughts) as NodeDatum,
+        topic: buildGraphByTopic(typedThoughts) as NodeDatum,
+      };
+
+      applyCache(cache, cacheKey);
+      void mutateGraph(cache);
+    }, 0);
+
+    return () => clearTimeout(id);
+  }, [syncGraph, thoughtsIsFetching, thoughts, activeWorkspaceId, mutateGraph]);
+
+  const isLoading =
+    !hierarchies &&
+    (syncGraph ? thoughtsIsFetching || !thoughts : graphQuery.isLoading);
 
   return {
     syncGraph,
-    hierarchy,
     hierarchies,
-    rebuildGraph,
+    isLoading,
     refetchGraph: graphQuery.refetch,
     refetchSyncFlag: refetchSyncGraph,
   };

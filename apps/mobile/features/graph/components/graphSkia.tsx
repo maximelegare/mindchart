@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from "react";
-import { Dimensions, View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import {
   Canvas,
   Circle,
@@ -29,9 +29,10 @@ import { Icon } from "@/components/ui/icons/icon";
 import { NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
+import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
+import { GRAPH_CANVAS_SIZE } from "../constants";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const SIZE = SCREEN_WIDTH - 24;
+const SIZE = GRAPH_CANVAS_SIZE;
 const PACK_PADDING = 8;
 const LABEL_GAP = -10;
 const LABEL_FONT_SIZE = 10;
@@ -82,6 +83,11 @@ let cachedLayoutEntry: {
   layout: Layout;
 } | null = null;
 
+const layoutCache = new Map<string, Layout>();
+
+const layoutCacheKey = (signature: string, padding: number) =>
+  `${signature}:${padding}`;
+
 const getOrComputeLayout = (
   data: NodeDatum,
   padding: number
@@ -94,22 +100,41 @@ const getOrComputeLayout = (
     return { layout: cachedLayoutEntry.layout, hitReason: "ref" };
   }
   const signature = computeSignature(data);
-  if (
-    cachedLayoutEntry &&
-    cachedLayoutEntry.signature === signature &&
-    cachedLayoutEntry.padding === padding
-  ) {
+  const key = layoutCacheKey(signature, padding);
+  const cachedLayout = layoutCache.get(key);
+  if (cachedLayout) {
     cachedLayoutEntry = {
       dataRef: data,
       signature,
       padding,
-      layout: cachedLayoutEntry.layout,
+      layout: cachedLayout,
     };
-    return { layout: cachedLayoutEntry.layout, hitReason: "sig" };
+    return { layout: cachedLayout, hitReason: "sig" };
   }
   const layout = computeLayout(data, padding);
+  layoutCache.set(key, layout);
   cachedLayoutEntry = { dataRef: data, signature, padding, layout };
   return { layout, hitReason: "miss" };
+};
+
+export const warmupGraphLayouts = (cache: {
+  category: NodeDatum;
+  topic: NodeDatum;
+}) => {
+  setTimeout(() => {
+    getOrComputeLayout(cache.category, PACK_PADDING);
+    setTimeout(() => {
+      getOrComputeLayout(cache.topic, PACK_PADDING);
+    }, 0);
+  }, 0);
+};
+
+export const getCachedGraphLayout = (
+  data: NodeDatum,
+  padding = PACK_PADDING
+): Layout | null => {
+  const signature = computeSignature(data);
+  return layoutCache.get(layoutCacheKey(signature, padding)) ?? null;
 };
 
 const computeLayout = (data: NodeDatum, padding: number): Layout => {
@@ -195,23 +220,68 @@ interface Props {
   onNodeSelected?: (node: NodeDatum, parent?: NodeDatum) => void;
 }
 
-export default function CirclePackSkia({
+export default function CirclePackSkia(props: Props) {
+  const layoutRef = useRef<Layout | null>(
+    getCachedGraphLayout(props.data) ?? null
+  );
+  const [layout, setLayout] = useState<Layout | null>(() => layoutRef.current);
+  const [isComputing, setIsComputing] = useState(false);
+
+  useEffect(() => {
+    const cached = getCachedGraphLayout(props.data);
+    if (cached) {
+      layoutRef.current = cached;
+      setLayout(cached);
+      setIsComputing(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsComputing(true);
+
+    const id = setTimeout(() => {
+      if (cancelled) return;
+      const { layout: nextLayout } = getOrComputeLayout(
+        props.data,
+        PACK_PADDING
+      );
+      layoutRef.current = nextLayout;
+      setLayout(nextLayout);
+      setIsComputing(false);
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
+  }, [props.data]);
+
+  const activeLayout = layout ?? layoutRef.current;
+  if (!activeLayout) {
+    return isComputing ? <GraphLoadingPlaceholder /> : null;
+  }
+
+  return (
+    <CirclePackSkiaRenderer
+      key={computeSignature(props.data)}
+      {...props}
+      layout={activeLayout}
+    />
+  );
+}
+
+function CirclePackSkiaRenderer({
   data,
+  layout,
   focusedThoughtId,
   trigger,
   onNodeSelected,
-}: Props) {
+}: Props & { layout: Layout }) {
   const { colorScheme } = useColorScheme();
-  // This ref prevents the useEffect from overwriting a tap-initiated animation
   const isTransitioningInternal = useRef(false);
   const [hatchHighlightActive, setHatchHighlightActive] =
     useState(!!focusedThoughtId);
-
-  // ---------- 1. Process Hierarchy & Layout ----------
-  const { rootNode, allNodes, nodeMap } = useMemo(() => {
-    const { layout } = getOrComputeLayout(data, PACK_PADDING);
-    return layout;
-  }, [data]);
+  const { rootNode, allNodes, nodeMap } = layout;
 
   // ---------- 2. Shared Values ----------
   const viewX = useSharedValue(rootNode.x);

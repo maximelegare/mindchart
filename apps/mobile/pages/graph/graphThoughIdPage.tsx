@@ -1,6 +1,6 @@
 import { PageContainer } from "@/components/layout/page/pageContainer";
 import { GraphModeToggle } from "@/features/graph/components/graphModeToggle";
-import { useGraphStore } from "@/features/graph/context/graphContext";
+import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import { GraphFeature } from "@/features/graph/views";
 import { parseGraphMode } from "@/features/graph/types/types";
 import { SearchFeature } from "@/features/search/views";
@@ -13,15 +13,14 @@ export const GraphThoughIdPage = () => {
     _t?: string;
     graph?: string;
   }>();
-  const setGraphMode = useGraphStore((state) => state.setGraphMode);
 
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (graph !== undefined) {
-      setGraphMode(parseGraphMode(graph));
+      setGraphModeImmediate(parseGraphMode(graph));
     }
-  }, [graph, setGraphMode]);
+  }, [graph]);
 
   return (
     <PageContainer

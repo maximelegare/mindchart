@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useGraphStore } from "../context/graphContext";
 import { useGraph } from "../hooks/useGraph";
 import CirclePackSkia from "../components/graphSkia";
+import { GraphLoadingPlaceholder } from "../components/graphLoadingPlaceholder";
 import GraphInfos from "../components/graphInfos/graphInfos";
 import { NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
@@ -15,8 +16,13 @@ export const GraphFeature = ({
   focusedThoughtId?: string;
   trigger?: string;
 }) => {
-  const mode = useGraphStore((state) => state.mode);
-  const { hierarchy, refetchGraph, refetchSyncFlag } = useGraph(mode);
+  const renderMode = useGraphStore((state) => state.renderMode);
+  const { hierarchies, isLoading, refetchGraph, refetchSyncFlag } = useGraph();
+
+  const hierarchy = useMemo(
+    () => (hierarchies ? hierarchies[renderMode] : null),
+    [hierarchies, renderMode]
+  );
 
   const [selection, setSelection] = useState<{
     active: NodeDatum | null;
@@ -42,16 +48,24 @@ export const GraphFeature = ({
 
   useEffect(() => {
     setSelection({ active: null, parent: null });
-  }, [mode]);
+  }, [renderMode]);
 
-  if (!hierarchy) return null;
+  if (isLoading || !hierarchy) {
+    return (
+      <View className="flex-col gap-4 items-center flex-1">
+        <GraphLoadingPlaceholder />
+        <SpaceFiller
+          sizes={{ paddingBottom: ["TAB_BAR_HEIGHT", "HEADER_OVERLAP"] }}
+        />
+      </View>
+    );
+  }
 
   const activeNode = selection.active ?? hierarchy;
 
   return (
     <View className="flex-col gap-4 items-center flex-1">
       <CirclePackSkia
-        key={mode}
         data={hierarchy}
         focusedThoughtId={focusedThoughtId}
         trigger={trigger}

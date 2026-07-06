@@ -1,4 +1,4 @@
-import { useGraphStore } from "@/features/graph/context/graphContext";
+import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import { GraphMode } from "@/features/graph/types/types";
 import { useRouter } from "expo-router";
 import { Button } from "../button";
@@ -25,7 +25,7 @@ export const GraphButton = ({
         size="xs"
         className="px-4"
         onPress={() => {
-          useGraphStore.getState().setGraphMode(graph);
+          setGraphModeImmediate(graph);
           push({
             pathname: "/graph/[id]",
             params: {
