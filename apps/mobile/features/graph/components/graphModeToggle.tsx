@@ -1,6 +1,6 @@
 import ModeToggle from "@/components/ui/modeToggle";
-import { Gutter } from "@/components/ui/gutter";
 import { View } from "react-native";
+import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 import { useGraphStore } from "../context/graphContext";
 
 export const GraphModeToggle = () => {
@@ -8,7 +8,7 @@ export const GraphModeToggle = () => {
   const setGraphMode = useGraphStore((state) => state.setGraphMode);
 
   return (
-    <Gutter size="md">
+    <PageOptionsHeaderContainer>
       <View className="flex-row items-center justify-start">
         <ModeToggle
           values={{
@@ -21,6 +21,6 @@ export const GraphModeToggle = () => {
           }
         />
       </View>
-    </Gutter>
+    </PageOptionsHeaderContainer>
   );
 };
