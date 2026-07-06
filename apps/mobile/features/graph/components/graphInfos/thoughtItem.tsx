@@ -407,8 +407,8 @@ export const ThoughtItem: React.FC<ThoughtItemProps> = ({
       <View className="w-full flex-row overflow-hidden">
         {mainColorStripe ? (
           <View
-            style={{ backgroundColor: categoryColor }}
-            className="w-3 self-stretch"
+            style={{ backgroundColor: categoryColor, width: 5 }}
+            className="self-stretch"
           />
         ) : null}
         <View className="flex-1 min-w-0 p-2">
