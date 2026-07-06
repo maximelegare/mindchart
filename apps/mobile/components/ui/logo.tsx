@@ -22,14 +22,20 @@ export const LogoWithText = () => {
         <Typography
           variant="h4"
           className="text-3xl"
-          style={{ color: hsl("background", "theme", colorScheme) }}
+          style={{
+            color: hsl("background", "theme", colorScheme),
+            fontFamily: "QuicksandRegular",
+          }}
         >
           mind
         </Typography>
         <Typography
           variant="h4"
           className="text-3xl"
-          style={{ color: hsl("border", "theme", colorScheme, 20) }}
+          style={{
+            color: hsl("border", "theme", colorScheme, 20),
+            fontFamily: "QuicksandRegular",
+          }}
         >
           chart
         </Typography>

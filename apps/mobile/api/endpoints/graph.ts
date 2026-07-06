@@ -5,7 +5,7 @@ import {
   updateGraphDataQuery,
   updateSyncGraphDataQuery,
 } from "@repo/sqlite";
-import { NodeDatum } from "@/features/graph/hooks/useGraph";
+import { GraphDataCache } from "@/features/graph/types/types";
 
 export const fetchGraphData = async () => {
   const db = getOPDatabase();
@@ -17,7 +17,7 @@ export const fetchSyncGraph = async () => {
   return await getSyncGraphDataQuery(db);
 };
 
-export const updateGraphData = async (data: NodeDatum) => {
+export const updateGraphData = async (data: GraphDataCache) => {
   const db = getOPDatabase();
   return updateGraphDataQuery(db, data);
 };

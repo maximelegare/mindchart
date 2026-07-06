@@ -12,7 +12,6 @@ import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { MoreOptionsMenuProps } from "../header/moreOptions/moreOptionsMenu";
 import { IconName } from "@/components/ui/icons/icon-registry";
-import { PageOptionsHeaderContainer } from "./pageOptionsHeaderContainer";
 
 const { HEADER_HEIGHT, HEADER_OVERLAP } = LAYOUT_SIZES;
 
@@ -114,12 +113,8 @@ export const PageContainer = ({
           marginTop: HEADER_HEIGHT + insets.top - HEADER_OVERLAP,
         }}
       >
-        <View className="relative flex-1">
-          {optionsHeader && (
-            <PageOptionsHeaderContainer>
-              {optionsHeader}
-            </PageOptionsHeaderContainer>
-          )}
+        <View className={cn("relative flex-1", !optionsHeader && "mt-6")}>
+          {optionsHeader}
           {!noScrollView ? (
             <ScrollView className="gap-y-6" ref={scrollRef}>
               <Gutter size="md">{children}</Gutter>

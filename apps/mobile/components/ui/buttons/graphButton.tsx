@@ -1,3 +1,5 @@
+import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
+import { GraphMode } from "@/features/graph/types/types";
 import { useRouter } from "expo-router";
 import { Button } from "../button";
 import { Icon } from "../icons/icon";
@@ -7,10 +9,12 @@ export const GraphButton = ({
   id,
   elementType,
   type = "button",
+  graph = "category",
 }: {
   type?: "button" | "icon";
   id: string;
-  elementType: "category" | "thought" | "note";
+  elementType: "category" | "thought" | "note" | "topic";
+  graph?: GraphMode;
 }) => {
   const { push } = useRouter();
 
@@ -20,15 +24,17 @@ export const GraphButton = ({
         variant="ghost"
         size="xs"
         className="px-4"
-        onPress={() =>
+        onPress={() => {
+          setGraphModeImmediate(graph);
           push({
             pathname: "/graph/[id]",
             params: {
               id: `${elementType}-${id}`,
+              graph,
               _t: Date.now(),
             },
-          })
-        }
+          });
+        }}
       >
         <Icon
           size={20}

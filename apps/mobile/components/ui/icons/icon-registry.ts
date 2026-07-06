@@ -41,6 +41,7 @@ export type IconName =
   | "rotate-cw"
   | "search"
   | "settings"
+  | "shapes"
   | "shopping-cart"
   | "sliders-horizontal"
   | "sparkles"
@@ -219,6 +220,10 @@ export const ICON_METADATA: Record<
   settings: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0a2.34 2.34 0 0 0 3.319 1.915a2.34 2.34 0 0 1 2.33 4.033a2.34 2.34 0 0 0 0 3.831a2.34 2.34 0 0 1-2.33 4.033a2.34 2.34 0 0 0-3.319 1.915a2.34 2.34 0 0 1-4.659 0a2.34 2.34 0 0 0-3.32-1.915a2.34 2.34 0 0 1-2.33-4.033a2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></g>`,
+  },
+  shapes: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z"></path><rect width="7" height="7" x="3" y="14" rx="1"></rect><circle cx="17.5" cy="17.5" r="3.5"></circle></g>`,
   },
   "shopping-cart": {
     viewBox: "0 0 24 24",

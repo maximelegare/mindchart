@@ -5,11 +5,11 @@ import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { useState } from "react";
 import { Icon } from "@/components/ui/icons/icon";
 import { Gutter } from "@/components/ui/gutter";
-import { Separator } from "@/components/ui/separator";
 import { H4 } from "@/components/ui/typography";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useOptionsBar } from "../context/optionBarContext";
+import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 
 const SORT_OPTIONS: {
   value: OptionsBarType["sortBy"];
@@ -210,77 +210,78 @@ export const OptionsBar = () => {
     GROUP_OPTIONS.find((o) => o.value === groupBy)?.label ?? groupBy;
 
   return (
-    <View>
-      <Gutter size="md" className="py-2">
-        <View className="flex-row items-center justify-between gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            cornerRadius="full"
-            className="flex-row items-center gap-2"
-            onPress={() => setExpanded(!expanded)}
-          >
-            <Icon name="sliders-horizontal" color="text" size={16} />
-            <Icon
-              name={expanded ? "chevron-up" : "chevron-down"}
-              color="text"
-              size={20}
-            />
-          </Button>
+    <PageOptionsHeaderContainer
+      footer={
+        <Gutter size="md">
+          <CollapsibleContainer expanded={expanded}>
+            <View className="gap-4 py-2">
+              <View className="gap-2">
+                <H4>Sort by</H4>
+                <View style={{ paddingLeft: 10 }}>
+                  <RadioOptionRow
+                    idPrefix="sort"
+                    options={SORT_OPTIONS}
+                    value={sortBy}
+                    onValueChange={onSortByChange}
+                  />
+                </View>
+              </View>
+              <View className="gap-2">
+                <H4>Group by</H4>
+                <View style={{ paddingLeft: 10 }}>
+                  <RadioOptionRow
+                    idPrefix="group"
+                    options={GROUP_OPTIONS}
+                    value={groupBy}
+                    onValueChange={onGroupByChange}
+                  />
+                </View>
+              </View>
+              <View className="gap-2">
+                <H4>Display</H4>
+                <View style={{ paddingLeft: 10 }}>
+                  <DisplayOptions
+                    displayMode={displayMode}
+                    showOverview={showOverview}
+                    onDisplayModeChange={onDisplayModeChange}
+                    onShowOverviewChange={onShowOverviewChange}
+                  />
+                </View>
+              </View>
+            </View>
+          </CollapsibleContainer>
+        </Gutter>
+      }
+    >
+      <View className="flex-row items-center justify-between gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          cornerRadius="full"
+          className="flex-row items-center gap-2"
+          onPress={() => setExpanded(!expanded)}
+        >
+          <Icon name="sliders-horizontal" color="text" size={16} />
+          <Icon
+            name={expanded ? "chevron-up" : "chevron-down"}
+            color="text"
+            size={20}
+          />
+        </Button>
 
-          <View className="flex-1 flex-row flex-wrap justify-end gap-1.5">
-            <View className="rounded-full border border-border bg-background px-2.5 py-0.5">
-              <Typography variant="p" className="text-xs text-muted-foreground">
-                {sortLabel}
-              </Typography>
-            </View>
-            <View className="rounded-full border border-border bg-background px-2.5 py-0.5">
-              <Typography variant="p" className="text-xs text-muted-foreground">
-                {groupLabel}
-              </Typography>
-            </View>
+        <View className="flex-1 flex-row flex-wrap justify-end gap-1.5">
+          <View className="rounded-full border border-border bg-background px-2.5 py-0.5">
+            <Typography variant="p" className="text-xs text-muted-foreground">
+              {sortLabel}
+            </Typography>
+          </View>
+          <View className="rounded-full border border-border bg-background px-2.5 py-0.5">
+            <Typography variant="p" className="text-xs text-muted-foreground">
+              {groupLabel}
+            </Typography>
           </View>
         </View>
-
-        <CollapsibleContainer expanded={expanded}>
-          <View className="gap-4 pt-3">
-            <Separator />
-            <View className="gap-2">
-              <H4>Sort by</H4>
-              <View style={{ paddingLeft: 10 }}>
-                <RadioOptionRow
-                  idPrefix="sort"
-                  options={SORT_OPTIONS}
-                  value={sortBy}
-                  onValueChange={onSortByChange}
-                />
-              </View>
-            </View>
-            <View className="gap-2">
-              <H4>Group by</H4>
-              <View style={{ paddingLeft: 10 }}>
-                <RadioOptionRow
-                  idPrefix="group"
-                  options={GROUP_OPTIONS}
-                  value={groupBy}
-                  onValueChange={onGroupByChange}
-                />
-              </View>
-            </View>
-            <View className="gap-2">
-              <H4>Display</H4>
-              <View style={{ paddingLeft: 10 }}>
-                <DisplayOptions
-                  displayMode={displayMode}
-                  showOverview={showOverview}
-                  onDisplayModeChange={onDisplayModeChange}
-                  onShowOverviewChange={onShowOverviewChange}
-                />
-              </View>
-            </View>
-          </View>
-        </CollapsibleContainer>
-      </Gutter>
-    </View>
+      </View>
+    </PageOptionsHeaderContainer>
   );
 };

@@ -1,19 +1,14 @@
 import React from "react";
-import { ScrollView } from "react-native";
-import { Card } from "@/components/ui/card";
+import { ScrollView, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { ThoughtsList } from "./thoughtsList";
-import { GraphBreadcrumbs } from "./graphBreadcrumbs";
-
 interface Props {
   activeNode: NodeDatum | null;
-  parentNode: NodeDatum | null;
   focusedThoughtId?: string;
 }
 
-const GraphInfos = ({ activeNode, parentNode, focusedThoughtId }: Props) => {
-  // If we have children, show them. If it's a leaf, show the leaf itself in the list.
+const GraphInfos = ({ activeNode, focusedThoughtId }: Props) => {
   const listData = React.useMemo(() => {
     if (!activeNode) return [];
     return activeNode.children ? activeNode.children : [activeNode];
@@ -21,13 +16,11 @@ const GraphInfos = ({ activeNode, parentNode, focusedThoughtId }: Props) => {
 
   return (
     <>
-      <Card className="p-4" style={{ flex: 1 }}>
-        <GraphBreadcrumbs activeNode={activeNode} parentNode={parentNode} />
-
+      <View className="p-4" style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
           {listData.length > 0 ? (
             <ThoughtsList
-              parentNodeId={parentNode?.id || "root"}
+              parentNodeId={activeNode?.id ?? "root"}
               thoughts={listData}
               focusedThoughtId={focusedThoughtId}
             />
@@ -37,7 +30,7 @@ const GraphInfos = ({ activeNode, parentNode, focusedThoughtId }: Props) => {
             </Typography>
           )}
         </ScrollView>
-      </Card>
+      </View>
     </>
   );
 };

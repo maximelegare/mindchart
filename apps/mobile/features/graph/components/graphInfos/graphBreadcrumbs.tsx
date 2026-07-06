@@ -1,83 +1,86 @@
 import React, { useMemo } from "react";
 import { NodeDatum } from "../../types/types";
-import { TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui";
 import { useRouter } from "expo-router";
 import { Icon } from "@/components/ui/icons/icon";
 import { cn } from "@/lib/cn";
+import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
 
 type GraphBreadcrumbsProps = {
+  hierarchy: NodeDatum;
   activeNode: NodeDatum | null;
-  parentNode: NodeDatum | null;
 };
 
 export const GraphBreadcrumbs = ({
+  hierarchy,
   activeNode,
-  parentNode,
 }: GraphBreadcrumbsProps) => {
   const breadcrumbs = useMemo(() => {
-    const items: Array<{ id: string; name: string }> = [
-      { id: "root", name: "Root" },
-    ];
-    if (parentNode && parentNode.id !== "root") {
-      items.push({ id: parentNode.id, name: parentNode.name });
-    }
-    if (
-      activeNode &&
-      activeNode.id !== parentNode?.id &&
-      activeNode.id !== "root"
-    ) {
-      items.push({ id: activeNode.id, name: activeNode.name });
-    }
-    return items;
-  }, [activeNode, parentNode]);
+    const targetId = activeNode?.id ?? "root";
+    return findNodePath(hierarchy, targetId).map((node) => ({
+      id: node.id,
+      name: formatBreadcrumbLabel(node),
+    }));
+  }, [activeNode?.id, hierarchy]);
 
   const { setParams } = useRouter();
 
-  const handleZoom = (breadcrumb: { id: string; name: string }) => {
-    const targetId = breadcrumb.id;
+  const updateGraphParams = (targetId: string) => {
     setParams({
       id: targetId,
       _t: Date.now().toString(),
     });
   };
 
+  const handleZoom = (breadcrumb: { id: string; name: string }) => {
+    updateGraphParams(breadcrumb.id);
+  };
+
   const handleGoBack = () => {
     if (breadcrumbs.length > 1) {
-      setParams({
-        id: breadcrumbs[breadcrumbs.length - 2].id,
-        _t: Date.now().toString(),
-      });
+      updateGraphParams(breadcrumbs[breadcrumbs.length - 2].id);
     }
   };
 
   return (
-    <View className="mb-3 m-2 gap-1 rounded-md bg-muted w-fit border-input border">
-      <View className="flex-row flex-wrap items-center gap-1 h-10 relative overflow-hidden">
-        <TouchableOpacity
-          disabled={breadcrumbs.length <= 1}
-          onPress={handleGoBack}
-          className={cn(
-            "h-full w-8 bg-input rounded-sm items-center justify-center",
-            breadcrumbs.length <= 1 ? "opacity-50" : ""
-          )}
-        >
-          <Icon
-            name="chevron-left"
-            color="text"
-            opacity={breadcrumbs.length <= 1 ? 50 : 100}
-          />
-        </TouchableOpacity>
-        <View className="flex-row flex-wrap items-center gap-1 ml-2">
-          {breadcrumbs.map((breadcrumb, index) => (
-            <View
-              className="flex-row flex-wrap items-center gap-1"
-              key={breadcrumb.id}
-            >
-              <React.Fragment key={breadcrumb.id}>
+    <View>
+      <View className="gap-1 bg-muted border-t border-input">
+        <View className="flex-row items-center min-h-10">
+          <TouchableOpacity
+            disabled={breadcrumbs.length <= 1}
+            onPress={handleGoBack}
+            className={cn(
+              "h-10 w-8 shrink-0 bg-input rounded-sm items-center justify-center",
+              breadcrumbs.length <= 1 ? "opacity-50" : ""
+            )}
+          >
+            <Icon
+              name="chevron-left"
+              color="text"
+              opacity={breadcrumbs.length <= 1 ? 50 : 100}
+            />
+          </TouchableOpacity>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              alignItems: "center",
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              flexGrow: 1,
+            }}
+            className="flex-1"
+          >
+            {breadcrumbs.map((breadcrumb, index) => (
+              <View
+                key={breadcrumb.id}
+                className="flex-row items-center shrink-0"
+              >
                 {index > 0 && (
-                  <Typography variant="p" className="ml-1 opacity-50">
+                  <Typography variant="p" className="mx-1 opacity-50">
                     /
                   </Typography>
                 )}
@@ -85,19 +88,18 @@ export const GraphBreadcrumbs = ({
                   variant="ghost"
                   size="xs"
                   className={cn(
-                    "opacity-50",
+                    "opacity-50 shrink-0",
                     index === breadcrumbs.length - 1 ? "opacity-100" : ""
                   )}
                   onPress={() => handleZoom(breadcrumb)}
                 >
-                  <Typography variant="h3" className={cn("ml-1")}>
-                    {breadcrumb.name.charAt(0).toUpperCase() +
-                      breadcrumb.name.slice(1)}
+                  <Typography variant="h3" numberOfLines={1}>
+                    {breadcrumb.name}
                   </Typography>
                 </Button>
-              </React.Fragment>
-            </View>
-          ))}
+              </View>
+            ))}
+          </ScrollView>
         </View>
       </View>
     </View>

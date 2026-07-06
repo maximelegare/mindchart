@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Pressable, LayoutChangeEvent } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Pressable } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -18,96 +18,82 @@ interface ModeToggleProps {
   };
 }
 
+const TOGGLE_WIDTH = 90;
+const SLIDE_RANGE = TOGGLE_WIDTH * 0.46;
+const springConfig = { damping: 50, stiffness: 400 };
+
 const ModeToggle = ({ onToggle, currentMode, values }: ModeToggleProps) => {
-  const containerWidth = useSharedValue(0);
+  const visualModeRef = useRef(currentMode);
   const transition = useSharedValue(currentMode === values.first.name ? 0 : 1);
 
-  useEffect(() => {
-    transition.value = withSpring(currentMode === values.first.name ? 0 : 1, {
-      damping: 50,
-      stiffness: 400,
-    });
-  }, [currentMode]);
-
-  const onLayout = (event: LayoutChangeEvent) => {
-    containerWidth.value = event.nativeEvent.layout.width;
+  const animateToMode = (mode: string) => {
+    transition.value = withSpring(
+      mode === values.first.name ? 0 : 1,
+      springConfig
+    );
   };
+
+  // Sync only external mode changes (deep links, navigation). Never overwrites a local press.
+  useEffect(() => {
+    if (currentMode === visualModeRef.current) return;
+    visualModeRef.current = currentMode;
+    animateToMode(currentMode);
+  }, [currentMode]);
 
   const handlePress = () => {
     const nextMode =
-      currentMode === values.first.name
+      visualModeRef.current === values.first.name
         ? values.second.name
         : values.first.name;
-    onToggle(nextMode);
+
+    visualModeRef.current = nextMode;
+    animateToMode(nextMode);
+
+    setTimeout(() => onToggle(nextMode), 0);
   };
 
-  const sliderStyle = useAnimatedStyle(() => {
-    const moveRange = containerWidth.value * 0.46; // Adjusted for the 54% width
-    return {
-      transform: [{ translateX: transition.value * moveRange }],
-    };
-  });
+  const sliderStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: transition.value * SLIDE_RANGE }],
+  }));
 
-  // Animation for the Left Icon
   const leftIconStyle = useAnimatedStyle(() => {
     const scale = interpolate(transition.value, [0, 1], [1.1, 0.9]);
     const opacity = interpolate(transition.value, [0, 1], [1, 0.5]);
-    return {
-      transform: [{ scale }],
-      opacity,
-    };
+    return { transform: [{ scale }], opacity };
   });
 
-  // Animation for the Right Icon
   const rightIconStyle = useAnimatedStyle(() => {
     const scale = interpolate(transition.value, [0, 1], [0.85, 0.9]);
     const opacity = interpolate(transition.value, [0, 1], [0.5, 1]);
-    return {
-      transform: [{ scale }],
-      opacity,
-    };
+    return { transform: [{ scale }], opacity };
   });
 
   return (
     <Pressable
-      className="w-[100] relative h-[42] border-border border-solid border-[1px] overflow-hidden bg-card rounded-full flex-row items-center justify-between"
+      className="w-[90] relative h-[36] border-border border-solid border-[1px] overflow-hidden bg-card rounded-full flex-row items-center justify-between"
       onPress={handlePress}
-      onLayout={onLayout}
     >
-      {/* The Sliding Background */}
       <Animated.View
-        className="absolute w-[54%] h-full bg-border border-solid border-4 border-card rounded-full"
+        className="absolute w-[54%] h-full bg-border border-solid border-[3px] border-card rounded-full"
         style={sliderStyle}
       />
 
-      {/* Left Icon Container */}
       <Animated.View
         style={[
           leftIconStyle,
           { flex: 1, alignItems: "center", justifyContent: "center" },
         ]}
       >
-        <Icon
-          size={20}
-          name={values.first.icon}
-          color="foreground"
-          //   opacity={currentMode === icons.first ? 100 : 50}
-        />
+        <Icon size={20} name={values.first.icon} color="foreground" />
       </Animated.View>
 
-      {/* Right Icon Container */}
       <Animated.View
         style={[
           rightIconStyle,
           { flex: 1, alignItems: "center", justifyContent: "center" },
         ]}
       >
-        <Icon
-          size={20}
-          name={values.second.icon}
-          color="foreground"
-          //   opacity={currentMode === icons.second ? 100 : 50}
-        />
+        <Icon size={20} name={values.second.icon} color="foreground" />
       </Animated.View>
     </Pressable>
   );

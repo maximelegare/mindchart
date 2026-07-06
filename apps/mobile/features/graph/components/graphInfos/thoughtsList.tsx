@@ -2,13 +2,14 @@ import React from "react";
 import { View } from "react-native";
 import { ThoughtItem } from "./thoughtItem";
 import { NodeDatum } from "../../types/types";
-type ThoughtsList = {
+
+type ThoughtsListProps = {
   thoughts: NodeDatum[];
   parentNodeId: string;
   focusedThoughtId?: string;
 };
 
-export const ThoughtsList: React.FC<ThoughtsList> = ({
+export const ThoughtsList: React.FC<ThoughtsListProps> = ({
   thoughts,
   parentNodeId,
   focusedThoughtId,
@@ -22,7 +23,7 @@ export const ThoughtsList: React.FC<ThoughtsList> = ({
   ];
 
   return (
-    <View className="flex-col gap-3 p-2">
+    <View className="flex-col gap-3">
       {sortedThoughts.map((t, idx) => (
         <ThoughtItem
           key={t.thoughtId ?? t.id}

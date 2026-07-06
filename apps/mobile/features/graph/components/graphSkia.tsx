@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from "react";
-import { Dimensions, View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import {
   Canvas,
   Circle,
@@ -27,10 +27,12 @@ import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
 import { NodeDatum } from "@/features/graph/types/types";
-import { CategoryKey } from "@repo/sqlite";
+import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
+import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
+import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
+import { GRAPH_CANVAS_SIZE } from "../constants";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const SIZE = SCREEN_WIDTH - 24;
+const SIZE = GRAPH_CANVAS_SIZE;
 const PACK_PADDING = 8;
 const LABEL_GAP = -10;
 const LABEL_FONT_SIZE = 10;
@@ -81,6 +83,11 @@ let cachedLayoutEntry: {
   layout: Layout;
 } | null = null;
 
+const layoutCache = new Map<string, Layout>();
+
+const layoutCacheKey = (signature: string, padding: number) =>
+  `${signature}:${padding}`;
+
 const getOrComputeLayout = (
   data: NodeDatum,
   padding: number
@@ -93,22 +100,41 @@ const getOrComputeLayout = (
     return { layout: cachedLayoutEntry.layout, hitReason: "ref" };
   }
   const signature = computeSignature(data);
-  if (
-    cachedLayoutEntry &&
-    cachedLayoutEntry.signature === signature &&
-    cachedLayoutEntry.padding === padding
-  ) {
+  const key = layoutCacheKey(signature, padding);
+  const cachedLayout = layoutCache.get(key);
+  if (cachedLayout) {
     cachedLayoutEntry = {
       dataRef: data,
       signature,
       padding,
-      layout: cachedLayoutEntry.layout,
+      layout: cachedLayout,
     };
-    return { layout: cachedLayoutEntry.layout, hitReason: "sig" };
+    return { layout: cachedLayout, hitReason: "sig" };
   }
   const layout = computeLayout(data, padding);
+  layoutCache.set(key, layout);
   cachedLayoutEntry = { dataRef: data, signature, padding, layout };
   return { layout, hitReason: "miss" };
+};
+
+export const warmupGraphLayouts = (cache: {
+  category: NodeDatum;
+  topic: NodeDatum;
+}) => {
+  setTimeout(() => {
+    getOrComputeLayout(cache.category, PACK_PADDING);
+    setTimeout(() => {
+      getOrComputeLayout(cache.topic, PACK_PADDING);
+    }, 0);
+  }, 0);
+};
+
+export const getCachedGraphLayout = (
+  data: NodeDatum,
+  padding = PACK_PADDING
+): Layout | null => {
+  const signature = computeSignature(data);
+  return layoutCache.get(layoutCacheKey(signature, padding)) ?? null;
 };
 
 const computeLayout = (data: NodeDatum, padding: number): Layout => {
@@ -151,15 +177,14 @@ const computeLayout = (data: NodeDatum, padding: number): Layout => {
   return { rootNode: nodes[0], allNodes: nodes, nodeMap: map };
 };
 
-const isCategoryNode = (node: NodeInfo) =>
-  node.depth === 1 &&
-  node.hasChildren &&
-  node.rawData.id.startsWith("category-");
-const isTopicNode = (node: NodeInfo) =>
-  node.hasChildren && node.rawData.id.startsWith("topic-");
-
 const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
   allNodes.filter((n) => n.parentId === parent.internalId).length;
+
+const isFirstLevelGroup = (node: NodeInfo) =>
+  node.depth === 1 && node.hasChildren;
+
+const isSecondLevelGroup = (node: NodeInfo, parentInternalId: string) =>
+  node.depth === 2 && node.hasChildren && node.parentId === parentInternalId;
 
 const formatLabel = (name: string) => {
   if (!name) return "";
@@ -195,23 +220,68 @@ interface Props {
   onNodeSelected?: (node: NodeDatum, parent?: NodeDatum) => void;
 }
 
-export default function CirclePackSkia({
+export default function CirclePackSkia(props: Props) {
+  const layoutRef = useRef<Layout | null>(
+    getCachedGraphLayout(props.data) ?? null
+  );
+  const [layout, setLayout] = useState<Layout | null>(() => layoutRef.current);
+  const [isComputing, setIsComputing] = useState(false);
+
+  useEffect(() => {
+    const cached = getCachedGraphLayout(props.data);
+    if (cached) {
+      layoutRef.current = cached;
+      setLayout(cached);
+      setIsComputing(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsComputing(true);
+
+    const id = setTimeout(() => {
+      if (cancelled) return;
+      const { layout: nextLayout } = getOrComputeLayout(
+        props.data,
+        PACK_PADDING
+      );
+      layoutRef.current = nextLayout;
+      setLayout(nextLayout);
+      setIsComputing(false);
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
+  }, [props.data]);
+
+  const activeLayout = layout ?? layoutRef.current;
+  if (!activeLayout) {
+    return isComputing ? <GraphLoadingPlaceholder /> : null;
+  }
+
+  return (
+    <CirclePackSkiaRenderer
+      key={computeSignature(props.data)}
+      {...props}
+      layout={activeLayout}
+    />
+  );
+}
+
+function CirclePackSkiaRenderer({
   data,
+  layout,
   focusedThoughtId,
   trigger,
   onNodeSelected,
-}: Props) {
+}: Props & { layout: Layout }) {
   const { colorScheme } = useColorScheme();
-  // This ref prevents the useEffect from overwriting a tap-initiated animation
   const isTransitioningInternal = useRef(false);
   const [hatchHighlightActive, setHatchHighlightActive] =
     useState(!!focusedThoughtId);
-
-  // ---------- 1. Process Hierarchy & Layout ----------
-  const { rootNode, allNodes, nodeMap } = useMemo(() => {
-    const { layout } = getOrComputeLayout(data, PACK_PADDING);
-    return layout;
-  }, [data]);
+  const { rootNode, allNodes, nodeMap } = layout;
 
   // ---------- 2. Shared Values ----------
   const viewX = useSharedValue(rootNode.x);
@@ -233,30 +303,6 @@ export default function CirclePackSkia({
   ) => {
     if (dismissFocusHighlight && hatchHighlightActive) {
       setHatchHighlightActive(false);
-      // #region agent log
-      fetch(
-        "http://127.0.0.1:7896/ingest/7a3c8f38-74e4-4a91-a5fb-eff7ecdcfe85",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Debug-Session-Id": "16f523",
-          },
-          body: JSON.stringify({
-            sessionId: "16f523",
-            location: "graphSkia.tsx:navigateToNode",
-            message: "dismissed focused hatch",
-            data: {
-              targetDbId: node.dbId,
-              targetInternalId: node.internalId,
-            },
-            timestamp: Date.now(),
-            hypothesisId: "H5",
-            runId: "post-fix",
-          }),
-        }
-      ).catch(() => {});
-      // #endregion
     }
 
     if (!isToggleBack) {
@@ -376,11 +422,7 @@ export default function CirclePackSkia({
     if (!node.hasChildren) return "white";
     if (node.depth === 0) return hsl("card", colorScheme);
 
-    const rawCat =
-      node.rawData.categoryId ||
-      (node.rawData.children && node.rawData.children[0]?.categoryId);
-
-    const cat = rawCat?.toLowerCase() as CategoryKey;
+    const cat = resolveNodeCategoryKey(node.rawData);
 
     if (!cat) return hsl("border", colorScheme);
 
@@ -401,7 +443,7 @@ export default function CirclePackSkia({
 
     if (atRoot) {
       for (const node of allNodes) {
-        if (!isCategoryNode(node)) continue;
+        if (!isFirstLevelGroup(node)) continue;
         if (countDirectChildren(node, allNodes) >= 2) {
           labels.set(node.internalId, formatLabel(node.rawData.name));
         }
@@ -409,16 +451,15 @@ export default function CirclePackSkia({
       return labels;
     }
 
-    if (isCategoryNode(activeViewNode)) {
+    if (isFirstLevelGroup(activeViewNode)) {
       for (const node of allNodes) {
-        if (isTopicNode(node) && node.parentId === activeViewNode.internalId) {
-          labels.set(node.internalId, formatLabel(node.rawData.name));
-        }
+        if (!isSecondLevelGroup(node, activeViewNode.internalId)) continue;
+        labels.set(node.internalId, formatLabel(node.rawData.name));
       }
     }
 
     return labels;
-  }, [activeViewNode, allNodes, nodeMap, rootNode]);
+  }, [activeViewNode, allNodes, rootNode]);
 
   const labelColor = hsl("foreground", colorScheme);
   const labelBgColor = hsl("background", colorScheme);
@@ -445,67 +486,82 @@ export default function CirclePackSkia({
           },
         ]}
       >
-        <GestureDetector gesture={tap}>
-          <Canvas style={styles.canvas}>
-            {allNodes.map((node) => (
-              <SkCircle
-                key={node.internalId}
-                node={node}
-                viewX={viewX}
-                viewY={viewY}
-                viewR={viewR}
-                color={getNodeColor(node)}
-                isFocusedThought={
-                  hatchHighlightActive &&
-                  !!focusedDbId &&
-                  !node.hasChildren &&
-                  node.dbId === focusedDbId
-                }
-                hatchLineColor={hsl("border", colorScheme, 10)}
-              />
-            ))}
-            {labeledNodes.map(({ node, text }) => (
-              <SkLabel
-                key={`label-${node.internalId}`}
-                node={node}
-                text={text}
-                color={labelColor}
-                backgroundColor={labelBgColor}
-                viewX={viewX}
-                viewY={viewY}
-                viewR={viewR}
-              />
-            ))}
-          </Canvas>
-        </GestureDetector>
+        <View style={styles.canvasContainer}>
+          <GestureDetector gesture={tap}>
+            <Canvas style={styles.canvas}>
+              {allNodes.map((node) => (
+                <SkCircle
+                  key={node.internalId}
+                  node={node}
+                  viewX={viewX}
+                  viewY={viewY}
+                  viewR={viewR}
+                  color={getNodeColor(node)}
+                  isFocusedThought={
+                    hatchHighlightActive &&
+                    !!focusedDbId &&
+                    !node.hasChildren &&
+                    node.dbId === focusedDbId
+                  }
+                  hatchLineColor={hsl("border", colorScheme, 10)}
+                />
+              ))}
+              {labeledNodes.map(({ node, text }) => (
+                <SkLabel
+                  key={`label-${node.internalId}`}
+                  node={node}
+                  text={text}
+                  color={labelColor}
+                  backgroundColor={labelBgColor}
+                  viewX={viewX}
+                  viewY={viewY}
+                  viewR={viewR}
+                />
+              ))}
+            </Canvas>
+          </GestureDetector>
 
-        <View
-          className="absolute gap-2 p-2 m-2"
-          style={{ bottom: 0, right: 0 }}
-        >
-          <TouchableOpacity
-            onPress={handleZoomBack}
-            disabled={isAtRoot}
-            style={{
-              ...styles.zoomBtn,
-              backgroundColor: hsl("background", colorScheme),
-              opacity: isAtRoot ? 0.4 : 1,
-            }}
+          <View
+            className="absolute gap-2 p-2 m-2"
+            style={{ bottom: 0, right: 0 }}
           >
-            <Icon name="undo-dot" color="text" opacity={isAtRoot ? 50 : 100} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleZoomOut}
-            disabled={isAtRoot}
-            style={{
-              ...styles.zoomBtn,
-              backgroundColor: hsl("background", colorScheme),
-              opacity: isAtRoot ? 0.4 : 1,
-            }}
-          >
-            <Icon name="zoom-out" color="text" opacity={isAtRoot ? 50 : 100} />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleZoomBack}
+              disabled={isAtRoot}
+              style={{
+                ...styles.zoomBtn,
+                backgroundColor: hsl("background", colorScheme),
+                opacity: isAtRoot ? 0.4 : 1,
+              }}
+            >
+              <Icon
+                name="undo-dot"
+                color="text"
+                opacity={isAtRoot ? 50 : 100}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleZoomOut}
+              disabled={isAtRoot}
+              style={{
+                ...styles.zoomBtn,
+                backgroundColor: hsl("background", colorScheme),
+                opacity: isAtRoot ? 0.4 : 1,
+              }}
+            >
+              <Icon
+                name="zoom-out"
+                color="text"
+                opacity={isAtRoot ? 50 : 100}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
+
+        <GraphBreadcrumbs
+          hierarchy={data}
+          activeNode={activeViewNode.rawData}
+        />
       </View>
     </GestureHandlerRootView>
   );
@@ -645,12 +701,15 @@ const SkCircle = ({
 const styles = StyleSheet.create({
   wrapper: {
     width: SIZE,
-    height: SIZE,
     borderWidth: 1,
     borderRadius: 12,
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,
+  },
+  canvasContainer: {
+    width: SIZE,
+    height: SIZE,
   },
   canvas: {
     width: SIZE,

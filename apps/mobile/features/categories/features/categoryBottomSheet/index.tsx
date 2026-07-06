@@ -27,6 +27,7 @@ export const CategoryBottomSheet = ({ category }: CategoryBottomSheetProps) => {
       pathname: "/graph/[id]",
       params: {
         id: `category-${category.id}`,
+        graph: "category",
         _t: Date.now(),
       },
     });
