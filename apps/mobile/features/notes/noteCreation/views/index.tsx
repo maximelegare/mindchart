@@ -6,9 +6,13 @@ import { AudioFeature } from "@/features/notes/noteCreation/features/audio/views
 import ModeToggle from "@/components/ui/modeToggle";
 import ViewSwitcher from "@/components/ui/viewSwitcher";
 import { TextInputFeature } from "@/features/notes/noteCreation/features/textInput/textInput";
+import { ManualModeFeature } from "@/features/notes/noteCreation/features/manualMode/views/index";
 import { useFileSystem } from "@/hooks/useFileSystem";
 
+type CreationMode = "ai" | "manual";
+
 export function NoteCreationFeature() {
+  const [creationMode, setCreationMode] = React.useState<CreationMode>("ai");
   const [fileURI, setFileURI] = React.useState<string | null>(null);
   const [view, setView] = React.useState<"audio" | "input">("audio");
 
@@ -24,40 +28,55 @@ export function NoteCreationFeature() {
   const [inputValue, setInputValue] = React.useState<string>("");
   return (
     <Gutter>
-      <View className="w-full flex-row justify-end">
+      <View className="w-full flex-row justify-between items-center">
         <ModeToggle
           values={{
-            first: { name: "audio", icon: "mic" },
-            second: { name: "input", icon: "keyboard" },
+            first: { name: "ai", icon: "sparkles" },
+            second: { name: "manual", icon: "pencil" },
           }}
-          currentMode={view}
-          onToggle={(newMode) => setView(newMode as "audio" | "input")}
+          currentMode={creationMode}
+          onToggle={(newMode) => setCreationMode(newMode as CreationMode)}
         />
+
+        {creationMode === "ai" && (
+          <ModeToggle
+            values={{
+              first: { name: "audio", icon: "mic" },
+              second: { name: "input", icon: "keyboard" },
+            }}
+            currentMode={view}
+            onToggle={(newMode) => setView(newMode as "audio" | "input")}
+          />
+        )}
       </View>
 
-      {/* Use the Switcher as the main container */}
       <View style={{ height: 550, marginTop: 20 }}>
-        <ViewSwitcher
-          currentMode={view}
-          firstMode="audio"
-          firstComponent={
-            <AudioFeature onFileURIChange={setFileURI} fileURI={fileURI} />
-          }
-          secondComponent={
-            <TextInputFeature onChange={setInputValue} value={inputValue} />
-          }
-        />
+        {creationMode === "ai" ? (
+          <ViewSwitcher
+            currentMode={view}
+            firstMode="audio"
+            firstComponent={
+              <AudioFeature onFileURIChange={setFileURI} fileURI={fileURI} />
+            }
+            secondComponent={
+              <TextInputFeature onChange={setInputValue} value={inputValue} />
+            }
+          />
+        ) : (
+          <ManualModeFeature />
+        )}
       </View>
 
-      {/* Generate button stays outside the switcher so it's always visible */}
-      <View className="mt-10 items-center">
-        <GenerateNote
-          fileURI={fileURI}
-          inputText={inputValue}
-          currentView={view}
-          onSuccess={handleSuccess}
-        />
-      </View>
+      {creationMode === "ai" && (
+        <View className="mt-10 items-center">
+          <GenerateNote
+            fileURI={fileURI}
+            inputText={inputValue}
+            currentView={view}
+            onSuccess={handleSuccess}
+          />
+        </View>
+      )}
     </Gutter>
   );
 }
