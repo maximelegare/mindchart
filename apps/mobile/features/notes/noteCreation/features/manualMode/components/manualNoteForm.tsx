@@ -1,15 +1,15 @@
 import { Category, Note, Thought, Topic } from "@repo/zod-schemas";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, TextInput, View } from "react-native";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EditableField } from "@/components/ui/editableField";
-import { Icon } from "@/components/ui/icons/icon";
-import { CategorySelector } from "@/features/notes/notePreview/categoriesSelector";
+import { Switch } from "@/components/ui/switch";
 import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
 import { generateID } from "@/utils/genrateID";
+import { ThoughtBulletItem } from "./thoughtBulletItem";
 
 type ManualNoteFormData = {
   title: string;
@@ -60,6 +60,8 @@ export const ManualNoteForm = ({
   categories,
   onSubmit,
 }: ManualNoteFormProps) => {
+  const [showTitles, setShowTitles] = React.useState(false);
+
   const { control, handleSubmit } = useForm<ManualNoteFormData>({
     defaultValues: {
       title: "",
@@ -78,11 +80,50 @@ export const ManualNoteForm = ({
   const {
     fields,
     remove: thoughtsRemove,
-    append: thoughtsAppend,
+    insert: thoughtsInsert,
   } = useFieldArray({
     control,
     name: "thoughts",
   });
+
+  const fieldRefs = React.useRef<Record<string, TextInput | null>>({});
+  const pendingFocusKeyRef = React.useRef<string | null>(null);
+
+  const registerFieldRef = React.useCallback(
+    (key: string, ref: TextInput | null) => {
+      fieldRefs.current[key] = ref;
+    },
+    []
+  );
+
+  const getPrimaryFieldKey = React.useCallback(
+    (index: number) =>
+      showTitles ? `thought-${index}-title` : `thought-${index}-summary`,
+    [showTitles]
+  );
+
+  const focusField = React.useCallback((key: string, delay = 0) => {
+    setTimeout(() => fieldRefs.current[key]?.focus(), delay);
+  }, []);
+
+  const scheduleFocusAfterUpdate = React.useCallback((key: string) => {
+    pendingFocusKeyRef.current = key;
+  }, []);
+
+  React.useLayoutEffect(() => {
+    const key = pendingFocusKeyRef.current;
+    if (!key) return;
+
+    pendingFocusKeyRef.current = null;
+    const input = fieldRefs.current[key];
+    if (input) {
+      input.focus();
+      return;
+    }
+
+    const timeoutId = setTimeout(() => fieldRefs.current[key]?.focus(), 0);
+    return () => clearTimeout(timeoutId);
+  }, [fields]);
 
   const handleFormSubmit = (data: ManualNoteFormData) => {
     const thoughts: Thought[] = data.thoughts
@@ -117,13 +158,30 @@ export const ManualNoteForm = ({
     onSubmit(note, thoughts);
   };
 
-  const handleDeleteThought = (index: number) => {
-    if (fields.length === 1) return;
-    thoughtsRemove(index);
+  const handleNewBullet = (index: number) => {
+    const nextIndex = index + 1;
+
+    if (nextIndex < fields.length) {
+      focusField(getPrimaryFieldKey(nextIndex));
+      return;
+    }
+
+    thoughtsInsert(nextIndex, createEmptyThought(noteId));
+    scheduleFocusAfterUpdate(getPrimaryFieldKey(nextIndex));
   };
 
-  const handleAddThought = () => {
-    thoughtsAppend(createEmptyThought(noteId));
+  const handleBackspaceAtStart = (index: number) => {
+    if (fields.length <= 1) return;
+
+    const focusIndex = Math.max(0, index - 1);
+    const focusKey = getPrimaryFieldKey(focusIndex);
+
+    fieldRefs.current[focusKey]?.focus();
+    scheduleFocusAfterUpdate(focusKey);
+
+    requestAnimationFrame(() => {
+      thoughtsRemove(index);
+    });
   };
 
   return (
@@ -150,12 +208,6 @@ export const ManualNoteForm = ({
           <View className="flex-col gap-1 relative w-full">
             <Label nativeID="title">Title</Label>
             <View className="relative">
-              <Icon
-                name="pencil"
-                color="text"
-                size={15}
-                style={{ position: "absolute", top: 5, right: 5, zIndex: 10 }}
-              />
               <EditableField
                 className="p-2 rounded-lg bg-card border border-input relative"
                 onChange={onChange}
@@ -171,101 +223,38 @@ export const ManualNoteForm = ({
       />
 
       <View className="flex-col gap-1 flex-1">
-        <Label nativeID="thoughts">Thoughts</Label>
-        <ScrollView style={{ flex: 1 }} nestedScrollEnabled>
-          <View className="flex-col gap-4 pb-2">
-            {fields.map((field, index) => (
-              <View
-                key={field.id}
-                style={{ zIndex: fields.length - index }}
-                className="flex-col gap-1 p-2 rounded-lg bg-card border border-input relative"
-              >
-                <Icon
-                  name="pencil"
-                  color="text"
-                  size={15}
-                  style={{ position: "absolute", top: 5, right: 5 }}
-                />
-                {fields.length > 1 && (
-                  <Button
-                    onPress={() => handleDeleteThought(index)}
-                    variant="ghost"
-                    style={{
-                      position: "absolute",
-                      zIndex: 100,
-                      top: 30,
-                      right: -13,
-                    }}
-                  >
-                    <Icon
-                      name="trash-2"
-                      size={20}
-                      color="destructive-foreground"
-                    />
-                  </Button>
-                )}
-                <Controller
-                  control={control}
-                  name={`thoughts.${index}.categoryId`}
-                  render={({ field: { onChange, value } }) => {
-                    const selectedCategory =
-                      categories.find((cat) => cat.id === value) || null;
-                    return (
-                      <CategorySelector
-                        selectedCategory={selectedCategory}
-                        categories={categories}
-                        onSelect={(category) => onChange(category.id)}
-                      />
-                    );
-                  }}
-                />
-                <Controller
-                  control={control}
-                  name={`thoughts.${index}.title`}
-                  render={({ field: { onChange, value } }) => (
-                    <EditableField
-                      style={{ marginTop: 30 }}
-                      onChange={onChange}
-                      value={value}
-                      id={`manual-thought-title-${index}`}
-                      title="Title"
-                      fontSize="md"
-                      placeholder="Enter a title"
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  name={`thoughts.${index}.summary`}
-                  render={({ field: { onChange, value } }) => (
-                    <EditableField
-                      onChange={onChange}
-                      value={value}
-                      id={`manual-thought-summary-${index}`}
-                      title="Summary"
-                      fontSize="sm"
-                      fontFamily="QuicksandRegular"
-                      placeholder="Enter a bullet point"
-                    />
-                  )}
-                />
-              </View>
-            ))}
+        <View className="flex-row items-center justify-between">
+          <Label nativeID="thoughts">Content</Label>
+          <View className="flex-row items-center gap-2">
+            <Typography className="text-muted-foreground text-sm">
+              Titles
+            </Typography>
+            <Switch checked={showTitles} onCheckedChange={setShowTitles} />
           </View>
-        </ScrollView>
-      </View>
+        </View>
 
-      <View className="flex-row gap-2 justify-center border-b border-input pb-4">
-        <Button
-          className="flex-row gap-2 items-center"
-          onPress={handleAddThought}
-          variant="default"
-          size="sm"
-          cornerRadius="full"
-        >
-          <Icon name="plus" size={20} color="background" />
-          <Typography>Add Thought</Typography>
-        </Button>
+        <View className="flex-1 rounded-lg bg-card border border-input px-3 py-4 overflow-visible">
+          <ScrollView
+            style={{ flex: 1, overflow: "visible" }}
+            contentContainerStyle={{ overflow: "visible" }}
+            nestedScrollEnabled
+          >
+            <View className="flex-col gap-3 pb-2 pt-2">
+              {fields.map((field, index) => (
+                <ThoughtBulletItem
+                  key={field.id}
+                  index={index}
+                  control={control}
+                  categories={categories}
+                  showTitles={showTitles}
+                  registerFieldRef={registerFieldRef}
+                  onNewBullet={handleNewBullet}
+                  onBackspaceAtStart={handleBackspaceAtStart}
+                />
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       </View>
 
       <View className="items-center pb-2">
