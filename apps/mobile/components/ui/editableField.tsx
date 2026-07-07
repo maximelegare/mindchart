@@ -10,6 +10,8 @@ import { Textarea } from "./textarea";
 import { cn } from "@/lib/cn";
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 
+let insertLock = false;
+
 type EditableFieldProps = {
   onChange: (text: string) => void;
   value: string;
@@ -25,6 +27,8 @@ type EditableFieldProps = {
   onInsertNewItem?: () => void;
   onBackspaceAtStart?: () => void;
   multiline?: boolean;
+  onFocus?: () => void;
+  onContentSizeChange?: () => void;
 };
 
 export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
@@ -44,9 +48,13 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
       onInsertNewItem,
       onBackspaceAtStart,
       multiline = true,
+      onFocus,
+      onContentSizeChange,
     },
     ref
   ) {
+    const insertCooldownRef = React.useRef(false);
+
     const inputStyle = {
       fontFamily: fontFamily,
       fontSize: fontSize === "sm" ? 16 : fontSize === "md" ? 18 : 20,
@@ -55,10 +63,23 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
       ...(style as TextStyle),
     };
 
+    const triggerInsert = React.useCallback(() => {
+      if (!onInsertNewItem || insertCooldownRef.current || insertLock) return;
+      insertCooldownRef.current = true;
+      insertLock = true;
+      onInsertNewItem();
+      setTimeout(() => {
+        insertCooldownRef.current = false;
+        insertLock = false;
+      }, 400);
+    }, [onInsertNewItem]);
+
     const handleChangeText = (text: string) => {
-      if (onInsertNewItem && text.endsWith("\n")) {
-        onChange(text.slice(0, -1));
-        onInsertNewItem();
+      if (onInsertNewItem && text.includes("\n")) {
+        onChange(text.replace(/\n/g, ""));
+        if (!insertLock) {
+          triggerInsert();
+        }
         return;
       }
       onChange(text);
@@ -75,7 +96,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
       }
 
       if (onInsertNewItem && key === "Tab") {
-        onInsertNewItem();
+        triggerInsert();
       }
     };
 
@@ -92,6 +113,8 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
         nativeID={id}
         onChangeText={handleChangeText}
         onKeyPress={handleKeyPress}
+        onFocus={onFocus}
+        onContentSizeChange={onContentSizeChange}
         value={value}
         multiline={multiline}
         placeholder={placeholder}
@@ -110,6 +133,8 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
         nativeID={id}
         onChangeText={handleChangeText}
         onKeyPress={handleKeyPress}
+        onFocus={onFocus}
+        onContentSizeChange={onContentSizeChange}
         value={value}
         multiline={multiline}
         placeholder={placeholder}

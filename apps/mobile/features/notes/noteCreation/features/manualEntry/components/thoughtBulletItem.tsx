@@ -49,6 +49,8 @@ type ThoughtBulletItemProps = {
   categories: Category[];
   showTitles: boolean;
   registerFieldRef: (key: string, ref: TextInput | null) => void;
+  onFieldFocus: (key: string) => void;
+  onFieldContentChange?: (key: string) => void;
   onNewBullet: (index: number) => void;
   onBackspaceAtStart: (index: number) => void;
 };
@@ -90,6 +92,8 @@ export const ThoughtBulletItem = ({
   categories,
   showTitles,
   registerFieldRef,
+  onFieldFocus,
+  onFieldContentChange,
   onNewBullet,
   onBackspaceAtStart,
 }: ThoughtBulletItemProps) => {
@@ -191,6 +195,10 @@ export const ThoughtBulletItem = ({
     onBackspaceAtStart(index);
   };
 
+  const handleFieldContentChange = (fieldKey: string) => {
+    onFieldContentChange?.(fieldKey);
+  };
+
   const renderContent = () => {
     if (showTitles) {
       return (
@@ -201,6 +209,10 @@ export const ThoughtBulletItem = ({
             render={({ field: { onChange, value } }) => (
               <EditableField
                 ref={(ref) => registerFieldRef(`thought-${index}-title`, ref)}
+                onFocus={() => onFieldFocus(`thought-${index}-title`)}
+                onContentSizeChange={() =>
+                  handleFieldContentChange(`thought-${index}-title`)
+                }
                 onChange={onChange}
                 value={value}
                 id={`manual-thought-title-${index}`}
@@ -218,6 +230,10 @@ export const ThoughtBulletItem = ({
             render={({ field: { onChange, value } }) => (
               <EditableField
                 ref={(ref) => registerFieldRef(`thought-${index}-summary`, ref)}
+                onFocus={() => onFieldFocus(`thought-${index}-summary`)}
+                onContentSizeChange={() =>
+                  handleFieldContentChange(`thought-${index}-summary`)
+                }
                 onChange={onChange}
                 value={value}
                 id={`manual-thought-summary-${index}`}
@@ -241,6 +257,10 @@ export const ThoughtBulletItem = ({
         render={({ field: { onChange, value } }) => (
           <EditableField
             ref={(ref) => registerFieldRef(`thought-${index}-summary`, ref)}
+            onFocus={() => onFieldFocus(`thought-${index}-summary`)}
+            onContentSizeChange={() =>
+              handleFieldContentChange(`thought-${index}-summary`)
+            }
             onChange={onChange}
             value={value}
             id={`manual-thought-summary-${index}`}

@@ -45,12 +45,14 @@ export function ManualModeFeature({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   return (
-    <ManualNoteForm
-      key={formKey}
-      noteId={noteId}
-      defaultTopic={topicsData[0]}
-      categories={categoriesData}
-      onSubmit={saveManualNote}
-    />
+    <View className="flex-1 min-h-0">
+      <ManualNoteForm
+        key={formKey}
+        noteId={noteId}
+        defaultTopic={topicsData[0]}
+        categories={categoriesData}
+        onSubmit={saveManualNote}
+      />
+    </View>
   );
 }

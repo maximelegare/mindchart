@@ -20,6 +20,7 @@ export const HomeScreen = () => {
       <PageContainer
         showLogo={true}
         headerVariant="stack"
+        noScrollView
         buttons={<SearchFeature />}
         optionsHeader={<NoteCreationOptionsHeader />}
         moreOptionsMenu={{

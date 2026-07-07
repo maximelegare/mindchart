@@ -27,34 +27,34 @@ export function NoteCreationFeature() {
   };
 
   return (
-    <Gutter>
-      <View style={{ height: 550 }} className="flex-1 overflow-hidden flex-col">
-        {creationMode === "ai" ? (
-          <ViewSwitcher
-            currentMode={inputView}
-            firstMode="audio"
-            firstComponent={
-              <AudioFeature onFileURIChange={setFileURI} fileURI={fileURI} />
-            }
-            secondComponent={
-              <TextInputFeature onChange={setInputValue} value={inputValue} />
-            }
-          />
-        ) : (
-          <View className="flex-1 overflow-hidden">
-            <ManualModeFeature />
+    <Gutter className="flex-1 min-h-0">
+      {creationMode === "ai" ? (
+        <>
+          <View style={{ height: 550 }} className="overflow-hidden flex-col">
+            <ViewSwitcher
+              currentMode={inputView}
+              firstMode="audio"
+              firstComponent={
+                <AudioFeature onFileURIChange={setFileURI} fileURI={fileURI} />
+              }
+              secondComponent={
+                <TextInputFeature onChange={setInputValue} value={inputValue} />
+              }
+            />
           </View>
-        )}
-      </View>
 
-      {creationMode === "ai" && (
-        <View className="mt-10 items-center">
-          <GenerateNote
-            fileURI={fileURI}
-            inputText={inputValue}
-            currentView={inputView}
-            onSuccess={handleSuccess}
-          />
+          <View className="mt-10 items-center">
+            <GenerateNote
+              fileURI={fileURI}
+              inputText={inputValue}
+              currentView={inputView}
+              onSuccess={handleSuccess}
+            />
+          </View>
+        </>
+      ) : (
+        <View className="flex-1 min-h-0 overflow-hidden">
+          <ManualModeFeature />
         </View>
       )}
     </Gutter>

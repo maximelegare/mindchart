@@ -113,14 +113,20 @@ export const PageContainer = ({
           marginTop: HEADER_HEIGHT + insets.top - HEADER_OVERLAP,
         }}
       >
-        <View className={cn("relative flex-1", !optionsHeader && "mt-6")}>
+        <View
+          className={cn("relative flex-1 min-h-0", !optionsHeader && "mt-6")}
+        >
           {optionsHeader}
           {!noScrollView ? (
             <ScrollView className="gap-y-6" ref={scrollRef}>
               <Gutter size="md">{children}</Gutter>
             </ScrollView>
           ) : (
-            <Gutter size="md">{children}</Gutter>
+            <View className="flex-1 min-h-0">
+              <Gutter size="md" className="flex-1 min-h-0">
+                {children}
+              </Gutter>
+            </View>
           )}
         </View>
       </View>
