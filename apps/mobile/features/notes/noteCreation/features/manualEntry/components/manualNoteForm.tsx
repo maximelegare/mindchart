@@ -62,11 +62,8 @@ const KEYBOARD_GAP = 40;
 const CURSOR_CLEARANCE = 28;
 const CONTENT_PADDING_TOP = 12;
 const SCROLL_TOP_INSET = 24;
-
-const getBulletIndexFromKey = (key: string) => {
-  const match = key.match(/thought-(\d+)-/);
-  return match ? Number.parseInt(match[1], 10) : -1;
-};
+const SCROLL_VISIBILITY_EPSILON = 4;
+const KEYBOARD_SCROLL_PADDING = 48;
 
 export const ManualNoteForm = ({
   noteId,
@@ -96,10 +93,11 @@ export const ManualNoteForm = ({
   const pendingFocusKeyRef = React.useRef<string | null>(null);
   const insertingBulletRef = React.useRef(false);
   const scrollTimersRef = React.useRef<ReturnType<typeof setTimeout>[]>([]);
+  const contentScrollTimerRef = React.useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const thoughtsScrollHeightRef = React.useRef(0);
-  const bulletLayoutsRef = React.useRef<
-    Record<number, { y: number; height: number }>
-  >({});
+  const thoughtsContentHeightRef = React.useRef(0);
 
   const updateThoughtsMaxHeight = React.useCallback(() => {
     const keyboardTop = keyboardScreenYRef.current;
@@ -110,62 +108,84 @@ export const ManualNoteForm = ({
     }
 
     scrollArea.measureInWindow((_x, y, _width, _height) => {
-      setThoughtsMaxHeight(Math.max(120, keyboardTop - y - KEYBOARD_GAP));
+      const nextMaxHeight = Math.max(120, keyboardTop - y - KEYBOARD_GAP);
+      setThoughtsMaxHeight(nextMaxHeight);
     });
   }, []);
 
-  const scrollFieldIntoView = React.useCallback((key: string) => {
-    const input = fieldRefs.current[key];
-    const scrollView = thoughtsScrollRef.current;
-    const scrollArea = thoughtsScrollAreaRef.current;
-    if (!scrollView || !scrollArea) return;
+  const scrollFieldIntoView = React.useCallback(
+    (key: string, animated = true) => {
+      const input = fieldRefs.current[key];
+      const scrollView = thoughtsScrollRef.current;
+      const scrollArea = thoughtsScrollAreaRef.current;
+      if (!input || !scrollView || !scrollArea) return;
 
-    const viewportHeight = thoughtsScrollHeightRef.current;
-    if (viewportHeight <= 0) return;
+      const viewportHeight = thoughtsScrollHeightRef.current;
+      if (viewportHeight <= 0) return;
 
-    const paddingTop = CONTENT_PADDING_TOP;
-    const index = getBulletIndexFromKey(key);
-    const bulletLayout = bulletLayoutsRef.current[index];
-
-    const scrollToY = (targetY: number) => {
-      scrollView.scrollTo({
-        y: Math.max(0, targetY),
-        animated: true,
-      });
-    };
-
-    scrollArea.measureInWindow((_sx, scrollY, _sw, scrollAreaHeight) => {
-      const visibleBottom = scrollY + scrollAreaHeight - CURSOR_CLEARANCE;
-
-      const alignInputToVisibleArea = () => {
-        if (!input) return;
+      scrollArea.measureInWindow((_sx, scrollY, _sw, scrollAreaHeight) => {
+        const visibleTop = scrollY + SCROLL_TOP_INSET;
 
         input.measureInWindow((_x, fieldY, _w, fieldHeight) => {
+          const fieldTop = fieldY;
           const fieldBottom = fieldY + fieldHeight;
-          if (fieldBottom > visibleBottom) {
-            scrollToY(scrollOffsetRef.current + (fieldBottom - visibleBottom));
+          const idealBottom = scrollY + scrollAreaHeight - CURSOR_CLEARANCE;
+          const clipBottom = scrollY + scrollAreaHeight;
+          const maxScrollY = Math.max(
+            0,
+            thoughtsContentHeightRef.current - viewportHeight
+          );
+          const atMaxScroll =
+            Math.abs(scrollOffsetRef.current - maxScrollY) < 2;
+
+          if (
+            fieldBottom <= idealBottom + SCROLL_VISIBILITY_EPSILON &&
+            fieldTop >= visibleTop - SCROLL_VISIBILITY_EPSILON
+          ) {
+            return;
+          }
+
+          if (
+            atMaxScroll &&
+            fieldBottom <= clipBottom + SCROLL_VISIBILITY_EPSILON &&
+            fieldTop >= visibleTop - SCROLL_VISIBILITY_EPSILON
+          ) {
+            return;
+          }
+
+          if (fieldBottom > idealBottom) {
+            const nextY = Math.min(
+              maxScrollY,
+              scrollOffsetRef.current + (fieldBottom - idealBottom)
+            );
+            if (Math.abs(nextY - scrollOffsetRef.current) < 1) {
+              if (fieldBottom <= clipBottom + SCROLL_VISIBILITY_EPSILON) {
+                return;
+              }
+            }
+            scrollView.scrollTo({
+              y: nextY,
+              animated,
+            });
+            return;
+          }
+
+          if (fieldTop < visibleTop) {
+            const nextY = Math.min(
+              maxScrollY,
+              Math.max(0, scrollOffsetRef.current - (visibleTop - fieldTop))
+            );
+            if (Math.abs(nextY - scrollOffsetRef.current) < 1) return;
+            scrollView.scrollTo({
+              y: nextY,
+              animated,
+            });
           }
         });
-      };
-
-      if (bulletLayout) {
-        const bulletTop = paddingTop + bulletLayout.y;
-        const bulletBottom = bulletTop + bulletLayout.height;
-        const visibleTop = scrollOffsetRef.current;
-
-        if (bulletTop < visibleTop + SCROLL_TOP_INSET) {
-          scrollToY(bulletTop - SCROLL_TOP_INSET);
-          return;
-        }
-
-        if (bulletBottom > visibleTop + viewportHeight - KEYBOARD_GAP) {
-          scrollToY(bulletBottom - viewportHeight + KEYBOARD_GAP);
-        }
-      }
-
-      alignInputToVisibleArea();
-    });
-  }, []);
+      });
+    },
+    []
+  );
 
   const scheduleScrollToFocusedField = React.useCallback(
     (delay = 200) => {
@@ -175,14 +195,13 @@ export const ManualNoteForm = ({
       const key = focusedFieldKeyRef.current;
       if (!key || keyboardScreenYRef.current == null) return;
 
-      scrollTimersRef.current = [delay, delay + 250, delay + 500].map(
-        (scrollDelay) =>
-          setTimeout(() => {
-            if (focusedFieldKeyRef.current === key) {
-              scrollFieldIntoView(key);
-            }
-          }, scrollDelay)
-      );
+      const timer = setTimeout(() => {
+        if (focusedFieldKeyRef.current === key) {
+          scrollFieldIntoView(key, true);
+        }
+      }, delay);
+
+      scrollTimersRef.current = [timer];
     },
     [scrollFieldIntoView]
   );
@@ -190,6 +209,9 @@ export const ManualNoteForm = ({
   React.useEffect(() => {
     return () => {
       scrollTimersRef.current.forEach(clearTimeout);
+      if (contentScrollTimerRef.current) {
+        clearTimeout(contentScrollTimerRef.current);
+      }
     };
   }, []);
 
@@ -197,10 +219,7 @@ export const ManualNoteForm = ({
     const showSub = Keyboard.addListener("keyboardDidShow", (event) => {
       setKeyboardHeight(event.endCoordinates.height);
       keyboardScreenYRef.current = event.endCoordinates.screenY;
-      requestAnimationFrame(() => {
-        updateThoughtsMaxHeight();
-        scheduleScrollToFocusedField(300);
-      });
+      requestAnimationFrame(updateThoughtsMaxHeight);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       setKeyboardHeight(0);
@@ -212,12 +231,11 @@ export const ManualNoteForm = ({
       showSub.remove();
       hideSub.remove();
     };
-  }, [scheduleScrollToFocusedField, updateThoughtsMaxHeight]);
+  }, [updateThoughtsMaxHeight]);
 
   React.useEffect(() => {
-    if (thoughtsMaxHeight != null && focusedFieldKeyRef.current) {
-      return scheduleScrollToFocusedField(100);
-    }
+    if (thoughtsMaxHeight == null || !focusedFieldKeyRef.current) return;
+    return scheduleScrollToFocusedField(50);
   }, [thoughtsMaxHeight, scheduleScrollToFocusedField]);
 
   const handleFieldFocus = React.useCallback(
@@ -228,20 +246,42 @@ export const ManualNoteForm = ({
       }
 
       focusedFieldKeyRef.current = key;
-      if (keyboardScreenYRef.current != null) {
-        scheduleScrollToFocusedField(200);
+
+      if (keyboardScreenYRef.current != null && thoughtsMaxHeight != null) {
+        scheduleScrollToFocusedField(100);
       }
     },
-    [scheduleScrollToFocusedField]
+    [thoughtsMaxHeight, scheduleScrollToFocusedField]
   );
 
   const handleFieldContentChange = React.useCallback(
     (key: string) => {
-      if (focusedFieldKeyRef.current === key && keyboardHeight > 0) {
-        scheduleScrollToFocusedField(80);
+      if (
+        focusedFieldKeyRef.current !== key ||
+        keyboardHeight === 0 ||
+        thoughtsMaxHeight == null
+      ) {
+        return;
       }
+
+      if (contentScrollTimerRef.current) {
+        clearTimeout(contentScrollTimerRef.current);
+      }
+
+      contentScrollTimerRef.current = setTimeout(() => {
+        contentScrollTimerRef.current = null;
+        if (focusedFieldKeyRef.current === key) {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (focusedFieldKeyRef.current === key) {
+                scrollFieldIntoView(key, false);
+              }
+            });
+          });
+        }
+      }, 120);
     },
-    [keyboardHeight, scheduleScrollToFocusedField]
+    [keyboardHeight, thoughtsMaxHeight, scrollFieldIntoView]
   );
 
   const { control, handleSubmit } = useForm<ManualNoteFormData>({
@@ -267,13 +307,6 @@ export const ManualNoteForm = ({
     control,
     name: "thoughts",
   });
-
-  const registerBulletLayout = React.useCallback(
-    (index: number, y: number, height: number) => {
-      bulletLayoutsRef.current[index] = { y, height };
-    },
-    []
-  );
 
   const registerFieldRef = React.useCallback(
     (key: string, ref: TextInput | null) => {
@@ -303,9 +336,6 @@ export const ManualNoteForm = ({
       const input = fieldRefs.current[key];
       if (!input) return false;
       input.focus();
-      if (keyboardScreenYRef.current != null) {
-        scheduleScrollToFocusedField(150);
-      }
       return true;
     };
 
@@ -316,7 +346,7 @@ export const ManualNoteForm = ({
         setTimeout(() => focusTarget(), 0);
       }
     });
-  }, [fields, scheduleScrollToFocusedField]);
+  }, [fields]);
 
   const handleFormSubmit = (data: ManualNoteFormData) => {
     const thoughts: Thought[] = data.thoughts
@@ -479,11 +509,6 @@ export const ManualNoteForm = ({
                 ? { maxHeight: thoughtsMaxHeight }
                 : undefined
             }
-            onLayout={() => {
-              if (keyboardHeight > 0 && focusedFieldKeyRef.current) {
-                scheduleScrollToFocusedField(150);
-              }
-            }}
           >
             <ScrollView
               ref={thoughtsScrollRef}
@@ -491,6 +516,7 @@ export const ManualNoteForm = ({
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="interactive"
               showsVerticalScrollIndicator
+              removeClippedSubviews={false}
               style={{ flex: 1 }}
               onLayout={(event) => {
                 thoughtsScrollHeightRef.current =
@@ -499,33 +525,30 @@ export const ManualNoteForm = ({
               onScroll={(event) => {
                 scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
               }}
+              onContentSizeChange={(_width, height) => {
+                thoughtsContentHeightRef.current = height;
+              }}
               scrollEventThrottle={16}
               contentContainerStyle={{
                 paddingTop: CONTENT_PADDING_TOP,
-                paddingBottom: 12,
+                paddingBottom:
+                  keyboardHeight > 0 ? KEYBOARD_SCROLL_PADDING : 12,
               }}
             >
               <View className="flex-col gap-3">
                 {fields.map((field, index) => (
-                  <View
+                  <ThoughtBulletItem
                     key={field.id}
-                    onLayout={(event) => {
-                      const { y, height } = event.nativeEvent.layout;
-                      registerBulletLayout(index, y, height);
-                    }}
-                  >
-                    <ThoughtBulletItem
-                      index={index}
-                      control={control}
-                      categories={categories}
-                      showTitles={showTitles}
-                      registerFieldRef={registerFieldRef}
-                      onFieldFocus={handleFieldFocus}
-                      onFieldContentChange={handleFieldContentChange}
-                      onNewBullet={handleNewBullet}
-                      onBackspaceAtStart={handleBackspaceAtStart}
-                    />
-                  </View>
+                    index={index}
+                    control={control}
+                    categories={categories}
+                    showTitles={showTitles}
+                    registerFieldRef={registerFieldRef}
+                    onFieldFocus={handleFieldFocus}
+                    onFieldContentChange={handleFieldContentChange}
+                    onNewBullet={handleNewBullet}
+                    onBackspaceAtStart={handleBackspaceAtStart}
+                  />
                 ))}
               </View>
             </ScrollView>

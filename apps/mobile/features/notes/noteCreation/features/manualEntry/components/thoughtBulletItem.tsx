@@ -38,7 +38,7 @@ const STRIPE_WIDTH = 4;
 const BULLET_SIZE = 6;
 const STRIPE_COLUMN_WIDTH = 14;
 const CONTENT_GAP = 8;
-const CATEGORY_LABEL_TOP = -10;
+const CATEGORY_LABEL_HEIGHT = 14;
 const DOT_ALIGN_TOP = 11;
 const DOT_HIT_SIZE = 36;
 const CATEGORY_FADE_MS = 4000;
@@ -105,23 +105,23 @@ export const ThoughtBulletItem = ({
 
   const collapseProgress = useSharedValue(0);
   const labelOpacity = useSharedValue(1);
-  const pulseScale = useSharedValue(1);
+  const pulseOpacity = useSharedValue(1);
   const contentHeight = useSharedValue(40);
 
   const stopPulse = React.useCallback(() => {
-    pulseScale.value = withTiming(1, { duration: 150 });
-  }, [pulseScale]);
+    pulseOpacity.value = withTiming(1, { duration: 150 });
+  }, [pulseOpacity]);
 
   const startPulse = React.useCallback(() => {
-    pulseScale.value = withRepeat(
+    pulseOpacity.value = withRepeat(
       withSequence(
-        withTiming(1.45, { duration: 280 }),
+        withTiming(0.35, { duration: 280 }),
         withTiming(1, { duration: 280 })
       ),
       4,
       false
     );
-  }, [pulseScale]);
+  }, [pulseOpacity]);
 
   const collapseCategory = React.useCallback(() => {
     labelOpacity.value = withTiming(0, { duration: 280 });
@@ -174,7 +174,11 @@ export const ThoughtBulletItem = ({
       [2, BULLET_SIZE / 2]
     ),
     marginTop: interpolate(collapseProgress.value, [0, 1], [0, DOT_ALIGN_TOP]),
-    transform: [{ scale: pulseScale.value }],
+    opacity: interpolate(
+      collapseProgress.value,
+      [0, 1],
+      [1, pulseOpacity.value]
+    ),
   }));
 
   const labelAnimatedStyle = useAnimatedStyle(() => ({
@@ -305,34 +309,32 @@ export const ThoughtBulletItem = ({
           />
         );
 
-        const stripeElement = isExpanded ? (
-          <BottomSheetOpenTrigger asChild>
-            <Pressable
-              style={{
-                width: STRIPE_COLUMN_WIDTH,
-                alignItems: "center",
-              }}
-            >
-              {stripeVisual}
-            </Pressable>
-          </BottomSheetOpenTrigger>
-        ) : (
+        const stripeElement = (
           <View
             style={{
               width: STRIPE_COLUMN_WIDTH,
               alignItems: "center",
+              overflow: "hidden",
             }}
           >
-            {stripeVisual}
-            <Pressable
-              onPress={handleStripePress}
-              style={{
-                position: "absolute",
-                top: dotHitTop,
-                width: DOT_HIT_SIZE,
-                height: DOT_HIT_SIZE,
-              }}
-            />
+            {isExpanded ? (
+              <BottomSheetOpenTrigger asChild>
+                <Pressable>{stripeVisual}</Pressable>
+              </BottomSheetOpenTrigger>
+            ) : (
+              <>
+                {stripeVisual}
+                <Pressable
+                  onPress={handleStripePress}
+                  style={{
+                    position: "absolute",
+                    top: dotHitTop,
+                    width: DOT_HIT_SIZE,
+                    height: DOT_HIT_SIZE,
+                  }}
+                />
+              </>
+            )}
           </View>
         );
 
@@ -340,10 +342,7 @@ export const ThoughtBulletItem = ({
           <Animated.View
             style={[
               {
-                position: "absolute",
-                top: CATEGORY_LABEL_TOP,
-                left: STRIPE_COLUMN_WIDTH + CONTENT_GAP,
-                zIndex: 10,
+                paddingLeft: STRIPE_COLUMN_WIDTH + CONTENT_GAP,
               },
               labelAnimatedStyle,
             ]}
@@ -367,8 +366,16 @@ export const ThoughtBulletItem = ({
 
         return (
           <BottomSheet>
-            <View className="relative py-1">
-              {categoryLabel}
+            <View>
+              <View
+                style={{
+                  height: CATEGORY_LABEL_HEIGHT,
+                  justifyContent: "flex-end",
+                  overflow: "hidden",
+                }}
+              >
+                {categoryLabel}
+              </View>
 
               <View
                 className="flex-row items-start"
