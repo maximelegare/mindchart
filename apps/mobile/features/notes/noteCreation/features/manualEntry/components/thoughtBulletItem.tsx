@@ -219,6 +219,7 @@ export const ThoughtBulletItem = ({
                 title="Title"
                 fontSize="md"
                 placeholder="Title"
+                scrollEnabled={false}
                 onInsertNewItem={handleInsertNewItem}
                 onBackspaceAtStart={handleBackspaceAtStart}
               />
@@ -241,6 +242,7 @@ export const ThoughtBulletItem = ({
                 fontSize="sm"
                 fontFamily="QuicksandRegular"
                 placeholder="Enter a bullet point"
+                scrollEnabled={false}
                 onInsertNewItem={handleInsertNewItem}
                 onBackspaceAtStart={handleBackspaceAtStart}
               />
@@ -268,6 +270,7 @@ export const ThoughtBulletItem = ({
             fontSize="sm"
             fontFamily="QuicksandRegular"
             placeholder="Enter a bullet point"
+            scrollEnabled={false}
             onInsertNewItem={handleInsertNewItem}
             onBackspaceAtStart={handleBackspaceAtStart}
           />

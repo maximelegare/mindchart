@@ -29,6 +29,7 @@ type EditableFieldProps = {
   multiline?: boolean;
   onFocus?: () => void;
   onContentSizeChange?: () => void;
+  scrollEnabled?: boolean;
 };
 
 export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
@@ -50,6 +51,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
       multiline = true,
       onFocus,
       onContentSizeChange,
+      scrollEnabled,
     },
     ref
   ) {
@@ -117,6 +119,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
         onContentSizeChange={onContentSizeChange}
         value={value}
         multiline={multiline}
+        scrollEnabled={scrollEnabled}
         placeholder={placeholder}
         blurOnSubmit={false}
       />
@@ -137,6 +140,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
         onContentSizeChange={onContentSizeChange}
         value={value}
         multiline={multiline}
+        scrollEnabled={scrollEnabled}
         placeholder={placeholder}
         blurOnSubmit={false}
       />
