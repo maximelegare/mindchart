@@ -189,8 +189,8 @@ export const ManualNoteForm = ({
   };
 
   return (
-    <View className="flex-1 flex-col gap-4 w-full">
-      <View className="flex-row gap-3 items-start w-full">
+    <View className="flex-1 flex-col gap-2 w-full min-h-0">
+      <View className="flex-row gap-3 items-start w-full shrink-0">
         <View className="flex-1 min-w-0 flex-col gap-1">
           <Label nativeID="title">Title</Label>
           <Controller
@@ -257,8 +257,8 @@ export const ManualNoteForm = ({
         </View>
       </View>
 
-      <View className="flex-col gap-1 flex-1">
-        <View className="flex-row items-center justify-between">
+      <View className="flex-col gap-1 flex-1 min-h-0">
+        <View className="flex-row items-center justify-between shrink-0">
           <Label nativeID="thoughts">Content</Label>
           <View className="flex-row items-center gap-2">
             <Typography className="text-muted-foreground text-sm">
@@ -268,13 +268,14 @@ export const ManualNoteForm = ({
           </View>
         </View>
 
-        <View className="flex-1 rounded-lg bg-card border border-input px-3 py-4 overflow-visible">
+        <View className="flex-1 min-h-0 rounded-lg bg-card border border-input px-3 py-4 overflow-hidden">
           <ScrollView
-            style={{ flex: 1, overflow: "visible" }}
-            contentContainerStyle={{ overflow: "visible" }}
             nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator
+            style={{ flex: 1 }}
           >
-            <View className="flex-col gap-3 pb-2 pt-2">
+            <View className="flex-col gap-3">
               {fields.map((field, index) => (
                 <ThoughtBulletItem
                   key={field.id}
@@ -292,7 +293,7 @@ export const ManualNoteForm = ({
         </View>
       </View>
 
-      <View className="items-center pb-2">
+      <View className="items-center pb-2 shrink-0">
         <Button onPress={handleSubmit(handleFormSubmit)} style={{ width: 250 }}>
           <Typography>Save Note</Typography>
         </Button>

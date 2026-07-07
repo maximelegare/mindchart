@@ -5,7 +5,7 @@ import { View } from "react-native";
 import { AudioFeature } from "@/features/notes/noteCreation/features/audio/views/index";
 import ViewSwitcher from "@/components/ui/viewSwitcher";
 import { TextInputFeature } from "@/features/notes/noteCreation/features/textInput/textInput";
-import { ManualModeFeature } from "@/features/notes/noteCreation/features/manualMode/views/index";
+import { ManualModeFeature } from "@/features/notes/noteCreation/features/manualEntry/views/index";
 import { useFileSystem } from "@/hooks/useFileSystem";
 import { useNoteCreationStore } from "../context/noteCreationContext";
 
@@ -28,7 +28,7 @@ export function NoteCreationFeature() {
 
   return (
     <Gutter>
-      <View style={{ height: 550 }}>
+      <View style={{ height: 550 }} className="flex-1 overflow-hidden flex-col">
         {creationMode === "ai" ? (
           <ViewSwitcher
             currentMode={inputView}
@@ -41,7 +41,9 @@ export function NoteCreationFeature() {
             }
           />
         ) : (
-          <ManualModeFeature />
+          <View className="flex-1 overflow-hidden">
+            <ManualModeFeature />
+          </View>
         )}
       </View>
 
