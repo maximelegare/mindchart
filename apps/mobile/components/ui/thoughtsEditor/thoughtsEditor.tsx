@@ -68,6 +68,7 @@ type ThoughtsEditorProps = {
   categories: Category[];
   defaultShowTitles?: boolean;
   onKeyboardHeightChange?: (height: number) => void;
+  keyboardOverlayInset?: number;
 };
 
 export function ThoughtsEditor({
@@ -75,6 +76,7 @@ export function ThoughtsEditor({
   categories,
   defaultShowTitles = false,
   onKeyboardHeightChange,
+  keyboardOverlayInset = 0,
 }: ThoughtsEditorProps) {
   const { colorScheme } = useColorScheme();
   const { control, getValues, setValue } =
@@ -113,6 +115,8 @@ export function ThoughtsEditor({
   } | null>(null);
   const showTitlesRef = React.useRef(showTitles);
   showTitlesRef.current = showTitles;
+  const keyboardOverlayInsetRef = React.useRef(keyboardOverlayInset);
+  keyboardOverlayInsetRef.current = keyboardOverlayInset;
 
   const updateThoughtsMaxHeight = React.useCallback(() => {
     const keyboardTop = keyboardScreenYRef.current;
@@ -123,7 +127,10 @@ export function ThoughtsEditor({
     }
 
     scrollArea.measureInWindow((_x, y, _width, _height) => {
-      const nextMaxHeight = Math.max(120, keyboardTop - y - KEYBOARD_GAP);
+      const nextMaxHeight = Math.max(
+        120,
+        keyboardTop - y - KEYBOARD_GAP - keyboardOverlayInsetRef.current
+      );
       setThoughtsMaxHeight(nextMaxHeight);
     });
   }, []);
@@ -139,13 +146,15 @@ export function ThoughtsEditor({
       if (viewportHeight <= 0) return;
 
       scrollArea.measureInWindow((_sx, scrollY, _sw, scrollAreaHeight) => {
+        const overlayInset = keyboardOverlayInsetRef.current;
         const visibleTop = scrollY + SCROLL_TOP_INSET;
 
         input.measureInWindow((_x, fieldY, _w, fieldHeight) => {
           const fieldTop = fieldY;
           const fieldBottom = fieldY + fieldHeight;
-          const idealBottom = scrollY + scrollAreaHeight - CURSOR_CLEARANCE;
-          const clipBottom = scrollY + scrollAreaHeight;
+          const idealBottom =
+            scrollY + scrollAreaHeight - CURSOR_CLEARANCE - overlayInset;
+          const clipBottom = scrollY + scrollAreaHeight - overlayInset;
           const maxScrollY = Math.max(
             0,
             thoughtsContentHeightRef.current - viewportHeight
@@ -273,6 +282,19 @@ export function ThoughtsEditor({
     if (thoughtsMaxHeight == null || !focusedFieldKeyRef.current) return;
     return scheduleScrollToFocusedField(50);
   }, [thoughtsMaxHeight, scheduleScrollToFocusedField]);
+
+  React.useEffect(() => {
+    if (keyboardHeight === 0) return;
+    updateThoughtsMaxHeight();
+    if (focusedFieldKeyRef.current) {
+      scheduleScrollToFocusedField(50);
+    }
+  }, [
+    keyboardHeight,
+    keyboardOverlayInset,
+    scheduleScrollToFocusedField,
+    updateThoughtsMaxHeight,
+  ]);
 
   const handleFieldFocus = React.useCallback(
     (key: string) => {
@@ -740,7 +762,10 @@ export function ThoughtsEditor({
             contentContainerStyle={{
               paddingHorizontal: 12,
               paddingTop: 12,
-              paddingBottom: keyboardHeight > 0 ? KEYBOARD_SCROLL_PADDING : 12,
+              paddingBottom:
+                keyboardHeight > 0
+                  ? KEYBOARD_SCROLL_PADDING + keyboardOverlayInset
+                  : 12,
             }}
           >
             <View className="flex-col gap-3">

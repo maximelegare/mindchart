@@ -91,6 +91,7 @@ const FIELD_CHIP_HEIGHT = 40;
 const SAVE_BUTTON_KEYBOARD_GAP = 12;
 const SAVE_BUTTON_MARGIN = 16;
 const SAVE_BUTTON_HEIGHT = 48;
+const SAVE_BUTTON_KEYBOARD_EXTRA_CLEARANCE = 15;
 const SAVE_BUTTON_ANIMATION_MS = 220;
 
 const saveButtonTimingConfig = {
@@ -146,6 +147,9 @@ export const ManualNoteForm = ({
   const saveButtonAnimatedStyle = useAnimatedStyle(() => ({
     bottom: saveButtonBottom.value,
   }));
+
+  const saveButtonOverlayInset =
+    keyboardHeight > 0 ? SAVE_BUTTON_KEYBOARD_EXTRA_CLEARANCE : 0;
 
   const handleSavePress = () => {
     Keyboard.dismiss();
@@ -276,6 +280,7 @@ export const ManualNoteForm = ({
               ) ?? false
             }
             onKeyboardHeightChange={setKeyboardHeight}
+            keyboardOverlayInset={saveButtonOverlayInset}
           />
         </View>
 
@@ -288,6 +293,7 @@ export const ManualNoteForm = ({
             onPress={handleSavePress}
             className="border border-input bg-secondary flex-row items-center gap-2"
             cornerRadius="full"
+            size="sm"
           >
             <Icon name="save" color="card" />
             <Typography variant="h4">Save Note</Typography>
