@@ -11,7 +11,7 @@ import { Gradient } from "@/components/ui/gradient";
 import { gutter, Gutter } from "@/components/ui/gutter";
 import { HeaderContent } from "@/components/layout/shared/headerContent";
 import { cn } from "@/lib/cn";
-import { FloatingModal } from "@/features/notes/floatingButton/floatingModal";
+import { FloatingModal } from "@/features/notes/floatingModal/floatingModal";
 
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
