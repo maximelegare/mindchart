@@ -8,7 +8,7 @@ export const KeyboardView = () => {
   const setInputValue = useNoteCreationStore((state) => state.setInputValue);
 
   return (
-    <View className="flex-1 px-4 " style={{ paddingTop: 16 }}>
+    <View className="flex-1 px-4" style={{ paddingTop: 16 }}>
       <TextInputFeature onChange={setInputValue} value={inputValue} />
     </View>
   );

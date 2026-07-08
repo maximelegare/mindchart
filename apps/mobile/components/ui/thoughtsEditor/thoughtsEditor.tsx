@@ -675,9 +675,11 @@ export function ThoughtsEditor({
   };
 
   return (
-    <View className="flex-col gap-1 flex-1 min-h-0">
+    <View className="flex-col flex-1 min-h-0">
       <View className="flex-row items-center justify-between shrink-0">
-        <Label nativeID="thoughts">Content</Label>
+        <Label className="text-popover-foreground" nativeID="thoughts">
+          Content
+        </Label>
         <View className="flex-row items-center gap-2">
           <Typography className="text-muted-foreground text-sm">
             Titles

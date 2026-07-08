@@ -1,3 +1,4 @@
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
@@ -26,6 +27,9 @@ export const TextInputFeature = ({
 
   return (
     <View className="flex-1 h-full w-full">
+      <Label className="text-popover-foreground" nativeID="topic">
+        Content
+      </Label>
       <Textarea
         ref={textareaRef}
         placeholder="What do you have in mind?"

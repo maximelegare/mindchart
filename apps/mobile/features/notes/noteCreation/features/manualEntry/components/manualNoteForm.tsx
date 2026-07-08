@@ -140,8 +140,10 @@ export const ManualNoteForm = ({
     <FormProvider {...form}>
       <View className="flex-1 flex-col gap-2 w-full min-h-0">
         <View className="flex-row gap-3 items-start w-full shrink-0">
-          <View className="flex-1 min-w-0 flex-col gap-1">
-            <Label nativeID="title">Title</Label>
+          <View className="flex-1 min-w-0 flex-col">
+            <Label className="text-popover-foreground" nativeID="title">
+              Title
+            </Label>
             <Controller
               control={control}
               name="title"
@@ -190,8 +192,10 @@ export const ManualNoteForm = ({
             />
           </View>
 
-          <View className="shrink-0 flex-col gap-1">
-            <Label nativeID="topic">Topic</Label>
+          <View className="shrink-0 flex-col">
+            <Label className="text-popover-foreground" nativeID="topic">
+              Topic
+            </Label>
             <Controller
               control={control}
               name="topic"

@@ -5,7 +5,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { X } from "@/lib/icons/Times";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -15,6 +14,7 @@ import { TabViewSwitcher } from "./tabViewSwitcher";
 import { FloatingModalTab, FloatingModalTabId } from "../types/types";
 import { RecorderView } from "../views/ai/recorder";
 import { KeyboardView } from "../views/ai/keyboard";
+import { ManualEntryView } from "../views/manualEntry";
 import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { useFileSystem } from "@/hooks/useFileSystem";
@@ -33,16 +33,10 @@ const DEFAULT_TABS: FloatingModalTab[] = [
     content: <KeyboardView />,
   },
   {
-    id: "recent",
-    label: "Recent",
-    icon: "notebook-text",
-    content: (
-      <View className="flex-1 px-4 pt-3">
-        <Typography className="text-popover-foreground">
-          Recent notes
-        </Typography>
-      </View>
-    ),
+    id: "manual",
+    label: "Manual",
+    icon: "pencil",
+    content: <ManualEntryView />,
   },
 ];
 
@@ -69,6 +63,9 @@ export const FloatingModalTabs = ({
   const inputView = useNoteCreationStore((state) => state.inputView);
   const fileURI = useNoteCreationStore((state) => state.fileURI);
   const inputValue = useNoteCreationStore((state) => state.inputValue);
+  const setCreationMode = useNoteCreationStore(
+    (state) => state.setCreationMode
+  );
   const setInputView = useNoteCreationStore((state) => state.setInputView);
   const resetInputs = useNoteCreationStore((state) => state.resetInputs);
   const { deleteFile } = useFileSystem();
@@ -82,12 +79,25 @@ export const FloatingModalTabs = ({
 
   const handleTabChange = (tabId: FloatingModalTabId) => {
     setActiveTab(tabId);
-    if (tabId === "create") {
-      setInputView("audio");
-    } else if (tabId === "keyboard") {
-      setInputView("input");
+    if (tabId === "manual") {
+      setCreationMode("manual");
+    } else {
+      setCreationMode("ai");
+      if (tabId === "create") {
+        setInputView("audio");
+      } else if (tabId === "keyboard") {
+        setInputView("input");
+      }
     }
   };
+
+  useEffect(() => {
+    if (creationMode === "manual") {
+      setActiveTab("manual");
+    } else if (activeTab === "manual") {
+      setActiveTab(inputView === "input" ? "keyboard" : "create");
+    }
+  }, [creationMode]);
 
   useEffect(() => {
     headerOpacity.value = withTiming(1, { duration: HEADER_FADE_MS });
@@ -96,6 +106,8 @@ export const FloatingModalTabs = ({
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
   }));
+
+  const showGenerateNote = activeTab !== "manual";
 
   return (
     <View className="flex-1 min-h-0">
@@ -136,7 +148,7 @@ export const FloatingModalTabs = ({
         <View className="flex-1" />
       )}
 
-      {creationMode === "ai" && (
+      {showGenerateNote && (
         <View className="items-center px-4 pb-4 pt-2">
           <GenerateNote
             fileURI={fileURI}

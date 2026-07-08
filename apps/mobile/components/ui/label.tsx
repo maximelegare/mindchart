@@ -11,7 +11,7 @@ const Label = React.forwardRef<
     ref
   ) => (
     <LabelPrimitive.Root
-      className="web:cursor-default"
+      className="web:cursor-default mb-2"
       onPress={onPress}
       onLongPress={onLongPress}
       onPressIn={onPressIn}
