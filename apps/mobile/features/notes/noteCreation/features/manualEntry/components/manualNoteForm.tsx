@@ -35,11 +35,19 @@ type ManualNoteFormData = {
   }>;
 };
 
+type ManualNoteFormDefaultValues = {
+  title?: string;
+  summary?: string;
+  topic?: Topic;
+  thoughts?: Thought[];
+};
+
 type ManualNoteFormProps = {
   noteId: string;
   defaultTopic: Topic;
   categories: Category[];
   onSubmit: (note: Note, thoughts: Thought[]) => void;
+  defaultValues?: ManualNoteFormDefaultValues;
 };
 
 const createEmptyThought = (noteId: string) => {
@@ -53,6 +61,42 @@ const createEmptyThought = (noteId: string) => {
     noteId,
     categoryId: "uncategorized",
     thoughtId,
+  };
+};
+
+const mapThoughtToFormValue = (thought: Thought, noteId: string) => ({
+  title: thought.title ?? "",
+  summary: thought.summary ?? "",
+  semanticLabel: thought.semanticLabel ?? "",
+  id: thought.id,
+  createdAt: thought.createdAt ?? new Date().toISOString(),
+  noteId: thought.noteId ?? noteId,
+  categoryId: thought.categoryId ?? "uncategorized",
+  thoughtId: thought.thoughtId ?? thought.id,
+});
+
+const buildFormDefaultValues = (
+  noteId: string,
+  defaultTopic: Topic,
+  defaultValues?: ManualNoteFormDefaultValues
+): ManualNoteFormData => {
+  const topic = defaultValues?.topic ?? defaultTopic;
+
+  return {
+    title: defaultValues?.title ?? "",
+    summary: defaultValues?.summary ?? "",
+    topic: {
+      id: topic.id,
+      name: topic.name,
+      isNew: topic.isNew,
+      embedding: topic.embedding,
+      createdAt: topic.createdAt,
+    },
+    thoughts: defaultValues?.thoughts?.length
+      ? defaultValues.thoughts.map((thought) =>
+          mapThoughtToFormValue(thought, noteId)
+        )
+      : [createEmptyThought(noteId)],
   };
 };
 
@@ -86,6 +130,7 @@ export const ManualNoteForm = ({
   defaultTopic,
   categories,
   onSubmit,
+  defaultValues,
 }: ManualNoteFormProps) => {
   const insets = useSafeAreaInsets();
   const tabBarOffset =
@@ -93,7 +138,10 @@ export const ManualNoteForm = ({
     LAYOUT_SIZES.TAB_BAR_PADDING_COMPENSATION +
     insets.bottom;
 
-  const [showTitles, setShowTitles] = React.useState(false);
+  const [showTitles, setShowTitles] = React.useState(
+    () =>
+      defaultValues?.thoughts?.some((thought) => thought.title?.trim()) ?? false
+  );
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
   const [thoughtsMaxHeight, setThoughtsMaxHeight] = React.useState<
@@ -342,18 +390,11 @@ export const ManualNoteForm = ({
 
   const { control, handleSubmit, getValues, setValue } =
     useForm<ManualNoteFormData>({
-      defaultValues: {
-        title: "",
-        summary: "",
-        topic: {
-          id: defaultTopic.id,
-          name: defaultTopic.name,
-          isNew: defaultTopic.isNew,
-          embedding: defaultTopic.embedding,
-          createdAt: defaultTopic.createdAt,
-        },
-        thoughts: [createEmptyThought(noteId)],
-      },
+      defaultValues: buildFormDefaultValues(
+        noteId,
+        defaultTopic,
+        defaultValues
+      ),
     });
 
   const {
