@@ -325,6 +325,22 @@ export const ManualNoteForm = ({
     pendingFocusKeyRef.current = key;
   }, []);
 
+  const handleFocusField = React.useCallback(
+    (key: string) => {
+      focusedFieldKeyRef.current = key;
+      const input = fieldRefs.current[key];
+      if (input) {
+        input.focus();
+        if (keyboardScreenYRef.current != null && thoughtsMaxHeight != null) {
+          scheduleScrollToFocusedField(100);
+        }
+        return;
+      }
+      scheduleFocusAfterUpdate(key);
+    },
+    [thoughtsMaxHeight, scheduleScrollToFocusedField, scheduleFocusAfterUpdate]
+  );
+
   React.useLayoutEffect(() => {
     const key = pendingFocusKeyRef.current;
     if (!key) return;
@@ -547,6 +563,7 @@ export const ManualNoteForm = ({
                     onFieldFocus={handleFieldFocus}
                     onFieldContentChange={handleFieldContentChange}
                     onNewBullet={handleNewBullet}
+                    onFocusField={handleFocusField}
                     onBackspaceAtStart={handleBackspaceAtStart}
                   />
                 ))}

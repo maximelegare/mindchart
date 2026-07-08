@@ -52,6 +52,7 @@ type ThoughtBulletItemProps = {
   onFieldFocus: (key: string) => void;
   onFieldContentChange?: (key: string) => void;
   onNewBullet: (index: number) => void;
+  onFocusField: (key: string) => void;
   onBackspaceAtStart: (index: number) => void;
 };
 
@@ -95,6 +96,7 @@ export const ThoughtBulletItem = ({
   onFieldFocus,
   onFieldContentChange,
   onNewBullet,
+  onFocusField,
   onBackspaceAtStart,
 }: ThoughtBulletItemProps) => {
   const { dismiss } = useBottomSheetModal();
@@ -195,6 +197,10 @@ export const ThoughtBulletItem = ({
     onNewBullet(index);
   };
 
+  const handleTitleEnter = () => {
+    onFocusField(`thought-${index}-summary`);
+  };
+
   const handleBackspaceAtStart = () => {
     onBackspaceAtStart(index);
   };
@@ -224,7 +230,7 @@ export const ThoughtBulletItem = ({
                 fontSize="md"
                 placeholder="Title"
                 scrollEnabled={false}
-                onInsertNewItem={handleInsertNewItem}
+                onInsertNewItem={handleTitleEnter}
                 onBackspaceAtStart={handleBackspaceAtStart}
               />
             )}
