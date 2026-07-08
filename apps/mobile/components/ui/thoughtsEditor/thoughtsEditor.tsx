@@ -1,6 +1,7 @@
 import { Category } from "@repo/zod-schemas";
 import React from "react";
-import { Keyboard, ScrollView, TextInput, View } from "react-native";
+import { Keyboard, TextInput, View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -711,7 +712,7 @@ export function ThoughtsEditor({
 
         <View
           ref={thoughtsScrollAreaRef}
-          className="min-h-0 flex-1 px-3 pb-2 pt-3"
+          className="min-h-0 flex-1"
           style={
             thoughtsMaxHeight != null
               ? { maxHeight: thoughtsMaxHeight }
@@ -721,7 +722,7 @@ export function ThoughtsEditor({
           <ScrollView
             ref={thoughtsScrollRef}
             nestedScrollEnabled
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
             showsVerticalScrollIndicator
             removeClippedSubviews={false}
@@ -737,6 +738,8 @@ export function ThoughtsEditor({
             }}
             scrollEventThrottle={16}
             contentContainerStyle={{
+              paddingHorizontal: 12,
+              paddingTop: 12,
               paddingBottom: keyboardHeight > 0 ? KEYBOARD_SCROLL_PADDING : 12,
             }}
           >
