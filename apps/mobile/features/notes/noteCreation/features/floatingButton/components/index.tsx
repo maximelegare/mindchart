@@ -14,6 +14,7 @@ import { FloatingModalTabBar } from "./tabBar";
 import { TabViewSwitcher } from "./tabViewSwitcher";
 import { FloatingModalTab, FloatingModalTabId } from "../types/types";
 import { RecorderView } from "../views/ai/recorder";
+import { KeyboardView } from "../views/ai/keyboard";
 import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { useFileSystem } from "@/hooks/useFileSystem";
@@ -26,16 +27,10 @@ const DEFAULT_TABS: FloatingModalTab[] = [
     content: <RecorderView />,
   },
   {
-    id: "browse",
-    label: "Browse",
-    icon: "search",
-    content: (
-      <View className="flex-1 px-4 pt-3">
-        <Typography className="text-popover-foreground">
-          Browse notes
-        </Typography>
-      </View>
-    ),
+    id: "keyboard",
+    label: "Keyboard",
+    icon: "keyboard",
+    content: <KeyboardView />,
   },
   {
     id: "recent",
@@ -74,6 +69,7 @@ export const FloatingModalTabs = ({
   const inputView = useNoteCreationStore((state) => state.inputView);
   const fileURI = useNoteCreationStore((state) => state.fileURI);
   const inputValue = useNoteCreationStore((state) => state.inputValue);
+  const setInputView = useNoteCreationStore((state) => state.setInputView);
   const resetInputs = useNoteCreationStore((state) => state.resetInputs);
   const { deleteFile } = useFileSystem();
 
@@ -82,6 +78,15 @@ export const FloatingModalTabs = ({
       deleteFile(fileURI);
     }
     resetInputs();
+  };
+
+  const handleTabChange = (tabId: FloatingModalTabId) => {
+    setActiveTab(tabId);
+    if (tabId === "create") {
+      setInputView("audio");
+    } else if (tabId === "keyboard") {
+      setInputView("input");
+    }
   };
 
   useEffect(() => {
@@ -107,7 +112,7 @@ export const FloatingModalTabs = ({
         <FloatingModalTabBar
           tabs={tabs}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         />
         <Button
           onPress={onClose}
