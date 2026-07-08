@@ -1,19 +1,29 @@
 import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useScrollToTop, useNavigation } from "@react-navigation/native";
+import {
+  useScrollToTop,
+  useNavigation,
+  useIsFocused,
+} from "@react-navigation/native";
 
 import { Gradient } from "@/components/ui/gradient";
 import { gutter, Gutter } from "@/components/ui/gutter";
 import { HeaderContent } from "@/components/layout/shared/headerContent";
 import { cn } from "@/lib/cn";
+import { FloatingModal } from "@/features/notes/floatingButton/floatingModal";
 
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { MoreOptionsMenuProps } from "../header/moreOptions/moreOptionsMenu";
 import { IconName } from "@/components/ui/icons/icon-registry";
 
-const { HEADER_HEIGHT, HEADER_OVERLAP } = LAYOUT_SIZES;
+const {
+  HEADER_HEIGHT,
+  HEADER_OVERLAP,
+  TAB_BAR_HEIGHT,
+  TAB_BAR_PADDING_COMPENSATION,
+} = LAYOUT_SIZES;
 
 type HeaderVariant = "stack" | "tab" | "none";
 
@@ -28,6 +38,7 @@ type PageContainerProps = {
   buttons?: React.ReactNode;
   children: React.ReactNode;
   noScrollView?: boolean;
+  showFloatingButton?: boolean;
   moreOptionsMenu?: {
     state: { open: boolean; setOpen: (open: boolean) => void };
     links: MoreOptionsMenuProps["links"];
@@ -43,11 +54,13 @@ export const PageContainer = ({
   buttons,
   children,
   noScrollView = false,
+  showFloatingButton = false,
   moreOptionsMenu,
   optionsHeader,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const scrollRef = React.useRef<ScrollView>(null);
 
   useScrollToTop(scrollRef);
@@ -59,6 +72,12 @@ export const PageContainer = ({
     resolvedTitle.length > 25
       ? `${resolvedTitle.slice(0, 25)}...`
       : resolvedTitle;
+
+  const floatingBottomOffset =
+    insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_PADDING_COMPENSATION + 16;
+
+  const floatingTopOffset =
+    headerVariant !== "none" ? HEADER_HEIGHT + insets.top - HEADER_OVERLAP : 12;
 
   return (
     <View style={styles.root}>
@@ -130,6 +149,15 @@ export const PageContainer = ({
           )}
         </View>
       </View>
+
+      {showFloatingButton && isFocused && (
+        <View style={styles.floatingModalLayer} pointerEvents="box-none">
+          <FloatingModal
+            bottomOffset={floatingBottomOffset}
+            topOffset={floatingTopOffset}
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -168,5 +196,11 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     paddingBottom: 24,
+  },
+
+  floatingModalLayer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 50,
+    elevation: 50,
   },
 });

@@ -21,6 +21,7 @@ export const HomeScreen = () => {
         showLogo={true}
         headerVariant="stack"
         noScrollView
+        showFloatingButton
         buttons={<SearchFeature />}
         optionsHeader={<NoteCreationOptionsHeader />}
         moreOptionsMenu={{
