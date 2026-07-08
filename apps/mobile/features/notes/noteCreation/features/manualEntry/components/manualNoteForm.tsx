@@ -64,6 +64,22 @@ const CONTENT_PADDING_TOP = 12;
 const SCROLL_TOP_INSET = 24;
 const SCROLL_VISIBILITY_EPSILON = 4;
 const KEYBOARD_SCROLL_PADDING = 48;
+const NATIVE_RELEASE_MS = 120;
+const IDLE_CHECK_MS = 40;
+const ERASE_STEP_DEBOUNCE_MS = 32;
+
+type ThoughtFieldPart = "title" | "summary";
+
+function parseThoughtFieldKey(
+  fieldKey: string
+): { index: number; field: ThoughtFieldPart } | null {
+  const match = fieldKey.match(/^thought-(\d+)-(title|summary)$/);
+  if (!match) return null;
+  return {
+    index: Number(match[1]),
+    field: match[2] as ThoughtFieldPart,
+  };
+}
 
 export const ManualNoteForm = ({
   noteId,
@@ -98,6 +114,20 @@ export const ManualNoteForm = ({
   > | null>(null);
   const thoughtsScrollHeightRef = React.useRef(0);
   const thoughtsContentHeightRef = React.useRef(0);
+  const pendingFocusAtEndRef = React.useRef(false);
+  const lastNativeBackspaceAtRef = React.useRef(0);
+  const keyboardAnchorFieldKeyRef = React.useRef<string | null>(null);
+  const eraseActiveRef = React.useRef(false);
+  const eraseIdleCheckRef = React.useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
+  const eraseChainingRef = React.useRef(false);
+  const eraseStepDedupRef = React.useRef<{
+    fieldKey: string;
+    at: number;
+  } | null>(null);
+  const showTitlesRef = React.useRef(showTitles);
+  showTitlesRef.current = showTitles;
 
   const updateThoughtsMaxHeight = React.useCallback(() => {
     const keyboardTop = keyboardScreenYRef.current;
@@ -189,6 +219,10 @@ export const ManualNoteForm = ({
 
   const scheduleScrollToFocusedField = React.useCallback(
     (delay = 200) => {
+      if (eraseActiveRef.current || eraseChainingRef.current) {
+        return;
+      }
+
       scrollTimersRef.current.forEach(clearTimeout);
       scrollTimersRef.current = [];
 
@@ -212,6 +246,9 @@ export const ManualNoteForm = ({
       if (contentScrollTimerRef.current) {
         clearTimeout(contentScrollTimerRef.current);
       }
+      if (eraseIdleCheckRef.current) {
+        clearInterval(eraseIdleCheckRef.current);
+      }
     };
   }, []);
 
@@ -222,6 +259,17 @@ export const ManualNoteForm = ({
       requestAnimationFrame(updateThoughtsMaxHeight);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      if (eraseActiveRef.current || eraseChainingRef.current) {
+        const key =
+          keyboardAnchorFieldKeyRef.current ?? focusedFieldKeyRef.current;
+        if (key) {
+          setTimeout(() => {
+            fieldRefs.current[key]?.focus();
+          }, 0);
+        }
+        return;
+      }
+
       setKeyboardHeight(0);
       keyboardScreenYRef.current = null;
       setThoughtsMaxHeight(undefined);
@@ -246,8 +294,14 @@ export const ManualNoteForm = ({
       }
 
       focusedFieldKeyRef.current = key;
+      keyboardAnchorFieldKeyRef.current = key;
 
-      if (keyboardScreenYRef.current != null && thoughtsMaxHeight != null) {
+      if (
+        keyboardScreenYRef.current != null &&
+        thoughtsMaxHeight != null &&
+        !eraseActiveRef.current &&
+        !eraseChainingRef.current
+      ) {
         scheduleScrollToFocusedField(100);
       }
     },
@@ -259,7 +313,9 @@ export const ManualNoteForm = ({
       if (
         focusedFieldKeyRef.current !== key ||
         keyboardHeight === 0 ||
-        thoughtsMaxHeight == null
+        thoughtsMaxHeight == null ||
+        eraseActiveRef.current ||
+        eraseChainingRef.current
       ) {
         return;
       }
@@ -284,20 +340,21 @@ export const ManualNoteForm = ({
     [keyboardHeight, thoughtsMaxHeight, scrollFieldIntoView]
   );
 
-  const { control, handleSubmit } = useForm<ManualNoteFormData>({
-    defaultValues: {
-      title: "",
-      summary: "",
-      topic: {
-        id: defaultTopic.id,
-        name: defaultTopic.name,
-        isNew: defaultTopic.isNew,
-        embedding: defaultTopic.embedding,
-        createdAt: defaultTopic.createdAt,
+  const { control, handleSubmit, getValues, setValue } =
+    useForm<ManualNoteFormData>({
+      defaultValues: {
+        title: "",
+        summary: "",
+        topic: {
+          id: defaultTopic.id,
+          name: defaultTopic.name,
+          isNew: defaultTopic.isNew,
+          embedding: defaultTopic.embedding,
+          createdAt: defaultTopic.createdAt,
+        },
+        thoughts: [createEmptyThought(noteId)],
       },
-      thoughts: [createEmptyThought(noteId)],
-    },
-  });
+    });
 
   const {
     fields,
@@ -341,17 +398,262 @@ export const ManualNoteForm = ({
     [thoughtsMaxHeight, scheduleScrollToFocusedField, scheduleFocusAfterUpdate]
   );
 
+  const stopEraseSession = React.useCallback(() => {
+    if (eraseIdleCheckRef.current) {
+      clearInterval(eraseIdleCheckRef.current);
+      eraseIdleCheckRef.current = null;
+    }
+    eraseActiveRef.current = false;
+  }, []);
+
+  const startEraseIdleWatcher = React.useCallback(() => {
+    if (eraseIdleCheckRef.current) return;
+
+    eraseIdleCheckRef.current = setInterval(() => {
+      const nativeIdle =
+        Date.now() - lastNativeBackspaceAtRef.current > NATIVE_RELEASE_MS;
+
+      if (eraseActiveRef.current && nativeIdle) {
+        stopEraseSession();
+      }
+
+      if (!eraseActiveRef.current && eraseIdleCheckRef.current) {
+        clearInterval(eraseIdleCheckRef.current);
+        eraseIdleCheckRef.current = null;
+      }
+    }, IDLE_CHECK_MS);
+  }, [stopEraseSession]);
+
+  const markEraseChain = React.useCallback(() => {
+    eraseChainingRef.current = true;
+  }, []);
+
+  const clearEraseChain = React.useCallback(() => {
+    eraseChainingRef.current = false;
+  }, []);
+
+  const applyFocusAtEnd = React.useCallback(
+    (fieldKey: string) => {
+      const parsed = parseThoughtFieldKey(fieldKey);
+      const input = fieldRefs.current[fieldKey];
+      if (!input || !parsed) return false;
+
+      const text = getValues(`thoughts.${parsed.index}.${parsed.field}`) ?? "";
+      input.focus();
+      input.setNativeProps?.({
+        selection: { start: text.length, end: text.length },
+      });
+      return true;
+    },
+    [getValues]
+  );
+
+  const advanceToTitleField = React.useCallback(
+    (index: number) => {
+      const titleKey = `thought-${index}-title`;
+      focusedFieldKeyRef.current = titleKey;
+      keyboardAnchorFieldKeyRef.current = titleKey;
+      markEraseChain();
+
+      if (applyFocusAtEnd(titleKey)) {
+        requestAnimationFrame(() => {
+          applyFocusAtEnd(titleKey);
+          clearEraseChain();
+        });
+        return;
+      }
+
+      pendingFocusKeyRef.current = titleKey;
+      pendingFocusAtEndRef.current = true;
+    },
+    [applyFocusAtEnd, clearEraseChain, markEraseChain]
+  );
+
+  const removeBulletAndFocusPrevious = React.useCallback(
+    (index: number) => {
+      const thoughts = getValues("thoughts");
+      if (thoughts.length <= 1 || index >= thoughts.length) return;
+
+      const focusIndex = Math.max(0, index - 1);
+      const previousThought = thoughts[focusIndex];
+      const focusKey =
+        showTitlesRef.current && previousThought?.summary.trim().length === 0
+          ? `thought-${focusIndex}-title`
+          : `thought-${focusIndex}-summary`;
+
+      focusedFieldKeyRef.current = focusKey;
+      keyboardAnchorFieldKeyRef.current = focusKey;
+      markEraseChain();
+
+      if (applyFocusAtEnd(focusKey)) {
+        requestAnimationFrame(() => {
+          applyFocusAtEnd(focusKey);
+          const currentThoughts = getValues("thoughts");
+          if (index < currentThoughts.length) {
+            thoughtsRemove(index);
+          }
+          clearEraseChain();
+        });
+        return;
+      }
+
+      pendingFocusKeyRef.current = focusKey;
+      pendingFocusAtEndRef.current = true;
+
+      requestAnimationFrame(() => {
+        const currentThoughts = getValues("thoughts");
+        if (index >= currentThoughts.length) return;
+        thoughtsRemove(index);
+      });
+    },
+    [
+      applyFocusAtEnd,
+      clearEraseChain,
+      getValues,
+      markEraseChain,
+      thoughtsRemove,
+    ]
+  );
+
+  const chainFromEmptyField = React.useCallback(
+    (
+      parsed: { index: number; field: ThoughtFieldPart },
+      thought: { summary: string }
+    ) => {
+      if (parsed.field === "summary") {
+        if (showTitlesRef.current) {
+          advanceToTitleField(parsed.index);
+          return;
+        }
+        removeBulletAndFocusPrevious(parsed.index);
+        return;
+      }
+
+      if (thought.summary.trim().length > 0) {
+        return;
+      }
+
+      removeBulletAndFocusPrevious(parsed.index);
+    },
+    [advanceToTitleField, removeBulletAndFocusPrevious]
+  );
+
+  const performBackspaceStep = React.useCallback(() => {
+    const fieldKey = focusedFieldKeyRef.current;
+    if (!fieldKey) return;
+
+    const parsed = parseThoughtFieldKey(fieldKey);
+    if (!parsed) return;
+
+    const thoughts = getValues("thoughts");
+    const thought = thoughts[parsed.index];
+    if (!thought) return;
+
+    const currentValue = thought[parsed.field] ?? "";
+    if (currentValue.length > 0) {
+      const nextValue = currentValue.slice(0, -1);
+      setValue(`thoughts.${parsed.index}.${parsed.field}`, nextValue, {
+        shouldDirty: true,
+      });
+      if (nextValue.length === 0) {
+        chainFromEmptyField(parsed, thought);
+      }
+      return;
+    }
+
+    chainFromEmptyField(parsed, thought);
+  }, [chainFromEmptyField, getValues, setValue]);
+
+  const handleBackspaceEmptyField = React.useCallback(
+    (fieldKey: string) => {
+      const parsed = parseThoughtFieldKey(fieldKey);
+      if (!parsed) return;
+
+      const thoughts = getValues("thoughts");
+      const thought = thoughts[parsed.index];
+      if (!thought) return;
+
+      chainFromEmptyField(parsed, thought);
+    },
+    [chainFromEmptyField, getValues]
+  );
+
+  const notifyBackspaceKey = React.useCallback(
+    (fieldKey: string) => {
+      const now = Date.now();
+
+      if (!parseThoughtFieldKey(fieldKey)) return;
+
+      if (
+        !eraseActiveRef.current &&
+        fieldKey !== focusedFieldKeyRef.current &&
+        !eraseChainingRef.current
+      ) {
+        return;
+      }
+
+      const dedup = eraseStepDedupRef.current;
+      if (
+        dedup &&
+        dedup.fieldKey === fieldKey &&
+        now - dedup.at < ERASE_STEP_DEBOUNCE_MS
+      ) {
+        return;
+      }
+      eraseStepDedupRef.current = { fieldKey, at: now };
+
+      lastNativeBackspaceAtRef.current = now;
+      keyboardAnchorFieldKeyRef.current = fieldKey;
+      eraseActiveRef.current = true;
+      startEraseIdleWatcher();
+      performBackspaceStep();
+    },
+    [performBackspaceStep, startEraseIdleWatcher]
+  );
+
+  const handleBackspaceAtStart = React.useCallback(
+    (fieldKey: string) => {
+      if (eraseActiveRef.current) return;
+
+      if (
+        focusedFieldKeyRef.current &&
+        fieldKey !== focusedFieldKeyRef.current
+      ) {
+        return;
+      }
+      handleBackspaceEmptyField(fieldKey);
+    },
+    [handleBackspaceEmptyField]
+  );
+
   React.useLayoutEffect(() => {
     const key = pendingFocusKeyRef.current;
     if (!key) return;
 
     pendingFocusKeyRef.current = null;
+    const focusAtEnd = pendingFocusAtEndRef.current;
+    pendingFocusAtEndRef.current = false;
     focusedFieldKeyRef.current = key;
+    keyboardAnchorFieldKeyRef.current = key;
 
     const focusTarget = () => {
       const input = fieldRefs.current[key];
       if (!input) return false;
       input.focus();
+      if (focusAtEnd) {
+        const parsed = parseThoughtFieldKey(key);
+        if (parsed) {
+          const text =
+            getValues(`thoughts.${parsed.index}.${parsed.field}`) ?? "";
+          input.setNativeProps?.({
+            selection: { start: text.length, end: text.length },
+          });
+        }
+      }
+      if (eraseActiveRef.current || eraseChainingRef.current) {
+        requestAnimationFrame(() => input.focus());
+      }
+      clearEraseChain();
       return true;
     };
 
@@ -362,7 +664,7 @@ export const ManualNoteForm = ({
         setTimeout(() => focusTarget(), 0);
       }
     });
-  }, [fields]);
+  }, [clearEraseChain, fields, getValues]);
 
   const handleFormSubmit = (data: ManualNoteFormData) => {
     const thoughts: Thought[] = data.thoughts
@@ -420,20 +722,6 @@ export const ManualNoteForm = ({
     setTimeout(() => {
       insertingBulletRef.current = false;
     }, 400);
-  };
-
-  const handleBackspaceAtStart = (index: number) => {
-    if (fields.length <= 1) return;
-
-    const focusIndex = Math.max(0, index - 1);
-    const focusKey = getPrimaryFieldKey(focusIndex);
-
-    fieldRefs.current[focusKey]?.focus();
-    scheduleFocusAfterUpdate(focusKey);
-
-    requestAnimationFrame(() => {
-      thoughtsRemove(index);
-    });
   };
 
   return (
@@ -530,7 +818,7 @@ export const ManualNoteForm = ({
               ref={thoughtsScrollRef}
               nestedScrollEnabled
               keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="interactive"
+              keyboardDismissMode="none"
               showsVerticalScrollIndicator
               removeClippedSubviews={false}
               style={{ flex: 1 }}
@@ -565,6 +853,7 @@ export const ManualNoteForm = ({
                     onNewBullet={handleNewBullet}
                     onFocusField={handleFocusField}
                     onBackspaceAtStart={handleBackspaceAtStart}
+                    onBackspaceKey={notifyBackspaceKey}
                   />
                 ))}
               </View>

@@ -26,6 +26,7 @@ type EditableFieldProps = {
   placeholder?: string;
   onInsertNewItem?: () => void;
   onBackspaceAtStart?: () => void;
+  onBackspaceKey?: () => void;
   multiline?: boolean;
   onFocus?: () => void;
   onContentSizeChange?: () => void;
@@ -48,6 +49,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
       placeholder = "Enter text",
       onInsertNewItem,
       onBackspaceAtStart,
+      onBackspaceKey,
       multiline = true,
       onFocus,
       onContentSizeChange,
@@ -56,6 +58,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
     ref
   ) {
     const insertCooldownRef = React.useRef(false);
+    const suppressNativeChangeRef = React.useRef(false);
 
     const inputStyle = {
       fontFamily: fontFamily,
@@ -77,6 +80,17 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
     }, [onInsertNewItem]);
 
     const handleChangeText = (text: string) => {
+      if (suppressNativeChangeRef.current) {
+        suppressNativeChangeRef.current = false;
+        return;
+      }
+
+      // Android key-repeat often skips onKeyPress and only emits onChangeText.
+      if (onBackspaceKey && text.length < value.length) {
+        onBackspaceKey();
+        return;
+      }
+
       if (onInsertNewItem && text.includes("\n")) {
         onChange(text.replace(/\n/g, ""));
         if (!insertLock) {
@@ -92,9 +106,17 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
     ) => {
       const key = event.nativeEvent.key;
 
-      if (onBackspaceAtStart && key === "Backspace" && value.length === 0) {
-        onBackspaceAtStart();
-        return;
+      if (key === "Backspace") {
+        if (onBackspaceKey) {
+          suppressNativeChangeRef.current = true;
+          onBackspaceKey();
+          return;
+        }
+
+        if (onBackspaceAtStart && value.length === 0) {
+          onBackspaceAtStart();
+          return;
+        }
       }
 
       if (onInsertNewItem && key === "Tab") {

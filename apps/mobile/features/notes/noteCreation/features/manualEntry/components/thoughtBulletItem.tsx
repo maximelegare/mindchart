@@ -53,7 +53,8 @@ type ThoughtBulletItemProps = {
   onFieldContentChange?: (key: string) => void;
   onNewBullet: (index: number) => void;
   onFocusField: (key: string) => void;
-  onBackspaceAtStart: (index: number) => void;
+  onBackspaceAtStart: (fieldKey: string) => void;
+  onBackspaceKey: (fieldKey: string) => void;
 };
 
 type CategoryListItemProps = {
@@ -98,6 +99,7 @@ export const ThoughtBulletItem = ({
   onNewBullet,
   onFocusField,
   onBackspaceAtStart,
+  onBackspaceKey,
 }: ThoughtBulletItemProps) => {
   const { dismiss } = useBottomSheetModal();
   const [isExpanded, setIsExpanded] = React.useState(true);
@@ -201,8 +203,15 @@ export const ThoughtBulletItem = ({
     onFocusField(`thought-${index}-summary`);
   };
 
-  const handleBackspaceAtStart = () => {
-    onBackspaceAtStart(index);
+  const titleFieldKey = `thought-${index}-title`;
+  const summaryFieldKey = `thought-${index}-summary`;
+
+  const handleBackspaceAtStart = (fieldKey: string) => {
+    onBackspaceAtStart(fieldKey);
+  };
+
+  const handleBackspaceKey = (fieldKey: string) => {
+    onBackspaceKey(fieldKey);
   };
 
   const handleFieldContentChange = (fieldKey: string) => {
@@ -218,10 +227,10 @@ export const ThoughtBulletItem = ({
             name={`thoughts.${index}.title`}
             render={({ field: { onChange, value } }) => (
               <EditableField
-                ref={(ref) => registerFieldRef(`thought-${index}-title`, ref)}
-                onFocus={() => onFieldFocus(`thought-${index}-title`)}
+                ref={(ref) => registerFieldRef(titleFieldKey, ref)}
+                onFocus={() => onFieldFocus(titleFieldKey)}
                 onContentSizeChange={() =>
-                  handleFieldContentChange(`thought-${index}-title`)
+                  handleFieldContentChange(titleFieldKey)
                 }
                 onChange={onChange}
                 value={value}
@@ -231,7 +240,8 @@ export const ThoughtBulletItem = ({
                 placeholder="Title"
                 scrollEnabled={false}
                 onInsertNewItem={handleTitleEnter}
-                onBackspaceAtStart={handleBackspaceAtStart}
+                onBackspaceAtStart={() => handleBackspaceAtStart(titleFieldKey)}
+                onBackspaceKey={() => handleBackspaceKey(titleFieldKey)}
               />
             )}
           />
@@ -240,10 +250,10 @@ export const ThoughtBulletItem = ({
             name={`thoughts.${index}.summary`}
             render={({ field: { onChange, value } }) => (
               <EditableField
-                ref={(ref) => registerFieldRef(`thought-${index}-summary`, ref)}
-                onFocus={() => onFieldFocus(`thought-${index}-summary`)}
+                ref={(ref) => registerFieldRef(summaryFieldKey, ref)}
+                onFocus={() => onFieldFocus(summaryFieldKey)}
                 onContentSizeChange={() =>
-                  handleFieldContentChange(`thought-${index}-summary`)
+                  handleFieldContentChange(summaryFieldKey)
                 }
                 onChange={onChange}
                 value={value}
@@ -254,7 +264,10 @@ export const ThoughtBulletItem = ({
                 placeholder="Enter a bullet point"
                 scrollEnabled={false}
                 onInsertNewItem={handleInsertNewItem}
-                onBackspaceAtStart={handleBackspaceAtStart}
+                onBackspaceAtStart={() =>
+                  handleBackspaceAtStart(summaryFieldKey)
+                }
+                onBackspaceKey={() => handleBackspaceKey(summaryFieldKey)}
               />
             )}
           />
@@ -268,10 +281,10 @@ export const ThoughtBulletItem = ({
         name={`thoughts.${index}.summary`}
         render={({ field: { onChange, value } }) => (
           <EditableField
-            ref={(ref) => registerFieldRef(`thought-${index}-summary`, ref)}
-            onFocus={() => onFieldFocus(`thought-${index}-summary`)}
+            ref={(ref) => registerFieldRef(summaryFieldKey, ref)}
+            onFocus={() => onFieldFocus(summaryFieldKey)}
             onContentSizeChange={() =>
-              handleFieldContentChange(`thought-${index}-summary`)
+              handleFieldContentChange(summaryFieldKey)
             }
             onChange={onChange}
             value={value}
@@ -282,7 +295,8 @@ export const ThoughtBulletItem = ({
             placeholder="Enter a bullet point"
             scrollEnabled={false}
             onInsertNewItem={handleInsertNewItem}
-            onBackspaceAtStart={handleBackspaceAtStart}
+            onBackspaceAtStart={() => handleBackspaceAtStart(summaryFieldKey)}
+            onBackspaceKey={() => handleBackspaceKey(summaryFieldKey)}
           />
         )}
       />
