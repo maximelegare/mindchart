@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { FloatingModalTab, FloatingModalTabId } from "./types";
+import { FloatingModalTab, FloatingModalTabId } from "../types/types";
 
 const TAB_FADE_MS = 150;
 

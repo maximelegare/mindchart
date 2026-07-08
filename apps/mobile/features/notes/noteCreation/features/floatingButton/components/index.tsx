@@ -12,7 +12,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FloatingModalTabBar } from "./tabBar";
 import { TabViewSwitcher } from "./tabViewSwitcher";
-import { FloatingModalTab, FloatingModalTabId } from "./types";
+import { FloatingModalTab, FloatingModalTabId } from "../types/types";
 
 const DEFAULT_TABS: FloatingModalTab[] = [
   {

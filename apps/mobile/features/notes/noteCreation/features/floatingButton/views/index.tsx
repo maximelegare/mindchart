@@ -16,8 +16,8 @@ import { X } from "@/lib/icons/Times";
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { FloatingModalTabs } from "@/features/notes/floatingModal/tabs";
-import type { FloatingModalTab } from "@/features/notes/floatingModal/tabs/types";
+import { FloatingModalTabs } from "@/features/notes/noteCreation/features/floatingButton/components";
+import type { FloatingModalTab } from "@/features/notes/noteCreation/features/floatingButton/types/types";
 
 const BUTTON_SIZE = 56;
 const BORDER_RADIUS = BUTTON_SIZE / 2;
