@@ -20,10 +20,12 @@ export const CategorySelector = ({
   categories,
   onSelect,
   selectedCategory,
+  variant = "default",
 }: {
   categories: Category[];
   onSelect: (category: Category) => void;
   selectedCategory: Category | null;
+  variant?: "default" | "subtle";
 }) => {
   const { dismiss } = useBottomSheetModal();
   const handleSelect = (category: Category) => {
@@ -35,15 +37,32 @@ export const CategorySelector = ({
     <>
       <BottomSheet>
         <BottomSheetOpenTrigger asChild className="w-fit">
-          <TouchableOpacity className="rounded-full px-2 pw-1 flex-row items-center gap-2 bg-muted absolute w-fit">
+          <TouchableOpacity
+            className={
+              variant === "subtle"
+                ? "rounded-full px-1.5 py-0.5 flex-row items-center gap-1.5 w-fit opacity-60"
+                : "rounded-full px-2 pw-1 flex-row items-center gap-2 bg-muted absolute w-fit"
+            }
+          >
             <View
-              className="w-4 h-4 rounded-full"
+              className={
+                variant === "subtle"
+                  ? "w-2.5 h-2.5 rounded-full"
+                  : "w-4 h-4 rounded-full"
+              }
               style={{
                 backgroundColor:
                   CATEGORIES_COLORS[selectedCategory?.id as CategoryKey],
               }}
             ></View>
-            <Typography variant="h4" className="text-foreground">
+            <Typography
+              variant={variant === "subtle" ? "p" : "h4"}
+              className={
+                variant === "subtle"
+                  ? "text-muted-foreground text-xs"
+                  : "text-foreground"
+              }
+            >
               {selectedCategory?.name}
             </Typography>
           </TouchableOpacity>
