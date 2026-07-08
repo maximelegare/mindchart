@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { generateID } from "@/utils/genrateID";
 import { ThoughtBulletItem } from "@/components/ui/thoughtsEditor/thoughtBulletItem";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 export type ThoughtsFormValue = {
   title: string;
@@ -73,6 +75,7 @@ export function ThoughtsEditor({
   defaultShowTitles = false,
   onKeyboardHeightChange,
 }: ThoughtsEditorProps) {
+  const { colorScheme } = useColorScheme();
   const { control, getValues, setValue } =
     useFormContext<ThoughtsEditorFormValues>();
   const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
@@ -676,29 +679,39 @@ export function ThoughtsEditor({
 
   return (
     <View className="flex-col flex-1 min-h-0">
-      <View className="flex-row items-center justify-between shrink-0">
-        <Label className="text-popover-foreground" nativeID="thoughts">
-          Content
-        </Label>
-        <View className="flex-row items-center gap-2">
-          <Typography className="text-muted-foreground text-sm">
-            Titles
-          </Typography>
-          <Switch checked={showTitles} onCheckedChange={setShowTitles} />
-        </View>
-      </View>
+      <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
+        Content
+      </Label>
 
-      <View className=" flex-1 min-h-0 rounded-lg bg-card border border-input px-3 pb-2 overflow-hidden">
-        <View className="flex-row justify-end items-center shrink-0">
+      <View className="flex-1 min-h-0 overflow-hidden rounded-lg border border-input bg-card">
+        <View
+          className="flex-row items-center justify-between shrink-0 border-b border-input px-3 py-2.5"
+          style={{ backgroundColor: hsl("muted", colorScheme) }}
+        >
           <Button onPress={handleClearContent} variant="ghost" size="sm">
             <Typography className="text-muted-foreground text-xs">
-              clear
+              Clear
             </Typography>
           </Button>
+
+          <View className="flex-row items-center gap-3">
+            <Typography className="text-sm text-muted-foreground">
+              Titles
+            </Typography>
+            <Switch
+              checked={showTitles}
+              onCheckedChange={setShowTitles}
+              aria-label="Show thought titles"
+              trackColor={hsl("border", colorScheme)}
+              trackCheckedColor={hsl("primary", colorScheme)}
+              thumbColor={hsl("card", colorScheme)}
+            />
+          </View>
         </View>
+
         <View
           ref={thoughtsScrollAreaRef}
-          className="flex-1 min-h-0"
+          className="min-h-0 flex-1 px-3 pb-2 pt-3"
           style={
             thoughtsMaxHeight != null
               ? { maxHeight: thoughtsMaxHeight }
