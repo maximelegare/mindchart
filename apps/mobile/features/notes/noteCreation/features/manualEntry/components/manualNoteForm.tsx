@@ -1,6 +1,12 @@
 import { Category, Note, Thought, Topic } from "@repo/zod-schemas";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { Keyboard, ScrollView, TextInput, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -14,6 +20,7 @@ import {
 import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LAYOUT_SIZES } from "@/components/layout/constants";
+import { Icon } from "@/components/ui/icons/icon";
 
 type ManualNoteFormData = {
   title: string;
@@ -81,6 +88,15 @@ const buildFormDefaultValues = (
 
 const TITLE_SCROLL_PADDING = 12;
 const FIELD_CHIP_HEIGHT = 40;
+const SAVE_BUTTON_KEYBOARD_GAP = 12;
+const SAVE_BUTTON_MARGIN = 16;
+const SAVE_BUTTON_HEIGHT = 48;
+const SAVE_BUTTON_ANIMATION_MS = 220;
+
+const saveButtonTimingConfig = {
+  duration: SAVE_BUTTON_ANIMATION_MS,
+  easing: Easing.out(Easing.cubic),
+};
 
 export const ManualNoteForm = ({
   noteId,
@@ -90,18 +106,51 @@ export const ManualNoteForm = ({
   defaultValues,
 }: ManualNoteFormProps) => {
   const insets = useSafeAreaInsets();
-  const tabBarOffset =
+  const floatingBottomOffset =
+    insets.bottom +
     LAYOUT_SIZES.TAB_BAR_HEIGHT +
     LAYOUT_SIZES.TAB_BAR_PADDING_COMPENSATION +
-    insets.bottom;
+    16;
 
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  const titleInputRef = React.useRef<TextInput>(null);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const form = useForm<ManualNoteFormData>({
     defaultValues: buildFormDefaultValues(noteId, defaultTopic, defaultValues),
   });
   const { control, handleSubmit } = form;
+
+  const saveButtonBottom = useSharedValue(SAVE_BUTTON_MARGIN);
+
+  React.useEffect(() => {
+    const targetBottom =
+      keyboardHeight > 0
+        ? Math.max(
+            SAVE_BUTTON_KEYBOARD_GAP,
+            keyboardHeight - floatingBottomOffset + SAVE_BUTTON_KEYBOARD_GAP
+          )
+        : SAVE_BUTTON_MARGIN;
+
+    saveButtonBottom.value = withTiming(targetBottom, saveButtonTimingConfig);
+  }, [floatingBottomOffset, keyboardHeight, saveButtonBottom]);
+
+  const saveButtonAnimatedStyle = useAnimatedStyle(() => ({
+    bottom: saveButtonBottom.value,
+  }));
+
+  const handleSavePress = () => {
+    Keyboard.dismiss();
+    handleSubmit(handleFormSubmit)();
+  };
 
   const handleFormSubmit = (data: ManualNoteFormData) => {
     const thoughts: Thought[] = data.thoughts
@@ -138,10 +187,10 @@ export const ManualNoteForm = ({
 
   return (
     <FormProvider {...form}>
-      <View className="flex-1 flex-col gap-2 w-full min-h-0">
-        <View className="flex-row gap-3 items-start w-full shrink-0">
+      <View className="relative gap-2 min-h-0 w-full flex-1 flex-col">
+        <View className="flex-row gap-4 items-start w-full shrink-0">
           <View className="flex-1 min-w-0 flex-col">
-            <Label className="text-popover-foreground" nativeID="title">
+            <Label className="mb-0 text-popover-foreground" nativeID="title">
               Title
             </Label>
             <Controller
@@ -168,6 +217,7 @@ export const ManualNoteForm = ({
                     }}
                   >
                     <EditableField
+                      ref={titleInputRef}
                       className="p-0 m-0 bg-transparent border-0"
                       style={{
                         minWidth: Math.max(
@@ -193,7 +243,7 @@ export const ManualNoteForm = ({
           </View>
 
           <View className="shrink-0 flex-col">
-            <Label className="text-popover-foreground" nativeID="topic">
+            <Label className="mb-0 text-popover-foreground" nativeID="topic">
               Topic
             </Label>
             <Controller
@@ -210,29 +260,39 @@ export const ManualNoteForm = ({
           </View>
         </View>
 
-        <ThoughtsEditor
-          noteId={noteId}
-          categories={categories}
-          defaultShowTitles={
-            defaultValues?.thoughts?.some((thought) => thought.title?.trim()) ??
-            false
-          }
-          onKeyboardHeightChange={setKeyboardHeight}
-        />
+        <View
+          className="mt-5 min-h-0 flex-1"
+          style={{
+            paddingBottom:
+              keyboardHeight > 0 ? 0 : SAVE_BUTTON_HEIGHT + SAVE_BUTTON_MARGIN,
+          }}
+        >
+          <ThoughtsEditor
+            noteId={noteId}
+            categories={categories}
+            defaultShowTitles={
+              defaultValues?.thoughts?.some((thought) =>
+                thought.title?.trim()
+              ) ?? false
+            }
+            onKeyboardHeightChange={setKeyboardHeight}
+          />
+        </View>
 
-        {keyboardHeight === 0 ? (
-          <View
-            className="items-center shrink-0"
-            style={{ paddingBottom: tabBarOffset }}
+        <Animated.View
+          pointerEvents="box-none"
+          className="absolute right-0 left-0 items-end pr-2"
+          style={saveButtonAnimatedStyle}
+        >
+          <Button
+            onPress={handleSavePress}
+            className="border border-input bg-secondary flex-row items-center gap-2"
+            cornerRadius="full"
           >
-            <Button
-              onPress={handleSubmit(handleFormSubmit)}
-              style={{ width: 250 }}
-            >
-              <Typography>Save Note</Typography>
-            </Button>
-          </View>
-        ) : null}
+            <Icon name="save" color="card" />
+            <Typography variant="h4">Save Note</Typography>
+          </Button>
+        </Animated.View>
       </View>
     </FormProvider>
   );
