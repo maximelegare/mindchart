@@ -7,16 +7,26 @@ export type InputView = "audio" | "input";
 type NoteCreationState = {
   creationMode: CreationMode;
   inputView: InputView;
+  fileURI: string | null;
+  inputValue: string;
   setCreationMode: (mode: CreationMode) => void;
   setInputView: (view: InputView) => void;
+  setFileURI: (fileURI: string | null) => void;
+  setInputValue: (inputValue: string) => void;
+  resetInputs: () => void;
 };
 
 export const createNoteCreationStore = () =>
   createStore<NoteCreationState>((set) => ({
     creationMode: "ai",
     inputView: "audio",
+    fileURI: null,
+    inputValue: "",
     setCreationMode: (creationMode) => set({ creationMode }),
     setInputView: (inputView) => set({ inputView }),
+    setFileURI: (fileURI) => set({ fileURI }),
+    setInputValue: (inputValue) => set({ inputValue }),
+    resetInputs: () => set({ fileURI: null, inputValue: "" }),
   }));
 
 type NoteCreationStore = StoreApi<NoteCreationState>;

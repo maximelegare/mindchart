@@ -26,7 +26,7 @@ export const DeleteURI = ({
       onPress={handleDelete}
       disabled={!fileURI}
     >
-      <Icon name="trash-2" color="text" />
+      <Icon name="trash-2" color="card" />
     </Button>
   );
 };

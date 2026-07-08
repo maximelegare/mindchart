@@ -13,19 +13,17 @@ import { hsl } from "@/utils/hsl";
 import { FloatingModalTabBar } from "./tabBar";
 import { TabViewSwitcher } from "./tabViewSwitcher";
 import { FloatingModalTab, FloatingModalTabId } from "../types/types";
+import { RecorderView } from "../views/ai/recorder";
+import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
+import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
+import { useFileSystem } from "@/hooks/useFileSystem";
 
 const DEFAULT_TABS: FloatingModalTab[] = [
   {
     id: "create",
-    label: "Create",
-    icon: "plus",
-    content: (
-      <View className="flex-1 px-4 pt-3">
-        <Typography className="text-popover-foreground">
-          Create a note
-        </Typography>
-      </View>
-    ),
+    label: "Recorder",
+    icon: "mic",
+    content: <RecorderView />,
   },
   {
     id: "browse",
@@ -72,6 +70,19 @@ export const FloatingModalTabs = ({
   const [activeTab, setActiveTab] = useState<FloatingModalTabId>(
     tabs[0]?.id ?? "create"
   );
+  const creationMode = useNoteCreationStore((state) => state.creationMode);
+  const inputView = useNoteCreationStore((state) => state.inputView);
+  const fileURI = useNoteCreationStore((state) => state.fileURI);
+  const inputValue = useNoteCreationStore((state) => state.inputValue);
+  const resetInputs = useNoteCreationStore((state) => state.resetInputs);
+  const { deleteFile } = useFileSystem();
+
+  const handleGenerateSuccess = () => {
+    if (fileURI) {
+      deleteFile(fileURI);
+    }
+    resetInputs();
+  };
 
   useEffect(() => {
     headerOpacity.value = withTiming(1, { duration: HEADER_FADE_MS });
@@ -109,13 +120,26 @@ export const FloatingModalTabs = ({
       </Animated.View>
 
       {mountTabContent ? (
-        <TabViewSwitcher
-          tabs={tabs}
-          activeTab={activeTab}
-          fadeMs={TAB_BODY_FADE_MS}
-        />
+        <View className="min-h-0 flex-1">
+          <TabViewSwitcher
+            tabs={tabs}
+            activeTab={activeTab}
+            fadeMs={TAB_BODY_FADE_MS}
+          />
+        </View>
       ) : (
         <View className="flex-1" />
+      )}
+
+      {creationMode === "ai" && (
+        <View className="items-center px-4 pb-4 pt-2">
+          <GenerateNote
+            fileURI={fileURI}
+            inputText={inputValue}
+            currentView={inputView}
+            onSuccess={handleGenerateSuccess}
+          />
+        </View>
       )}
     </View>
   );

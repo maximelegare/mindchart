@@ -6,12 +6,14 @@ type TimerProps = {
   isRecording: boolean;
   className?: string;
   positionSeconds?: number;
+  variant?: "h1" | "h4" | "small";
 };
 
 export const Timer: React.FC<TimerProps> = ({
   isRecording,
   className,
   positionSeconds,
+  variant = "h1",
 }) => {
   const [seconds, setSeconds] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -60,7 +62,10 @@ export const Timer: React.FC<TimerProps> = ({
   };
 
   return (
-    <Typography variant="h1" className={cn(className)}>
+    <Typography
+      variant={variant}
+      className={cn("text-popover-foreground tabular-nums", className)}
+    >
       {formatMSS(seconds)}
     </Typography>
   );

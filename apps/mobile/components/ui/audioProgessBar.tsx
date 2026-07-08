@@ -22,21 +22,21 @@ export const AudioProgressBar: React.FC<AudioProgressBarProps> = ({
   const { colorScheme } = useColorScheme();
 
   return (
-    <View className="w-full flex-col items-center gap-4">
-      <View className="w-full flex-row justify-between items-center">
-        <Slider
-          disabled={!fileURI}
-          style={{ width: "auto", flex: 1 }}
-          minimumValue={0}
-          maximumValue={isRecording ? 0 : durationMillis}
-          value={positionSeconds}
-          onSlidingComplete={seekTo}
-          minimumTrackTintColor={hsl("primary", colorScheme)}
-          maximumTrackTintColor={hsl("primary", colorScheme)}
-          thumbTintColor={hsl("primary", colorScheme)}
-        />
-        {/* <Timer isRecording={isRecording} positionSeconds={positionSeconds} /> */}
-      </View>
+    <View
+      className="w-full justify-center"
+      style={{ overflow: "visible", paddingHorizontal: 10 }}
+    >
+      <Slider
+        disabled={!fileURI}
+        style={{ width: "100%", height: 40 }}
+        minimumValue={0}
+        maximumValue={isRecording ? 0 : durationMillis}
+        value={positionSeconds}
+        onSlidingComplete={seekTo}
+        minimumTrackTintColor={hsl("background", colorScheme)}
+        maximumTrackTintColor={hsl("popover-foreground", colorScheme)}
+        thumbTintColor={hsl("background", colorScheme)}
+      />
     </View>
   );
 };

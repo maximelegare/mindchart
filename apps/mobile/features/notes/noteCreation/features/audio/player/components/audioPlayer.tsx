@@ -26,7 +26,7 @@ export const Player = ({ fileURI, isPlaying, onPlay, onStop }: PlayerProps) => {
       disabled={!fileURI}
       className="overflow-hidden"
     >
-      <Icon name="play" color="text" />
+      <Icon name="play" color="card" />
     </Button>
   );
 };

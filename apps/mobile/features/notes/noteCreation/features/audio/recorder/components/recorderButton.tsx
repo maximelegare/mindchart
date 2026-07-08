@@ -31,7 +31,7 @@ export const RecorderButton = React.forwardRef<
       className={cn(
         BASE_STYLES,
         props.disabled && "opacity-50",
-        "overflow-hidden",
+        "overflow-hidden border-2 border-border",
         className
       )}
     >

@@ -6,7 +6,7 @@ import { useExpoAudioPlayer } from "@/features/notes/noteCreation/features/audio
 import { useExpoAudioRecorder } from "@/features/notes/noteCreation/features/audio/recorder/hooks/useExpoAudioRecorder";
 import { View } from "react-native";
 import { AudioProgressBar } from "@/components/ui/audioProgessBar";
-import { TimeLine } from "@/features/notes/noteCreation/features/audio/timeLine/components/timeLine";
+// import { TimeLine } from "@/features/notes/noteCreation/features/audio/timeLine/components/timeLine";
 import { Timer } from "@/features/notes/noteCreation/features/audio/timer/components/timer";
 import { RecordingLabel } from "@/features/notes/noteCreation/features/audio/timer/components/isRecordingLabel";
 import { normalizePath } from "@/utils/path";
@@ -25,7 +25,7 @@ export function AudioFeature({
     stopRecording,
     isRecording,
     isRecorderBusy,
-    metering,
+    // metering,
   } = useExpoAudioRecorder();
 
   const handleFileURIChange = (fileURI: string | null) => {
@@ -43,12 +43,15 @@ export function AudioFeature({
     uri: fileURI,
   });
   return (
-    <View className="flex w-full flex-col items-center" style={{ gap: 50 }}>
-      <View className="relative justify-center" style={{ height: 70 }}>
+    <View
+      className="flex h-full w-full flex-col items-center justify-center"
+      style={{ gap: 30 }}
+    >
+      {/* <TimeLine metering={metering} isRecording={isRecording} /> */}
+      <View className="items-center justify-center">
         {isRecording && <RecordingLabel />}
         <Timer isRecording={isRecording} positionSeconds={positionSeconds} />
       </View>
-      <TimeLine metering={metering} isRecording={isRecording} />
       <AudioProgressBar
         isPlaying={isPlaying}
         isRecording={isRecording}
@@ -57,7 +60,7 @@ export function AudioFeature({
         seekTo={seekTo}
         fileURI={fileURI}
       />
-      <View className="flex-row items-center gap-8">
+      <View className="flex-row items-center justify-center gap-4">
         <Player
           fileURI={fileURI}
           onPlay={startPlaying}
