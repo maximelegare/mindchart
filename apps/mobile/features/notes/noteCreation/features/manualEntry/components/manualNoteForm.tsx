@@ -60,7 +60,7 @@ const TITLE_SCROLL_PADDING = 12;
 const FIELD_CHIP_HEIGHT = 40;
 const KEYBOARD_GAP = 40;
 const CURSOR_CLEARANCE = 28;
-const CONTENT_PADDING_TOP = 12;
+// const CONTENT_PADDING_TOP = 5;
 const SCROLL_TOP_INSET = 24;
 const SCROLL_VISIBILITY_EPSILON = 4;
 const KEYBOARD_SCROLL_PADDING = 48;
@@ -360,6 +360,7 @@ export const ManualNoteForm = ({
     fields,
     remove: thoughtsRemove,
     insert: thoughtsInsert,
+    replace: thoughtsReplace,
   } = useFieldArray({
     control,
     name: "thoughts",
@@ -699,6 +700,20 @@ export const ManualNoteForm = ({
     onSubmit(note, thoughts);
   };
 
+  const handleClearContent = React.useCallback(() => {
+    stopEraseSession();
+    clearEraseChain();
+    thoughtsReplace([createEmptyThought(noteId)]);
+    scrollOffsetRef.current = 0;
+    thoughtsScrollRef.current?.scrollTo({ y: 0, animated: false });
+
+    const firstKey = showTitles ? `thought-0-title` : `thought-0-summary`;
+    focusedFieldKeyRef.current = firstKey;
+    keyboardAnchorFieldKeyRef.current = firstKey;
+    pendingFocusKeyRef.current = firstKey;
+    pendingFocusAtEndRef.current = false;
+  }, [clearEraseChain, noteId, showTitles, stopEraseSession, thoughtsReplace]);
+
   const handleNewBullet = (index: number) => {
     if (insertingBulletRef.current) return;
     insertingBulletRef.current = true;
@@ -804,7 +819,14 @@ export const ManualNoteForm = ({
           </View>
         </View>
 
-        <View className="flex-1 min-h-0 rounded-lg bg-card border border-input px-3 pt-4 pb-4 overflow-hidden">
+        <View className=" flex-1 min-h-0 rounded-lg bg-card border border-input px-3 pb-2 overflow-hidden">
+          <View className="flex-row justify-end items-center shrink-0">
+            <Button onPress={handleClearContent} variant="ghost" size="sm">
+              <Typography className="text-muted-foreground text-xs">
+                clear
+              </Typography>
+            </Button>
+          </View>
           <View
             ref={thoughtsScrollAreaRef}
             className="flex-1 min-h-0"
@@ -834,7 +856,7 @@ export const ManualNoteForm = ({
               }}
               scrollEventThrottle={16}
               contentContainerStyle={{
-                paddingTop: CONTENT_PADDING_TOP,
+                // paddingTop: CONTENT_PADDING_TOP,
                 paddingBottom:
                   keyboardHeight > 0 ? KEYBOARD_SCROLL_PADDING : 12,
               }}
