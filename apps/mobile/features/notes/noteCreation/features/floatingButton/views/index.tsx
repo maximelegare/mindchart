@@ -22,9 +22,13 @@ import type { FloatingModalTab } from "@/features/notes/noteCreation/features/fl
 const BUTTON_SIZE = 56;
 const BORDER_RADIUS = BUTTON_SIZE / 2;
 const EXPANDED_TOP_BORDER_RADIUS = 16;
-const EXPANDED_TOP_PADDING = 4;
-const DEFAULT_VERTICAL_GAP = 16;
-const PANEL_BORDER_WIDTH = 2;
+const EXPANDED_TOP_PADDING = 0;
+const FAB_BOTTOM_GAP = 16;
+const EXPANDED_BOTTOM_GAP = 8;
+const FAB_HORIZONTAL_GUTTER = 8;
+const EXPANDED_HORIZONTAL_GUTTER = 4;
+const FAB_BORDER_WIDTH = 2;
+const EXPANDED_BORDER_WIDTH = 1;
 
 const ANIMATION_MS = 380;
 
@@ -63,17 +67,17 @@ export const FloatingModal = ({
   const tabBarTop =
     insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_PADDING_COMPENSATION;
 
-  const bottomOffset = bottomOffsetProp ?? tabBarTop + DEFAULT_VERTICAL_GAP;
+  const fabBottomOffset = bottomOffsetProp ?? tabBarTop + FAB_BOTTOM_GAP;
+  const expandedBottomOffset = tabBarTop + EXPANDED_BOTTOM_GAP;
 
-  const verticalGap = bottomOffset - tabBarTop;
+  const verticalGap = fabBottomOffset - tabBarTop;
   const topOffset = (topOffsetProp ?? verticalGap) + EXPANDED_TOP_PADDING;
 
   const expandedHeight = Math.max(
     BUTTON_SIZE,
-    screenHeight - bottomOffset - topOffset
+    screenHeight - expandedBottomOffset - topOffset
   );
-  const tabBarGutter = 8;
-  const expandedWidth = screenWidth - tabBarGutter * 2;
+  const expandedWidth = screenWidth - EXPANDED_HORIZONTAL_GUTTER * 2;
 
   const popoverColor = hsl("popover", colorScheme);
   const borderColor = hsl("background", colorScheme);
@@ -131,6 +135,21 @@ export const FloatingModal = ({
 
   useEffect(() => () => clearTabContentTimer(), [clearTabContentTimer]);
 
+  const anchorStyle = useAnimatedStyle(() => ({
+    right: interpolate(
+      progress.value,
+      [0, 1],
+      [FAB_HORIZONTAL_GUTTER, EXPANDED_HORIZONTAL_GUTTER],
+      Extrapolation.CLAMP
+    ),
+    bottom: interpolate(
+      progress.value,
+      [0, 1],
+      [fabBottomOffset, expandedBottomOffset],
+      Extrapolation.CLAMP
+    ),
+  }));
+
   const shellStyle = useAnimatedStyle(() => ({
     width: interpolate(
       progress.value,
@@ -142,6 +161,12 @@ export const FloatingModal = ({
       progress.value,
       [0, 1],
       [BUTTON_SIZE, expandedHeight],
+      Extrapolation.CLAMP
+    ),
+    borderWidth: interpolate(
+      progress.value,
+      [0, 1],
+      [FAB_BORDER_WIDTH, EXPANDED_BORDER_WIDTH],
       Extrapolation.CLAMP
     ),
     borderTopLeftRadius: interpolate(
@@ -166,9 +191,14 @@ export const FloatingModal = ({
 
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
-      <View
+      <Animated.View
         pointerEvents="box-none"
-        style={[styles.anchor, { right: tabBarGutter, bottom: bottomOffset }]}
+        style={[
+          styles.anchor,
+          isOpen
+            ? anchorStyle
+            : { right: FAB_HORIZONTAL_GUTTER, bottom: fabBottomOffset },
+        ]}
       >
         {!isOpen && (
           <Pressable
@@ -178,6 +208,7 @@ export const FloatingModal = ({
               {
                 backgroundColor: popoverColor,
                 borderColor,
+                borderWidth: FAB_BORDER_WIDTH,
               },
             ]}
             accessibilityRole="button"
@@ -239,7 +270,7 @@ export const FloatingModal = ({
               ))}
           </Animated.View>
         )}
-      </View>
+      </Animated.View>
     </View>
   );
 };
@@ -256,13 +287,11 @@ const styles = StyleSheet.create({
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
     borderRadius: BORDER_RADIUS,
-    borderWidth: PANEL_BORDER_WIDTH,
     alignItems: "center",
     justifyContent: "center",
   },
   shell: {
     overflow: "hidden",
-    borderWidth: PANEL_BORDER_WIDTH,
   },
   expandedContent: {
     ...StyleSheet.absoluteFillObject,

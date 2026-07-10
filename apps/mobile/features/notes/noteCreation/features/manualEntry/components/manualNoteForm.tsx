@@ -21,6 +21,10 @@ import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { Icon } from "@/components/ui/icons/icon";
+import {
+  GENERATE_NOTE_BUTTON_HEIGHT,
+  GENERATE_NOTE_BUTTON_MARGIN,
+} from "@/features/notes/noteCreation/features/generateNote/components/index";
 
 type ManualNoteFormData = {
   title: string;
@@ -89,9 +93,6 @@ const buildFormDefaultValues = (
 const TITLE_SCROLL_PADDING = 12;
 const FIELD_CHIP_HEIGHT = 40;
 const SAVE_BUTTON_KEYBOARD_GAP = 12;
-const SAVE_BUTTON_MARGIN = 16;
-const SAVE_BUTTON_HEIGHT = 48;
-const SAVE_BUTTON_KEYBOARD_EXTRA_CLEARANCE = 15;
 const SAVE_BUTTON_ANIMATION_MS = 220;
 
 const saveButtonTimingConfig = {
@@ -111,7 +112,7 @@ export const ManualNoteForm = ({
     insets.bottom +
     LAYOUT_SIZES.TAB_BAR_HEIGHT +
     LAYOUT_SIZES.TAB_BAR_PADDING_COMPENSATION +
-    16;
+    8;
 
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
@@ -130,7 +131,7 @@ export const ManualNoteForm = ({
   });
   const { control, handleSubmit } = form;
 
-  const saveButtonBottom = useSharedValue(SAVE_BUTTON_MARGIN);
+  const saveButtonBottom = useSharedValue(GENERATE_NOTE_BUTTON_MARGIN);
 
   React.useEffect(() => {
     const targetBottom =
@@ -139,7 +140,7 @@ export const ManualNoteForm = ({
             SAVE_BUTTON_KEYBOARD_GAP,
             keyboardHeight - floatingBottomOffset + SAVE_BUTTON_KEYBOARD_GAP
           )
-        : SAVE_BUTTON_MARGIN;
+        : GENERATE_NOTE_BUTTON_MARGIN;
 
     saveButtonBottom.value = withTiming(targetBottom, saveButtonTimingConfig);
   }, [floatingBottomOffset, keyboardHeight, saveButtonBottom]);
@@ -147,9 +148,6 @@ export const ManualNoteForm = ({
   const saveButtonAnimatedStyle = useAnimatedStyle(() => ({
     bottom: saveButtonBottom.value,
   }));
-
-  const saveButtonOverlayInset =
-    keyboardHeight > 0 ? SAVE_BUTTON_KEYBOARD_EXTRA_CLEARANCE : 0;
 
   const handleSavePress = () => {
     Keyboard.dismiss();
@@ -268,7 +266,9 @@ export const ManualNoteForm = ({
           className="mt-5 min-h-0 flex-1"
           style={{
             paddingBottom:
-              keyboardHeight > 0 ? 0 : SAVE_BUTTON_HEIGHT + SAVE_BUTTON_MARGIN,
+              keyboardHeight > 0
+                ? 0
+                : GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN,
           }}
         >
           <ThoughtsEditor
@@ -280,7 +280,6 @@ export const ManualNoteForm = ({
               ) ?? false
             }
             onKeyboardHeightChange={setKeyboardHeight}
-            keyboardOverlayInset={saveButtonOverlayInset}
           />
         </View>
 

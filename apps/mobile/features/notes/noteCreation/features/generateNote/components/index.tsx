@@ -93,7 +93,7 @@ export const GenerateNote = ({
     insets.bottom +
     LAYOUT_SIZES.TAB_BAR_HEIGHT +
     LAYOUT_SIZES.TAB_BAR_PADDING_COMPENSATION +
-    16;
+    8;
 
   const buttonBottom = useSharedValue(BUTTON_MARGIN);
 
