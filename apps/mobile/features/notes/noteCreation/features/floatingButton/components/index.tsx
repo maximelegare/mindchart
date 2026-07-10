@@ -44,8 +44,8 @@ const DEFAULT_TABS: FloatingModalTab[] = [
   },
   {
     id: "manual",
-    label: "Manual",
-    icon: "pencil",
+    label: "Without AI",
+    icon: "brain-off",
     render: () => <ManualEntryView />,
   },
 ];
