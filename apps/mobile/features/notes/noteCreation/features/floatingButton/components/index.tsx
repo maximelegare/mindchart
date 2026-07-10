@@ -24,22 +24,21 @@ const DEFAULT_TABS: FloatingModalTab[] = [
     id: "create",
     label: "Recorder",
     icon: "mic",
-    content: <RecorderView />,
+    render: () => <RecorderView />,
   },
   {
     id: "keyboard",
     label: "Keyboard",
     icon: "keyboard",
-    content: <KeyboardView />,
+    render: () => <KeyboardView />,
   },
   {
     id: "manual",
     label: "Manual",
     icon: "pencil",
-    content: <ManualEntryView />,
+    render: () => <ManualEntryView />,
   },
 ];
-
 const HEADER_FADE_MS = 150;
 const TAB_BODY_FADE_MS = 200;
 

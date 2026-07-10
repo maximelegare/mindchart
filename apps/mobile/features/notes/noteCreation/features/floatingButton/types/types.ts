@@ -7,5 +7,5 @@ export type FloatingModalTab = {
   id: FloatingModalTabId;
   label: string;
   icon: IconName;
-  content: ReactNode;
+  render: () => ReactNode;
 };
