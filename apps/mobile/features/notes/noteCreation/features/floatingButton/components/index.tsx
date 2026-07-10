@@ -104,13 +104,14 @@ export const FloatingModalTabs = ({
             borderBottomColor: hsl("border", colorScheme),
           },
         ]}
-        className="flex-row items-center pr-1"
+        className="flex-row items-center pl-2 pr-1"
       >
         <FloatingModalTabBar
           tabs={tabs}
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
+        <View className="flex-1" />
         <Button
           onPress={onClose}
           variant="ghost"
