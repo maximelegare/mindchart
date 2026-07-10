@@ -12,6 +12,18 @@ import { hsl } from "@/utils/hsl";
 import { FloatingModalTabBar } from "./tabBar";
 import { TabViewSwitcher } from "./tabViewSwitcher";
 import { FloatingModalTab, FloatingModalTabId } from "../types/types";
+import {
+  CreationMode,
+  InputView,
+} from "@/features/notes/noteCreation/context/noteCreationContext";
+
+const tabFromStore = (
+  creationMode: CreationMode,
+  inputView: InputView
+): FloatingModalTabId => {
+  if (creationMode === "manual") return "manual";
+  return inputView === "input" ? "keyboard" : "create";
+};
 import { RecorderView } from "../views/ai/recorder";
 import { KeyboardView } from "../views/ai/keyboard";
 import { ManualEntryView } from "../views/manualEntry";
@@ -38,8 +50,8 @@ const DEFAULT_TABS: FloatingModalTab[] = [
   },
 ];
 
-const HEADER_FADE_MS = 150;
-const TAB_BODY_FADE_MS = 200;
+const HEADER_FADE_MS = 100;
+const TAB_BODY_FADE_MS = 100;
 
 type FloatingModalTabsProps = {
   tabs?: FloatingModalTab[];
@@ -54,15 +66,15 @@ export const FloatingModalTabs = ({
 }: FloatingModalTabsProps) => {
   const { colorScheme } = useColorScheme();
   const headerOpacity = useSharedValue(0);
-  const [activeTab, setActiveTab] = useState<FloatingModalTabId>(
-    tabs[0]?.id ?? "create"
-  );
   const creationMode = useNoteCreationStore((state) => state.creationMode);
   const inputView = useNoteCreationStore((state) => state.inputView);
   const setCreationMode = useNoteCreationStore(
     (state) => state.setCreationMode
   );
   const setInputView = useNoteCreationStore((state) => state.setInputView);
+  const [activeTab, setActiveTab] = useState<FloatingModalTabId>(() =>
+    tabFromStore(creationMode, inputView)
+  );
 
   const handleTabChange = (tabId: FloatingModalTabId) => {
     setActiveTab(tabId);
@@ -79,12 +91,9 @@ export const FloatingModalTabs = ({
   };
 
   useEffect(() => {
-    if (creationMode === "manual") {
-      setActiveTab("manual");
-    } else if (activeTab === "manual") {
-      setActiveTab(inputView === "input" ? "keyboard" : "create");
-    }
-  }, [creationMode]);
+    const nextTab = tabFromStore(creationMode, inputView);
+    setActiveTab((current) => (current === nextTab ? current : nextTab));
+  }, [creationMode, inputView]);
 
   useEffect(() => {
     headerOpacity.value = withTiming(1, { duration: HEADER_FADE_MS });

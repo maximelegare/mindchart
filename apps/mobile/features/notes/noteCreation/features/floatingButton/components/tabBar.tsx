@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { LayoutChangeEvent, Pressable, View } from "react-native";
 import Animated, {
   interpolate,
@@ -16,7 +16,7 @@ const TAB_BAR_HEIGHT = 48;
 const TAB_WIDTH = 56;
 const ICON_SIZE = 18;
 const TRACK_PADDING = 2;
-const springConfig = { duration: 350 };
+const springConfig = { duration: 200 };
 
 type FloatingModalTabBarProps = {
   tabs: FloatingModalTab[];
@@ -35,9 +35,16 @@ const FloatingTabBarButton = ({
   isActive,
   onPress,
 }: FloatingTabBarButtonProps) => {
-  const scale = useSharedValue(0);
+  const scale = useSharedValue(isActive ? 1 : 0);
+  const isFirstRenderRef = useRef(true);
 
   useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false;
+      scale.value = isActive ? 1 : 0;
+      return;
+    }
+
     scale.value = withSpring(isActive ? 1 : 0, springConfig);
   }, [isActive, scale]);
 
@@ -89,21 +96,31 @@ export const FloatingModalTabBar = ({
   const { colorScheme } = useColorScheme();
   const [trackWidth, setTrackWidth] = useState(0);
   const tabPositionX = useSharedValue(0);
+  const hasAnimatedIndicatorRef = useRef(false);
 
   const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
   const trackColor = hsl("popover", colorScheme);
 
+  const setIndicatorPosition = (index: number, animated: boolean) => {
+    const nextX = index * TAB_WIDTH;
+    if (animated) {
+      tabPositionX.value = withSpring(nextX, springConfig);
+      return;
+    }
+    tabPositionX.value = nextX;
+  };
+
   const onTabBarLayout = (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
     setTrackWidth(width);
-    tabPositionX.value = withSpring(activeIndex * TAB_WIDTH, springConfig);
+    setIndicatorPosition(activeIndex, hasAnimatedIndicatorRef.current);
+    hasAnimatedIndicatorRef.current = true;
   };
 
   useEffect(() => {
-    if (trackWidth > 0) {
-      tabPositionX.value = withSpring(activeIndex * TAB_WIDTH, springConfig);
-    }
-  }, [activeIndex, tabPositionX, trackWidth]);
+    if (trackWidth <= 0) return;
+    setIndicatorPosition(activeIndex, hasAnimatedIndicatorRef.current);
+  }, [activeIndex, trackWidth]);
 
   const indicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: tabPositionX.value }],
