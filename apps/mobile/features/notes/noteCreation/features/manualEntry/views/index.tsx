@@ -45,7 +45,7 @@ export function ManualModeFeature({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   return (
-    <View className="flex-1 min-h-0 pt-2">
+    <View className="flex-1 min-h-0">
       <ManualNoteForm
         key={formKey}
         noteId={noteId}

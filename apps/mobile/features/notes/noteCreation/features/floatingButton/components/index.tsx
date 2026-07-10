@@ -15,9 +15,7 @@ import { FloatingModalTab, FloatingModalTabId } from "../types/types";
 import { RecorderView } from "../views/ai/recorder";
 import { KeyboardView } from "../views/ai/keyboard";
 import { ManualEntryView } from "../views/manualEntry";
-import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
-import { useFileSystem } from "@/hooks/useFileSystem";
 
 const DEFAULT_TABS: FloatingModalTab[] = [
   {
@@ -39,6 +37,7 @@ const DEFAULT_TABS: FloatingModalTab[] = [
     render: () => <ManualEntryView />,
   },
 ];
+
 const HEADER_FADE_MS = 150;
 const TAB_BODY_FADE_MS = 200;
 
@@ -60,21 +59,10 @@ export const FloatingModalTabs = ({
   );
   const creationMode = useNoteCreationStore((state) => state.creationMode);
   const inputView = useNoteCreationStore((state) => state.inputView);
-  const fileURI = useNoteCreationStore((state) => state.fileURI);
-  const inputValue = useNoteCreationStore((state) => state.inputValue);
   const setCreationMode = useNoteCreationStore(
     (state) => state.setCreationMode
   );
   const setInputView = useNoteCreationStore((state) => state.setInputView);
-  const resetInputs = useNoteCreationStore((state) => state.resetInputs);
-  const { deleteFile } = useFileSystem();
-
-  const handleGenerateSuccess = () => {
-    if (fileURI) {
-      deleteFile(fileURI);
-    }
-    resetInputs();
-  };
 
   const handleTabChange = (tabId: FloatingModalTabId) => {
     setActiveTab(tabId);
@@ -105,8 +93,6 @@ export const FloatingModalTabs = ({
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
   }));
-
-  const showGenerateNote = activeTab !== "manual";
 
   return (
     <View className="flex-1 min-h-0">
@@ -145,17 +131,6 @@ export const FloatingModalTabs = ({
         </View>
       ) : (
         <View className="flex-1" />
-      )}
-
-      {showGenerateNote && (
-        <View className="items-center px-4 pb-4 pt-2">
-          <GenerateNote
-            fileURI={fileURI}
-            inputText={inputValue}
-            currentView={inputView}
-            onSuccess={handleGenerateSuccess}
-          />
-        </View>
       )}
     </View>
   );
