@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/thoughtsEditor";
 import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { Icon } from "@/components/ui/icons/icon";
 import {
   GENERATE_NOTE_BUTTON_HEIGHT,
@@ -108,11 +107,8 @@ export const ManualNoteForm = ({
   defaultValues,
 }: ManualNoteFormProps) => {
   const insets = useSafeAreaInsets();
-  const floatingBottomOffset =
-    insets.bottom +
-    LAYOUT_SIZES.TAB_BAR_HEIGHT +
-    LAYOUT_SIZES.TAB_BAR_PADDING_COMPENSATION +
-    8;
+  // Modal bottom sits just above the safe area (covers the tab bar).
+  const floatingBottomOffset = insets.bottom + 8;
 
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);

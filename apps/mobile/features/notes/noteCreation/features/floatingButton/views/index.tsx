@@ -21,7 +21,7 @@ import type { FloatingModalTab } from "@/features/notes/noteCreation/features/fl
 
 const BUTTON_SIZE = 56;
 const BORDER_RADIUS = BUTTON_SIZE / 2;
-const EXPANDED_TOP_BORDER_RADIUS = 16;
+const EXPANDED_TOP_BORDER_RADIUS = 20;
 const EXPANDED_TOP_PADDING = 0;
 const FAB_BOTTOM_GAP = 16;
 const EXPANDED_BOTTOM_GAP = 8;
@@ -67,11 +67,12 @@ export const FloatingModal = ({
   const tabBarTop =
     insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_PADDING_COMPENSATION;
 
+  // FAB sits above the tab bar; expanded shell covers it like a sheet.
   const fabBottomOffset = bottomOffsetProp ?? tabBarTop + FAB_BOTTOM_GAP;
-  const expandedBottomOffset = tabBarTop + EXPANDED_BOTTOM_GAP;
+  const expandedBottomOffset = insets.bottom + EXPANDED_BOTTOM_GAP;
 
-  const verticalGap = fabBottomOffset - tabBarTop;
-  const topOffset = (topOffsetProp ?? verticalGap) + EXPANDED_TOP_PADDING;
+  const topOffset =
+    (topOffsetProp ?? fabBottomOffset - tabBarTop) + EXPANDED_TOP_PADDING;
 
   const expandedHeight = Math.max(
     BUTTON_SIZE,
@@ -181,8 +182,18 @@ export const FloatingModal = ({
       [BORDER_RADIUS, BORDER_RADIUS, EXPANDED_TOP_BORDER_RADIUS],
       Extrapolation.CLAMP
     ),
-    borderBottomLeftRadius: BORDER_RADIUS,
-    borderBottomRightRadius: BORDER_RADIUS,
+    borderBottomLeftRadius: interpolate(
+      progress.value,
+      [0, 0.15, 1],
+      [BORDER_RADIUS, BORDER_RADIUS, EXPANDED_TOP_BORDER_RADIUS],
+      Extrapolation.CLAMP
+    ),
+    borderBottomRightRadius: interpolate(
+      progress.value,
+      [0, 0.15, 1],
+      [BORDER_RADIUS, BORDER_RADIUS, EXPANDED_TOP_BORDER_RADIUS],
+      Extrapolation.CLAMP
+    ),
   }));
 
   const iconStyle = useAnimatedStyle(() => ({

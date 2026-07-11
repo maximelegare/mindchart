@@ -24,7 +24,6 @@ import { CategoryKey } from "@repo/sqlite";
 import { z } from "zod";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { Gradient } from "@/components/ui/gradient";
 import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -89,11 +88,8 @@ export const GenerateNote = ({
     enabled: !!fileURI || !!inputText,
   });
 
-  const floatingBottomOffset =
-    insets.bottom +
-    LAYOUT_SIZES.TAB_BAR_HEIGHT +
-    LAYOUT_SIZES.TAB_BAR_PADDING_COMPENSATION +
-    8;
+  // Modal bottom sits just above the safe area (covers the tab bar).
+  const floatingBottomOffset = insets.bottom + 8;
 
   const buttonBottom = useSharedValue(BUTTON_MARGIN);
 
