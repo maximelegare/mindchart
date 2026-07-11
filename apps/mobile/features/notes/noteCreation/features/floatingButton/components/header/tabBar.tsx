@@ -10,7 +10,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { FloatingModalTab, FloatingModalTabId } from "../types/types";
+import { FloatingModalTab, FloatingModalTabId } from "../../types/types";
 
 const TAB_BAR_HEIGHT = 48;
 const TAB_WIDTH = 56;

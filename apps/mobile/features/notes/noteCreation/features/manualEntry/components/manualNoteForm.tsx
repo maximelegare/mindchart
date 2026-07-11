@@ -1,12 +1,6 @@
 import { Category, Note, Thought, Topic } from "@repo/zod-schemas";
 import React from "react";
 import { Keyboard, ScrollView, TextInput, View } from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -18,12 +12,12 @@ import {
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
 import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/icons/icon";
 import {
   GENERATE_NOTE_BUTTON_HEIGHT,
   GENERATE_NOTE_BUTTON_MARGIN,
 } from "@/features/notes/noteCreation/features/generateNote/components/index";
+import { KeyboardActionFooter } from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
 
 type ManualNoteFormData = {
   title: string;
@@ -91,13 +85,6 @@ const buildFormDefaultValues = (
 
 const TITLE_SCROLL_PADDING = 12;
 const FIELD_CHIP_HEIGHT = 40;
-const SAVE_BUTTON_KEYBOARD_GAP = 12;
-const SAVE_BUTTON_ANIMATION_MS = 220;
-
-const saveButtonTimingConfig = {
-  duration: SAVE_BUTTON_ANIMATION_MS,
-  easing: Easing.out(Easing.cubic),
-};
 
 export const ManualNoteForm = ({
   noteId,
@@ -106,10 +93,6 @@ export const ManualNoteForm = ({
   onSubmit,
   defaultValues,
 }: ManualNoteFormProps) => {
-  const insets = useSafeAreaInsets();
-  // Modal bottom sits just above the safe area (covers the tab bar).
-  const floatingBottomOffset = insets.bottom + 8;
-
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
   const titleInputRef = React.useRef<TextInput>(null);
@@ -126,24 +109,6 @@ export const ManualNoteForm = ({
     defaultValues: buildFormDefaultValues(noteId, defaultTopic, defaultValues),
   });
   const { control, handleSubmit } = form;
-
-  const saveButtonBottom = useSharedValue(GENERATE_NOTE_BUTTON_MARGIN);
-
-  React.useEffect(() => {
-    const targetBottom =
-      keyboardHeight > 0
-        ? Math.max(
-            SAVE_BUTTON_KEYBOARD_GAP,
-            keyboardHeight - floatingBottomOffset + SAVE_BUTTON_KEYBOARD_GAP
-          )
-        : GENERATE_NOTE_BUTTON_MARGIN;
-
-    saveButtonBottom.value = withTiming(targetBottom, saveButtonTimingConfig);
-  }, [floatingBottomOffset, keyboardHeight, saveButtonBottom]);
-
-  const saveButtonAnimatedStyle = useAnimatedStyle(() => ({
-    bottom: saveButtonBottom.value,
-  }));
 
   const handleSavePress = () => {
     Keyboard.dismiss();
@@ -185,115 +150,115 @@ export const ManualNoteForm = ({
 
   return (
     <FormProvider {...form}>
-      <View className="relative gap-2 min-h-0 w-full flex-1 flex-col">
-        <View className="flex-row gap-4 items-start w-full shrink-0">
-          <View className="flex-1 min-w-0 flex-col">
-            <Label className="mb-0 text-popover-foreground" nativeID="title">
-              Title
-            </Label>
-            <Controller
-              control={control}
-              name="title"
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <View
-                  className="rounded-lg bg-card border border-input overflow-hidden justify-center"
-                  style={{ minHeight: FIELD_CHIP_HEIGHT }}
-                  onLayout={(event) =>
-                    setTitleContainerWidth(event.nativeEvent.layout.width)
-                  }
-                >
-                  <ScrollView
-                    horizontal
-                    nestedScrollEnabled
-                    showsHorizontalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{
-                      paddingHorizontal: TITLE_SCROLL_PADDING,
-                      alignItems: "center",
-                      minHeight: FIELD_CHIP_HEIGHT,
-                    }}
+      <View className="relative min-h-0 w-full flex-1 flex-col">
+        <View className="min-h-0 w-full flex-1 flex-col gap-2 px-4">
+          <View className="flex-row gap-4 items-start w-full shrink-0">
+            <View className="flex-1 min-w-0 flex-col">
+              <Label className="mb-0 text-popover-foreground" nativeID="title">
+                Title
+              </Label>
+              <Controller
+                control={control}
+                name="title"
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <View
+                    className="rounded-lg bg-card border border-input overflow-hidden justify-center"
+                    style={{ minHeight: FIELD_CHIP_HEIGHT }}
+                    onLayout={(event) =>
+                      setTitleContainerWidth(event.nativeEvent.layout.width)
+                    }
                   >
-                    <EditableField
-                      ref={titleInputRef}
-                      className="p-0 m-0 bg-transparent border-0"
-                      style={{
-                        minWidth: Math.max(
-                          titleContainerWidth - TITLE_SCROLL_PADDING * 2,
-                          Math.max(value.length, 12) * 9 + 8
-                        ),
-                        minHeight: 24,
-                        paddingVertical: 0,
-                        textAlignVertical: "center",
+                    <ScrollView
+                      horizontal
+                      nestedScrollEnabled
+                      showsHorizontalScrollIndicator={false}
+                      keyboardShouldPersistTaps="handled"
+                      contentContainerStyle={{
+                        paddingHorizontal: TITLE_SCROLL_PADDING,
+                        alignItems: "center",
+                        minHeight: FIELD_CHIP_HEIGHT,
                       }}
-                      onChange={onChange}
-                      value={value}
-                      id="manual-note-title"
-                      title="Title"
-                      fontSize="md"
-                      placeholder="Enter a title"
-                      multiline={false}
-                    />
-                  </ScrollView>
-                </View>
-              )}
-            />
+                    >
+                      <EditableField
+                        ref={titleInputRef}
+                        className="p-0 m-0 bg-transparent border-0"
+                        style={{
+                          minWidth: Math.max(
+                            titleContainerWidth - TITLE_SCROLL_PADDING * 2,
+                            Math.max(value.length, 12) * 9 + 8
+                          ),
+                          minHeight: 24,
+                          paddingVertical: 0,
+                          textAlignVertical: "center",
+                        }}
+                        onChange={onChange}
+                        value={value}
+                        id="manual-note-title"
+                        title="Title"
+                        fontSize="md"
+                        placeholder="Enter a title"
+                        multiline={false}
+                      />
+                    </ScrollView>
+                  </View>
+                )}
+              />
+            </View>
+
+            <View className="shrink-0 flex-col">
+              <Label className="mb-0 text-popover-foreground" nativeID="topic">
+                Topic
+              </Label>
+              <Controller
+                control={control}
+                name="topic"
+                render={({ field: { onChange, value } }) => (
+                  <TopicSelector
+                    selectedTopic={{ ...value }}
+                    onSelect={(topic) => onChange({ ...topic })}
+                    maxChars={18}
+                  />
+                )}
+              />
+            </View>
           </View>
 
-          <View className="shrink-0 flex-col">
-            <Label className="mb-0 text-popover-foreground" nativeID="topic">
-              Topic
-            </Label>
-            <Controller
-              control={control}
-              name="topic"
-              render={({ field: { onChange, value } }) => (
-                <TopicSelector
-                  selectedTopic={{ ...value }}
-                  onSelect={(topic) => onChange({ ...topic })}
-                  maxChars={18}
-                />
-              )}
+          <View
+            className="mt-5 min-h-0 flex-1"
+            style={{
+              paddingBottom:
+                keyboardHeight > 0
+                  ? 0
+                  : GENERATE_NOTE_BUTTON_HEIGHT +
+                    GENERATE_NOTE_BUTTON_MARGIN * 2,
+            }}
+          >
+            <ThoughtsEditor
+              noteId={noteId}
+              categories={categories}
+              defaultShowTitles={
+                defaultValues?.thoughts?.some((thought) =>
+                  thought.title?.trim()
+                ) ?? false
+              }
+              onKeyboardHeightChange={setKeyboardHeight}
             />
           </View>
         </View>
 
-        <View
-          className="mt-5 min-h-0 flex-1"
-          style={{
-            paddingBottom:
-              keyboardHeight > 0
-                ? 0
-                : GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN,
-          }}
-        >
-          <ThoughtsEditor
-            noteId={noteId}
-            categories={categories}
-            defaultShowTitles={
-              defaultValues?.thoughts?.some((thought) =>
-                thought.title?.trim()
-              ) ?? false
-            }
-            onKeyboardHeightChange={setKeyboardHeight}
-          />
-        </View>
-
-        <Animated.View
-          pointerEvents="box-none"
-          className="absolute right-0 left-0 items-end pr-2"
-          style={saveButtonAnimatedStyle}
-        >
+        <KeyboardActionFooter keyboardHeight={keyboardHeight}>
           <Button
             onPress={handleSavePress}
-            className="border border-input bg-secondary flex-row items-center gap-2"
+            variant="secondary"
+            size="default"
             cornerRadius="full"
-            size="sm"
+            className="flex-row items-center gap-2 px-6"
           >
             <Icon name="save" color="card" />
             <Typography variant="h4">Save Note</Typography>
           </Button>
-        </Animated.View>
+        </KeyboardActionFooter>
       </View>
     </FormProvider>
   );

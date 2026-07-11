@@ -13,12 +13,10 @@ export const TextInputFeature = ({
   onChange,
   value,
   keyboardHeight = 0,
-  actionButton,
 }: {
   onChange: (text: string) => void;
   value: string;
   keyboardHeight?: number;
-  actionButton?: React.ReactNode;
 }) => {
   const { colorScheme } = useColorScheme();
   const textareaRef = useRef<TextInput>(null);
@@ -43,7 +41,7 @@ export const TextInputFeature = ({
           paddingBottom:
             keyboardHeight > 0
               ? 0
-              : GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN,
+              : GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN * 2,
         }}
       >
         <Textarea
@@ -59,8 +57,6 @@ export const TextInputFeature = ({
           multiline={true}
         />
       </View>
-
-      {actionButton}
     </View>
   );
 };

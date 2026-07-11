@@ -11,7 +11,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FloatingModalTabBar } from "./tabBar";
 import { TabViewSwitcher } from "./tabViewSwitcher";
-import { FloatingModalTab, FloatingModalTabId } from "../types/types";
+import { FloatingModalTab, FloatingModalTabId } from "../../types/types";
 import {
   CreationMode,
   InputView,
@@ -24,9 +24,9 @@ const tabFromStore = (
   if (creationMode === "manual") return "manual";
   return inputView === "input" ? "keyboard" : "create";
 };
-import { RecorderView } from "../views/ai/recorder";
-import { KeyboardView } from "../views/ai/keyboard";
-import { ManualEntryView } from "../views/manualEntry";
+import { RecorderView } from "../../views/ai/recorder";
+import { KeyboardView } from "../../views/ai/keyboard";
+import { ManualEntryView } from "../../views/manualEntry";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 
 const DEFAULT_TABS: FloatingModalTab[] = [

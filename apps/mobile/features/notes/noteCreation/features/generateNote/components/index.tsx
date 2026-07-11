@@ -9,12 +9,6 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Keyboard, View } from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
 import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import { useModal } from "@/components/ui/modal/modal";
@@ -23,23 +17,18 @@ import { GenerateNotePreview } from "@/features/notes/notePreview/generateNotePr
 import { CategoryKey } from "@repo/sqlite";
 import { z } from "zod";
 import React from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Gradient } from "@/components/ui/gradient";
 import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
+import {
+  KEYBOARD_ACTION_FOOTER_PADDING_Y,
+  KeyboardActionFooter,
+} from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
 
-const BUTTON_KEYBOARD_GAP = 12;
-const BUTTON_MARGIN = 16;
 const BUTTON_HEIGHT = 48;
-const BUTTON_ANIMATION_MS = 220;
-
-const buttonTimingConfig = {
-  duration: BUTTON_ANIMATION_MS,
-  easing: Easing.out(Easing.cubic),
-};
 
 export const GENERATE_NOTE_BUTTON_HEIGHT = BUTTON_HEIGHT;
-export const GENERATE_NOTE_BUTTON_MARGIN = BUTTON_MARGIN;
+export const GENERATE_NOTE_BUTTON_MARGIN = KEYBOARD_ACTION_FOOTER_PADDING_Y;
 
 type GenerateNoteVariant = "floating" | "centered";
 
@@ -59,7 +48,6 @@ export const GenerateNote = ({
   variant?: GenerateNoteVariant;
 }) => {
   const { notesAndThoughts, categories } = useControllers();
-  const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
 
   const { aiProviders } = useAISettingsPreferences();
@@ -87,29 +75,6 @@ export const GenerateNote = ({
   const { data: categoriesData } = useFetchAllCategoriesQuery({
     enabled: !!fileURI || !!inputText,
   });
-
-  // Modal bottom sits just above the safe area (covers the tab bar).
-  const floatingBottomOffset = insets.bottom + 8;
-
-  const buttonBottom = useSharedValue(BUTTON_MARGIN);
-
-  React.useEffect(() => {
-    if (variant !== "floating") return;
-
-    const targetBottom =
-      keyboardHeight > 0
-        ? Math.max(
-            BUTTON_KEYBOARD_GAP,
-            keyboardHeight - floatingBottomOffset + BUTTON_KEYBOARD_GAP
-          )
-        : BUTTON_MARGIN;
-
-    buttonBottom.value = withTiming(targetBottom, buttonTimingConfig);
-  }, [buttonBottom, floatingBottomOffset, keyboardHeight, variant]);
-
-  const buttonAnimatedStyle = useAnimatedStyle(() => ({
-    bottom: buttonBottom.value,
-  }));
 
   const isInputValid =
     currentView === "audio" ? !!fileURI : inputText.trim().length > 0;
@@ -236,21 +201,18 @@ export const GenerateNote = ({
   }
 
   return (
-    <Animated.View
-      pointerEvents="box-none"
-      className="absolute right-0 left-0 items-end pr-2"
-      style={buttonAnimatedStyle}
-    >
+    <KeyboardActionFooter keyboardHeight={keyboardHeight}>
       <Button
         onPress={handleGenerateNote}
         disabled={isDisabled}
-        className="border border-input bg-secondary flex-row items-center gap-2"
+        variant="secondary"
+        size="default"
         cornerRadius="full"
-        size="sm"
+        className="flex-row items-center gap-2 px-6"
       >
         <Icon name="sparkles" color="card" />
         <Typography variant="h4">Generate Note</Typography>
       </Button>
-    </Animated.View>
+    </KeyboardActionFooter>
   );
 };

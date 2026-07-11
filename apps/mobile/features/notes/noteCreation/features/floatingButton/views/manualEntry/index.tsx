@@ -4,7 +4,7 @@ import { ManualModeFeature } from "@/features/notes/noteCreation/features/manual
 
 export const ManualEntryView = () => {
   return (
-    <View className="flex-1 min-h-0 px-4" style={{ paddingTop: 16 }}>
+    <View className="flex-1 min-h-0" style={{ paddingTop: 16 }}>
       <ManualModeFeature />
     </View>
   );

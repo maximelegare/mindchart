@@ -4,7 +4,7 @@ import { PageContainer } from "@/components/layout/page/pageContainer";
 import { useState } from "react";
 import { SearchFeature } from "@/features/search/views";
 import { MoreOptionsMenuProps } from "@/components/layout/header/moreOptions/moreOptionsMenu";
-import { NoteCreationOptionsHeader } from "@/features/notes/noteCreation/components/noteCreationOptionsHeader";
+import { NoteCreationOptionsHeader } from "@/features/notes/noteCreation/features/floatingButton/components/header/noteCreationOptionsHeader";
 
 export const HomeScreen = () => {
   const [open, setOpen] = useState(false);

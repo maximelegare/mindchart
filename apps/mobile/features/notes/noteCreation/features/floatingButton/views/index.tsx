@@ -16,7 +16,7 @@ import { X } from "@/lib/icons/Times";
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { FloatingModalTabs } from "@/features/notes/noteCreation/features/floatingButton/components";
+import { FloatingModalTabs } from "@/features/notes/noteCreation/features/floatingButton/components/header";
 import type { FloatingModalTab } from "@/features/notes/noteCreation/features/floatingButton/types/types";
 
 const BUTTON_SIZE = 56;
@@ -261,12 +261,12 @@ export const FloatingModal = ({
                     </Button>
                   </View>
                   {mountTabContent && (
-                    <View className="flex-1 min-h-0 pb-4">{children}</View>
+                    <View className="flex-1 min-h-0">{children}</View>
                   )}
                 </View>
               ) : (
                 <View
-                  className="flex-1 min-h-0 pb-4"
+                  className="flex-1 min-h-0"
                   style={[
                     styles.expandedContent,
                     { paddingTop: EXPANDED_TOP_PADDING },
