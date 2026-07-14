@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import Animated, {
   Easing,
@@ -10,6 +16,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { getCornerRadiusSync } from "expo-screen-corner-radius";
 import { Icon } from "@/components/ui/icons/icon";
 import { Button } from "@/components/ui/button";
 import { X } from "@/lib/icons/Times";
@@ -29,6 +36,19 @@ const FAB_HORIZONTAL_GUTTER = 8;
 const EXPANDED_HORIZONTAL_GUTTER = 4;
 const FAB_BORDER_WIDTH = 2;
 const EXPANDED_BORDER_WIDTH = 1;
+
+function getExpandedBottomRadius() {
+  try {
+    const deviceRadius = getCornerRadiusSync();
+    if (deviceRadius != null && deviceRadius > 0) {
+      return deviceRadius;
+    }
+  } catch {
+    return EXPANDED_TOP_BORDER_RADIUS;
+  }
+
+  return EXPANDED_TOP_BORDER_RADIUS;
+}
 
 const ANIMATION_MS = 380;
 
@@ -79,6 +99,7 @@ export const FloatingModal = ({
     screenHeight - expandedBottomOffset - topOffset
   );
   const expandedWidth = screenWidth - EXPANDED_HORIZONTAL_GUTTER * 2;
+  const expandedBottomRadius = useMemo(() => getExpandedBottomRadius(), []);
 
   const popoverColor = hsl("popover", colorScheme);
   const borderColor = hsl("background", colorScheme);
@@ -185,13 +206,13 @@ export const FloatingModal = ({
     borderBottomLeftRadius: interpolate(
       progress.value,
       [0, 0.15, 1],
-      [BORDER_RADIUS, BORDER_RADIUS, EXPANDED_TOP_BORDER_RADIUS],
+      [BORDER_RADIUS, BORDER_RADIUS, expandedBottomRadius],
       Extrapolation.CLAMP
     ),
     borderBottomRightRadius: interpolate(
       progress.value,
       [0, 0.15, 1],
-      [BORDER_RADIUS, BORDER_RADIUS, EXPANDED_TOP_BORDER_RADIUS],
+      [BORDER_RADIUS, BORDER_RADIUS, expandedBottomRadius],
       Extrapolation.CLAMP
     ),
   }));

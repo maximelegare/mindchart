@@ -9047,6 +9047,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-screen-corner-radius@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "expo-screen-corner-radius@npm:1.1.0"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/692b789c2daec66afc03fca0558ae16b33a91674dc3cf0f37ca054396fb94a59a4a8e647c0f8229f15cc53088597221e15b8db195aff9b5074f038ad7ca327b5
+  languageName: node
+  linkType: hard
+
 "expo-secure-store@npm:~15.0.8":
   version: 15.0.8
   resolution: "expo-secure-store@npm:15.0.8"
@@ -12580,6 +12591,7 @@ __metadata:
     expo-navigation-bar: "npm:~5.0.8"
     expo-notifications: "npm:~0.32.12"
     expo-router: "npm:~6.0.10"
+    expo-screen-corner-radius: "npm:^1.1.0"
     expo-secure-store: "npm:~15.0.8"
     expo-sharing: "npm:^14.0.8"
     expo-splash-screen: "npm:~31.0.10"
