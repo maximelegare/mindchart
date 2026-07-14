@@ -1,5 +1,3 @@
-import { BulletList } from "@/components/ui/bulletList";
-import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 import { ExpandableNoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
@@ -35,21 +33,8 @@ export const TopicDetailsFeature = ({
           category="idea"
           date={note.createdAt ?? ""}
           topic={note.topicName}
-          defaultInternalExpanded={true}
-        >
-          <View className="gap-3 mt-2">
-            <Separator />
-            <BulletList
-              bulletClassName="mt-[10px]"
-              bulletColor="border"
-              items={note.thoughts.map((thought, idx) => (
-                <View key={idx}>
-                  <Typography variant="p">{thought.summary}</Typography>
-                </View>
-              ))}
-            />
-          </View>
-        </ExpandableNoteWithThoughts>
+          overviewItems={note.thoughts.map((thought) => thought.summary)}
+        />
       ))}
     </View>
   );
