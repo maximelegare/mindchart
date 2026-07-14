@@ -144,7 +144,14 @@ export const PageContainer = ({
       type="linear"
       variant="primary"
       theme={colorScheme}
-      style={[styles.fixedGradient, { height: fixedGradientHeight }]}
+      style={[
+        styles.fixedGradient,
+        {
+          height: fixedGradientHeight,
+          borderBottomLeftRadius: 6,
+          borderBottomRightRadius: 6,
+        },
+      ]}
     />
   ) : null;
 
