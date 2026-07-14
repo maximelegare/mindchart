@@ -45,7 +45,7 @@ export const SettingsFeature = () => {
       </List>
       <SpaceFiller
         sizes={{
-          marginBottom: ["TAB_BAR_PADDING_COMPENSATION", "TAB_BAR_HEIGHT", 20],
+          marginBottom: ["TAB_BAR_HEIGHT", 20],
         }}
       />
     </>

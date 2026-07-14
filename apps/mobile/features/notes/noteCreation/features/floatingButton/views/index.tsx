@@ -82,10 +82,9 @@ export const FloatingModal = ({
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
-  const { TAB_BAR_HEIGHT, TAB_BAR_PADDING_COMPENSATION } = LAYOUT_SIZES;
+  const { TAB_BAR_HEIGHT } = LAYOUT_SIZES;
 
-  const tabBarTop =
-    insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_PADDING_COMPENSATION;
+  const tabBarTop = insets.bottom + TAB_BAR_HEIGHT;
 
   // FAB sits above the tab bar; expanded shell covers tab bar + bottom inset.
   const fabBottomOffset = bottomOffsetProp ?? tabBarTop + FAB_BOTTOM_GAP;

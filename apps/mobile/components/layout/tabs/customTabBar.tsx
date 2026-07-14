@@ -1,7 +1,6 @@
 import { View, LayoutChangeEvent } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Gutter } from "@/components/ui/gutter";
 import { LAYOUT_SIZES } from "../constants";
 import { TabBarButton } from "./tabBarButton";
 import { useState, useEffect } from "react";
@@ -17,7 +16,7 @@ export function CustomTabBar({
   navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const { TAB_BAR_HEIGHT, TAB_BAR_PADDING_COMPENSATION } = LAYOUT_SIZES;
+  const { TAB_BAR_HEIGHT } = LAYOUT_SIZES;
 
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -44,62 +43,55 @@ export function CustomTabBar({
   }));
 
   return (
-    <Gutter size="md">
+    <View
+      style={{
+        bottom: 0,
+        paddingBottom: insets.bottom,
+      }}
+      className="right-0 left-0 bg-popover z-30 absolute overflow-hidden rounded-t-xl"
+    >
       <View
-        style={{
-          bottom: insets.bottom + TAB_BAR_PADDING_COMPENSATION,
-          height: TAB_BAR_HEIGHT,
-        }}
-        className="right-0 left-0 flex-row items-center bg-popover z-30 absolute rounded-3xl overflow-hidden"
+        onLayout={onTabBarLayout}
+        className="flex-row items-center"
+        style={{ height: TAB_BAR_HEIGHT }}
       >
-        {/* Route Container: Uses flex-1 to take all space except the menu */}
-        <View
-          onLayout={onTabBarLayout}
-          className="flex-row flex-1 items-center h-full"
-        >
-          {dimensions.width > 0 && (
-            <Animated.View
-              className="absolute h-full"
-              style={[animatedStyle, { width: buttonWidth }]}
-            >
-              <View className="h-full w-full bg-background rounded-3xl border-4 border-popover" />
-            </Animated.View>
-          )}
+        {dimensions.width > 0 && (
+          <Animated.View
+            className="absolute h-full"
+            style={[animatedStyle, { width: buttonWidth }]}
+          >
+            <View className="h-full w-full bg-background rounded-md" />
+          </Animated.View>
+        )}
 
-          {state.routes.map((route) => {
-            const { options } = descriptors[route.key];
-            const isFocused = state.routes[state.index].key === route.key;
-            const label = options.tabBarLabel ?? options.title ?? route.name;
+        {state.routes.map((route) => {
+          const { options } = descriptors[route.key];
+          const isFocused = state.routes[state.index].key === route.key;
+          const label = options.tabBarLabel ?? options.title ?? route.name;
 
-            const onPress = () => {
-              const event = navigation.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              });
+          const onPress = () => {
+            const event = navigation.emit({
+              type: "tabPress",
+              target: route.key,
+              canPreventDefault: true,
+            });
 
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            };
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
 
-            return (
-              <TabBarButton
-                key={route.name}
-                routeName={route.name}
-                onPress={onPress}
-                isFocused={isFocused}
-                label={label as string}
-              />
-            );
-          })}
-        </View>
-
-        {/* Menu Container: Anchored to the right */}
-        {/* <View className="h-full">
-            <MoreOptionsMenu />
-          </View> */}
+          return (
+            <TabBarButton
+              key={route.name}
+              routeName={route.name}
+              onPress={onPress}
+              isFocused={isFocused}
+              label={label as string}
+            />
+          );
+        })}
       </View>
-    </Gutter>
+    </View>
   );
 }
