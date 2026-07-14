@@ -24,7 +24,7 @@ const BORDER_RADIUS = BUTTON_SIZE / 2;
 const EXPANDED_TOP_BORDER_RADIUS = 20;
 const EXPANDED_TOP_PADDING = 0;
 const FAB_BOTTOM_GAP = 16;
-const EXPANDED_BOTTOM_GAP = 8;
+const EXPANDED_BOTTOM_GAP = 4;
 const FAB_HORIZONTAL_GUTTER = 8;
 const EXPANDED_HORIZONTAL_GUTTER = 4;
 const FAB_BORDER_WIDTH = 2;
@@ -67,9 +67,9 @@ export const FloatingModal = ({
   const tabBarTop =
     insets.bottom + TAB_BAR_HEIGHT + TAB_BAR_PADDING_COMPENSATION;
 
-  // FAB sits above the tab bar; expanded shell covers it like a sheet.
+  // FAB sits above the tab bar; expanded shell covers tab bar + bottom inset.
   const fabBottomOffset = bottomOffsetProp ?? tabBarTop + FAB_BOTTOM_GAP;
-  const expandedBottomOffset = insets.bottom + EXPANDED_BOTTOM_GAP;
+  const expandedBottomOffset = EXPANDED_BOTTOM_GAP;
 
   const topOffset =
     (topOffsetProp ?? fabBottomOffset - tabBarTop) + EXPANDED_TOP_PADDING;
