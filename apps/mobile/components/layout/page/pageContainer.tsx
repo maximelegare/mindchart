@@ -4,6 +4,7 @@ import {
   StyleSheet,
   LayoutChangeEvent,
   useWindowDimensions,
+  ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollToTop, useNavigation } from "@react-navigation/native";
@@ -28,7 +29,6 @@ const { HEADER_HEIGHT, HEADER_OVERLAP, OPTIONS_HEADER_HEIGHT } = LAYOUT_SIZES;
 const SIDE_GUTTER = 4;
 
 /** Gap between header content and the top of page options. */
-
 /** Matches PageOptionsHeaderContainer top radius — must sit over the header gradient. */
 const PAGE_TOP_RADIUS = 24;
 
@@ -48,6 +48,8 @@ type PageContainerProps = {
   buttons?: React.ReactNode;
   children: React.ReactNode;
   noScrollView?: boolean;
+  /** When true, header + options hide/show with scroll. Off by default. */
+  collapsingHeader?: boolean;
   moreOptionsMenu?: {
     state: { open: boolean; setOpen: (open: boolean) => void };
     links: MoreOptionsMenuProps["links"];
@@ -63,15 +65,17 @@ export const PageContainer = ({
   buttons,
   children,
   noScrollView = false,
+  collapsingHeader = false,
   moreOptionsMenu,
   optionsHeader,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const scrollRef = React.useRef<Animated.ScrollView>(null);
+  const animatedScrollRef = React.useRef<Animated.ScrollView>(null);
+  const staticScrollRef = React.useRef<ScrollView>(null);
   const { width: windowWidth } = useWindowDimensions();
 
-  useScrollToTop(scrollRef);
+  useScrollToTop(collapsingHeader ? animatedScrollRef : staticScrollRef);
 
   const { colorScheme } = useColorScheme();
   const canGoBack = navigation.canGoBack();
@@ -85,8 +89,8 @@ export const PageContainer = ({
   const headerHeight = HEADER_HEIGHT + insets.top;
   const initialChromeHeight =
     headerHeight + (optionsHeader ? OPTIONS_HEADER_HEIGHT : 0);
-
   const fixedGradientHeight = headerHeight + HEADER_OVERLAP;
+  const useCollapsingHeader = collapsingHeader && showHeader && !noScrollView;
 
   const chromeTranslateY = useSharedValue(0);
   const lastScrollY = useSharedValue(0);
@@ -129,10 +133,6 @@ export const PageContainer = ({
     height: chromeHeightSV.value,
   }));
 
-  /**
-   * Same full-width gradient recipe for fixed margins and the moving header,
-   * so color stops line up. The moving one is clipped by the inset chrome.
-   */
   const fullWidthGradientStyle = {
     width: windowWidth,
     marginLeft: -SIDE_GUTTER,
@@ -155,7 +155,7 @@ export const PageContainer = ({
     />
   ) : null;
 
-  const movingChrome = showHeader ? (
+  const headerChrome = showHeader ? (
     <>
       <Gradient
         type="linear"
@@ -166,9 +166,7 @@ export const PageContainer = ({
           fullWidthGradientStyle,
           {
             paddingTop: insets.top,
-            // Gradient continues under options so the full corner radius sits on it,
-            // plus OPTIONS_GAP between header content and options.
-            paddingBottom: PAGE_TOP_RADIUS + 1,
+            paddingBottom: optionsHeader ? PAGE_TOP_RADIUS + 1 : 0,
           },
         ]}
       >
@@ -189,13 +187,14 @@ export const PageContainer = ({
     </>
   ) : null;
 
-  if (noScrollView) {
+  // Static header (default) — including noScrollView pages.
+  if (!useCollapsingHeader) {
     return (
       <View style={styles.root}>
         {fixedGradient}
         {showHeader && (
           <View style={styles.chrome} collapsable={false}>
-            {movingChrome}
+            {headerChrome}
           </View>
         )}
         <View
@@ -203,20 +202,35 @@ export const PageContainer = ({
           style={[
             styles.pageContainer,
             gutter(),
-            showHeader && { marginTop: headerHeight },
+            showHeader && { marginTop: initialChromeHeight },
           ]}
         >
-          <View
-            className={
-              optionsHeader
-                ? "relative flex-1 min-h-0"
-                : "relative flex-1 min-h-0 mt-6"
-            }
-          >
-            <Gutter size="md" className="flex-1 min-h-0">
-              {children}
-            </Gutter>
-          </View>
+          {noScrollView ? (
+            <View
+              className={
+                optionsHeader
+                  ? "relative flex-1 min-h-0"
+                  : "relative flex-1 min-h-0 mt-6"
+              }
+            >
+              <Gutter size="md" className="flex-1 min-h-0">
+                {children}
+              </Gutter>
+            </View>
+          ) : (
+            <ScrollView
+              ref={staticScrollRef}
+              className="flex-1"
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={[
+                styles.scrollContent,
+                !optionsHeader && { paddingTop: 24 },
+              ]}
+            >
+              <Gutter size="md">{children}</Gutter>
+            </ScrollView>
+          )}
         </View>
       </View>
     );
@@ -224,7 +238,6 @@ export const PageContainer = ({
 
   return (
     <View style={styles.root}>
-      {/* Fixed full-width gradient — stays in the side margins when chrome moves */}
       {fixedGradient}
 
       <View
@@ -233,31 +246,28 @@ export const PageContainer = ({
       >
         <Animated.ScrollView
           className="flex-1"
-          ref={scrollRef}
-          onScroll={showHeader ? scrollHandler : undefined}
+          ref={animatedScrollRef}
+          onScroll={scrollHandler}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {showHeader ? <Animated.View style={contentSpacerStyle} /> : null}
+          <Animated.View style={contentSpacerStyle} />
           <Gutter size="md">{children}</Gutter>
         </Animated.ScrollView>
       </View>
 
-      {/* Inset chrome clips a full-width twin gradient so it matches the fixed one */}
-      {showHeader && (
-        <Animated.View
-          onLayout={onChromeLayout}
-          pointerEvents="box-none"
-          renderToHardwareTextureAndroid
-          shouldRasterizeIOS
-          collapsable={false}
-          style={[styles.chrome, chromeAnimatedStyle]}
-        >
-          {movingChrome}
-        </Animated.View>
-      )}
+      <Animated.View
+        onLayout={onChromeLayout}
+        pointerEvents="box-none"
+        renderToHardwareTextureAndroid
+        shouldRasterizeIOS
+        collapsable={false}
+        style={[styles.chrome, chromeAnimatedStyle]}
+      >
+        {headerChrome}
+      </Animated.View>
     </View>
   );
 };
@@ -281,7 +291,6 @@ const styles = StyleSheet.create({
     left: SIDE_GUTTER,
     right: SIDE_GUTTER,
     zIndex: 20,
-    // Don't clip — options radius must reveal the header gradient behind it.
   },
 
   headerBar: {
@@ -290,7 +299,6 @@ const styles = StyleSheet.create({
   },
 
   optionsOverlap: {
-    // Full radius over the gradient (+1px so nothing peeks past the curve).
     marginTop: -(PAGE_TOP_RADIUS + 1),
     zIndex: 1,
   },

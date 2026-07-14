@@ -28,6 +28,7 @@ export const Gutter = ({
   children: React.ReactElement | React.ReactNode;
   className?: string;
   size?: GutterSize;
+  style?: ViewStyle;
 }) => {
   return (
     <View style={{ ...gutter(size) }} className={cn(className)}>

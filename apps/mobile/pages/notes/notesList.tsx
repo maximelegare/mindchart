@@ -18,6 +18,7 @@ export const NotesListPage = () => {
       showLogo={true}
       optionsHeader={<OptionsBar />}
       headerVariant="stack"
+      collapsingHeader
       buttons={<SearchFeature />}
       moreOptionsMenu={{
         links: moreOptionsMenuLinks,
