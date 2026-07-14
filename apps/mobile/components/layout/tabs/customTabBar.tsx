@@ -14,6 +14,9 @@ export function CustomTabBar({
     <View className="bg-popover z-30 rounded-t-3xl overflow-hidden">
       <View className="flex-row items-start">
         {state.routes.map((route) => {
+          // Home (`index`) is a redirect-only route — never show it in the tab bar.
+          if (route.name === "index") return null;
+
           const { options } = descriptors[route.key];
           const isFocused = state.routes[state.index].key === route.key;
           const label = options.tabBarLabel ?? options.title ?? route.name;

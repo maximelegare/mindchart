@@ -1,3 +1,5 @@
-import { HomeScreen } from "@/pages/homePage";
+import { Redirect } from "expo-router";
 
-export default HomeScreen;
+export default function Index() {
+  return <Redirect href="/notes" />;
+}
