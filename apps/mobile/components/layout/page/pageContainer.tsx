@@ -229,6 +229,8 @@ export const PageContainer = ({
           ref={scrollRef}
           onScroll={showHeader ? scrollHandler : undefined}
           scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
           {showHeader ? <Animated.View style={contentSpacerStyle} /> : null}

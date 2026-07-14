@@ -279,6 +279,8 @@ const BottomSheetFlatList = React.forwardRef<
       className={cn("py-4", className)}
       keyboardShouldPersistTaps="handled"
       {...props}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
     />
   );
 });
@@ -299,6 +301,8 @@ const BottomSheetScrollView = React.forwardRef<
       className={cn("py-4", className)}
       keyboardShouldPersistTaps="handled"
       {...props}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
     >
       {children}
     </GBottomSheetScrollView>

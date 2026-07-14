@@ -4,6 +4,7 @@
 // See LICENSE.md for full license and terms.
 
 import "./global.css";
+import "@/lib/hideScrollIndicators";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
