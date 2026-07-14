@@ -29,7 +29,7 @@ export const BulletList = ({
   const { colorScheme } = useColorScheme();
 
   return (
-    <View className="flex flex-col">
+    <View className="flex flex-col ml-2">
       {items.map((item, index) => (
         <View
           key={index}
@@ -40,7 +40,7 @@ export const BulletList = ({
             <View
               className={cn("rounded-full mr-2", bulletClassName)}
               style={{
-                marginTop: 10,
+                marginTop: 8,
                 width: bulletSize,
                 height: bulletSize,
                 backgroundColor: hsl(bulletColor, colorScheme),

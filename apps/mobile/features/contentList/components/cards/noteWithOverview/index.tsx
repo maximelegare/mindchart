@@ -1,48 +1,31 @@
-import { memo, ReactElement, ReactNode, useState } from "react";
+import { memo } from "react";
 import { View } from "react-native";
 import { Separator } from "@/components/ui/separator";
-import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
-import { Icon } from "@/components/ui/icons/icon";
 import { useRouter } from "expo-router";
-import { Button } from "@/components/ui";
+import { BulletList } from "@/components/ui/bulletList";
 import { CardTitleRow } from "../shared/cardTitleRow";
 import { NoteBottomSheet } from "@/features/notes/noteBottomSheet";
 
+const MAX_VISIBLE_BULLETS = 4;
+
 type ListItemProps = {
   id: string;
-  children: ReactElement | ReactNode;
   title: string;
   date?: string | null;
   category?: string | null;
-  onPress?: (id: string) => void;
-  expanded?: boolean;
-  defaultInternalExpanded?: boolean;
   topic?: string | null;
+  overviewItems: string[];
 };
 
-export const ExpandableNoteWithThoughts: React.FC<ListItemProps> = memo(
-  ({
-    children,
-    title,
-    id,
-    date,
-    onPress,
-    expanded,
-    defaultInternalExpanded = false,
-  }) => {
+export const NoteWithThoughts: React.FC<ListItemProps> = memo(
+  ({ title, id, date, overviewItems }) => {
     const { push } = useRouter();
-    const [internalExpanded, setInternalExpanded] = useState(
-      defaultInternalExpanded
-    );
-    const isControlled = expanded !== undefined;
-    const isExpanded = isControlled ? expanded : internalExpanded;
-
-    const handleToggle = () => {
-      if (isControlled) onPress?.(id);
-      else setInternalExpanded((prev) => !prev);
-    };
+    const hasMore = overviewItems.length > MAX_VISIBLE_BULLETS;
+    const visibleItems = hasMore
+      ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
+      : overviewItems;
 
     return (
       <View className="bg-card border-border border w-full rounded-lg p-2 pb-3">
@@ -55,36 +38,32 @@ export const ExpandableNoteWithThoughts: React.FC<ListItemProps> = memo(
           onTitlePress={() => push({ pathname: "/notes/[id]", params: { id } })}
           menu={<NoteBottomSheet noteId={id} />}
         />
-        <View
-          className="flex-row items-center justify-between"
-          style={{ marginTop: 20 }}
-        >
-          <Button
-            variant="outline"
-            size="xs"
-            className="flex-row items-center gap-2 px-1"
-            onPress={handleToggle}
-          >
-            <Icon
-              name={isExpanded ? "chevron-up" : "chevron-down"}
-              color="text"
-              style={{ marginTop: 4 }}
-              size={15}
+        {visibleItems.length > 0 && (
+          <View className="gap-3 mt-2">
+            <Separator />
+            <BulletList
+              bulletClassName="mt-[10px]"
+              bulletColor="border"
+              items={visibleItems.map((summary, idx) => (
+                <>
+                  <View key={idx}>
+                    <Typography variant="p">{summary}</Typography>
+                  </View>
+                  {idx === visibleItems.length - 1 && hasMore && (
+                    <Typography variant="muted" className="ml-4 -mt-2">
+                      ...
+                    </Typography>
+                  )}
+                </>
+              ))}
             />
-            <Typography style={{ fontSize: 10 }} variant="p">
-              {isExpanded ? "Hide Overview" : "Show Overview"}
-            </Typography>
-          </Button>
-        </View>
-
-        <CollapsibleContainer expanded={isExpanded}>
-          {children}
-        </CollapsibleContainer>
+          </View>
+        )}
       </View>
     );
   },
   (prevProps, nextProps) =>
-    prevProps.expanded === nextProps.expanded &&
     prevProps.title === nextProps.title &&
-    prevProps.id === nextProps.id
+    prevProps.id === nextProps.id &&
+    prevProps.overviewItems === nextProps.overviewItems
 );
