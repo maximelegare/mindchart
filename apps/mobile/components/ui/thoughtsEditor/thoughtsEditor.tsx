@@ -1,6 +1,7 @@
 import { Category } from "@repo/zod-schemas";
 import React from "react";
-import { Keyboard, ScrollView, TextInput, View } from "react-native";
+import { Keyboard, TextInput, View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { generateID } from "@/utils/genrateID";
 import { ThoughtBulletItem } from "@/components/ui/thoughtsEditor/thoughtBulletItem";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 export type ThoughtsFormValue = {
   title: string;
@@ -65,6 +68,7 @@ type ThoughtsEditorProps = {
   categories: Category[];
   defaultShowTitles?: boolean;
   onKeyboardHeightChange?: (height: number) => void;
+  keyboardOverlayInset?: number;
 };
 
 export function ThoughtsEditor({
@@ -72,7 +76,9 @@ export function ThoughtsEditor({
   categories,
   defaultShowTitles = false,
   onKeyboardHeightChange,
+  keyboardOverlayInset = 0,
 }: ThoughtsEditorProps) {
+  const { colorScheme } = useColorScheme();
   const { control, getValues, setValue } =
     useFormContext<ThoughtsEditorFormValues>();
   const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
@@ -109,6 +115,8 @@ export function ThoughtsEditor({
   } | null>(null);
   const showTitlesRef = React.useRef(showTitles);
   showTitlesRef.current = showTitles;
+  const keyboardOverlayInsetRef = React.useRef(keyboardOverlayInset);
+  keyboardOverlayInsetRef.current = keyboardOverlayInset;
 
   const updateThoughtsMaxHeight = React.useCallback(() => {
     const keyboardTop = keyboardScreenYRef.current;
@@ -119,7 +127,10 @@ export function ThoughtsEditor({
     }
 
     scrollArea.measureInWindow((_x, y, _width, _height) => {
-      const nextMaxHeight = Math.max(120, keyboardTop - y - KEYBOARD_GAP);
+      const nextMaxHeight = Math.max(
+        120,
+        keyboardTop - y - KEYBOARD_GAP - keyboardOverlayInsetRef.current
+      );
       setThoughtsMaxHeight(nextMaxHeight);
     });
   }, []);
@@ -135,13 +146,15 @@ export function ThoughtsEditor({
       if (viewportHeight <= 0) return;
 
       scrollArea.measureInWindow((_sx, scrollY, _sw, scrollAreaHeight) => {
+        const overlayInset = keyboardOverlayInsetRef.current;
         const visibleTop = scrollY + SCROLL_TOP_INSET;
 
         input.measureInWindow((_x, fieldY, _w, fieldHeight) => {
           const fieldTop = fieldY;
           const fieldBottom = fieldY + fieldHeight;
-          const idealBottom = scrollY + scrollAreaHeight - CURSOR_CLEARANCE;
-          const clipBottom = scrollY + scrollAreaHeight;
+          const idealBottom =
+            scrollY + scrollAreaHeight - CURSOR_CLEARANCE - overlayInset;
+          const clipBottom = scrollY + scrollAreaHeight - overlayInset;
           const maxScrollY = Math.max(
             0,
             thoughtsContentHeightRef.current - viewportHeight
@@ -269,6 +282,19 @@ export function ThoughtsEditor({
     if (thoughtsMaxHeight == null || !focusedFieldKeyRef.current) return;
     return scheduleScrollToFocusedField(50);
   }, [thoughtsMaxHeight, scheduleScrollToFocusedField]);
+
+  React.useEffect(() => {
+    if (keyboardHeight === 0) return;
+    updateThoughtsMaxHeight();
+    if (focusedFieldKeyRef.current) {
+      scheduleScrollToFocusedField(50);
+    }
+  }, [
+    keyboardHeight,
+    keyboardOverlayInset,
+    scheduleScrollToFocusedField,
+    updateThoughtsMaxHeight,
+  ]);
 
   const handleFieldFocus = React.useCallback(
     (key: string) => {
@@ -675,28 +701,40 @@ export function ThoughtsEditor({
   };
 
   return (
-    <View className="flex-col gap-1 flex-1 min-h-0">
-      <View className="flex-row items-center justify-between shrink-0">
-        <Label nativeID="thoughts">Content</Label>
-        <View className="flex-row items-center gap-2">
-          <Typography className="text-muted-foreground text-sm">
-            Titles
-          </Typography>
-          <Switch checked={showTitles} onCheckedChange={setShowTitles} />
-        </View>
-      </View>
+    <View className="flex-col flex-1 min-h-0">
+      <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
+        Content
+      </Label>
 
-      <View className=" flex-1 min-h-0 rounded-lg bg-card border border-input px-3 pb-2 overflow-hidden">
-        <View className="flex-row justify-end items-center shrink-0">
+      <View className="flex-1 min-h-0 overflow-hidden rounded-lg border border-input bg-card">
+        <View
+          className="flex-row items-center justify-between shrink-0 border-b border-input px-3 py-2.5"
+          style={{ backgroundColor: hsl("muted", colorScheme) }}
+        >
           <Button onPress={handleClearContent} variant="ghost" size="sm">
             <Typography className="text-muted-foreground text-xs">
-              clear
+              Clear
             </Typography>
           </Button>
+
+          <View className="flex-row items-center gap-3">
+            <Typography className="text-sm text-muted-foreground">
+              Titles
+            </Typography>
+            <Switch
+              checked={showTitles}
+              onCheckedChange={setShowTitles}
+              aria-label="Show thought titles"
+              trackColor={hsl("border", colorScheme)}
+              trackCheckedColor={hsl("primary", colorScheme)}
+              thumbColor={hsl("card", colorScheme)}
+            />
+          </View>
         </View>
+
         <View
           ref={thoughtsScrollAreaRef}
-          className="flex-1 min-h-0"
+          className="min-h-0 flex-1"
           style={
             thoughtsMaxHeight != null
               ? { maxHeight: thoughtsMaxHeight }
@@ -706,7 +744,7 @@ export function ThoughtsEditor({
           <ScrollView
             ref={thoughtsScrollRef}
             nestedScrollEnabled
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
             keyboardDismissMode="none"
             showsVerticalScrollIndicator
             removeClippedSubviews={false}
@@ -722,7 +760,12 @@ export function ThoughtsEditor({
             }}
             scrollEventThrottle={16}
             contentContainerStyle={{
-              paddingBottom: keyboardHeight > 0 ? KEYBOARD_SCROLL_PADDING : 12,
+              paddingHorizontal: 12,
+              paddingTop: 12,
+              paddingBottom:
+                keyboardHeight > 0
+                  ? KEYBOARD_SCROLL_PADDING + keyboardOverlayInset
+                  : 12,
             }}
           >
             <View className="flex-col gap-3">

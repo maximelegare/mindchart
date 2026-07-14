@@ -1,6 +1,6 @@
 import { Category, Note, Thought, Topic } from "@repo/zod-schemas";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { Keyboard, ScrollView, TextInput, View } from "react-native";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,12 @@ import {
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
 import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LAYOUT_SIZES } from "@/components/layout/constants";
+import { Icon } from "@/components/ui/icons/icon";
+import {
+  GENERATE_NOTE_BUTTON_HEIGHT,
+  GENERATE_NOTE_BUTTON_MARGIN,
+} from "@/features/notes/noteCreation/features/generateNote/components/index";
+import { KeyboardActionFooter } from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
 
 type ManualNoteFormData = {
   title: string;
@@ -89,19 +93,27 @@ export const ManualNoteForm = ({
   onSubmit,
   defaultValues,
 }: ManualNoteFormProps) => {
-  const insets = useSafeAreaInsets();
-  const tabBarOffset =
-    LAYOUT_SIZES.TAB_BAR_HEIGHT +
-    LAYOUT_SIZES.TAB_BAR_PADDING_COMPENSATION +
-    insets.bottom;
-
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  const titleInputRef = React.useRef<TextInput>(null);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const form = useForm<ManualNoteFormData>({
     defaultValues: buildFormDefaultValues(noteId, defaultTopic, defaultValues),
   });
   const { control, handleSubmit } = form;
+
+  const handleSavePress = () => {
+    Keyboard.dismiss();
+    handleSubmit(handleFormSubmit)();
+  };
 
   const handleFormSubmit = (data: ManualNoteFormData) => {
     const thoughts: Thought[] = data.thoughts
@@ -138,97 +150,115 @@ export const ManualNoteForm = ({
 
   return (
     <FormProvider {...form}>
-      <View className="flex-1 flex-col gap-2 w-full min-h-0">
-        <View className="flex-row gap-3 items-start w-full shrink-0">
-          <View className="flex-1 min-w-0 flex-col gap-1">
-            <Label nativeID="title">Title</Label>
-            <Controller
-              control={control}
-              name="title"
-              rules={{ required: true }}
-              render={({ field: { onChange, value } }) => (
-                <View
-                  className="rounded-lg bg-card border border-input overflow-hidden justify-center"
-                  style={{ minHeight: FIELD_CHIP_HEIGHT }}
-                  onLayout={(event) =>
-                    setTitleContainerWidth(event.nativeEvent.layout.width)
-                  }
-                >
-                  <ScrollView
-                    horizontal
-                    nestedScrollEnabled
-                    showsHorizontalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{
-                      paddingHorizontal: TITLE_SCROLL_PADDING,
-                      alignItems: "center",
-                      minHeight: FIELD_CHIP_HEIGHT,
-                    }}
+      <View className="relative min-h-0 w-full flex-1 flex-col">
+        <View className="min-h-0 w-full flex-1 flex-col gap-2 px-4">
+          <View className="flex-row gap-4 items-start w-full shrink-0">
+            <View className="flex-1 min-w-0 flex-col">
+              <Label className="mb-0 text-popover-foreground" nativeID="title">
+                Title
+              </Label>
+              <Controller
+                control={control}
+                name="title"
+                rules={{ required: true }}
+                render={({ field: { onChange, value } }) => (
+                  <View
+                    className="rounded-lg bg-card border border-input overflow-hidden justify-center"
+                    style={{ minHeight: FIELD_CHIP_HEIGHT }}
+                    onLayout={(event) =>
+                      setTitleContainerWidth(event.nativeEvent.layout.width)
+                    }
                   >
-                    <EditableField
-                      className="p-0 m-0 bg-transparent border-0"
-                      style={{
-                        minWidth: Math.max(
-                          titleContainerWidth - TITLE_SCROLL_PADDING * 2,
-                          Math.max(value.length, 12) * 9 + 8
-                        ),
-                        minHeight: 24,
-                        paddingVertical: 0,
-                        textAlignVertical: "center",
+                    <ScrollView
+                      horizontal
+                      nestedScrollEnabled
+                      showsHorizontalScrollIndicator={false}
+                      keyboardShouldPersistTaps="handled"
+                      contentContainerStyle={{
+                        paddingHorizontal: TITLE_SCROLL_PADDING,
+                        alignItems: "center",
+                        minHeight: FIELD_CHIP_HEIGHT,
                       }}
-                      onChange={onChange}
-                      value={value}
-                      id="manual-note-title"
-                      title="Title"
-                      fontSize="md"
-                      placeholder="Enter a title"
-                      multiline={false}
-                    />
-                  </ScrollView>
-                </View>
-              )}
-            />
+                    >
+                      <EditableField
+                        ref={titleInputRef}
+                        className="p-0 m-0 bg-transparent border-0"
+                        style={{
+                          minWidth: Math.max(
+                            titleContainerWidth - TITLE_SCROLL_PADDING * 2,
+                            Math.max(value.length, 12) * 9 + 8
+                          ),
+                          minHeight: 24,
+                          paddingVertical: 0,
+                          textAlignVertical: "center",
+                        }}
+                        onChange={onChange}
+                        value={value}
+                        id="manual-note-title"
+                        title="Title"
+                        fontSize="md"
+                        placeholder="Enter a title"
+                        multiline={false}
+                      />
+                    </ScrollView>
+                  </View>
+                )}
+              />
+            </View>
+
+            <View className="shrink-0 flex-col">
+              <Label className="mb-0 text-popover-foreground" nativeID="topic">
+                Topic
+              </Label>
+              <Controller
+                control={control}
+                name="topic"
+                render={({ field: { onChange, value } }) => (
+                  <TopicSelector
+                    selectedTopic={{ ...value }}
+                    onSelect={(topic) => onChange({ ...topic })}
+                    maxChars={18}
+                  />
+                )}
+              />
+            </View>
           </View>
 
-          <View className="shrink-0 flex-col gap-1">
-            <Label nativeID="topic">Topic</Label>
-            <Controller
-              control={control}
-              name="topic"
-              render={({ field: { onChange, value } }) => (
-                <TopicSelector
-                  selectedTopic={{ ...value }}
-                  onSelect={(topic) => onChange({ ...topic })}
-                  maxChars={18}
-                />
-              )}
+          <View
+            className="mt-5 min-h-0 flex-1"
+            style={{
+              paddingBottom:
+                keyboardHeight > 0
+                  ? 0
+                  : GENERATE_NOTE_BUTTON_HEIGHT +
+                    GENERATE_NOTE_BUTTON_MARGIN * 2,
+            }}
+          >
+            <ThoughtsEditor
+              noteId={noteId}
+              categories={categories}
+              defaultShowTitles={
+                defaultValues?.thoughts?.some((thought) =>
+                  thought.title?.trim()
+                ) ?? false
+              }
+              onKeyboardHeightChange={setKeyboardHeight}
             />
           </View>
         </View>
 
-        <ThoughtsEditor
-          noteId={noteId}
-          categories={categories}
-          defaultShowTitles={
-            defaultValues?.thoughts?.some((thought) => thought.title?.trim()) ??
-            false
-          }
-          onKeyboardHeightChange={setKeyboardHeight}
-        />
-
-        {keyboardHeight === 0 ? (
-          <View
-            className="items-center shrink-0"
-            style={{ paddingBottom: tabBarOffset }}
+        <KeyboardActionFooter>
+          <Button
+            onPress={handleSavePress}
+            variant="secondary"
+            size="default"
+            cornerRadius="full"
+            className="flex-row items-center gap-2 px-6"
           >
-            <Button
-              onPress={handleSubmit(handleFormSubmit)}
-              style={{ width: 250 }}
-            >
-              <Typography>Save Note</Typography>
-            </Button>
-          </View>
-        ) : null}
+            <Icon name="save" color="card" />
+            <Typography variant="h4">Save Note</Typography>
+          </Button>
+        </KeyboardActionFooter>
       </View>
     </FormProvider>
   );

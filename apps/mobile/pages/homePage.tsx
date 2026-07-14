@@ -4,8 +4,7 @@ import { PageContainer } from "@/components/layout/page/pageContainer";
 import { useState } from "react";
 import { SearchFeature } from "@/features/search/views";
 import { MoreOptionsMenuProps } from "@/components/layout/header/moreOptions/moreOptionsMenu";
-import { NoteCreationProvider } from "@/features/notes/noteCreation/context/noteCreationContext";
-import { NoteCreationOptionsHeader } from "@/features/notes/noteCreation/components/noteCreationOptionsHeader";
+import { NoteCreationOptionsHeader } from "@/features/notes/noteCreation/features/floatingButton/components/header/noteCreationOptionsHeader";
 
 export const HomeScreen = () => {
   const [open, setOpen] = useState(false);
@@ -16,20 +15,18 @@ export const HomeScreen = () => {
   ];
 
   return (
-    <NoteCreationProvider>
-      <PageContainer
-        showLogo={true}
-        headerVariant="stack"
-        noScrollView
-        buttons={<SearchFeature />}
-        optionsHeader={<NoteCreationOptionsHeader />}
-        moreOptionsMenu={{
-          links: moreOptionsMenuLinks,
-          state: { open, setOpen },
-        }}
-      >
-        <NoteCreationFeature />
-      </PageContainer>
-    </NoteCreationProvider>
+    <PageContainer
+      showLogo={true}
+      headerVariant="stack"
+      noScrollView
+      buttons={<SearchFeature />}
+      optionsHeader={<NoteCreationOptionsHeader />}
+      moreOptionsMenu={{
+        links: moreOptionsMenuLinks,
+        state: { open, setOpen },
+      }}
+    >
+      <NoteCreationFeature />
+    </PageContainer>
   );
 };

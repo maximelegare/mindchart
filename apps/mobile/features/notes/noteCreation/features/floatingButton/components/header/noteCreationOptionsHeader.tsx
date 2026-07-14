@@ -5,7 +5,7 @@ import {
   CreationMode,
   InputView,
   useNoteCreationStore,
-} from "../context/noteCreationContext";
+} from "../../../../context/noteCreationContext";
 
 const CREATION_MODE_VALUES = {
   first: { name: "ai", icon: "sparkles" as const },

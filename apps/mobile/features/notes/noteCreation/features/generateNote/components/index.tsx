@@ -8,9 +8,7 @@ import {
 import { useControllers } from "@/api/controllers/useControllers";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
-import { View } from "react-native";
-import { Gradient } from "@/components/ui/gradient";
-import { cn } from "@/lib/cn";
+import { Keyboard, View } from "react-native";
 import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import { useModal } from "@/components/ui/modal/modal";
@@ -18,25 +16,41 @@ import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingS
 import { GenerateNotePreview } from "@/features/notes/notePreview/generateNotePreview";
 import { CategoryKey } from "@repo/sqlite";
 import { z } from "zod";
+import React from "react";
+import { Gradient } from "@/components/ui/gradient";
+import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
+import {
+  KEYBOARD_ACTION_FOOTER_PADDING_Y,
+  KeyboardActionFooter,
+} from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
+
+const BUTTON_HEIGHT = 48;
+
+export const GENERATE_NOTE_BUTTON_HEIGHT = BUTTON_HEIGHT;
+export const GENERATE_NOTE_BUTTON_MARGIN = KEYBOARD_ACTION_FOOTER_PADDING_Y;
+
+type GenerateNoteVariant = "floating" | "centered";
 
 export const GenerateNote = ({
   fileURI,
   inputText,
   currentView,
   onSuccess,
+  variant = "floating",
 }: {
   fileURI: string | null;
   inputText: string;
   currentView: "audio" | "input";
   onSuccess?: () => void;
+  variant?: GenerateNoteVariant;
 }) => {
   const { notesAndThoughts, categories } = useControllers();
+  const { colorScheme } = useColorScheme();
 
   const { aiProviders } = useAISettingsPreferences();
   const { openModal, setModalContent, closeModal } = useModal();
 
-  const { colorScheme } = useColorScheme();
   const { useInsertNoteAndThoughtsMutation, useGenerateNoteMutation } =
     notesAndThoughts;
 
@@ -47,7 +61,6 @@ export const GenerateNote = ({
   const { mutateAsync: insertNewTopicMutateAsync } =
     useInsertNewTopicMutation();
 
-  // const { mutateAsync: generateLocalNoteMutateAsync } = useGenerateLocalNoteMutation();
   const { mutateAsync: generateNoteMutateAsync } = useGenerateNoteMutation();
   const { mutateAsync: generateLocalEmbeddingsMutateAsync } =
     useGenerateLocalEmbeddingsMutation();
@@ -61,7 +74,6 @@ export const GenerateNote = ({
     enabled: !!fileURI || !!inputText,
   });
 
-  // Logic: Only valid if audio has a URI OR text view has content
   const isInputValid =
     currentView === "audio" ? !!fileURI : inputText.trim().length > 0;
   const isDisabled = !isInputValid;
@@ -84,6 +96,8 @@ export const GenerateNote = ({
 
   const handleGenerateNote = async () => {
     if (isDisabled) return;
+
+    Keyboard.dismiss();
 
     openModal({
       dismissOnBackgroundPress: false,
@@ -139,39 +153,64 @@ export const GenerateNote = ({
       }
     } catch (error) {
       console.error(error);
-      closeModal(); // Close loading state on error
+      closeModal();
     }
   };
 
-  return (
-    <Button
-      variant="outline"
-      size="lg"
-      onPress={handleGenerateNote}
-      disabled={isDisabled}
-      className="relative overflow-hidden rounded-full border-border"
-      style={{ width: 250 }}
-    >
-      {/* Only show the colorful gradient if the button is active */}
-      <Gradient
-        theme={colorScheme}
-        variant={isDisabled ? "none" : "primary"}
-        className="absolute"
-        style={{ width: 400 }}
-      />
-
-      <View className="flex-row justify-between items-center gap-2">
-        <Icon name="sparkles" color={isDisabled ? "border" : "background"} />
-        <Typography
-          className={cn(
-            isDisabled ? "text-border" : "text-background",
-            "font-bold text-center"
-          )}
+  if (variant === "centered") {
+    return (
+      <View className="items-center px-4 pb-4 pt-2">
+        <Button
+          variant="outline"
+          size="lg"
+          onPress={handleGenerateNote}
+          disabled={isDisabled}
+          className="relative overflow-hidden rounded-full border-border"
+          style={{ width: 250 }}
         >
-          Generate Note
-        </Typography>
-        <Icon name="sparkles" color={isDisabled ? "border" : "background"} />
+          <Gradient
+            theme={colorScheme}
+            variant={isDisabled ? "none" : "primary"}
+            className="absolute"
+            style={{ width: 400 }}
+          />
+
+          <View className="flex-row justify-between items-center gap-2">
+            <Icon
+              name="sparkles"
+              color={isDisabled ? "border" : "background"}
+            />
+            <Typography
+              className={cn(
+                isDisabled ? "text-border" : "text-background",
+                "font-bold text-center"
+              )}
+            >
+              Generate Note
+            </Typography>
+            <Icon
+              name="sparkles"
+              color={isDisabled ? "border" : "background"}
+            />
+          </View>
+        </Button>
       </View>
-    </Button>
+    );
+  }
+
+  return (
+    <KeyboardActionFooter>
+      <Button
+        onPress={handleGenerateNote}
+        disabled={isDisabled}
+        variant="secondary"
+        size="default"
+        cornerRadius="full"
+        className="flex-row items-center gap-2 px-6"
+      >
+        <Icon name="sparkles" color="card" />
+        <Typography variant="h4">Generate Note</Typography>
+      </Button>
+    </KeyboardActionFooter>
   );
 };

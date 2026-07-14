@@ -43,6 +43,7 @@ import {
 } from "@/features/workspaces/services/workspaceKeyService";
 import { migrateLegacyDatabase } from "@/features/workspaces/utils/migrateLegacyDatabase";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 import { Buffer } from "buffer";
 import { AutoConnectService } from "@/features/settings/features/ai/autoConnect/services/autoConnectService";
@@ -213,33 +214,38 @@ export default function RootLayout() {
             : (LIGHT_THEME as Theme)
         }
       >
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <BottomSheetModalProvider>
-            <PaperProvider>
-              <ModalProvider>
-                <View
-                  className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}
-                >
-                  <LlamaProvider>
-                    <StatusBar
-                      style={colorScheme === "dark" ? "light" : "dark"}
-                    />
+        <KeyboardProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <BottomSheetModalProvider>
+              <PaperProvider>
+                <ModalProvider>
+                  <View
+                    className={cn(
+                      "flex-1",
+                      colorScheme === "dark" ? "dark" : ""
+                    )}
+                  >
+                    <LlamaProvider>
+                      <StatusBar
+                        style={colorScheme === "dark" ? "light" : "dark"}
+                      />
 
-                    <WhisperProvider>
-                      <AutoConnectService>
-                        <Stack screenOptions={{ headerShown: false }}>
-                          <Stack.Screen name="(tabs)" />
-                          <Stack.Screen name="(stack)" />
-                        </Stack>
-                      </AutoConnectService>
-                    </WhisperProvider>
-                  </LlamaProvider>
-                </View>
-              </ModalProvider>
-              <PortalHost />
-            </PaperProvider>
-          </BottomSheetModalProvider>
-        </GestureHandlerRootView>
+                      <WhisperProvider>
+                        <AutoConnectService>
+                          <Stack screenOptions={{ headerShown: false }}>
+                            <Stack.Screen name="(tabs)" />
+                            <Stack.Screen name="(stack)" />
+                          </Stack>
+                        </AutoConnectService>
+                      </WhisperProvider>
+                    </LlamaProvider>
+                  </View>
+                </ModalProvider>
+                <PortalHost />
+              </PaperProvider>
+            </BottomSheetModalProvider>
+          </GestureHandlerRootView>
+        </KeyboardProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

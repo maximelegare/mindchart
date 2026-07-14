@@ -97,8 +97,8 @@ export function CustomTabBar({
 
         {/* Menu Container: Anchored to the right */}
         {/* <View className="h-full">
-          <MoreOptionsMenu />
-        </View> */}
+            <MoreOptionsMenu />
+          </View> */}
       </View>
     </Gutter>
   );
