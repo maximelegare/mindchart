@@ -13,8 +13,7 @@ export const unstable_settings = {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const topOffset =
-    LAYOUT_SIZES.HEADER_HEIGHT + insets.top - LAYOUT_SIZES.HEADER_OVERLAP;
+  const topOffset = LAYOUT_SIZES.HEADER_HEIGHT + insets.top;
 
   return (
     <NoteCreationProvider>
