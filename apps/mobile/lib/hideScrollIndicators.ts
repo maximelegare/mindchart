@@ -11,11 +11,14 @@ const scrollIndicatorDefaults = {
   showsHorizontalScrollIndicator: false,
 } as const;
 
-function applyScrollDefaults(Component: {
+type WithDefaultProps = {
   defaultProps?: Record<string, unknown> | null;
-}) {
-  Component.defaultProps = {
-    ...Component.defaultProps,
+};
+
+function applyScrollDefaults(Component: object) {
+  const target = Component as WithDefaultProps;
+  target.defaultProps = {
+    ...target.defaultProps,
     ...scrollIndicatorDefaults,
   };
 }
