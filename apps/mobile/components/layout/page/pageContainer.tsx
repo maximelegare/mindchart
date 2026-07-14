@@ -2,13 +2,13 @@ import React from "react";
 import {
   View,
   StyleSheet,
-  LayoutChangeEvent,
   useWindowDimensions,
   ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useScrollToTop, useNavigation } from "@react-navigation/native";
 import Animated, {
+  clamp,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -25,15 +25,8 @@ import { IconName } from "@/components/ui/icons/icon-registry";
 
 const { HEADER_HEIGHT, HEADER_OVERLAP, OPTIONS_HEADER_HEIGHT } = LAYOUT_SIZES;
 
-/** Matches `gutter()` / `gutter("sm")` side margins. */
 const SIDE_GUTTER = 4;
-
-/** Gap between header content and the top of page options. */
-/** Matches PageOptionsHeaderContainer top radius — must sit over the header gradient. */
 const PAGE_TOP_RADIUS = 24;
-
-/** Reveal headers faster than they hide, so they come back easily. */
-const REVEAL_FACTOR = 2;
 
 type HeaderVariant = "stack" | "tab" | "none";
 
@@ -48,7 +41,6 @@ type PageContainerProps = {
   buttons?: React.ReactNode;
   children: React.ReactNode;
   noScrollView?: boolean;
-  /** When true, header + options hide/show with scroll. Off by default. */
   collapsingHeader?: boolean;
   moreOptionsMenu?: {
     state: { open: boolean; setOpen: (open: boolean) => void };
@@ -86,52 +78,50 @@ export const PageContainer = ({
       : resolvedTitle;
 
   const showHeader = headerVariant !== "none";
-  const headerHeight = HEADER_HEIGHT + insets.top;
-  const initialChromeHeight =
-    headerHeight + (optionsHeader ? OPTIONS_HEADER_HEIGHT : 0);
+  // Round heights to avoid sub-pixel layout rounding issues
+  const headerHeight = Math.round(HEADER_HEIGHT + insets.top);
+  const optionsOverlap = PAGE_TOP_RADIUS + 1;
+  const chromeHeight = Math.round(
+    headerHeight + (optionsHeader ? OPTIONS_HEADER_HEIGHT : 0)
+  );
   const fixedGradientHeight = headerHeight + HEADER_OVERLAP;
   const useCollapsingHeader = collapsingHeader && showHeader && !noScrollView;
 
-  const chromeTranslateY = useSharedValue(0);
-  const lastScrollY = useSharedValue(0);
-  const chromeHeightSV = useSharedValue(initialChromeHeight);
+  // Track raw scroll and the previous frame scroll synchronously on the UI thread
+  const scrollY = useSharedValue(0);
+  const previousScrollY = useSharedValue(0);
+  const filteredScroll = useSharedValue(0);
 
-  const onChromeLayout = (event: LayoutChangeEvent) => {
-    chromeHeightSV.value = event.nativeEvent.layout.height;
-  };
-
+  // Calculate filtered scroll directly inside the scroll handler to guarantee zero-frame lag
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
-      "worklet";
       const y = event.contentOffset.y;
-      const diff = y - lastScrollY.value;
-      const maxHide = chromeHeightSV.value;
+      scrollY.value = y;
 
       if (y <= 0) {
-        chromeTranslateY.value = 0;
-      } else if (diff > 0) {
-        chromeTranslateY.value = Math.max(
-          -maxHide,
-          chromeTranslateY.value - diff
-        );
-      } else if (diff < 0) {
-        chromeTranslateY.value = Math.min(
-          0,
-          chromeTranslateY.value - diff * REVEAL_FACTOR
-        );
+        filteredScroll.value = 0;
+        previousScrollY.value = y;
+        return;
       }
 
-      lastScrollY.value = y;
+      const dy = y - previousScrollY.value;
+
+      // Update filtered scroll immediately in the same tick
+      filteredScroll.value = clamp(filteredScroll.value + dy, 0, chromeHeight);
+
+      previousScrollY.value = y;
+    },
+    onBeginDrag: (event) => {
+      previousScrollY.value = event.contentOffset.y;
     },
   });
 
-  const chromeAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: chromeTranslateY.value }],
-  }));
-
-  const contentSpacerStyle = useAnimatedStyle(() => ({
-    height: chromeHeightSV.value,
-  }));
+  // Native-driven translation
+  const chromeTranslateStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: -filteredScroll.value }],
+    };
+  });
 
   const fullWidthGradientStyle = {
     width: windowWidth,
@@ -155,46 +145,44 @@ export const PageContainer = ({
     />
   ) : null;
 
-  const headerChrome = showHeader ? (
-    <>
-      <Gradient
-        type="linear"
-        variant="primary"
-        theme={colorScheme}
-        className="h-auto"
-        style={[
-          fullWidthGradientStyle,
-          {
-            paddingTop: insets.top,
-            paddingBottom: optionsHeader ? PAGE_TOP_RADIUS + 1 : 0,
-          },
-        ]}
-      >
-        <View style={[styles.headerBar, { paddingHorizontal: SIDE_GUTTER }]}>
-          <HeaderContent
-            title={displayTitle}
-            subtitle={subtitle}
-            showLogo={showLogo}
-            hideBackButton={headerVariant === "stack" || !canGoBack}
-            buttons={buttons}
-            moreOptionsMenu={moreOptionsMenu}
-          />
-        </View>
-      </Gradient>
-      {optionsHeader ? (
-        <View style={styles.optionsOverlap}>{optionsHeader}</View>
-      ) : null}
-    </>
-  ) : null;
+  const headerBlock = (
+    <Gradient
+      type="linear"
+      variant="primary"
+      theme={colorScheme}
+      className="h-auto"
+      style={[
+        fullWidthGradientStyle,
+        {
+          paddingTop: insets.top,
+          paddingBottom: optionsHeader ? optionsOverlap : 0,
+        },
+      ]}
+    >
+      <View style={[styles.headerBar, { paddingHorizontal: SIDE_GUTTER }]}>
+        <HeaderContent
+          title={displayTitle}
+          subtitle={subtitle}
+          showLogo={showLogo}
+          hideBackButton={headerVariant === "stack" || !canGoBack}
+          buttons={buttons}
+          moreOptionsMenu={moreOptionsMenu}
+        />
+      </View>
+    </Gradient>
+  );
 
-  // Static header (default) — including noScrollView pages.
+  // Static non-collapsing implementation
   if (!useCollapsingHeader) {
     return (
       <View style={styles.root}>
         {fixedGradient}
         {showHeader && (
           <View style={styles.chrome} collapsable={false}>
-            {headerChrome}
+            {headerBlock}
+            {optionsHeader ? (
+              <View style={styles.optionsOverlap}>{optionsHeader}</View>
+            ) : null}
           </View>
         )}
         <View
@@ -202,7 +190,7 @@ export const PageContainer = ({
           style={[
             styles.pageContainer,
             gutter(),
-            showHeader && { marginTop: initialChromeHeight },
+            showHeader && { marginTop: chromeHeight },
           ]}
         >
           {noScrollView ? (
@@ -248,26 +236,39 @@ export const PageContainer = ({
           className="flex-1"
           ref={animatedScrollRef}
           onScroll={scrollHandler}
-          scrollEventThrottle={16}
+          scrollEventThrottle={16} // Guarantees 60fps/120fps tracking updates
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          <Animated.View style={contentSpacerStyle} />
+          {/* Reserve space for headers to sit over */}
+          <View style={{ height: chromeHeight }} />
           <Gutter size="md">{children}</Gutter>
         </Animated.ScrollView>
       </View>
 
+      {/* Split layout layers: Rendered above the pageContainer to avoid overlap issues */}
       <Animated.View
-        onLayout={onChromeLayout}
         pointerEvents="box-none"
-        renderToHardwareTextureAndroid
-        shouldRasterizeIOS
         collapsable={false}
-        style={[styles.chrome, chromeAnimatedStyle]}
+        style={[styles.chrome, { height: headerHeight }, chromeTranslateStyle]}
       >
-        {headerChrome}
+        {headerBlock}
       </Animated.View>
+
+      {optionsHeader ? (
+        <Animated.View
+          pointerEvents="box-none"
+          collapsable={false}
+          style={[
+            styles.optionsChrome,
+            { top: headerHeight, height: OPTIONS_HEADER_HEIGHT },
+            chromeTranslateStyle,
+          ]}
+        >
+          {optionsHeader}
+        </Animated.View>
+      ) : null}
     </View>
   );
 };
@@ -276,7 +277,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-
   fixedGradient: {
     position: "absolute",
     top: 0,
@@ -284,7 +284,6 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 0,
   },
-
   chrome: {
     position: "absolute",
     top: 0,
@@ -292,23 +291,25 @@ const styles = StyleSheet.create({
     right: SIDE_GUTTER,
     zIndex: 20,
   },
-
+  optionsChrome: {
+    position: "absolute",
+    left: SIDE_GUTTER,
+    right: SIDE_GUTTER,
+    zIndex: 21,
+  },
   headerBar: {
     height: HEADER_HEIGHT,
     justifyContent: "center",
   },
-
   optionsOverlap: {
     marginTop: -(PAGE_TOP_RADIUS + 1),
     zIndex: 1,
   },
-
   pageContainer: {
     flex: 1,
     zIndex: 10,
     overflow: "hidden",
   },
-
   scrollContent: {
     paddingBottom: 24,
   },
