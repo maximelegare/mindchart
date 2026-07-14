@@ -27,10 +27,9 @@ const { HEADER_HEIGHT, HEADER_OVERLAP, OPTIONS_HEADER_HEIGHT } = LAYOUT_SIZES;
 /** Matches `gutter()` / `gutter("sm")` side margins. */
 const SIDE_GUTTER = 4;
 
-/** How far options tuck over the header gradient. */
-const HEADER_TUCK = 8;
+/** Gap between header content and the top of page options. */
 
-/** Matches PageOptionsHeaderContainer top radius. */
+/** Matches PageOptionsHeaderContainer top radius — must sit over the header gradient. */
 const PAGE_TOP_RADIUS = 24;
 
 /** Reveal headers faster than they hide, so they come back easily. */
@@ -85,7 +84,8 @@ export const PageContainer = ({
   const showHeader = headerVariant !== "none";
   const headerHeight = HEADER_HEIGHT + insets.top;
   const initialChromeHeight =
-    headerHeight + (optionsHeader ? OPTIONS_HEADER_HEIGHT - HEADER_TUCK : 0);
+    headerHeight + (optionsHeader ? OPTIONS_HEADER_HEIGHT : 0);
+
   const fixedGradientHeight = headerHeight + HEADER_OVERLAP;
 
   const chromeTranslateY = useSharedValue(0);
@@ -155,7 +155,15 @@ export const PageContainer = ({
         variant="primary"
         theme={colorScheme}
         className="h-auto"
-        style={[fullWidthGradientStyle, { paddingTop: insets.top }]}
+        style={[
+          fullWidthGradientStyle,
+          {
+            paddingTop: insets.top,
+            // Gradient continues under options so the full corner radius sits on it,
+            // plus OPTIONS_GAP between header content and options.
+            paddingBottom: PAGE_TOP_RADIUS + 1,
+          },
+        ]}
       >
         <View style={[styles.headerBar, { paddingHorizontal: SIDE_GUTTER }]}>
           <HeaderContent
@@ -188,7 +196,7 @@ export const PageContainer = ({
           style={[
             styles.pageContainer,
             gutter(),
-            showHeader && { marginTop: headerHeight - HEADER_TUCK },
+            showHeader && { marginTop: headerHeight },
           ]}
         >
           <View
@@ -264,8 +272,7 @@ const styles = StyleSheet.create({
     left: SIDE_GUTTER,
     right: SIDE_GUTTER,
     zIndex: 20,
-    elevation: 20,
-    overflow: "hidden",
+    // Don't clip — options radius must reveal the header gradient behind it.
   },
 
   headerBar: {
@@ -274,7 +281,8 @@ const styles = StyleSheet.create({
   },
 
   optionsOverlap: {
-    marginTop: -HEADER_TUCK,
+    // Full radius over the gradient (+1px so nothing peeks past the curve).
+    marginTop: -(PAGE_TOP_RADIUS + 1),
     zIndex: 1,
   },
 
@@ -282,8 +290,6 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 10,
     overflow: "hidden",
-    borderTopLeftRadius: PAGE_TOP_RADIUS,
-    borderTopRightRadius: PAGE_TOP_RADIUS,
   },
 
   scrollContent: {
