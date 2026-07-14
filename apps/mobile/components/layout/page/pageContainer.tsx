@@ -145,6 +145,9 @@ export const PageContainer = ({
     />
   ) : null;
 
+  // Without optionsHeader, round the page sheet so fixedGradient shows in the corners.
+  const pageNeedsTopRadius = showHeader && !optionsHeader;
+
   const headerBlock = (
     <Gradient
       type="linear"
@@ -191,6 +194,10 @@ export const PageContainer = ({
             styles.pageContainer,
             gutter(),
             showHeader && { marginTop: chromeHeight },
+            pageNeedsTopRadius && {
+              borderTopLeftRadius: PAGE_TOP_RADIUS,
+              borderTopRightRadius: PAGE_TOP_RADIUS,
+            },
           ]}
         >
           {noScrollView ? (

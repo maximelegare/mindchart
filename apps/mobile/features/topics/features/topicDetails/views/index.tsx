@@ -1,5 +1,5 @@
 import { Typography } from "@/components/ui/typography";
-import { ExpandableNoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
+import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 import { View } from "react-native";
 
@@ -26,7 +26,7 @@ export const TopicDetailsFeature = ({
   return (
     <View className="gap-2">
       {notes.map((note) => (
-        <ExpandableNoteWithThoughts
+        <NoteWithThoughts
           key={note.id}
           id={note.id}
           title={note.title}
