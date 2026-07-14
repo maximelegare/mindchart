@@ -11,10 +11,7 @@ export function CustomTabBar({
   const insets = useSafeAreaInsets();
 
   return (
-    <View
-      style={{ bottom: 0 }}
-      className="right-0 left-0 bg-popover z-30 absolute rounded-t-xl overflow-hidden"
-    >
+    <View className="bg-popover z-30 rounded-t-xl overflow-hidden">
       <View className="flex-row items-start">
         {state.routes.map((route) => {
           const { options } = descriptors[route.key];
