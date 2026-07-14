@@ -37,14 +37,12 @@ export const GenerateNote = ({
   inputText,
   currentView,
   onSuccess,
-  keyboardHeight = 0,
   variant = "floating",
 }: {
   fileURI: string | null;
   inputText: string;
   currentView: "audio" | "input";
   onSuccess?: () => void;
-  keyboardHeight?: number;
   variant?: GenerateNoteVariant;
 }) => {
   const { notesAndThoughts, categories } = useControllers();
@@ -201,7 +199,7 @@ export const GenerateNote = ({
   }
 
   return (
-    <KeyboardActionFooter keyboardHeight={keyboardHeight}>
+    <KeyboardActionFooter>
       <Button
         onPress={handleGenerateNote}
         disabled={isDisabled}

@@ -247,7 +247,7 @@ export const ManualNoteForm = ({
           </View>
         </View>
 
-        <KeyboardActionFooter keyboardHeight={keyboardHeight}>
+        <KeyboardActionFooter>
           <Button
             onPress={handleSavePress}
             variant="secondary"

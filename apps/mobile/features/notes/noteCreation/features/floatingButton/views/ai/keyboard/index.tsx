@@ -49,7 +49,6 @@ export const KeyboardView = () => {
         inputText={inputValue}
         currentView="input"
         variant="floating"
-        keyboardHeight={keyboardHeight}
         onSuccess={handleGenerateSuccess}
       />
     </View>
