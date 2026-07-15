@@ -8,7 +8,7 @@ import { FloatingModal } from "@/features/notes/noteCreation/features/floatingBu
 import { NoteCreationProvider } from "@/features/notes/noteCreation/context/noteCreationContext";
 
 export const unstable_settings = {
-  initialRouteName: "index",
+  initialRouteName: "notes",
 };
 
 export default function TabLayout() {
@@ -28,7 +28,7 @@ export default function TabLayout() {
           <Tabs.Screen
             name="index"
             options={{
-              title: "Recorder",
+              href: null,
             }}
           />
           <Tabs.Screen
