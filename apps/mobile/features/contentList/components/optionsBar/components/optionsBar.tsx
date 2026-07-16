@@ -1,14 +1,19 @@
+import React, { useState } from "react";
+import { View } from "react-native";
 import { Typography } from "@/components/ui";
-import { Pressable, View } from "react-native";
-import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
-import { useState } from "react";
-import { Gutter } from "@/components/ui/gutter";
-import { H4 } from "@/components/ui/typography";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useOptionsBar } from "../context/optionBarContext";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
+import { useOptionsBar } from "../context/optionBarContext";
 import { ContentListFilterChips, FilterChip } from "./filterChips";
 
 const SORT_OPTIONS: {
@@ -30,130 +35,63 @@ const GROUP_OPTIONS: {
   { value: "none", label: "None" },
 ];
 
-const DISPLAY_MODE_OPTIONS: { value: DisplayMode; label: string }[] = [
+const DISPLAY_OPTIONS: { value: DisplayMode; label: string }[] = [
+  { value: "notes", label: "Notes" },
   { value: "topics", label: "Topics" },
   { value: "categories", label: "Categories" },
 ];
 
-const OVERVIEW_LABEL = "Note Overview";
-
-type RadioOptionRowProps<T extends string> = {
-  options: { value: T; label: string }[];
+type OptionsDropdownProps<T extends string> = {
   value: T;
+  options: { value: T; label: string }[];
   onValueChange: (value: T) => void;
-  idPrefix: string;
+  footer?: React.ReactNode;
 };
 
-function RadioOptionRow<T extends string>({
-  options,
+function OptionsDropdown<T extends string>({
   value,
+  options,
   onValueChange,
-  idPrefix,
-}: RadioOptionRowProps<T>) {
-  return (
-    <RadioGroup
-      className="flex-col"
-      value={value}
-      onValueChange={(v) => onValueChange(v as T)}
-    >
-      {options.map((option) => {
-        const labelId = `${idPrefix}-${option.value}`;
-        return (
-          <View key={option.value} className="flex-row items-center gap-2">
-            <RadioGroupItem aria-labelledby={labelId} value={option.value} />
-            <Pressable onPress={() => onValueChange(option.value)}>
-              <Typography nativeID={labelId} variant="p" className="text-sm">
-                {option.label}
-              </Typography>
-            </Pressable>
-          </View>
-        );
-      })}
-    </RadioGroup>
-  );
-}
-
-type DisplayOptionsProps = {
-  displayMode: DisplayMode;
-  showOverview: boolean;
-  onDisplayModeChange: (value: DisplayMode) => void;
-  onShowOverviewChange: (value: boolean) => void;
-};
-
-function DisplayOptions({
-  displayMode,
-  showOverview,
-  onDisplayModeChange,
-  onShowOverviewChange,
-}: DisplayOptionsProps) {
-  const notesSelected = displayMode === "notes";
-
-  const onModeChange = (mode: DisplayMode) => {
-    onDisplayModeChange(mode);
-  };
+  footer,
+}: OptionsDropdownProps<T>) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel =
+    options.find((option) => option.value === value)?.label ?? value;
 
   return (
-    <RadioGroup
-      className="flex-col gap-4"
-      value={displayMode}
-      onValueChange={(v) => onModeChange(v as DisplayMode)}
-    >
-      <View className="gap-2">
-        <View className="flex-row items-center gap-2">
-          <RadioGroupItem aria-labelledby="display-notes" value="notes" />
-          <Pressable onPress={() => onModeChange("notes")}>
-            <Typography
-              nativeID="display-notes"
-              variant="p"
-              className="text-sm"
-            >
-              Notes
-            </Typography>
-          </Pressable>
-        </View>
-        <View className="ml-3 border-l border-border pl-4">
-          <View className="flex-row items-center gap-2">
-            <Checkbox
-              checked={showOverview}
-              disabled={!notesSelected}
-              onCheckedChange={(checked) => {
-                if (notesSelected) onShowOverviewChange(checked);
-              }}
-            />
-            <Pressable
-              disabled={!notesSelected}
-              onPress={() => {
-                if (notesSelected) onShowOverviewChange(!showOverview);
-              }}
-            >
-              <Typography
-                nativeID="display-overview"
-                variant="p"
-                className={
-                  notesSelected ? "text-sm" : "text-sm text-muted-foreground/50"
-                }
-              >
-                {OVERVIEW_LABEL}
-              </Typography>
-            </Pressable>
-          </View>
-        </View>
-      </View>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <FilterChip label={selectedLabel} selected={open} />
+      </DropdownMenuTrigger>
 
-      {DISPLAY_MODE_OPTIONS.map((option) => {
-        const labelId = `display-${option.value}`;
-        return (
-          <View key={option.value} className="flex-row items-center gap-2">
-            <RadioGroupItem aria-labelledby={labelId} value={option.value} />
-            <Pressable onPress={() => onModeChange(option.value)}>
-              <Typography nativeID={labelId} variant="p" className="text-sm">
-                {option.label}
-              </Typography>
-            </Pressable>
-          </View>
-        );
-      })}
-    </RadioGroup>
+      {open ? (
+        <DropdownMenuContent
+          forceMount
+          side="bottom"
+          align="start"
+          className="mt-1 min-w-[10rem] border border-border bg-background pb-2 shadow-md"
+        >
+          <DropdownMenuRadioGroup
+            value={value}
+            onValueChange={(next) => onValueChange(next as T)}
+          >
+            {options.map((option) => (
+              <DropdownMenuRadioItem key={option.value} value={option.value}>
+                <Typography variant="p" className="text-md text-foreground">
+                  {option.label}
+                </Typography>
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+          {footer ? (
+            <>
+              <DropdownMenuSeparator />
+              {footer}
+            </>
+          ) : null}
+        </DropdownMenuContent>
+      ) : null}
+    </DropdownMenu>
   );
 }
 
@@ -204,59 +142,60 @@ export const OptionsBar = () => {
     handleShowOverviewChange(value);
   };
 
-  const optionsToggle = (
+  const funnelToggle = (
     <FilterChip
       icon="funnel"
       selected={expanded}
-      onPress={() => setExpanded(!expanded)}
+      onPress={() => setExpanded((prev) => !prev)}
     />
   );
 
   return (
     <PageOptionsHeaderContainer
       footer={
-        <Gutter size="md">
-          <CollapsibleContainer expanded={expanded}>
-            <View className="gap-4 py-2">
-              <View className="gap-2">
-                <H4>Sort by</H4>
-                <View style={{ paddingLeft: 10 }}>
-                  <RadioOptionRow
-                    idPrefix="sort"
-                    options={SORT_OPTIONS}
-                    value={sortBy}
-                    onValueChange={onSortByChange}
-                  />
-                </View>
-              </View>
-              <View className="gap-2">
-                <H4>Group by</H4>
-                <View style={{ paddingLeft: 10 }}>
-                  <RadioOptionRow
-                    idPrefix="group"
-                    options={GROUP_OPTIONS}
-                    value={groupBy}
-                    onValueChange={onGroupByChange}
-                  />
-                </View>
-              </View>
-              <View className="gap-2">
-                <H4>Display</H4>
-                <View style={{ paddingLeft: 10 }}>
-                  <DisplayOptions
-                    displayMode={displayMode}
-                    showOverview={showOverview}
-                    onDisplayModeChange={onDisplayModeChange}
-                    onShowOverviewChange={onShowOverviewChange}
-                  />
-                </View>
-              </View>
-            </View>
-          </CollapsibleContainer>
-        </Gutter>
+        <CollapsibleContainer expanded={expanded}>
+          <View className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
+            <OptionsDropdown
+              value={sortBy}
+              options={SORT_OPTIONS}
+              onValueChange={onSortByChange}
+            />
+            <OptionsDropdown
+              value={groupBy}
+              options={GROUP_OPTIONS}
+              onValueChange={onGroupByChange}
+            />
+            <OptionsDropdown
+              value={displayMode}
+              options={DISPLAY_OPTIONS}
+              onValueChange={onDisplayModeChange}
+              footer={
+                <DropdownMenuCheckboxItem
+                  checked={displayMode === "notes" && showOverview}
+                  disabled={displayMode !== "notes"}
+                  onCheckedChange={(checked) => {
+                    if (displayMode !== "notes") return;
+                    onShowOverviewChange(checked);
+                  }}
+                >
+                  <Typography
+                    variant="p"
+                    className={
+                      displayMode === "notes"
+                        ? "text-sm text-popover-foreground"
+                        : "text-sm text-muted-foreground"
+                    }
+                  >
+                    Overview
+                  </Typography>
+                </DropdownMenuCheckboxItem>
+              }
+            />
+          </View>
+        </CollapsibleContainer>
       }
     >
-      <ContentListFilterChips leading={optionsToggle} />
+      <ContentListFilterChips leading={funnelToggle} />
     </PageOptionsHeaderContainer>
   );
 };

@@ -1,15 +1,15 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import { Typography } from "@/components/ui";
+import { Icon } from "@/components/ui/icons/icon";
+import { IconName } from "@/components/ui/icons/icon-registry";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { CategoryKey } from "@repo/sqlite";
 import { CATEGORIES_COLORS } from "@repo/theme/categories";
-import { ReactNode, useMemo } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useOptionsBar } from "../context/optionBarContext";
-import { Icon } from "@/components/ui/icons/icon";
-import { IconName } from "@/components/ui/icons/icon-registry";
 
 type ChipItem = {
   id: string;
@@ -20,31 +20,33 @@ type ChipItem = {
 type FilterChipProps = {
   icon?: IconName;
   label?: string;
-  selected: boolean;
+  selected?: boolean;
   colorBadge?: string;
-  onPress: () => void;
+  onPress?: () => void;
 };
 
-export function FilterChip({
-  label,
-  selected,
-  colorBadge,
-  onPress,
-  icon,
-}: FilterChipProps) {
+export const FilterChip = React.forwardRef<
+  React.ElementRef<typeof Pressable>,
+  FilterChipProps
+>(function FilterChip(
+  { label, selected = false, colorBadge, onPress, icon, ...props },
+  ref
+) {
   const { colorScheme } = useColorScheme();
   const selectedFg = hsl("text", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
-  const borderColor = hsl(selected ? "primary" : "border", colorScheme);
-  const backgroundColor = hsl(selected ? "muted" : "background", colorScheme);
+  const backgroundColor = hsl(selected ? "muted" : "card", colorScheme);
+  const borderColor = hsl(selected ? "primary" : "card", colorScheme);
 
   return (
     <Pressable
+      ref={ref}
       onPress={onPress}
-      className="flex-row items-center gap-1.5 rounded-full border px-2.5 py-1 min-w-10"
-      style={{ borderColor, backgroundColor }}
+      className="min-w-10 flex-row items-center gap-1.5 rounded-full border px-3 py-2"
+      style={{ backgroundColor, borderColor }}
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      {...props}
     >
       {colorBadge ? (
         <View
@@ -52,7 +54,13 @@ export function FilterChip({
           style={{ backgroundColor: colorBadge }}
         />
       ) : null}
-      {icon ? <Icon name={icon} color="text" size={16} /> : null}
+      {icon ? (
+        <Icon
+          name={icon}
+          color={selected ? "text" : "muted-foreground"}
+          size={16}
+        />
+      ) : null}
       {label ? (
         <Typography
           variant="p"
@@ -64,7 +72,7 @@ export function FilterChip({
       ) : null}
     </Pressable>
   );
-}
+});
 
 type ContentListFilterChipsProps = {
   /** Fixed control shown before the chip scroller (e.g. options button). */
