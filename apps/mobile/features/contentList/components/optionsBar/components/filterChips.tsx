@@ -8,6 +8,8 @@ import { ReactNode, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useOptionsBar } from "../context/optionBarContext";
+import { Icon } from "@/components/ui/icons/icon";
+import { IconName } from "@/components/ui/icons/icon-registry";
 
 type ChipItem = {
   id: string;
@@ -16,13 +18,20 @@ type ChipItem = {
 };
 
 type FilterChipProps = {
-  label: string;
+  icon?: IconName;
+  label?: string;
   selected: boolean;
   colorBadge?: string;
   onPress: () => void;
 };
 
-function FilterChip({ label, selected, colorBadge, onPress }: FilterChipProps) {
+export function FilterChip({
+  label,
+  selected,
+  colorBadge,
+  onPress,
+  icon,
+}: FilterChipProps) {
   const { colorScheme } = useColorScheme();
   const selectedFg = hsl("text", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
@@ -32,7 +41,7 @@ function FilterChip({ label, selected, colorBadge, onPress }: FilterChipProps) {
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-1.5 rounded-full border px-2.5 py-1"
+      className="flex-row items-center gap-1.5 rounded-full border px-2.5 py-1 min-w-10"
       style={{ borderColor, backgroundColor }}
       accessibilityRole="button"
       accessibilityState={{ selected }}
@@ -43,13 +52,16 @@ function FilterChip({ label, selected, colorBadge, onPress }: FilterChipProps) {
           style={{ backgroundColor: colorBadge }}
         />
       ) : null}
-      <Typography
-        variant="p"
-        className="text-xs"
-        style={{ color: selected ? selectedFg : mutedFg }}
-      >
-        {label}
-      </Typography>
+      {icon ? <Icon name={icon} color="text" size={16} /> : null}
+      {label ? (
+        <Typography
+          variant="p"
+          className="text-xs"
+          style={{ color: selected ? selectedFg : mutedFg }}
+        >
+          {label}
+        </Typography>
+      ) : null}
     </Pressable>
   );
 }

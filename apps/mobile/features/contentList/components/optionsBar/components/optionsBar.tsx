@@ -1,16 +1,15 @@
-import { Button, Typography } from "@/components/ui";
+import { Typography } from "@/components/ui";
 import { Pressable, View } from "react-native";
 import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { useState } from "react";
-import { Icon } from "@/components/ui/icons/icon";
 import { Gutter } from "@/components/ui/gutter";
 import { H4 } from "@/components/ui/typography";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useOptionsBar } from "../context/optionBarContext";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
-import { ContentListFilterChips } from "./filterChips";
+import { ContentListFilterChips, FilterChip } from "./filterChips";
 
 const SORT_OPTIONS: {
   value: OptionsBarType["sortBy"];
@@ -206,20 +205,11 @@ export const OptionsBar = () => {
   };
 
   const optionsToggle = (
-    <Button
-      variant="outline"
-      size="sm"
-      cornerRadius="full"
-      className="flex-row items-center gap-2"
+    <FilterChip
+      icon="funnel"
+      selected={expanded}
       onPress={() => setExpanded(!expanded)}
-    >
-      <Icon name="sliders-horizontal" color="text" size={16} />
-      <Icon
-        name={expanded ? "chevron-up" : "chevron-down"}
-        color="text"
-        size={20}
-      />
-    </Button>
+    />
   );
 
   return (
