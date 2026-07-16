@@ -6,7 +6,6 @@ export type OptionsBar = {
   sortBy: "newest" | "oldest" | "az" | "za";
   groupBy: "topics" | "categories" | "none";
   displayMode: DisplayMode;
-  showOverview: boolean;
   /** `null` = All topics */
   selectedTopicId: string | null;
   /** `null` = All categories */

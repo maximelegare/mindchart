@@ -1,20 +1,19 @@
 import { OptionsBar as OptionsBarType, DisplayKey, UiKey } from "../../types";
 
 export const getDisplayKey = (
-  displayMode: OptionsBarType["displayMode"],
-  showOverview: boolean
+  displayMode: OptionsBarType["displayMode"]
 ): DisplayKey => {
+  // Notes always render with overview content.
   if (displayMode === "notes") {
-    return showOverview ? "notes-overview" : "notes";
+    return "notes-overview";
   }
   return displayMode;
 };
 
 export const getUiKey = (
   groupBy: OptionsBarType["groupBy"],
-  displayMode: OptionsBarType["displayMode"],
-  showOverview: boolean
+  displayMode: OptionsBarType["displayMode"]
 ): UiKey => {
-  const displayKey = getDisplayKey(displayMode, showOverview);
+  const displayKey = getDisplayKey(displayMode);
   return `groupBy=${groupBy}&display=${displayKey}`;
 };

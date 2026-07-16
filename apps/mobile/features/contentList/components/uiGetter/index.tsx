@@ -14,15 +14,13 @@ export {
 export const UiGetter = memo(function UiGetter() {
   const groupBy = useOptionsBar((state) => state.groupBy);
   const displayMode = useOptionsBar((state) => state.displayMode);
-  const showOverview = useOptionsBar((state) => state.showOverview);
 
   const deferredGroupBy = useDeferredValue(groupBy);
   const deferredDisplayMode = useDeferredValue(displayMode);
-  const deferredShowOverview = useDeferredValue(showOverview);
 
   const uiKey = useMemo(
-    () => getUiKey(deferredGroupBy, deferredDisplayMode, deferredShowOverview),
-    [deferredGroupBy, deferredDisplayMode, deferredShowOverview]
+    () => getUiKey(deferredGroupBy, deferredDisplayMode),
+    [deferredGroupBy, deferredDisplayMode]
   );
 
   const ViewComponent = useMemo(() => resolveContentView(uiKey), [uiKey]);

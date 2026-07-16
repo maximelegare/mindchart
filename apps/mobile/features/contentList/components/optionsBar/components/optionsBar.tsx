@@ -5,11 +5,9 @@ import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icons/icon";
@@ -47,14 +45,12 @@ type OptionsDropdownProps<T extends string> = {
   value: T;
   options: OptionItem<T>[];
   onValueChange: (value: T) => void;
-  footer?: React.ReactNode;
 };
 
 function OptionsDropdown<T extends string>({
   value,
   options,
   onValueChange,
-  footer,
 }: OptionsDropdownProps<T>) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
@@ -72,7 +68,8 @@ function OptionsDropdown<T extends string>({
           forceMount
           side="bottom"
           align="start"
-          className="mt-1 min-w-[15rem] border border-border bg-background pb-2 shadow-md"
+          className="mt-1 border border-border bg-background pb-2 shadow-md"
+          style={{ minWidth: 160 }}
         >
           <DropdownMenuRadioGroup
             value={value}
@@ -93,12 +90,6 @@ function OptionsDropdown<T extends string>({
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
-          {footer ? (
-            <>
-              <DropdownMenuSeparator />
-              {footer}
-            </>
-          ) : null}
         </DropdownMenuContent>
       ) : null}
     </DropdownMenu>
@@ -114,9 +105,6 @@ export const OptionsBar = () => {
   const handleDisplayModeChange = useOptionsBar(
     (state) => state.handleDisplayModeChange
   );
-  const handleShowOverviewChange = useOptionsBar(
-    (state) => state.handleShowOverviewChange
-  );
 
   const [sortBy, setSortBy] = useState(() => useOptionsBar.getState().sortBy);
   const [groupBy, setGroupBy] = useState(
@@ -124,9 +112,6 @@ export const OptionsBar = () => {
   );
   const [displayMode, setDisplayMode] = useState(
     () => useOptionsBar.getState().displayMode
-  );
-  const [showOverview, setShowOverview] = useState(
-    () => useOptionsBar.getState().showOverview
   );
 
   const onSortByChange = (value: OptionsBarType["sortBy"]) => {
@@ -145,11 +130,6 @@ export const OptionsBar = () => {
   const onDisplayModeChange = (value: DisplayMode) => {
     setDisplayMode(value);
     handleDisplayModeChange(value);
-  };
-
-  const onShowOverviewChange = (value: boolean) => {
-    setShowOverview(value);
-    handleShowOverviewChange(value);
   };
 
   const funnelToggle = (
@@ -179,27 +159,6 @@ export const OptionsBar = () => {
               value={displayMode}
               options={DISPLAY_OPTIONS}
               onValueChange={onDisplayModeChange}
-              footer={
-                <DropdownMenuCheckboxItem
-                  checked={displayMode === "notes" && showOverview}
-                  disabled={displayMode !== "notes"}
-                  onCheckedChange={(checked) => {
-                    if (displayMode !== "notes") return;
-                    onShowOverviewChange(checked);
-                  }}
-                >
-                  <Typography
-                    variant="p"
-                    className={
-                      displayMode === "notes"
-                        ? "text-sm text-popover-foreground"
-                        : "text-sm text-muted-foreground"
-                    }
-                  >
-                    Overview
-                  </Typography>
-                </DropdownMenuCheckboxItem>
-              }
             />
           </View>
         </CollapsibleContainer>
