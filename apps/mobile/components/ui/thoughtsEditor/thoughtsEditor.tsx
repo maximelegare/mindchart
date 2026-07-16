@@ -19,6 +19,42 @@ import {
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
 
+/** Keep the caret slightly above the editor's bottom edge / save footer. */
+const CARET_BOTTOM_MARGIN = 28;
+
+const REQUEST_CURSOR_OFFSET_SCRIPT = `
+  (function () {
+    var sel = window.getSelection();
+    var node = sel && sel.anchorNode;
+    if (!node) return true;
+    var el = node.nodeType === 3 ? node.parentElement : node;
+    var offsetY = 0;
+    var siblingOffset =
+      (el && el.nextSibling && el.nextSibling.offsetTop) ||
+      (el && el.previousSibling && el.previousSibling.offsetTop) ||
+      0;
+    var rectOffset = 0;
+    if (sel.rangeCount > 0) {
+      var rect = sel.getRangeAt(0).getClientRects()[0];
+      rectOffset = rect ? rect.y : 0;
+    }
+    while (el) {
+      if (el.offsetTop) {
+        offsetY = el.offsetTop;
+        break;
+      }
+      el = el.parentElement;
+    }
+    offsetY = offsetY || siblingOffset || rectOffset;
+    if (offsetY && window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "OFFSET_Y", data: offsetY })
+      );
+    }
+    return true;
+  })();
+`;
+
 type ThoughtsEditorProps = {
   noteId: string;
   categories: Category[];
@@ -41,19 +77,55 @@ export function ThoughtsEditor({
 
   const richRef = React.useRef<RichEditor>(null);
   const scrollRef = React.useRef<ScrollView>(null);
+  const scrollViewHeightRef = React.useRef(0);
+  const lastCursorYRef = React.useRef(0);
+  const keyboardHeightRef = React.useRef(0);
+  const keyboardOverlayInsetRef = React.useRef(keyboardOverlayInset);
+  keyboardOverlayInsetRef.current = keyboardOverlayInset;
   const showTitlesRef = React.useRef(showTitles);
   showTitlesRef.current = showTitles;
   const initialHtmlRef = React.useRef(
     thoughtsToHtml(getValues("thoughts"), defaultShowTitles)
   );
 
+  const requestCursorOffset = React.useCallback(() => {
+    richRef.current?.injectJavascript(REQUEST_CURSOR_OFFSET_SCRIPT);
+  }, []);
+
+  const scrollCursorIntoView = React.useCallback((cursorY: number) => {
+    if (cursorY > 0) {
+      lastCursorYRef.current = cursorY;
+    }
+    const viewportH = scrollViewHeightRef.current;
+    const y = lastCursorYRef.current;
+    if (viewportH <= 0 || y <= 0) return;
+
+    // Viewport is already inset above the keyboard + footer; keep the caret
+    // just above that bottom edge.
+    const bottomClearance = CARET_BOTTOM_MARGIN;
+    const targetY = Math.max(0, y - (viewportH - bottomClearance));
+    scrollRef.current?.scrollTo({ y: targetY, animated: true });
+  }, []);
+
   React.useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (event) => {
       const height = event.endCoordinates.height;
+      keyboardHeightRef.current = height;
       setKeyboardHeight(height);
       onKeyboardHeightChange?.(height);
+
+      // Wait for the bottom inset layout to settle, then place the caret.
+      const refresh = () => {
+        scrollCursorIntoView(lastCursorYRef.current);
+        requestCursorOffset();
+      };
+      requestAnimationFrame(() => {
+        requestAnimationFrame(refresh);
+      });
+      setTimeout(refresh, 120);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      keyboardHeightRef.current = 0;
       setKeyboardHeight(0);
       onKeyboardHeightChange?.(0);
     });
@@ -62,7 +134,18 @@ export function ThoughtsEditor({
       showSub.remove();
       hideSub.remove();
     };
-  }, [onKeyboardHeightChange]);
+  }, [onKeyboardHeightChange, requestCursorOffset, scrollCursorIntoView]);
+
+  React.useEffect(() => {
+    if (keyboardHeight <= 0) return;
+    scrollCursorIntoView(lastCursorYRef.current);
+    requestCursorOffset();
+  }, [
+    keyboardHeight,
+    keyboardOverlayInset,
+    requestCursorOffset,
+    scrollCursorIntoView,
+  ]);
 
   const applyEditorFlags = React.useCallback((nextShowTitles: boolean) => {
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
@@ -112,8 +195,16 @@ export function ThoughtsEditor({
   const caretColor = hsl("primary", colorScheme);
   const headerBg = hsl("muted", colorScheme);
 
+  // Modal does not resize with the keyboard; the save footer sticks above it.
+  // Inset the editor so its bottom edge sits just above that footer.
+  const keyboardBottomInset =
+    keyboardHeight > 0 ? keyboardHeight + keyboardOverlayInset : 0;
+
   return (
-    <View className="flex-col flex-1 min-h-0">
+    <View
+      className="flex-col flex-1 min-h-0"
+      style={{ paddingBottom: keyboardBottomInset }}
+    >
       <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
         Content
       </Label>
@@ -150,9 +241,15 @@ export function ThoughtsEditor({
           nestedScrollEnabled
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="none"
+          onLayout={(event) => {
+            scrollViewHeightRef.current = event.nativeEvent.layout.height;
+            if (keyboardHeightRef.current > 0) {
+              scrollCursorIntoView(lastCursorYRef.current);
+            }
+          }}
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: keyboardHeight > 0 ? 24 + keyboardOverlayInset : 12,
+            paddingBottom: keyboardHeight > 0 ? CARET_BOTTOM_MARGIN : 12,
           }}
         >
           <RichEditor
@@ -212,12 +309,7 @@ export function ThoughtsEditor({
               `,
             }}
             onChange={syncThoughtsFromHtml}
-            onCursorPosition={(scrollY) => {
-              scrollRef.current?.scrollTo({
-                y: Math.max(0, scrollY - 30),
-                animated: true,
-              });
-            }}
+            onCursorPosition={scrollCursorIntoView}
           />
         </ScrollView>
       </View>

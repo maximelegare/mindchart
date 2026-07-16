@@ -85,6 +85,9 @@ const buildFormDefaultValues = (
 
 const TITLE_SCROLL_PADDING = 12;
 const FIELD_CHIP_HEIGHT = 40;
+/** Floating save button row — keep the editor above this when the keyboard is open. */
+const KEYBOARD_FOOTER_CLEARANCE =
+  GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN * 2 + 8;
 
 export const ManualNoteForm = ({
   noteId,
@@ -243,6 +246,7 @@ export const ManualNoteForm = ({
                 ) ?? false
               }
               onKeyboardHeightChange={setKeyboardHeight}
+              keyboardOverlayInset={KEYBOARD_FOOTER_CLEARANCE}
             />
           </View>
         </View>

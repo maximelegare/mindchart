@@ -97,10 +97,48 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       sel.addRange(range);
     }
 
+    // Pell only posts OFFSET_Y on input/focus — not on programmatic caret moves
+    // (title → summary). Tell RN so the caret can align above the footer immediately.
+    function postCursorOffset(preferEl) {
+      if (!window.ReactNativeWebView) return;
+      var sel = window.getSelection();
+      var node = (sel && sel.anchorNode) || preferEl;
+      if (!node) return;
+      var el = node.nodeType === 3 ? node.parentElement : node;
+      var field =
+        closestClass(el, "thought-summary") ||
+        closestClass(el, "thought-title") ||
+        preferEl ||
+        el;
+      if (!field) return;
+
+      var offsetY = 0;
+      if (field.getBoundingClientRect) {
+        offsetY = Math.round(
+          field.getBoundingClientRect().top + (window.scrollY || 0)
+        );
+      }
+      if (!offsetY) {
+        var walk = field;
+        while (walk) {
+          if (walk.offsetTop) {
+            offsetY = walk.offsetTop;
+            break;
+          }
+          walk = walk.parentElement;
+        }
+      }
+      if (!offsetY) return;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "OFFSET_Y", data: offsetY })
+      );
+    }
+
     function placeCaretAtStartSoon(el) {
       placeCaretAtStart(el);
       setTimeout(function () {
         placeCaretAtStart(el);
+        postCursorOffset(el);
       }, 0);
     }
 
@@ -108,6 +146,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       placeCaretAtEnd(el);
       setTimeout(function () {
         placeCaretAtEnd(el);
+        postCursorOffset(el);
       }, 0);
     }
 
