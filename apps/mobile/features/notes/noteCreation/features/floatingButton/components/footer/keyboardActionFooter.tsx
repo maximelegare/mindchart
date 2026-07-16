@@ -20,11 +20,18 @@ const KEYBOARD_OVERLAP = 48;
 
 type KeyboardActionFooterProps = {
   children: React.ReactNode;
+  /** Height of the button row only (excludes safe-area / keyboard overlap fill). */
+  onContentHeightChange?: (height: number) => void;
 };
 
 export const KEYBOARD_ACTION_FOOTER_PADDING_Y = FOOTER_PADDING_Y;
+/** Popover fill that extends under the keyboard — not part of content occlusion. */
+export const KEYBOARD_ACTION_FOOTER_KEYBOARD_OVERLAP = KEYBOARD_OVERLAP;
 
-export function KeyboardActionFooter({ children }: KeyboardActionFooterProps) {
+export function KeyboardActionFooter({
+  children,
+  onContentHeightChange,
+}: KeyboardActionFooterProps) {
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const { progress } = useReanimatedKeyboardAnimation();
@@ -57,7 +64,14 @@ export function KeyboardActionFooter({ children }: KeyboardActionFooterProps) {
         },
       ]}
     >
-      <View style={styles.content}>{children}</View>
+      <View
+        style={styles.content}
+        onLayout={(event) => {
+          onContentHeightChange?.(event.nativeEvent.layout.height);
+        }}
+      >
+        {children}
+      </View>
     </KeyboardStickyView>
   );
 }

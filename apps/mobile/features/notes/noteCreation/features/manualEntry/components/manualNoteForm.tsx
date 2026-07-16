@@ -2,6 +2,7 @@ import { Category, Note, Thought, Topic } from "@repo/zod-schemas";
 import React from "react";
 import { Keyboard, ScrollView, TextInput, View } from "react-native";
 import { useForm, Controller, FormProvider } from "react-hook-form";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -85,6 +86,11 @@ const buildFormDefaultValues = (
 
 const TITLE_SCROLL_PADDING = 12;
 const FIELD_CHIP_HEIGHT = 40;
+const FOOTER_BORDER_WIDTH = 1;
+/** Extra gap between the editor card and the floating Save footer. */
+const EDITOR_FOOTER_GAP = 12;
+const FALLBACK_FOOTER_CONTENT_HEIGHT =
+  GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN * 2;
 
 export const ManualNoteForm = ({
   noteId,
@@ -93,8 +99,12 @@ export const ManualNoteForm = ({
   onSubmit,
   defaultValues,
 }: ManualNoteFormProps) => {
+  const insets = useSafeAreaInsets();
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  const [footerContentHeight, setFooterContentHeight] = React.useState(
+    FALLBACK_FOOTER_CONTENT_HEIGHT
+  );
   const titleInputRef = React.useRef<TextInput>(null);
 
   React.useEffect(() => {
@@ -104,6 +114,28 @@ export const ManualNoteForm = ({
 
     return () => clearTimeout(timer);
   }, []);
+
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // Keep the editor card entirely above the absolute Save footer.
+  // Closed: button row + home-indicator inset. Open: button row + keyboard.
+  const editorBottomInset =
+    footerContentHeight +
+    FOOTER_BORDER_WIDTH +
+    EDITOR_FOOTER_GAP +
+    (keyboardHeight > 0 ? keyboardHeight : insets.bottom);
 
   const form = useForm<ManualNoteFormData>({
     defaultValues: buildFormDefaultValues(noteId, defaultTopic, defaultValues),
@@ -226,13 +258,7 @@ export const ManualNoteForm = ({
 
           <View
             className="mt-5 min-h-0 flex-1"
-            style={{
-              paddingBottom:
-                keyboardHeight > 0
-                  ? 0
-                  : GENERATE_NOTE_BUTTON_HEIGHT +
-                    GENERATE_NOTE_BUTTON_MARGIN * 2,
-            }}
+            style={{ paddingBottom: editorBottomInset }}
           >
             <ThoughtsEditor
               noteId={noteId}
@@ -242,12 +268,11 @@ export const ManualNoteForm = ({
                   thought.title?.trim()
                 ) ?? false
               }
-              onKeyboardHeightChange={setKeyboardHeight}
             />
           </View>
         </View>
 
-        <KeyboardActionFooter>
+        <KeyboardActionFooter onContentHeightChange={setFooterContentHeight}>
           <Button
             onPress={handleSavePress}
             variant="secondary"

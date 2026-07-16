@@ -7,7 +7,6 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { Icon } from "@/components/ui/icons/icon";
-import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FloatingModalTab, FloatingModalTabId } from "../../types/types";
@@ -35,6 +34,7 @@ const FloatingTabBarButton = ({
   isActive,
   onPress,
 }: FloatingTabBarButtonProps) => {
+  const { colorScheme } = useColorScheme();
   const scale = useSharedValue(isActive ? 1 : 0);
   const isFirstRenderRef = useRef(true);
 
@@ -57,6 +57,10 @@ const FloatingTabBarButton = ({
     opacity: interpolate(scale.value, [0, 1], [1, 0]),
   }));
 
+  // Active tab sits on the background pill; inactive tabs sit on the popover track.
+  // Animated.Text ignores NativeWind text-* classes — set color explicitly.
+  const labelColor = hsl(isActive ? "text" : "muted-foreground", colorScheme);
+
   return (
     <Pressable
       onPress={onPress}
@@ -69,17 +73,18 @@ const FloatingTabBarButton = ({
         <Icon
           name={tab.icon}
           size={ICON_SIZE}
-          color={isActive ? "text" : "border"}
+          color={isActive ? "text" : "muted-foreground"}
         />
       </Animated.View>
       <Animated.Text
-        className={cn(
-          "leading-3",
-          isActive ? "text-foreground" : "text-border"
-        )}
+        className="leading-3"
         style={[
           animatedTextStyle,
-          { fontFamily: "QuicksandRegular", fontSize: 8 },
+          {
+            color: labelColor,
+            fontFamily: "QuicksandRegular",
+            fontSize: 8,
+          },
         ]}
       >
         {tab.label}

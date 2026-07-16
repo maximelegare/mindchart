@@ -19,50 +19,115 @@ import {
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
 
+/** Keep the caret slightly above the editor's bottom edge. */
+const CARET_BOTTOM_MARGIN = 28;
+
+const REQUEST_CURSOR_OFFSET_SCRIPT = `
+  (function () {
+    var sel = window.getSelection();
+    var node = sel && sel.anchorNode;
+    if (!node) return true;
+    var el = node.nodeType === 3 ? node.parentElement : node;
+    var offsetY = 0;
+    var siblingOffset =
+      (el && el.nextSibling && el.nextSibling.offsetTop) ||
+      (el && el.previousSibling && el.previousSibling.offsetTop) ||
+      0;
+    var rectOffset = 0;
+    if (sel.rangeCount > 0) {
+      var rect = sel.getRangeAt(0).getClientRects()[0];
+      rectOffset = rect ? rect.y : 0;
+    }
+    while (el) {
+      if (el.offsetTop) {
+        offsetY = el.offsetTop;
+        break;
+      }
+      el = el.parentElement;
+    }
+    offsetY = offsetY || siblingOffset || rectOffset;
+    if (offsetY && window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "OFFSET_Y", data: offsetY })
+      );
+    }
+    return true;
+  })();
+`;
+
 type ThoughtsEditorProps = {
   noteId: string;
   categories: Category[];
   defaultShowTitles?: boolean;
-  onKeyboardHeightChange?: (height: number) => void;
-  keyboardOverlayInset?: number;
 };
 
 export function ThoughtsEditor({
   noteId,
   categories: _categories,
   defaultShowTitles = false,
-  onKeyboardHeightChange,
-  keyboardOverlayInset = 0,
 }: ThoughtsEditorProps) {
   const { colorScheme } = useColorScheme();
   const { getValues, setValue } = useFormContext<ThoughtsEditorFormValues>();
   const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
-  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
+  const [keyboardOpen, setKeyboardOpen] = React.useState(false);
 
   const richRef = React.useRef<RichEditor>(null);
   const scrollRef = React.useRef<ScrollView>(null);
+  const scrollViewHeightRef = React.useRef(0);
+  const lastCursorYRef = React.useRef(0);
+  const keyboardOpenRef = React.useRef(false);
   const showTitlesRef = React.useRef(showTitles);
   showTitlesRef.current = showTitles;
   const initialHtmlRef = React.useRef(
     thoughtsToHtml(getValues("thoughts"), defaultShowTitles)
   );
 
+  const requestCursorOffset = React.useCallback(() => {
+    richRef.current?.injectJavascript(REQUEST_CURSOR_OFFSET_SCRIPT);
+  }, []);
+
+  const scrollCursorIntoView = React.useCallback((cursorY: number) => {
+    if (cursorY > 0) {
+      lastCursorYRef.current = cursorY;
+    }
+    const viewportH = scrollViewHeightRef.current;
+    const y = lastCursorYRef.current;
+    if (viewportH <= 0 || y <= 0) return;
+
+    const targetY = Math.max(0, y - (viewportH - CARET_BOTTOM_MARGIN));
+    scrollRef.current?.scrollTo({ y: targetY, animated: true });
+  }, []);
+
   React.useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", (event) => {
-      const height = event.endCoordinates.height;
-      setKeyboardHeight(height);
-      onKeyboardHeightChange?.(height);
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      keyboardOpenRef.current = true;
+      setKeyboardOpen(true);
+
+      const refresh = () => {
+        scrollCursorIntoView(lastCursorYRef.current);
+        requestCursorOffset();
+      };
+      requestAnimationFrame(() => {
+        requestAnimationFrame(refresh);
+      });
+      setTimeout(refresh, 120);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardHeight(0);
-      onKeyboardHeightChange?.(0);
+      keyboardOpenRef.current = false;
+      setKeyboardOpen(false);
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, [onKeyboardHeightChange]);
+  }, [requestCursorOffset, scrollCursorIntoView]);
+
+  React.useEffect(() => {
+    if (!keyboardOpen) return;
+    scrollCursorIntoView(lastCursorYRef.current);
+    requestCursorOffset();
+  }, [keyboardOpen, requestCursorOffset, scrollCursorIntoView]);
 
   const applyEditorFlags = React.useCallback((nextShowTitles: boolean) => {
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
@@ -150,9 +215,15 @@ export function ThoughtsEditor({
           nestedScrollEnabled
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="none"
+          onLayout={(event) => {
+            scrollViewHeightRef.current = event.nativeEvent.layout.height;
+            if (keyboardOpenRef.current) {
+              scrollCursorIntoView(lastCursorYRef.current);
+            }
+          }}
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: keyboardHeight > 0 ? 24 + keyboardOverlayInset : 12,
+            paddingBottom: keyboardOpen ? CARET_BOTTOM_MARGIN : 12,
           }}
         >
           <RichEditor
@@ -212,12 +283,7 @@ export function ThoughtsEditor({
               `,
             }}
             onChange={syncThoughtsFromHtml}
-            onCursorPosition={(scrollY) => {
-              scrollRef.current?.scrollTo({
-                y: Math.max(0, scrollY - 30),
-                animated: true,
-              });
-            }}
+            onCursorPosition={scrollCursorIntoView}
           />
         </ScrollView>
       </View>
