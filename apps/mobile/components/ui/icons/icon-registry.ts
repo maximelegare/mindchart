@@ -2,9 +2,13 @@
 
 export type IconName =
   | "activity"
+  | "arrow-down-a-z"
+  | "arrow-down-wide-narrow"
   | "arrow-left"
   | "arrow-right-left"
+  | "arrow-up-a-z"
   | "arrow-up-from-line"
+  | "arrow-up-narrow-wide"
   | "book"
   | "brackets-curly"
   | "brain-off"
@@ -16,6 +20,7 @@ export type IconName =
   | "chevron-left"
   | "chevron-right"
   | "chevron-up"
+  | "circle-off"
   | "cpu"
   | "database"
   | "download"
@@ -68,6 +73,14 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path>`,
   },
+  "arrow-down-a-z": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 16l4 4l4-4m-4 4V4m13 4h-5m0 2V6.5a2.5 2.5 0 0 1 5 0V10m-5 4h5l-5 6h5"></path>`,
+  },
+  "arrow-down-wide-narrow": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 16l4 4l4-4m-4 4V4m4 0h10M11 8h7m-7 4h4"></path>`,
+  },
   "arrow-left": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19l-7-7l7-7m7 7H5"></path>`,
@@ -76,9 +89,17 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 3l4 4l-4 4m4-4H4m4 14l-4-4l4-4m-4 4h16"></path>`,
   },
+  "arrow-up-a-z": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 8l4-4l4 4M7 4v16M20 8h-5m0 2V6.5a2.5 2.5 0 0 1 5 0V10m-5 4h5l-5 6h5"></path>`,
+  },
   "arrow-up-from-line": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m18 9l-6-6l-6 6m6-6v14m-7 4h14"></path>`,
+  },
+  "arrow-up-narrow-wide": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 8l4-4l4 4M7 4v16m4-8h4m-4 4h7m-7 4h10"></path>`,
   },
   book: {
     viewBox: "0 0 24 24",
@@ -123,6 +144,10 @@ export const ICON_METADATA: Record<
   "chevron-up": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m18 15l-6-6l-6 6"></path>`,
+  },
+  "circle-off": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m2 2l20 20M8.35 2.69A10 10 0 0 1 21.3 15.65m-2.22 3.43A10 10 0 1 1 4.92 4.92"></path>`,
   },
   cpu: {
     viewBox: "0 0 24 24",

@@ -12,38 +12,40 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Icon } from "@/components/ui/icons/icon";
+import { IconName } from "@/components/ui/icons/icon-registry";
 import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
 import { useOptionsBar } from "../context/optionBarContext";
 import { ContentListFilterChips, FilterChip } from "./filterChips";
 
-const SORT_OPTIONS: {
-  value: OptionsBarType["sortBy"];
+type OptionItem<T extends string> = {
+  value: T;
   label: string;
-}[] = [
-  { value: "newest", label: "Newest first" },
-  { value: "oldest", label: "Oldest first" },
-  { value: "az", label: "A ➞ Z" },
-  { value: "za", label: "Z ➞ A" },
+  icon?: IconName;
+};
+
+const SORT_OPTIONS: OptionItem<OptionsBarType["sortBy"]>[] = [
+  { icon: "arrow-down-wide-narrow", value: "newest", label: "Newest first" },
+  { icon: "arrow-up-narrow-wide", value: "oldest", label: "Oldest first" },
+  { icon: "arrow-down-a-z", value: "az", label: "Alphabetical" },
+  { icon: "arrow-up-a-z", value: "za", label: "Z to A order" },
 ];
 
-const GROUP_OPTIONS: {
-  value: OptionsBarType["groupBy"];
-  label: string;
-}[] = [
-  { value: "topics", label: "By topic" },
-  { value: "categories", label: "By category" },
-  { value: "none", label: "None" },
+const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
+  { icon: "tag", value: "topics", label: "By topic" },
+  { icon: "shapes", value: "categories", label: "By category" },
+  { icon: "circle-off", value: "none", label: "None" },
 ];
 
-const DISPLAY_OPTIONS: { value: DisplayMode; label: string }[] = [
-  { value: "notes", label: "Notes" },
-  { value: "topics", label: "Topics" },
-  { value: "categories", label: "Categories" },
+const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
+  { icon: "notebook-text", value: "notes", label: "Notes" },
+  { icon: "tag", value: "topics", label: "Topics" },
+  { icon: "layers", value: "categories", label: "Categories" },
 ];
 
 type OptionsDropdownProps<T extends string> = {
   value: T;
-  options: { value: T; label: string }[];
+  options: OptionItem<T>[];
   onValueChange: (value: T) => void;
   footer?: React.ReactNode;
 };
@@ -55,13 +57,14 @@ function OptionsDropdown<T extends string>({
   footer,
 }: OptionsDropdownProps<T>) {
   const [open, setOpen] = useState(false);
-  const selectedLabel =
-    options.find((option) => option.value === value)?.label ?? value;
+  const selected = options.find((option) => option.value === value);
+  const selectedLabel = selected?.label ?? value;
+  const selectedIcon = selected?.icon;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <FilterChip label={selectedLabel} selected={open} />
+        <FilterChip icon={selectedIcon} label={selectedLabel} selected={open} />
       </DropdownMenuTrigger>
 
       {open ? (
@@ -69,14 +72,21 @@ function OptionsDropdown<T extends string>({
           forceMount
           side="bottom"
           align="start"
-          className="mt-1 min-w-[10rem] border border-border bg-background pb-2 shadow-md"
+          className="mt-1 min-w-[15rem] border border-border bg-background pb-2 shadow-md"
         >
           <DropdownMenuRadioGroup
             value={value}
             onValueChange={(next) => onValueChange(next as T)}
           >
             {options.map((option) => (
-              <DropdownMenuRadioItem key={option.value} value={option.value}>
+              <DropdownMenuRadioItem
+                key={option.value}
+                value={option.value}
+                className="flex-row items-center gap-2"
+              >
+                {option.icon ? (
+                  <Icon name={option.icon} color="text" size={16} />
+                ) : null}
                 <Typography variant="p" className="text-md text-foreground">
                   {option.label}
                 </Typography>
