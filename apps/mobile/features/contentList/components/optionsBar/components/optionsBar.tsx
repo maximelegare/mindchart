@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useOptionsBar } from "../context/optionBarContext";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
+import { ContentListFilterChips } from "./filterChips";
 
 const SORT_OPTIONS: {
   value: OptionsBarType["sortBy"];
@@ -204,10 +205,22 @@ export const OptionsBar = () => {
     handleShowOverviewChange(value);
   };
 
-  const sortLabel =
-    SORT_OPTIONS.find((o) => o.value === sortBy)?.label ?? sortBy;
-  const groupLabel =
-    GROUP_OPTIONS.find((o) => o.value === groupBy)?.label ?? groupBy;
+  const optionsToggle = (
+    <Button
+      variant="outline"
+      size="sm"
+      cornerRadius="full"
+      className="flex-row items-center gap-2"
+      onPress={() => setExpanded(!expanded)}
+    >
+      <Icon name="sliders-horizontal" color="text" size={16} />
+      <Icon
+        name={expanded ? "chevron-up" : "chevron-down"}
+        color="text"
+        size={20}
+      />
+    </Button>
+  );
 
   return (
     <PageOptionsHeaderContainer
@@ -253,35 +266,7 @@ export const OptionsBar = () => {
         </Gutter>
       }
     >
-      <View className="flex-row items-center justify-between gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          cornerRadius="full"
-          className="flex-row items-center gap-2"
-          onPress={() => setExpanded(!expanded)}
-        >
-          <Icon name="sliders-horizontal" color="text" size={16} />
-          <Icon
-            name={expanded ? "chevron-up" : "chevron-down"}
-            color="text"
-            size={20}
-          />
-        </Button>
-
-        <View className="flex-1 flex-row flex-wrap justify-end gap-1.5">
-          <View className="rounded-full border border-border bg-background px-2.5 py-0.5">
-            <Typography variant="p" className="text-xs text-muted-foreground">
-              {sortLabel}
-            </Typography>
-          </View>
-          <View className="rounded-full border border-border bg-background px-2.5 py-0.5">
-            <Typography variant="p" className="text-xs text-muted-foreground">
-              {groupLabel}
-            </Typography>
-          </View>
-        </View>
-      </View>
+      <ContentListFilterChips leading={optionsToggle} />
     </PageOptionsHeaderContainer>
   );
 };

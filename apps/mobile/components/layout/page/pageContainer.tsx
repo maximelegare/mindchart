@@ -81,11 +81,22 @@ export const PageContainer = ({
   // Round heights to avoid sub-pixel layout rounding issues
   const headerHeight = Math.round(HEADER_HEIGHT + insets.top);
   const optionsOverlap = PAGE_TOP_RADIUS + 1;
+  // Options bar can grow (filter chips, expanded panel) — measure instead of a fixed height.
+  const [optionsHeaderHeight, setOptionsHeaderHeight] = React.useState(
+    optionsHeader ? OPTIONS_HEADER_HEIGHT : 0
+  );
   const chromeHeight = Math.round(
-    headerHeight + (optionsHeader ? OPTIONS_HEADER_HEIGHT : 0)
+    headerHeight + (optionsHeader ? optionsHeaderHeight : 0)
   );
   const fixedGradientHeight = headerHeight + HEADER_OVERLAP;
   const useCollapsingHeader = collapsingHeader && showHeader && !noScrollView;
+
+  const onOptionsHeaderLayout = React.useCallback((height: number) => {
+    const next = Math.round(height);
+    if (next > 0) {
+      setOptionsHeaderHeight((prev) => (prev === next ? prev : next));
+    }
+  }, []);
 
   // Track raw scroll and the previous frame scroll synchronously on the UI thread
   const scrollY = useSharedValue(0);
@@ -184,7 +195,14 @@ export const PageContainer = ({
           <View style={styles.chrome} collapsable={false}>
             {headerBlock}
             {optionsHeader ? (
-              <View style={styles.optionsOverlap}>{optionsHeader}</View>
+              <View
+                style={styles.optionsOverlap}
+                onLayout={(event) => {
+                  onOptionsHeaderLayout(event.nativeEvent.layout.height);
+                }}
+              >
+                {optionsHeader}
+              </View>
             ) : null}
           </View>
         )}
@@ -269,9 +287,12 @@ export const PageContainer = ({
           collapsable={false}
           style={[
             styles.optionsChrome,
-            { top: headerHeight, height: OPTIONS_HEADER_HEIGHT },
+            { top: headerHeight },
             chromeTranslateStyle,
           ]}
+          onLayout={(event) => {
+            onOptionsHeaderLayout(event.nativeEvent.layout.height);
+          }}
         >
           {optionsHeader}
         </Animated.View>

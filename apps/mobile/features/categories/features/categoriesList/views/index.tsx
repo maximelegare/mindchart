@@ -13,9 +13,11 @@ import {
 export const CategoriesListFeature = ({
   withSpaceFiller = true,
   sortBy,
+  selectedCategoryId,
 }: {
   withSpaceFiller?: boolean;
   sortBy?: SortBy;
+  selectedCategoryId?: string | null;
 }) => {
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
@@ -28,7 +30,9 @@ export const CategoriesListFeature = ({
     if (!result.success) return null;
 
     const categoriesWithContent = result.data.filter(
-      (category) => category.thoughtCount > 0
+      (category) =>
+        category.thoughtCount > 0 &&
+        (selectedCategoryId == null || category.id === selectedCategoryId)
     );
 
     if (!sortBy) return categoriesWithContent;
@@ -37,7 +41,7 @@ export const CategoriesListFeature = ({
       getName: (category) => category.name,
       getDate: (category) => category.createdAt,
     });
-  }, [data, sortBy]);
+  }, [data, selectedCategoryId, sortBy]);
 
   if (!parsedData) return null;
 

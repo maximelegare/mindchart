@@ -7,6 +7,10 @@ export type OptionsBar = {
   groupBy: "topics" | "categories" | "none";
   displayMode: DisplayMode;
   showOverview: boolean;
+  /** `null` = All topics */
+  selectedTopicId: string | null;
+  /** `null` = All categories */
+  selectedCategoryId: string | null;
 };
 
 export type UiKey = `groupBy=${OptionsBar["groupBy"]}&display=${DisplayKey}`;

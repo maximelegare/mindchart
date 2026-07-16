@@ -2,12 +2,14 @@ import { View } from "react-native";
 import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { useMemo } from "react";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
+import { useSelectedTopicId } from "@/features/contentList/hooks/useContentListFilter";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
 import { sortContentList } from "@/features/contentList/utils/sortContentList";
 import { useControllers } from "@/api/controllers/useControllers";
 
 export const NotesListWithOverviewFeature = () => {
   const sortBy = useContentListSort();
+  const selectedTopicId = useSelectedTopicId();
   const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
   const { data } = useFetchNotesAndThoughtsQuery();
 
@@ -15,11 +17,15 @@ export const NotesListWithOverviewFeature = () => {
     const notes = parseNoteAndThoughts(data);
     if (!notes) return null;
 
-    return sortContentList(notes, sortBy, {
+    const filtered = selectedTopicId
+      ? notes.filter((note) => note.topicId === selectedTopicId)
+      : notes;
+
+    return sortContentList(filtered, sortBy, {
       getName: (note) => note.title,
       getDate: (note) => note.createdAt,
     });
-  }, [data, sortBy]);
+  }, [data, selectedTopicId, sortBy]);
 
   return (
     <View className="gap-2" style={{ paddingTop: 20 }}>

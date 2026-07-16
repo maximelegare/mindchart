@@ -11,9 +11,11 @@ import {
 export const TopicsListFeature = ({
   withSpaceFiller = true,
   sortBy,
+  selectedTopicId,
 }: {
   withSpaceFiller?: boolean;
   sortBy?: SortBy;
+  selectedTopicId?: string | null;
 }) => {
   const { useFetchAllTopicsWithNotesInfosQuery } = useControllers().topics;
 
@@ -21,13 +23,18 @@ export const TopicsListFeature = ({
 
   const sortedData = useMemo(() => {
     if (!data) return undefined;
-    if (!sortBy) return data;
 
-    return sortContentList(data, sortBy, {
+    const filtered = selectedTopicId
+      ? data.filter((topic) => topic.id === selectedTopicId)
+      : data;
+
+    if (!sortBy) return filtered;
+
+    return sortContentList(filtered, sortBy, {
       getName: (topic) => topic.name,
       getDate: (topic) => topic.createdAt,
     });
-  }, [data, sortBy]);
+  }, [data, selectedTopicId, sortBy]);
 
   return (
     <List className="gap-2 border-[0px]" style={{ paddingTop: 20 }}>

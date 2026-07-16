@@ -13,7 +13,7 @@ export const PageOptionsHeaderContainer = ({
 }: PageOptionsHeaderContainerProps) => {
   return (
     <View style={styles.clip} collapsable={false}>
-      <View className="bg-card w-full" style={styles.surface}>
+      <View className="bg-background w-full" style={styles.surface}>
         <View
           className="justify-center"
           style={{ height: LAYOUT_SIZES.OPTIONS_HEADER_HEIGHT }}
