@@ -46,7 +46,10 @@ export const GraphBreadcrumbs = ({
 
   return (
     <View>
-      <View className="gap-1 bg-muted border-t border-input">
+      <View
+        className="gap-1 bg-background border-t-[1px] border-border"
+        style={{ marginTop: 8 }}
+      >
         <View className="flex-row items-center min-h-10">
           <TouchableOpacity
             disabled={breadcrumbs.length <= 1}
