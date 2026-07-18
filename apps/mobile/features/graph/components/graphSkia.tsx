@@ -28,6 +28,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
 import { NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
+import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { GRAPH_CANVAS_SIZE } from "../constants";
@@ -420,17 +421,27 @@ function CirclePackSkiaRenderer({
   // ---------- 6. Dynamic Color Logic ----------
   const getNodeColor = (node: NodeInfo) => {
     if (!node.hasChildren) return "white";
-    if (node.depth === 0) return hsl("card", colorScheme);
 
     const cat = resolveNodeCategoryKey(node.rawData);
+    const filteredRoot = !isSyntheticRoot(data);
+
+    // Full graph: neutral root shell. Filtered: depth 0 is the category/topic itself.
+    if (node.depth === 0 && !filteredRoot) {
+      return hsl("card", colorScheme);
+    }
 
     if (!cat) return hsl("border", colorScheme);
 
-    const palette = [
-      hsl("card", colorScheme),
-      hsl(cat, colorScheme, undefined, "categories"),
-      hsl(cat, colorScheme, 50, "categories"),
-    ];
+    const palette = filteredRoot
+      ? [
+          hsl(cat, colorScheme, undefined, "categories"),
+          hsl(cat, colorScheme, 50, "categories"),
+        ]
+      : [
+          hsl("card", colorScheme),
+          hsl(cat, colorScheme, undefined, "categories"),
+          hsl(cat, colorScheme, 50, "categories"),
+        ];
 
     return palette[node.depth] || palette[palette.length - 1];
   };
@@ -535,7 +546,7 @@ function CirclePackSkiaRenderer({
               }}
             >
               <Icon
-                name="undo-dot"
+                name="zoom-out"
                 color="text"
                 opacity={isAtRoot ? 50 : 100}
               />
@@ -549,11 +560,7 @@ function CirclePackSkiaRenderer({
                 opacity: isAtRoot ? 0.4 : 1,
               }}
             >
-              <Icon
-                name="zoom-out"
-                color="text"
-                opacity={isAtRoot ? 50 : 100}
-              />
+              <Icon name="house" color="text" opacity={isAtRoot ? 50 : 100} />
             </TouchableOpacity>
           </View>
         </View>

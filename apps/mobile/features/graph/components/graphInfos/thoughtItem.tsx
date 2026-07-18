@@ -3,8 +3,13 @@ import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import {
@@ -14,6 +19,9 @@ import {
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui";
 import capitalize from "@/utils/stringManipulations/capitalize";
+import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
+import { useGraphStore } from "../../context/graphContext";
+import { GraphMode } from "../../types/types";
 
 const MAX_CARD_TITLE_LENGTH = 20;
 const MAX_THOUGHT_TITLE_LENGTH = 35;
@@ -29,9 +37,38 @@ const formatDisplayTitle = (
 
 const formatThoughtTitle = (value: string) =>
   formatDisplayTitle(value, MAX_THOUGHT_TITLE_LENGTH);
-import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
-import { useGraphStore } from "../../context/graphContext";
-import { GraphMode } from "../../types/types";
+
+const CARET_SIZE = 20;
+
+const ExpandCaret = ({ expanded }: { expanded: boolean }) => {
+  const rotation = useSharedValue(expanded ? 180 : 0);
+
+  useEffect(() => {
+    rotation.value = withTiming(expanded ? 180 : 0, { duration: 200 });
+  }, [expanded, rotation]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }],
+  }));
+
+  return (
+    <View style={{ marginTop: 4, width: CARET_SIZE, height: CARET_SIZE }}>
+      <Animated.View
+        style={[
+          {
+            width: CARET_SIZE,
+            height: CARET_SIZE,
+            alignItems: "center",
+            justifyContent: "center",
+          },
+          animatedStyle,
+        ]}
+      >
+        <Icon name="chevron-down" color="text" size={CARET_SIZE} />
+      </Animated.View>
+    </View>
+  );
+};
 
 type ThoughtItemProps = {
   thought: NodeDatum & { idx: number };
@@ -326,15 +363,14 @@ const ExpandedContent = ({
           >
             <View className="gap-2 py-1 px-2">
               <View className="flex-row items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="xs"
+                <Pressable
+                  className="bg-muted border border-input rounded-full leading-none px-2 py-0.5 self-start"
                   onPress={() => navigateToGraphNode(group.id)}
                 >
-                  <Typography variant="muted">
+                  <Typography variant="small" style={{ fontSize: 10 }}>
                     {formatDisplayTitle(group.name || "", 35)}
                   </Typography>
-                </Button>
+                </Pressable>
               </View>
 
               {group.children?.length ? (
@@ -472,20 +508,12 @@ export const ThoughtItem: React.FC<ThoughtItemProps> = ({
               {canExpand ? (
                 <View className="mt-2">
                   <Button
-                    variant="outline"
-                    size="xs"
+                    variant="ghost"
+                    size="sm"
                     className="flex-row items-center gap-2 px-1 self-start"
                     onPress={() => setExpanded((prev) => !prev)}
                   >
-                    <Icon
-                      name={expanded ? "chevron-up" : "chevron-down"}
-                      color="text"
-                      style={{ marginTop: 4 }}
-                      size={15}
-                    />
-                    <Typography style={{ fontSize: 10 }} variant="p">
-                      {expanded ? "Less" : "More"}
-                    </Typography>
+                    <ExpandCaret expanded={expanded} />
                   </Button>
                 </View>
               ) : null}

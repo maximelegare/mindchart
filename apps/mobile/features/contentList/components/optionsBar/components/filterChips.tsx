@@ -42,7 +42,7 @@ export const FilterChip = React.forwardRef<
     <Pressable
       ref={ref}
       onPress={onPress}
-      className="min-w-10 flex-row items-center gap-1.5 rounded-full border px-3 py-2"
+      className="relative min-w-10 flex-row items-center gap-1.5 overflow-hidden rounded-full border px-3 py-2"
       style={{ backgroundColor, borderColor }}
       accessibilityRole="button"
       accessibilityState={{ selected }}
@@ -50,8 +50,15 @@ export const FilterChip = React.forwardRef<
     >
       {colorBadge ? (
         <View
-          className="h-2.5 w-2.5 rounded-full"
-          style={{ backgroundColor: colorBadge }}
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 3,
+            backgroundColor: colorBadge,
+          }}
         />
       ) : null}
       {icon ? (

@@ -8,6 +8,7 @@ import { GraphLoadingPlaceholder } from "../components/graphLoadingPlaceholder";
 import GraphInfos from "../components/graphInfos/graphInfos";
 import { NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
+import { filterGraphHierarchy } from "../utils/filterGraphHierarchy";
 
 export const GraphFeature = ({
   focusedThoughtId,
@@ -17,12 +18,19 @@ export const GraphFeature = ({
   trigger?: string;
 }) => {
   const renderMode = useGraphStore((state) => state.renderMode);
+  const selectedTopicId = useGraphStore((state) => state.selectedTopicId);
+  const selectedCategoryId = useGraphStore((state) => state.selectedCategoryId);
   const { hierarchies, isLoading, refetchGraph, refetchSyncFlag } = useGraph();
 
-  const hierarchy = useMemo(
-    () => (hierarchies ? hierarchies[renderMode] : null),
-    [hierarchies, renderMode]
-  );
+  const hierarchy = useMemo(() => {
+    if (!hierarchies) return null;
+    return filterGraphHierarchy(
+      hierarchies[renderMode],
+      renderMode,
+      selectedTopicId,
+      selectedCategoryId
+    );
+  }, [hierarchies, renderMode, selectedTopicId, selectedCategoryId]);
 
   const [selection, setSelection] = useState<{
     active: NodeDatum | null;
@@ -48,7 +56,7 @@ export const GraphFeature = ({
 
   useEffect(() => {
     setSelection({ active: null, parent: null });
-  }, [renderMode]);
+  }, [renderMode, selectedTopicId, selectedCategoryId]);
 
   if (isLoading || !hierarchy) {
     return (
