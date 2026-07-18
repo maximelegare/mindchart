@@ -8,12 +8,51 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
   if (!window.__mcBulletGuardInstalled) {
     window.__mcBulletGuardInstalled = true;
     window.__mcShowTitles = false;
+    var CATEGORY_FADE_MS = 5000;
+    var COLLAPSE_TRANSITION_MS = 380;
 
-    function emptyTitledLiHtml() {
+    function emptyTitledFieldsHtml() {
       return (
         '<div class="thought-title is-placeholder" data-placeholder="Title"><br></div>' +
         '<div class="thought-summary is-placeholder" data-placeholder="Summary"><br></div>'
       );
+    }
+
+    function emptyUntitledFieldHtml() {
+      return (
+        '<div class="thought-summary is-placeholder" data-placeholder="Enter a bullet point"><br></div>'
+      );
+    }
+
+    function categoryLabelHtml(categoryId) {
+      var id = categoryId || "uncategorized";
+      var label = id.charAt(0).toUpperCase() + id.slice(1);
+      return (
+        '<div class="thought-category" contenteditable="false" data-category-id="' +
+        id +
+        '"><span class="thought-category-name">' +
+        label +
+        "</span></div>"
+      );
+    }
+
+    function thoughtItemInnerHtml(categoryId, fieldsHtml) {
+      return (
+        '<div class="thought-rail" contenteditable="false">' +
+        '<div class="thought-stripe"></div></div>' +
+        '<div class="thought-body">' +
+        categoryLabelHtml(categoryId) +
+        '<div class="thought-fields">' +
+        fieldsHtml +
+        "</div></div>"
+      );
+    }
+
+    function emptyLiHtml(categoryId) {
+      var fields = window.__mcShowTitles
+        ? emptyTitledFieldsHtml()
+        : emptyUntitledFieldHtml();
+      return thoughtItemInnerHtml(categoryId, fields);
     }
 
     function closest(node, predicate) {
@@ -97,8 +136,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       sel.addRange(range);
     }
 
-    // Pell only posts OFFSET_Y on input/focus — not on programmatic caret moves
-    // (title → summary). Tell RN so the caret can align above the footer immediately.
     function postCursorOffset(preferEl) {
       if (!window.ReactNativeWebView) return;
       var sel = window.getSelection();
@@ -150,11 +187,137 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }, 0);
     }
 
+    function liCategoryId(li) {
+      if (!li) return "uncategorized";
+      return li.getAttribute("data-category-id") || "uncategorized";
+    }
+
+    function clearCollapseTimer(li) {
+      if (li && li.__mcCollapseTimer) {
+        clearTimeout(li.__mcCollapseTimer);
+        li.__mcCollapseTimer = null;
+      }
+      if (li && li.__mcBounceTimer) {
+        clearTimeout(li.__mcBounceTimer);
+        li.__mcBounceTimer = null;
+      }
+    }
+
+    function bounceStripe(li) {
+      var stripe = li && li.querySelector(".thought-stripe");
+      if (!stripe) return;
+      stripe.classList.remove("is-bouncing");
+      // Retrigger CSS animation.
+      void stripe.offsetWidth;
+      stripe.classList.add("is-bouncing");
+      li.__mcBounceTimer = setTimeout(function () {
+        stripe.classList.remove("is-bouncing");
+        li.__mcBounceTimer = null;
+      }, 700);
+    }
+
+    function collapseThoughtCategory(li) {
+      if (!li) return;
+      li.classList.add("is-collapsed");
+      li.__mcBounceTimer = setTimeout(function () {
+        bounceStripe(li);
+      }, COLLAPSE_TRANSITION_MS);
+    }
+
+    function expandThoughtCategory(li, reschedule) {
+      if (!li) return;
+      clearCollapseTimer(li);
+      var stripe = li.querySelector(".thought-stripe");
+      if (stripe) stripe.classList.remove("is-bouncing");
+      li.classList.remove("is-collapsed");
+      if (reschedule !== false) {
+        scheduleCollapse(li);
+      }
+    }
+
+    function scheduleCollapse(li) {
+      if (!li) return;
+      clearCollapseTimer(li);
+      li.classList.remove("is-collapsed");
+      var stripe = li.querySelector(".thought-stripe");
+      if (stripe) stripe.classList.remove("is-bouncing");
+      li.__mcCollapseTimer = setTimeout(function () {
+        collapseThoughtCategory(li);
+        li.__mcCollapseTimer = null;
+      }, CATEGORY_FADE_MS);
+    }
+
+    window.__mcExpandThoughtCategory = function (li) {
+      expandThoughtCategory(li, true);
+    };
+
+    window.__mcRefreshCategoryTimers = function () {
+      var lis = content.querySelectorAll("ul > li");
+      for (var i = 0; i < lis.length; i++) {
+        ensureCategoryChrome(lis[i]);
+        if (!lis[i].classList.contains("is-collapsed")) {
+          scheduleCollapse(lis[i]);
+        }
+      }
+    };
+
+    function ensureCategoryChrome(li) {
+      if (!li) return;
+      var categoryId = liCategoryId(li);
+      li.classList.add("thought-item");
+      li.setAttribute("data-category-id", categoryId);
+
+      var rail = li.querySelector(".thought-rail");
+      var body = li.querySelector(".thought-body");
+      var fields = li.querySelector(".thought-fields");
+      var chip = li.querySelector(".thought-category");
+
+      if (rail && body && fields && chip) {
+        chip.setAttribute("data-category-id", categoryId);
+        if (!li.__mcCollapseTimer && !li.classList.contains("is-collapsed")) {
+          scheduleCollapse(li);
+        }
+        return;
+      }
+
+      // Rebuild chrome while preserving editable field content.
+      var title = li.querySelector(".thought-title");
+      var summary = li.querySelector(".thought-summary");
+      var fieldsHtml = "";
+      if (title || summary) {
+        if (title) fieldsHtml += title.outerHTML;
+        if (summary) fieldsHtml += summary.outerHTML;
+      } else {
+        var clone = li.cloneNode(true);
+        var stripSel = clone.querySelectorAll(
+          ".thought-rail, .thought-category, .thought-body, .thought-fields"
+        );
+        for (var s = 0; s < stripSel.length; s++) {
+          var node = stripSel[s];
+          if (node.parentNode) node.parentNode.removeChild(node);
+        }
+        var text = (clone.textContent || "").trim();
+        fieldsHtml = text
+          ? clone.innerHTML
+          : window.__mcShowTitles
+            ? emptyTitledFieldsHtml()
+            : emptyUntitledFieldHtml();
+      }
+
+      var wasCollapsed = li.classList.contains("is-collapsed");
+      li.innerHTML = thoughtItemInnerHtml(categoryId, fieldsHtml);
+      if (wasCollapsed) {
+        li.classList.add("is-collapsed");
+      } else {
+        scheduleCollapse(li);
+      }
+    }
+
     function ensureUl() {
       if (content.querySelector("ul")) return;
       content.innerHTML =
-        "<ul><li>" +
-        (window.__mcShowTitles ? emptyTitledLiHtml() : "<br>") +
+        '<ul><li class="thought-item" data-category-id="uncategorized">' +
+        emptyLiHtml("uncategorized") +
         "</li></ul>";
     }
 
@@ -174,7 +337,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           el.childNodes.length === 1 &&
           el.firstChild &&
           el.firstChild.nodeName === "BR";
-        // Restore a lone <br> only when backspace left the field truly empty.
         if (!onlyBr) {
           clearField(el, placeholder);
         }
@@ -184,15 +346,54 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function repairAllPlaceholderFields() {
-      if (!window.__mcShowTitles) return;
       var titles = content.querySelectorAll(".thought-title");
       var summaries = content.querySelectorAll(".thought-summary");
       for (var t = 0; t < titles.length; t++) {
         repairEmptyField(titles[t], "Title");
       }
       for (var s = 0; s < summaries.length; s++) {
-        repairEmptyField(summaries[s], "Summary");
+        var summary = summaries[s];
+        var li = closestLi(summary);
+        var placeholder = window.__mcShowTitles
+          ? "Summary"
+          : "Enter a bullet point";
+        if (!window.__mcShowTitles && li && li.querySelector(".thought-title")) {
+          continue;
+        }
+        repairEmptyField(summary, placeholder);
       }
+    }
+
+    function getFieldsContainer(li) {
+      return li.querySelector(".thought-fields") || li;
+    }
+
+    function normalizeUntitledLis() {
+      if (window.__mcShowTitles) return;
+      var lis = content.querySelectorAll("ul > li");
+      for (var i = 0; i < lis.length; i++) {
+        var li = lis[i];
+        ensureCategoryChrome(li);
+
+        var title = li.querySelector(".thought-title");
+        if (title && title.parentNode) title.parentNode.removeChild(title);
+
+        var summary = li.querySelector(".thought-summary");
+        if (summary) {
+          summary.setAttribute("data-placeholder", "Enter a bullet point");
+          continue;
+        }
+
+        var fields = getFieldsContainer(li);
+        var text = (fields.textContent || "").trim();
+        fields.innerHTML =
+          '<div class="thought-summary' +
+          (text ? "" : " is-placeholder") +
+          '" data-placeholder="Enter a bullet point">' +
+          (text ? fields.innerHTML : "<br>") +
+          "</div>";
+      }
+      repairAllPlaceholderFields();
     }
 
     function normalizeTitledLis() {
@@ -200,28 +401,49 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var lis = content.querySelectorAll("ul > li");
       for (var i = 0; i < lis.length; i++) {
         var li = lis[i];
+        ensureCategoryChrome(li);
+
         if (li.querySelector(".thought-title")) {
-          // Never drop the summary slot while titles are on.
           if (!li.querySelector(".thought-summary")) {
             var summary = document.createElement("div");
             summary.className = "thought-summary is-placeholder";
             summary.setAttribute("data-placeholder", "Summary");
             summary.innerHTML = "<br>";
-            li.appendChild(summary);
+            getFieldsContainer(li).appendChild(summary);
           }
           continue;
         }
-        var text = (li.textContent || "").trim();
+
+        var fields = getFieldsContainer(li);
+        var existingSummary = fields.querySelector(".thought-summary");
+        var text = existingSummary
+          ? (existingSummary.textContent || "").trim()
+          : (fields.textContent || "").trim();
+
         if (!text) {
-          li.innerHTML = emptyTitledLiHtml();
+          var wasCollapsed = li.classList.contains("is-collapsed");
+          li.innerHTML = emptyLiHtml(liCategoryId(li));
+          if (wasCollapsed) li.classList.add("is-collapsed");
+          else scheduleCollapse(li);
         } else {
-          li.innerHTML =
+          var body = existingSummary
+            ? existingSummary.innerHTML
+            : fields.innerHTML;
+          fields.innerHTML =
             '<div class="thought-title" data-placeholder="Title">' +
-            li.innerHTML +
+            body +
             '</div><div class="thought-summary is-placeholder" data-placeholder="Summary"><br></div>';
         }
       }
       repairAllPlaceholderFields();
+    }
+
+    function normalizeLis() {
+      if (window.__mcShowTitles) {
+        normalizeTitledLis();
+      } else {
+        normalizeUntitledLis();
+      }
     }
 
     function notifyChange() {
@@ -231,6 +453,24 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function handleEnter(e, li, anchor) {
+      if (!window.__mcShowTitles) {
+        setTimeout(function () {
+          var next = li.nextElementSibling;
+          if (next && next.nodeName === "LI") {
+            next.setAttribute("data-category-id", liCategoryId(li));
+            ensureCategoryChrome(next);
+            scheduleCollapse(next);
+          }
+          normalizeLis();
+          notifyChange();
+          if (next && next.nodeName === "LI") {
+            var field = next.querySelector(".thought-summary") || next;
+            placeCaretAtStartSoon(field);
+          }
+        }, 0);
+        return;
+      }
+
       var inTitle = closestClass(anchor, "thought-title");
       if (inTitle) {
         e.preventDefault();
@@ -240,32 +480,43 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      // Enter in summary (or elsewhere) -> new titled bullet.
       e.preventDefault();
       e.stopPropagation();
       var newLi = document.createElement("li");
-      newLi.innerHTML = emptyTitledLiHtml();
+      var categoryId = liCategoryId(li);
+      newLi.className = "thought-item";
+      newLi.setAttribute("data-category-id", categoryId);
+      newLi.innerHTML = emptyLiHtml(categoryId);
       if (li.nextSibling) {
         li.parentNode.insertBefore(newLi, li.nextSibling);
       } else {
         li.parentNode.appendChild(newLi);
       }
+      scheduleCollapse(newLi);
       var title = newLi.querySelector(".thought-title");
       if (title) placeCaretAtStartSoon(title);
       notifyChange();
     }
 
     function removeBullet(li) {
+      clearCollapseTimer(li);
       var parent = li.parentNode;
       var prev = li.previousElementSibling;
       var next = li.nextElementSibling;
       parent.removeChild(li);
 
-      // Always keep at least one empty titled bullet.
       if (!parent.querySelector("li")) {
-        parent.innerHTML = "<li>" + emptyTitledLiHtml() + "</li>";
+        parent.innerHTML =
+          '<li class="thought-item" data-category-id="uncategorized">' +
+          emptyLiHtml("uncategorized") +
+          "</li>";
+        var only = parent.querySelector("li");
+        scheduleCollapse(only);
         repairAllPlaceholderFields();
-        placeCaretAtStartSoon(parent.querySelector(".thought-title"));
+        placeCaretAtStartSoon(
+          parent.querySelector(".thought-title") ||
+            parent.querySelector(".thought-summary")
+        );
         notifyChange();
         return;
       }
@@ -278,29 +529,51 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         );
       } else if (next && next.nodeName === "LI") {
         placeCaretAtStartSoon(
-          next.querySelector(".thought-title") || next
+          next.querySelector(".thought-title") ||
+            next.querySelector(".thought-summary") ||
+            next
         );
       }
       notifyChange();
     }
 
+    function handleBackspaceUntitled(e, li, anchor) {
+      var summaryEl = li.querySelector(".thought-summary") || li;
+
+      if (isEmptyField(summaryEl) || isCaretAtStartOf(summaryEl)) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isEmptyField(summaryEl)) {
+          removeBullet(li);
+          return;
+        }
+        var prev = li.previousElementSibling;
+        if (prev && prev.nodeName === "LI") {
+          placeCaretAtEndSoon(
+            prev.querySelector(".thought-summary") || prev
+          );
+        }
+      }
+    }
+
     function handleBackspace(e, li, anchor) {
+      if (!window.__mcShowTitles) {
+        handleBackspaceUntitled(e, li, anchor);
+        return;
+      }
+
       var summary = closestClass(anchor, "thought-summary");
       var title = closestClass(anchor, "thought-title");
       var titleEl = li.querySelector(".thought-title");
       var summaryEl = li.querySelector(".thought-summary");
       var bothEmpty = isEmptyField(titleEl) && isEmptyField(summaryEl);
 
-      // In summary: delete text normally; at start/empty, jump to title end
-      // unless the whole bullet is empty — then remove it.
       if (summary) {
         var summaryText = (summary.textContent || "")
           .replace(/\\u00a0/g, " ")
           .replace(/\\n/g, "")
           .trim();
 
-        // Last character: must force-clear. preventDefault alone leaves the
-        // letter stuck because repairEmptyField only clears already-empty fields.
         if (summaryText.length === 1 && window.getSelection().isCollapsed) {
           e.preventDefault();
           e.stopPropagation();
@@ -313,7 +586,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         if (isEmptyField(summary) || isCaretAtStartOf(summary)) {
           e.preventDefault();
           e.stopPropagation();
-          // Only wipe when already empty — at-start with text just moves to title.
           if (isEmptyField(summary)) {
             clearField(summary, "Summary");
             if (isEmptyField(titleEl)) {
@@ -328,8 +600,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      // In title: delete text normally; at start/empty with empty summary,
-      // remove the bullet. Otherwise move to the previous bullet.
       if (title && (isEmptyField(title) || isCaretAtStartOf(title))) {
         e.preventDefault();
         e.stopPropagation();
@@ -355,6 +625,15 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
     }
 
+    function openCategoryPicker(li) {
+      if (!li || !li.parentNode || !window.ReactNativeWebView) return;
+      var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+      if (index < 0) return;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "SELECT_CATEGORY", data: index })
+      );
+    }
+
     content.addEventListener(
       "keydown",
       function (e) {
@@ -378,8 +657,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           return;
         }
 
-        // Titles off: keep native list editing.
-        if (!window.__mcShowTitles) return;
+        if (
+          closestClass(anchor, "thought-category") ||
+          closestClass(anchor, "thought-rail")
+        ) {
+          e.preventDefault();
+          return;
+        }
 
         if (isEnter) {
           handleEnter(e, li, anchor);
@@ -391,14 +675,35 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       true
     );
 
+    content.addEventListener("click", function (e) {
+      var rail = closestClass(e.target, "thought-rail");
+      var stripe = closestClass(e.target, "thought-stripe");
+      var chip = closestClass(e.target, "thought-category");
+      if (!rail && !stripe && !chip) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var li = closestLi(e.target);
+      if (!li) return;
+
+      if (li.classList.contains("is-collapsed")) {
+        expandThoughtCategory(li, true);
+        return;
+      }
+
+      // Expanded: open category picker from label or stripe.
+      openCategoryPicker(li);
+    });
+
     content.addEventListener("input", function () {
       ensureUl();
-      normalizeTitledLis();
+      normalizeLis();
       repairAllPlaceholderFields();
     });
 
     ensureUl();
-    normalizeTitledLis();
+    normalizeLis();
     repairAllPlaceholderFields();
   }
 
@@ -409,3 +714,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;
 }
+
+export const REFRESH_CATEGORY_TIMERS_SCRIPT = `
+(function () {
+  if (typeof window.__mcRefreshCategoryTimers === "function") {
+    window.__mcRefreshCategoryTimers();
+  }
+  true;
+})();
+`;
