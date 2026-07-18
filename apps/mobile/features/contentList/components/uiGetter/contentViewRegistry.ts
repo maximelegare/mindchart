@@ -57,7 +57,5 @@ export const resolveContentView = (uiKey: UiKey | null): ComponentType => {
 
 export const resolveContentViewFromOptions = (
   groupBy: Parameters<typeof getUiKey>[0],
-  displayMode: Parameters<typeof getUiKey>[1],
-  showOverview: Parameters<typeof getUiKey>[2]
-): ComponentType =>
-  resolveContentView(getUiKey(groupBy, displayMode, showOverview));
+  displayMode: Parameters<typeof getUiKey>[1]
+): ComponentType => resolveContentView(getUiKey(groupBy, displayMode));
