@@ -36,7 +36,7 @@ export const FilterChip = React.forwardRef<
   const selectedFg = hsl("text", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
   const backgroundColor = hsl(selected ? "muted" : "card", colorScheme);
-  const borderColor = hsl(selected ? "primary" : "card", colorScheme);
+  const borderColor = hsl(selected ? "border" : "card", colorScheme);
 
   return (
     <Pressable
