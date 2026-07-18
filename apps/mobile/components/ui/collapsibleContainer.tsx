@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, LayoutChangeEvent } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+
+const COLLAPSE_DURATION_MS = 200;
 
 export const CollapsibleContainer = ({
   children,
@@ -15,16 +17,23 @@ export const CollapsibleContainer = ({
   expanded: boolean;
   className?: string;
 }) => {
+  const [contentHeight, setContentHeight] = useState(0);
   const height = useSharedValue(0);
+
+  useEffect(() => {
+    height.value = withTiming(expanded ? contentHeight : 0, {
+      duration: COLLAPSE_DURATION_MS,
+    });
+  }, [contentHeight, expanded, height]);
+
   const animatedHeight = useAnimatedStyle(() => ({
-    height: expanded ? withTiming(height.value) : withTiming(0),
-    opacity: expanded ? withTiming(1) : withTiming(0), // Smoother transition
+    height: height.value,
   }));
 
   const onLayout = (event: LayoutChangeEvent) => {
     const layoutHeight = event.nativeEvent.layout.height;
-    if (layoutHeight > 0 && height.value !== layoutHeight) {
-      height.value = layoutHeight;
+    if (layoutHeight > 0) {
+      setContentHeight((prev) => (prev === layoutHeight ? prev : layoutHeight));
     }
   };
 

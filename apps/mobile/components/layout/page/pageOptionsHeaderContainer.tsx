@@ -1,6 +1,8 @@
 import { View, StyleSheet } from "react-native";
 import { Gutter } from "@/components/ui/gutter";
 import { LAYOUT_SIZES } from "../constants";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 type PageOptionsHeaderContainerProps = {
   children: React.ReactNode;
@@ -11,9 +13,12 @@ export const PageOptionsHeaderContainer = ({
   children,
   footer,
 }: PageOptionsHeaderContainerProps) => {
+  const { colorScheme } = useColorScheme();
+  const backgroundColor = hsl("background", colorScheme);
+
   return (
     <View style={styles.clip} collapsable={false}>
-      <View className="bg-background w-full" style={styles.surface}>
+      <View style={[styles.surface, { backgroundColor }]}>
         <View
           className="justify-center"
           style={{ height: LAYOUT_SIZES.OPTIONS_HEADER_HEIGHT }}
@@ -30,7 +35,6 @@ export const PageOptionsHeaderContainer = ({
 const RADIUS = 24;
 
 const styles = StyleSheet.create({
-  // Outer clip — keeps backgrounds from bleeding past the radius by 1px.
   clip: {
     borderTopLeftRadius: RADIUS,
     borderTopRightRadius: RADIUS,
@@ -41,6 +45,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: RADIUS,
     borderTopRightRadius: RADIUS,
     overflow: "hidden",
+    width: "100%",
   },
   bottomEdge: {
     width: "100%",
