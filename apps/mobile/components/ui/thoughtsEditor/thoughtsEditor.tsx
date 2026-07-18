@@ -1,6 +1,7 @@
 import { CategoryKey } from "@repo/sqlite";
 import { Category } from "@repo/zod-schemas";
 import { CATEGORIES_COLORS } from "@repo/theme/categories";
+import { Asset } from "expo-asset";
 import React from "react";
 import { Keyboard, Pressable, ScrollView, View } from "react-native";
 import { useFormContext } from "react-hook-form";
@@ -30,6 +31,32 @@ import {
   REFRESH_CATEGORY_TIMERS_SCRIPT,
   setShowTitlesScript,
 } from "./bulletEditorScript";
+
+const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
+const QUICKSAND_BOLD = require("@/assets/fonts/Quicksand-Bold.ttf");
+
+async function loadEditorFontFaceCss(): Promise<string> {
+  const [regular, bold] = await Asset.loadAsync([
+    QUICKSAND_REGULAR,
+    QUICKSAND_BOLD,
+  ]);
+  const regularUri = regular.localUri ?? regular.uri;
+  const boldUri = bold.localUri ?? bold.uri;
+  return `
+    @font-face {
+      font-family: 'QuicksandRegular';
+      src: url('${regularUri}') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'QuicksandBold';
+      src: url('${boldUri}') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+  `;
+}
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
@@ -129,6 +156,7 @@ export function ThoughtsEditor({
     useFormContext<ThoughtsEditorFormValues>();
   const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
+  const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
   >(null);
@@ -170,6 +198,20 @@ export function ThoughtsEditor({
 
     const targetY = Math.max(0, y - (viewportH - CARET_BOTTOM_MARGIN));
     scrollRef.current?.scrollTo({ y: targetY, animated: true });
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    loadEditorFontFaceCss()
+      .then((css) => {
+        if (!cancelled) setFontFaceCss(css);
+      })
+      .catch(() => {
+        if (!cancelled) setFontFaceCss("");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   React.useEffect(() => {
@@ -355,25 +397,32 @@ export function ThoughtsEditor({
               paddingBottom: keyboardOpen ? CARET_BOTTOM_MARGIN : 12,
             }}
           >
-            <RichEditor
-              ref={richRef}
-              style={{ flex: 1, minHeight: 160 }}
-              useContainer
-              pasteAsPlainText
-              initialContentHTML={initialHtmlRef.current}
-              placeholder=""
-              editorInitializedCallback={handleEditorInitialized}
-              editorStyle={{
-                backgroundColor,
-                color: textColor,
-                caretColor,
-                placeholderColor,
-                contentCSSText: `
+            {fontFaceCss == null ? null : (
+              <RichEditor
+                ref={richRef}
+                style={{ flex: 1, minHeight: 160 }}
+                useContainer
+                pasteAsPlainText
+                initialContentHTML={initialHtmlRef.current}
+                placeholder=""
+                editorInitializedCallback={handleEditorInitialized}
+                allowFileAccess
+                allowFileAccessFromFileURLs
+                allowUniversalAccessFromFileURLs
+                originWhitelist={["*"]}
+                editorStyle={{
+                  backgroundColor,
+                  color: textColor,
+                  caretColor,
+                  placeholderColor,
+                  initialCSSText: fontFaceCss,
+                  contentCSSText: `
+                  font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
                   line-height: 1.45;
                   padding: 12px;
                 `,
-                cssText: `
+                  cssText: `
                   ul {
                     padding-left: 0;
                     margin: 0;
@@ -421,6 +470,7 @@ export function ThoughtsEditor({
                     height: 14px;
                     margin: 0 0 2px;
                     overflow: hidden;
+                    font-family: 'QuicksandRegular', sans-serif;
                     font-size: 12px;
                     line-height: 14px;
                     color: ${mutedFg};
@@ -470,11 +520,13 @@ export function ThoughtsEditor({
                     min-height: 1.35em;
                   }
                   .thought-title {
-                    font-weight: 700;
+                    font-family: 'QuicksandBold', sans-serif;
+                    font-weight: normal;
                     margin-bottom: 2px;
                   }
                   .thought-summary {
-                    font-weight: 400;
+                    font-family: 'QuicksandRegular', sans-serif;
+                    font-weight: normal;
                     opacity: 0.92;
                   }
                   /* Class-driven placeholders survive backspace better than :empty */
@@ -486,18 +538,17 @@ export function ThoughtsEditor({
                     top: 0;
                     color: ${placeholderColor};
                     pointer-events: none;
+                    font-family: inherit;
                     font-weight: inherit;
-                  }
-                  .thought-title.is-placeholder::before {
-                    font-weight: 700;
                   }
                   ${categoryColorsCssRef.current}
                 `,
-              }}
-              onChange={syncThoughtsFromHtml}
-              onCursorPosition={scrollCursorIntoView}
-              onMessage={handleEditorMessage}
-            />
+                }}
+                onChange={syncThoughtsFromHtml}
+                onCursorPosition={scrollCursorIntoView}
+                onMessage={handleEditorMessage}
+              />
+            )}
           </ScrollView>
         </View>
       </View>
