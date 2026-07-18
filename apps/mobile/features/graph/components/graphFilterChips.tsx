@@ -44,11 +44,14 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
       if (!categoriesData || !Array.isArray(categoriesData)) return [];
       return categoriesData
         .filter((category) => (category.thoughtCount ?? 0) > 0)
-        .map((category) => ({
-          id: category.id,
-          label: category.name,
-          colorBadge: CATEGORIES_COLORS[category.id as CategoryKey],
-        }));
+        .map((category) => {
+          const categoryKey = category.id.toLowerCase() as CategoryKey;
+          return {
+            id: category.id,
+            label: category.name,
+            colorBadge: CATEGORIES_COLORS[categoryKey],
+          };
+        });
     }
 
     if (!topicsData || !Array.isArray(topicsData)) return [];
