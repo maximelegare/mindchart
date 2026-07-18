@@ -79,24 +79,33 @@ export const GraphBreadcrumbs = ({
                 key={breadcrumb.id}
                 className="flex-row items-center shrink-0"
               >
-                {index > 0 && (
-                  <Typography variant="p" className="mx-1 opacity-50">
-                    /
-                  </Typography>
-                )}
                 <Button
                   variant="ghost"
                   size="xs"
                   className={cn(
-                    "opacity-50 shrink-0",
+                    "opacity-50 shrink-0 px-0",
                     index === breadcrumbs.length - 1 ? "opacity-100" : ""
                   )}
                   onPress={() => handleZoom(breadcrumb)}
                 >
-                  <Typography variant="h3" numberOfLines={1}>
-                    {breadcrumb.name}
-                  </Typography>
+                  {breadcrumb.id === "root" ||
+                  breadcrumb.name.toLowerCase() === "root" ? (
+                    <Icon name="house" color="text" size={18} />
+                  ) : (
+                    <Typography variant="h3" numberOfLines={1}>
+                      {breadcrumb.name}
+                    </Typography>
+                  )}
                 </Button>
+                {index < breadcrumbs.length - 1 && (
+                  <Typography
+                    variant="p"
+                    className="opacity-50"
+                    style={{ marginHorizontal: 2 }}
+                  >
+                    /
+                  </Typography>
+                )}
               </View>
             ))}
           </ScrollView>

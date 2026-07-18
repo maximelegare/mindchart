@@ -546,7 +546,7 @@ function CirclePackSkiaRenderer({
               }}
             >
               <Icon
-                name="undo-dot"
+                name="zoom-out"
                 color="text"
                 opacity={isAtRoot ? 50 : 100}
               />
@@ -560,11 +560,7 @@ function CirclePackSkiaRenderer({
                 opacity: isAtRoot ? 0.4 : 1,
               }}
             >
-              <Icon
-                name="zoom-out"
-                color="text"
-                opacity={isAtRoot ? 50 : 100}
-              />
+              <Icon name="house" color="text" opacity={isAtRoot ? 50 : 100} />
             </TouchableOpacity>
           </View>
         </View>
