@@ -81,7 +81,10 @@ export const PageContainer = ({
   // Round heights to avoid sub-pixel layout rounding issues
   const headerHeight = Math.round(HEADER_HEIGHT + insets.top);
   const optionsOverlap = PAGE_TOP_RADIUS + 1;
-  // Options bar can grow (filter chips, expanded panel) — measure instead of a fixed height.
+  // Measure options bar height so expanded filter footers can push content.
+  // The page underlaps the options chrome (see static layout below), so when
+  // measurement lags the collapse animation the gap is page background — not
+  // a flash of the header gradient.
   const [optionsHeaderHeight, setOptionsHeaderHeight] = React.useState(
     optionsHeader ? OPTIONS_HEADER_HEIGHT : 0
   );
@@ -188,6 +191,16 @@ export const PageContainer = ({
 
   // Static non-collapsing implementation
   if (!useCollapsingHeader) {
+    // Underlap the page under the options header so any transient gap while the
+    // footer collapse animates (before layout reports the new height) is filled
+    // with page background, not a flash of the header gradient.
+    const pageMarginTop = showHeader
+      ? optionsHeader
+        ? headerHeight
+        : chromeHeight
+      : 0;
+    const pagePaddingTop = optionsHeader ? optionsHeaderHeight : 0;
+
     return (
       <View style={styles.root}>
         {fixedGradient}
@@ -211,7 +224,8 @@ export const PageContainer = ({
           style={[
             styles.pageContainer,
             gutter(),
-            showHeader && { marginTop: chromeHeight },
+            showHeader && { marginTop: pageMarginTop },
+            pagePaddingTop > 0 && { paddingTop: pagePaddingTop },
             pageNeedsTopRadius && {
               borderTopLeftRadius: PAGE_TOP_RADIUS,
               borderTopRightRadius: PAGE_TOP_RADIUS,
