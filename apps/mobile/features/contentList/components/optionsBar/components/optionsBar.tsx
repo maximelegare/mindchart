@@ -6,6 +6,7 @@ import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptions
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -46,12 +47,14 @@ const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
 ];
 
 type OptionsDropdownProps<T extends string> = {
+  title: string;
   value: T;
   options: OptionItem<T>[];
   onValueChange: (value: T) => void;
 };
 
 function OptionsDropdown<T extends string>({
+  title,
   value,
   options,
   onValueChange,
@@ -73,6 +76,9 @@ function OptionsDropdown<T extends string>({
         className=" border border-border bg-popover pb-2 shadow-md"
         style={{ minWidth: 160, marginTop: 8 }}
       >
+        <DropdownMenuLabel className="px-3 py-1.5 text-xs text-muted-foreground native:text-sm">
+          {title}
+        </DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(next) => onValueChange(next as T)}
@@ -156,16 +162,19 @@ export const OptionsBar = () => {
         <CollapsibleContainer expanded={expanded}>
           <View className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
             <OptionsDropdown
+              title="Sort by:"
               value={sortBy}
               options={SORT_OPTIONS}
               onValueChange={onSortByChange}
             />
             <OptionsDropdown
+              title="Group by:"
               value={groupBy}
               options={GROUP_OPTIONS}
               onValueChange={onGroupByChange}
             />
             <OptionsDropdown
+              title="Display:"
               value={displayMode}
               options={DISPLAY_OPTIONS}
               onValueChange={onDisplayModeChange}
