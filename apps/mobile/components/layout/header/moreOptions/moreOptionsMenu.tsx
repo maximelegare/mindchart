@@ -6,7 +6,6 @@ import { useRouter, Href } from "expo-router";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
   Easing,
   runOnJS,
@@ -86,39 +85,6 @@ export function MoreOptionsMenu({
     opacity: menuOpacity.value,
   }));
 
-  const CustomEntering = () => {
-    "worklet";
-    return {
-      initialValues: {
-        transform: [{ translateY: -30 }],
-        opacity: 0,
-      },
-      animations: {
-        transform: [
-          {
-            translateY: withSpring(-5, {
-              damping: 12,
-              stiffness: 250,
-              mass: 0.6,
-            }),
-          },
-        ],
-        opacity: withTiming(1, { duration: 100 }),
-      },
-    };
-  };
-
-  const CustomExiting = () => {
-    "worklet";
-    return {
-      initialValues: {
-        opacity: 0,
-      },
-      animations: {
-        opacity: withTiming(0, { duration: 100 }),
-      },
-    };
-  };
   /**
    * Orchestrates the fade out before updating state or navigating.
    */
@@ -168,112 +134,97 @@ export function MoreOptionsMenu({
       {open && (
         <DropdownMenuContent
           forceMount
-          className="w-52 border-none bg-transparent shadow-none mt-[6px]"
+          className="w-52 mt-[6px] rounded-3xl border border-border bg-popover pb-0"
           side="bottom"
           align="end"
         >
           <Animated.View style={[{ flex: 1 }, animatedMenuOpacity]}>
-            <View style={{ paddingTop: 3 }}>
-              <Animated.View
-                entering={CustomEntering}
-                exiting={CustomExiting}
-                className="bg-popover rounded-3xl border border-border"
-              >
-                <DropdownMenuGroup className="overflow-hidden w-full">
-                  <CurrentWorkspace />
-                  <DropdownMenuSeparator className="my-0" />
-                  {links.map((link, index) => (
-                    <React.Fragment key={link.label}>
-                      {link.href !== undefined ? (
-                        <DropdownMenuItem
-                          className="px-3 flex-row gap-3 items-center"
+            <DropdownMenuGroup className="overflow-hidden w-full">
+              <CurrentWorkspace />
+              <DropdownMenuSeparator className="my-0" />
+              {links.map((link, index) => (
+                <React.Fragment key={link.label}>
+                  {link.href !== undefined ? (
+                    <DropdownMenuItem
+                      className="px-3 flex-row gap-3 items-center"
+                      onPress={() => {
+                        setTimeout(() => {
+                          router.push(link.href as Href);
+                        }, 150);
+                      }}
+                    >
+                      <Icon name={link.icon} size={18} color="background" />
+                      <Typography
+                        variant="h4"
+                        className="text-popover-foreground"
+                      >
+                        {link.label}
+                      </Typography>
+                    </DropdownMenuItem>
+                  ) : link.action !== undefined ? (
+                    <DropdownMenuItem
+                      className="px-3 w-full"
+                      onPress={link.action}
+                    >
+                      <Icon name={link.icon} size={18} color="background" />
+                      <Typography
+                        variant="h4"
+                        className="text-popover-foreground"
+                      >
+                        {link.label}
+                      </Typography>
+                    </DropdownMenuItem>
+                  ) : (
+                    <BottomSheet>
+                      <BottomSheetOpenTrigger
+                        asChild
+                        className="relative flex flex-row web:cursor-default gap-2 items-center rounded-sm px-3 py-1.5 native:py-2 web:outline-none web:focus:bg-accent active:bg-accent web:hover:bg-accent group"
+                      >
+                        <TouchableOpacity
+                          className="flex-row flex-1 items-center gap-3 w-full"
                           onPress={() => {
-                            setTimeout(() => {
-                              router.push(link.href as Href);
-                            }, 150);
+                            // Fade out the menu as the sheet slides up
+                            menuOpacity.value = withTiming(0, {
+                              duration: 150,
+                            });
                           }}
                         >
-                          <Icon name={link.icon} size={18} color="background" />
+                          <Icon size={17} name={link.icon} color="background" />
                           <Typography
                             variant="h4"
                             className="text-popover-foreground"
                           >
                             {link.label}
                           </Typography>
-                        </DropdownMenuItem>
-                      ) : link.action !== undefined ? (
-                        <DropdownMenuItem
-                          className="px-3 w-full"
-                          onPress={link.action}
-                        >
-                          <Icon name={link.icon} size={18} color="background" />
-                          <Typography
-                            variant="h4"
-                            className="text-popover-foreground"
-                          >
-                            {link.label}
-                          </Typography>
-                        </DropdownMenuItem>
-                      ) : (
-                        <BottomSheet>
-                          <BottomSheetOpenTrigger
-                            asChild
-                            className="relative flex flex-row web:cursor-default gap-2 items-center rounded-sm px-3 py-1.5 native:py-2 web:outline-none web:focus:bg-accent active:bg-accent web:hover:bg-accent group"
-                          >
-                            <TouchableOpacity
-                              className="flex-row flex-1 items-center gap-3 w-full"
-                              onPress={() => {
-                                // Fade out the menu as the sheet slides up
-                                menuOpacity.value = withTiming(0, {
-                                  duration: 150,
-                                });
-                              }}
-                            >
-                              <Icon
-                                size={17}
-                                name={link.icon}
-                                color="background"
-                              />
-                              <Typography
-                                variant="h4"
-                                className="text-popover-foreground"
-                              >
-                                {link.label}
-                              </Typography>
-                            </TouchableOpacity>
-                          </BottomSheetOpenTrigger>
+                        </TouchableOpacity>
+                      </BottomSheetOpenTrigger>
 
-                          <BottomSheetContent
-                            snapPoints={["100%"]}
-                            index={0}
-                            enableContentPanningGesture={false}
-                            enablePanDownToClose={false}
+                      <BottomSheetContent
+                        snapPoints={["100%"]}
+                        index={0}
+                        enableContentPanningGesture={false}
+                        enablePanDownToClose={false}
+                      >
+                        <BottomSheetView className="flex-1 gap-5 pt-6 bg-background h-full">
+                          <BottomSheetHeader
+                            className="bg-background gap-2"
+                            onDismiss={() => setOpen(false)}
                           >
-                            <BottomSheetView className="flex-1 gap-5 pt-6 bg-background h-full">
-                              <BottomSheetHeader
-                                className="bg-background gap-2"
-                                onDismiss={() => setOpen(false)}
-                              >
-                                <View className="flex-row justify-start items-center gap-2">
-                                  <Icon name={link.icon} color="foreground" />
-                                  <Typography variant="h3">
-                                    {link.label}
-                                  </Typography>
-                                </View>
-                              </BottomSheetHeader>
+                            <View className="flex-row justify-start items-center gap-2">
+                              <Icon name={link.icon} color="foreground" />
+                              <Typography variant="h3">{link.label}</Typography>
+                            </View>
+                          </BottomSheetHeader>
 
-                              {link.component}
-                            </BottomSheetView>
-                          </BottomSheetContent>
-                        </BottomSheet>
-                        // </DropdownMenuItem>
-                      )}
-                      {index !== links.length - 1 && <DropdownMenuSeparator />}
-                    </React.Fragment>
-                  ))}
-                </DropdownMenuGroup>
-              </Animated.View>
-            </View>
+                          {link.component}
+                        </BottomSheetView>
+                      </BottomSheetContent>
+                    </BottomSheet>
+                  )}
+                  {index !== links.length - 1 && <DropdownMenuSeparator />}
+                </React.Fragment>
+              ))}
+            </DropdownMenuGroup>
           </Animated.View>
         </DropdownMenuContent>
       )}

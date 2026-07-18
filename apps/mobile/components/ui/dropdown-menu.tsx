@@ -7,6 +7,11 @@ import {
   View,
   type ViewStyle,
 } from "react-native";
+import Animated, {
+  withSpring,
+  withTiming,
+  type EntryExitAnimationFunction,
+} from "react-native-reanimated";
 import {
   Check,
   ChevronDown,
@@ -16,6 +21,43 @@ import {
 import * as DropdownMenuPrimitive from "@/components/primitives/dropdown-menu";
 import { TextClassContext } from "@/components/ui/typography";
 import { cn } from "@/lib/cn";
+
+/** Shared enter/exit — matches moreOptions header menu. */
+const MENU_ENTER: EntryExitAnimationFunction = () => {
+  "worklet";
+  return {
+    initialValues: {
+      opacity: 0,
+      transform: [{ translateY: -30 }],
+    },
+    animations: {
+      opacity: withTiming(1, { duration: 100 }),
+      transform: [
+        {
+          translateY: withSpring(-5, {
+            damping: 12,
+            stiffness: 250,
+            mass: 0.6,
+          }),
+        },
+      ],
+    },
+  };
+};
+
+const MENU_EXIT: EntryExitAnimationFunction = () => {
+  "worklet";
+  return {
+    initialValues: {
+      opacity: 1,
+      transform: [{ translateY: -5 }],
+    },
+    animations: {
+      opacity: withTiming(0, { duration: 100 }),
+      transform: [{ translateY: withTiming(-12, { duration: 100 }) }],
+    },
+  };
+};
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -97,6 +139,7 @@ const DropdownMenuContent = React.forwardRef<
   (
     {
       className,
+      children,
       overlayClassName,
       overlayStyle,
       portalHost,
@@ -105,6 +148,8 @@ const DropdownMenuContent = React.forwardRef<
     },
     ref
   ) => {
+    const { open } = DropdownMenuPrimitive.useRootContext();
+
     return (
       <DropdownMenuPrimitive.Portal hostName={portalHost}>
         <DropdownMenuPrimitive.Overlay
@@ -115,15 +160,31 @@ const DropdownMenuContent = React.forwardRef<
           }
           className={overlayClassName}
         >
+          {/*
+            Keep Content as the positioned shell (relative to the full-screen
+            overlay). Animate only the sized menu card — animating a wrapper
+            around Content made a full-screen opacity veil on Android.
+          */}
           <DropdownMenuPrimitive.Content
             ref={ref}
-            forceMount={forceMount} // Ensure the primitive doesn't unmount before animation ends
-            className={cn(
-              "z-50 min-w-[8rem]  overflow-hidden rounded-3xl shadow-md pb-6",
-              className
-            )}
+            forceMount={forceMount}
+            className="border-0 bg-transparent p-0 shadow-none"
             {...props}
-          />
+          >
+            <Animated.View
+              entering={MENU_ENTER}
+              exiting={MENU_EXIT}
+              className={cn(
+                "z-50 min-w-[8rem] overflow-hidden rounded-3xl bg-popover pb-6 shadow-md",
+                open
+                  ? "web:animate-in web:fade-in-0 web:zoom-in-95"
+                  : "web:animate-out web:fade-out-0 web:zoom-out-95",
+                className
+              )}
+            >
+              {children as React.ReactNode}
+            </Animated.View>
+          </DropdownMenuPrimitive.Content>
         </DropdownMenuPrimitive.Overlay>
       </DropdownMenuPrimitive.Portal>
     );
@@ -191,7 +252,7 @@ const DropdownMenuRadioItem = React.forwardRef<
   >
     <View className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <View className="bg-foreground h-2 w-2 rounded-full" />
+        <View className="bg-popover-foreground h-2 w-2 rounded-full" />
       </DropdownMenuPrimitive.ItemIndicator>
     </View>
     <>{children}</>

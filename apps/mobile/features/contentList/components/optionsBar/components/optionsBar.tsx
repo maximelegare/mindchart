@@ -63,35 +63,35 @@ function OptionsDropdown<T extends string>({
         <FilterChip icon={selectedIcon} label={selectedLabel} selected={open} />
       </DropdownMenuTrigger>
 
-      {open ? (
-        <DropdownMenuContent
-          forceMount
-          side="bottom"
-          align="start"
-          className="mt-1 border border-border bg-background pb-2 shadow-md"
-          style={{ minWidth: 160 }}
+      <DropdownMenuContent
+        side="bottom"
+        align="start"
+        className=" border border-border bg-popover pb-2 shadow-md"
+        style={{ minWidth: 160, marginTop: 8 }}
+      >
+        <DropdownMenuRadioGroup
+          value={value}
+          onValueChange={(next) => onValueChange(next as T)}
         >
-          <DropdownMenuRadioGroup
-            value={value}
-            onValueChange={(next) => onValueChange(next as T)}
-          >
-            {options.map((option) => (
-              <DropdownMenuRadioItem
-                key={option.value}
-                value={option.value}
-                className="flex-row items-center gap-2"
+          {options.map((option) => (
+            <DropdownMenuRadioItem
+              key={option.value}
+              value={option.value}
+              className="flex-row items-center gap-2"
+            >
+              {option.icon ? (
+                <Icon name={option.icon} color="popover-foreground" size={16} />
+              ) : null}
+              <Typography
+                variant="p"
+                className="text-md text-popover-foreground"
               >
-                {option.icon ? (
-                  <Icon name={option.icon} color="text" size={16} />
-                ) : null}
-                <Typography variant="p" className="text-md text-foreground">
-                  {option.label}
-                </Typography>
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      ) : null}
+                {option.label}
+              </Typography>
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }
