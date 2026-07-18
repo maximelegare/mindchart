@@ -1,9 +1,9 @@
 import ModeToggle from "@/components/ui/modeToggle";
-import { memo, useEffect, useState } from "react";
-import { View } from "react-native";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
+import { memo, useEffect, useState } from "react";
 import { useGraphStore } from "../context/graphContext";
 import { GraphMode } from "../types/types";
+import { GraphFilterChips } from "./graphFilterChips";
 
 const MODE_VALUES = {
   first: { name: "category", icon: "shapes" as const },
@@ -25,18 +25,20 @@ export const GraphModeToggle = memo(function GraphModeToggle() {
     []
   );
 
+  const modeToggle = (
+    <ModeToggle
+      values={MODE_VALUES}
+      currentMode={mode}
+      onToggle={(nextMode) => {
+        const next: GraphMode = nextMode === "topic" ? "topic" : "category";
+        useGraphStore.getState().setGraphMode(next);
+      }}
+    />
+  );
+
   return (
     <PageOptionsHeaderContainer>
-      <View className="flex-row items-center justify-start">
-        <ModeToggle
-          values={MODE_VALUES}
-          currentMode={mode}
-          onToggle={(nextMode) => {
-            const next: GraphMode = nextMode === "topic" ? "topic" : "category";
-            useGraphStore.getState().setGraphMode(next);
-          }}
-        />
-      </View>
+      <GraphFilterChips leading={modeToggle} />
     </PageOptionsHeaderContainer>
   );
 });
