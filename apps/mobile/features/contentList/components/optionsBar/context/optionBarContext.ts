@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { OptionsBar } from "../../../types";
 
+export const OPTIONS_BAR_DEFAULTS = {
+  sortBy: "newest",
+  groupBy: "topics",
+  displayMode: "notes",
+  selectedTopicId: null,
+  selectedCategoryId: null,
+} as const satisfies OptionsBar;
+
 export type OptionsBarStore = OptionsBar & {
   handleSortByChange: (sortBy: OptionsBar["sortBy"]) => void;
   handleGroupByChange: (groupBy: OptionsBar["groupBy"]) => void;
@@ -10,11 +18,7 @@ export type OptionsBarStore = OptionsBar & {
 };
 
 export const useOptionsBar = create<OptionsBarStore>((set) => ({
-  sortBy: "newest",
-  groupBy: "topics",
-  displayMode: "notes",
-  selectedTopicId: null,
-  selectedCategoryId: null,
+  ...OPTIONS_BAR_DEFAULTS,
   handleSortByChange: (sortBy) => set({ sortBy }),
   handleGroupByChange: (groupBy) =>
     set((state) => ({

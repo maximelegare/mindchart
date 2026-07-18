@@ -17,7 +17,7 @@ type ChipItem = {
   colorBadge?: string;
 };
 
-type FilterChipProps = {
+export type FilterChipProps = {
   icon?: IconName;
   label?: string;
   selected?: boolean;

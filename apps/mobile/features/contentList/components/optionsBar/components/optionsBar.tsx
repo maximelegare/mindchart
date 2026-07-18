@@ -13,8 +13,12 @@ import {
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
-import { useOptionsBar } from "../context/optionBarContext";
+import {
+  OPTIONS_BAR_DEFAULTS,
+  useOptionsBar,
+} from "../context/optionBarContext";
 import { ContentListFilterChips, FilterChip } from "./filterChips";
+import { FunnelFilterChip } from "./funnelFilterChip";
 
 type OptionItem<T extends string> = {
   value: T;
@@ -132,10 +136,16 @@ export const OptionsBar = () => {
     handleDisplayModeChange(value);
   };
 
+  const hasNonDefaultOptions =
+    sortBy !== OPTIONS_BAR_DEFAULTS.sortBy ||
+    groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
+    displayMode !== OPTIONS_BAR_DEFAULTS.displayMode;
+
   const funnelToggle = (
-    <FilterChip
+    <FunnelFilterChip
       icon="funnel"
       selected={expanded}
+      showDot={hasNonDefaultOptions}
       onPress={() => setExpanded((prev) => !prev)}
     />
   );
