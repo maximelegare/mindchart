@@ -29,6 +29,7 @@ export const NoteDetailsPage = () => {
       headerVariant="tab"
       title={noteTitle ?? ""}
       subtitle={{ text: "Note", icon: "notebook-text" }}
+      hideTabBar
       buttons={noteId ? [<EditNoteButton noteId={noteId} />] : []}
       moreOptionsMenu={{
         links: [
