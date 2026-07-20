@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { ThoughtTable, NoteTable } from "../../schema.root";
+import { ThoughtTable, NoteTable, TopicTable } from "../../schema.root";
 
 import { eq } from "drizzle-orm";
 
@@ -16,6 +16,8 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
         note_summary: NoteTable.summary,
         note_raw_text: NoteTable.rawText,
         note_created_at: NoteTable.createdAt,
+        topic_id: NoteTable.topicId,
+        topic_name: TopicTable.name,
         thoughts_json: sql<string>`
           json_group_array(
             json_object(
@@ -33,6 +35,7 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
       })
       .from(NoteTable)
       .leftJoin(ThoughtTable, eq(ThoughtTable.noteId, NoteTable.id))
+      .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id))
       .where(eq(NoteTable.id, id))
       .groupBy(NoteTable.id);
   } catch (error) {

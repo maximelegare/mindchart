@@ -723,3 +723,169 @@ export const REFRESH_CATEGORY_TIMERS_SCRIPT = `
   true;
 })();
 `;
+
+/** Category fade/collapse for view-only editors (does not rebuild chrome). */
+export const CATEGORY_COLLAPSE_SCRIPT = `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content || window.__mcCategoryCollapseInstalled) return true;
+  window.__mcCategoryCollapseInstalled = true;
+
+  var CATEGORY_FADE_MS = 5000;
+  var COLLAPSE_TRANSITION_MS = 380;
+
+  function closest(node, predicate) {
+    while (node && node !== document.body) {
+      if (predicate(node)) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function closestLi(node) {
+    return closest(node, function (n) {
+      return n.nodeName === "LI";
+    });
+  }
+
+  function closestClass(node, className) {
+    return closest(node, function (n) {
+      return n.classList && n.classList.contains(className);
+    });
+  }
+
+  function clearCollapseTimer(li) {
+    if (li && li.__mcCollapseTimer) {
+      clearTimeout(li.__mcCollapseTimer);
+      li.__mcCollapseTimer = null;
+    }
+  }
+
+  function bounceStripe(li) {
+    var stripe = li && li.querySelector(".thought-stripe");
+    if (!stripe) return;
+    if (li.__mcBounceTimer) {
+      clearTimeout(li.__mcBounceTimer);
+      li.__mcBounceTimer = null;
+    }
+    stripe.classList.remove("is-bouncing");
+    void stripe.offsetWidth;
+    stripe.classList.add("is-bouncing");
+    li.__mcBounceTimer = setTimeout(function () {
+      stripe.classList.remove("is-bouncing");
+      li.__mcBounceTimer = null;
+    }, 700);
+  }
+
+  function collapseThoughtCategory(li) {
+    if (!li) return;
+    li.classList.add("is-collapsed");
+    li.__mcBounceTimer = setTimeout(function () {
+      bounceStripe(li);
+    }, COLLAPSE_TRANSITION_MS);
+  }
+
+  function expandThoughtCategory(li, reschedule) {
+    if (!li) return;
+    clearCollapseTimer(li);
+    var stripe = li.querySelector(".thought-stripe");
+    if (stripe) stripe.classList.remove("is-bouncing");
+    li.classList.remove("is-collapsed");
+    if (reschedule !== false) {
+      scheduleCollapse(li);
+    }
+  }
+
+  function scheduleCollapse(li) {
+    if (!li) return;
+    clearCollapseTimer(li);
+    li.classList.remove("is-collapsed");
+    var stripe = li.querySelector(".thought-stripe");
+    if (stripe) stripe.classList.remove("is-bouncing");
+    li.__mcCollapseTimer = setTimeout(function () {
+      collapseThoughtCategory(li);
+      li.__mcCollapseTimer = null;
+    }, CATEGORY_FADE_MS);
+  }
+
+  window.__mcExpandThoughtCategory = function (li) {
+    expandThoughtCategory(li, true);
+  };
+
+  window.__mcRefreshCategoryTimers = function () {
+    var lis = content.querySelectorAll("ul > li.thought-item");
+    for (var i = 0; i < lis.length; i++) {
+      if (!lis[i].classList.contains("is-collapsed")) {
+        scheduleCollapse(lis[i]);
+      }
+    }
+  };
+
+  content.addEventListener(
+    "click",
+    function (e) {
+      var rail = closestClass(e.target, "thought-rail");
+      var stripe = closestClass(e.target, "thought-stripe");
+      var chip = closestClass(e.target, "thought-category");
+      if (!rail && !stripe && !chip) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var li = closestLi(e.target);
+      if (!li) return;
+
+      if (li.classList.contains("is-collapsed")) {
+        expandThoughtCategory(li, true);
+      } else {
+        scheduleCollapse(li);
+      }
+    },
+    true
+  );
+
+  window.__mcRefreshCategoryTimers();
+  return true;
+})();
+`;
+
+/** Listen for graph button taps inside the editor WebView. */
+export const GRAPH_BUTTON_CLICK_SCRIPT = `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content || window.__mcGraphButtonInstalled) return true;
+  window.__mcGraphButtonInstalled = true;
+
+  function closestGraph(node) {
+    while (node && node !== content) {
+      if (
+        node.classList &&
+        node.classList.contains("thought-graph")
+      ) {
+        return node;
+      }
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  content.addEventListener(
+    "click",
+    function (event) {
+      var btn = closestGraph(event.target);
+      if (!btn) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var thoughtId = btn.getAttribute("data-thought-id");
+      if (!thoughtId || !window.ReactNativeWebView) return;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
+      );
+    },
+    true
+  );
+  return true;
+})();
+`;

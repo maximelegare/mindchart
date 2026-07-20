@@ -5,10 +5,13 @@ import { EditNoteButton } from "@/features/notes/editNote/components/editNoteBut
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export const NoteDetailsPage = () => {
   const [open, setOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const saveActionRef = useRef<(() => void) | null>(null);
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
   const { noteTitle, isPending, note, noteId } = useNoteDetailsData();
@@ -24,13 +27,32 @@ export const NoteDetailsPage = () => {
     });
   };
 
+  const handleEditPress = () => {
+    if (isEditing) {
+      saveActionRef.current?.();
+      return;
+    }
+    setIsEditing(true);
+  };
+
   return (
     <PageContainer
       headerVariant="tab"
       title={noteTitle ?? ""}
       subtitle={{ text: "Note", icon: "notebook-text" }}
       hideTabBar
-      buttons={noteId ? [<EditNoteButton noteId={noteId} />] : []}
+      buttons={
+        noteId
+          ? [
+              <EditNoteButton
+                key="edit-note"
+                isEditing={isEditing}
+                onPress={handleEditPress}
+                disabled={isSaving}
+              />,
+            ]
+          : []
+      }
       moreOptionsMenu={{
         links: [
           {
@@ -45,7 +67,14 @@ export const NoteDetailsPage = () => {
         currentWorkspace: false,
       }}
     >
-      <NoteDetailsFeature isPending={isPending} note={note} />
+      <NoteDetailsFeature
+        isPending={isPending}
+        note={note}
+        isEditing={isEditing}
+        onEditingChange={setIsEditing}
+        saveActionRef={saveActionRef}
+        onSavingChange={setIsSaving}
+      />
     </PageContainer>
   );
 };

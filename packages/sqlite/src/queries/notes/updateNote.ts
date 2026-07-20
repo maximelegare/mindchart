@@ -13,6 +13,7 @@ export const updateNoteQuery = async (db: DB, data: Note) => {
         title: data.title,
         summary: JSON.stringify(data.summary),
         rawText: data.rawText,
+        topicId: data.topicId,
       })
       .where(eq(NoteTable.id, data.id));
   } catch (error) {
