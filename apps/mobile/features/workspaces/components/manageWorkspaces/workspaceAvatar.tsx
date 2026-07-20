@@ -4,7 +4,6 @@ import { StyleSheet, View } from "react-native";
 import type { Workspace } from "../../context/workspacesContext";
 import { useWorkspacesStore } from "../../context/workspacesContext";
 import { Typography } from "@/components/ui";
-import { cn } from "@/lib/cn";
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import {
@@ -30,25 +29,28 @@ export const WorkspaceAvatar = ({
   if (!ws) return null;
 
   const sizePx = size === "sm" ? 28 : 36;
+  const radius = sizePx / 2;
   const gradientColors =
     parseWorkspaceColor(ws.color) ?? DEFAULT_WORKSPACE_COLOR;
 
   return (
     <View
-      className={cn(
-        "border-[1px] rounded-full overflow-hidden items-center justify-center"
-      )}
       style={{
         width: sizePx,
         height: sizePx,
+        borderRadius: radius,
+        overflow: "hidden",
+        borderWidth: 1,
         borderColor: hsl("background", colorScheme, 20),
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <LinearGradient
         colors={gradientColors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
+        style={[StyleSheet.absoluteFillObject, { borderRadius: radius }]}
         pointerEvents="none"
       />
       {ws.icon ? (

@@ -26,7 +26,7 @@ export const GraphThoughIdPage = () => {
     <PageContainer
       headerVariant="stack"
       showLogo={true}
-      buttons={<SearchFeature />}
+      buttons={[<SearchFeature />]}
       optionsHeader={<GraphModeToggle />}
       moreOptionsMenu={{
         links: [{ label: "Settings", icon: "settings", href: "/settings" }],

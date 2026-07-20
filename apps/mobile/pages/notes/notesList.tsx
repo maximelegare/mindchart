@@ -19,7 +19,7 @@ export const NotesListPage = () => {
       optionsHeader={<OptionsBar />}
       headerVariant="stack"
       collapsingHeader
-      buttons={<SearchFeature />}
+      buttons={[<SearchFeature />]}
       moreOptionsMenu={{
         links: moreOptionsMenuLinks,
         state: { open, setOpen },

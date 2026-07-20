@@ -1,22 +1,17 @@
 import { PageContainer } from "@/components/layout/page/pageContainer";
 import { useModal } from "@/components/ui/modal/modal";
 import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
-import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
-import { EditNoteFeature } from "@/features/notes/editNote/views";
+import { EditNoteButton } from "@/features/notes/editNote/components/editNoteButton";
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
-import { SearchFeature } from "@/features/search/views";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { useState } from "react";
 
 export const NoteDetailsPage = () => {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const { noteId, noteTitle, isPending, note } = useNoteDetailsData();
-
-  const { editNoteAction } = useEditNote();
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
+  const { noteTitle, isPending, note, noteId } = useNoteDetailsData();
 
   const handleDeleteNote = () => {
     openModal({
@@ -34,24 +29,19 @@ export const NoteDetailsPage = () => {
       headerVariant="tab"
       title={noteTitle ?? ""}
       subtitle={{ text: "Note", icon: "notebook-text" }}
-      buttons={<SearchFeature />}
+      buttons={noteId ? [<EditNoteButton noteId={noteId} />] : []}
       moreOptionsMenu={{
         links: [
           {
-            label: "Edit Note",
-            icon: "pencil",
-            component: (
-              <EditNoteFeature
-                noteId={noteId ?? ""}
-                setOpen={setOpen}
-                onAction={editNoteAction}
-              />
-            ),
+            label: "Delete Note",
+            icon: "trash-2",
+            action: handleDeleteNote,
           },
-          { label: "Delete Note", icon: "trash-2", action: handleDeleteNote },
           { label: "Settings", icon: "settings", href: "/settings" },
         ],
         state: { open, setOpen },
+        trigger: "ellipsis",
+        currentWorkspace: false,
       }}
     >
       <NoteDetailsFeature isPending={isPending} note={note} />

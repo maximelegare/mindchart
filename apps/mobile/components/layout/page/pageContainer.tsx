@@ -38,13 +38,21 @@ type PageContainerProps = {
   };
   showLogo?: boolean;
   headerVariant?: HeaderVariant;
-  buttons?: React.ReactNode;
+  buttons?: React.ReactNode[];
   children: React.ReactNode;
   noScrollView?: boolean;
   collapsingHeader?: boolean;
   moreOptionsMenu?: {
     state: { open: boolean; setOpen: (open: boolean) => void };
     links: MoreOptionsMenuProps["links"];
+    /**
+     * Header trigger content.
+     * - `IconName`: show that icon
+     * - `"currentWorkspace"` / omitted: show the workspace avatar
+     */
+    trigger?: MoreOptionsMenuProps["trigger"];
+    /** Show the current workspace switcher in the menu. Defaults to true. */
+    currentWorkspace?: boolean;
   };
   optionsHeader?: React.ReactNode;
 };

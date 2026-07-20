@@ -25,6 +25,7 @@ export type IconName =
   | "database"
   | "download"
   | "ellipsis-vertical"
+  | "ellipsis"
   | "funnel"
   | "graph"
   | "headset"
@@ -164,6 +165,10 @@ export const ICON_METADATA: Record<
   "ellipsis-vertical": {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></g>`,
+  },
+  ellipsis: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></g>`,
   },
   funnel: {
     viewBox: "0 0 24 24",
