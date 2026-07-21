@@ -502,7 +502,9 @@ export function ThoughtsEditor({
           className={
             plain && !showEditBorder
               ? "relative flex-1 min-h-0 overflow-hidden"
-              : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
+              : plain && showEditBorder
+                ? "relative flex-1 min-h-0 overflow-hidden rounded-t-lg border border-b-0 border-input"
+                : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
           }
           style={
             plain
