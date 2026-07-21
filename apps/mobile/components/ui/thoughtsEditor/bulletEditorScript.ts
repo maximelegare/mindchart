@@ -204,6 +204,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function bounceStripe(li) {
+      if (window.__mcSimplified) return;
       var stripe = li && li.querySelector(".thought-stripe");
       if (!stripe) return;
       stripe.classList.remove("is-bouncing");
@@ -217,7 +218,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function collapseThoughtCategory(li) {
-      if (!li) return;
+      if (!li || window.__mcSimplified) return;
       li.classList.add("is-collapsed");
       li.__mcBounceTimer = setTimeout(function () {
         bounceStripe(li);
@@ -236,7 +237,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function scheduleCollapse(li) {
-      if (!li) return;
+      if (!li || window.__mcSimplified) return;
       clearCollapseTimer(li);
       li.classList.remove("is-collapsed");
       var stripe = li.querySelector(".thought-stripe");
@@ -252,6 +253,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     };
 
     window.__mcRefreshCategoryTimers = function () {
+      if (window.__mcSimplified) return;
       var lis = content.querySelectorAll("ul > li");
       for (var i = 0; i < lis.length; i++) {
         ensureCategoryChrome(lis[i]);
@@ -676,6 +678,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     );
 
     content.addEventListener("click", function (e) {
+      if (window.__mcSimplified) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
       var chip = closestClass(e.target, "thought-category");
@@ -713,6 +716,91 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
 export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;
+}
+
+/** Toggle simplified (plain bullets) chrome inside the editor WebView. */
+export function setSimplifiedModeScript(
+  simplified: boolean,
+  borderColor: string
+): string {
+  const css = simplified
+    ? `
+      .thought-title {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+      }
+      .thought-category {
+        display: none !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        pointer-events: none !important;
+      }
+      .thought-rail {
+        pointer-events: none !important;
+        cursor: default !important;
+      }
+      .thought-stripe,
+      li.thought-item .thought-stripe,
+      li.thought-item.is-collapsed .thought-stripe {
+        top: 8px !important;
+        bottom: auto !important;
+        width: 6px !important;
+        height: 6px !important;
+        margin-left: -3px !important;
+        border-radius: 999px !important;
+        background-color: ${borderColor} !important;
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+      }
+      .thought-stripe.is-bouncing {
+        animation: none !important;
+      }
+    `
+    : "";
+
+  return `
+(function () {
+  window.__mcSimplified = ${simplified ? "true" : "false"};
+
+  var style = document.getElementById("mc-simplified-style");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "mc-simplified-style";
+    document.head.appendChild(style);
+  }
+  style.textContent = ${JSON.stringify(css)};
+
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) {
+    var lis = content.querySelectorAll("ul > li.thought-item, ul > li");
+    for (var i = 0; i < lis.length; i++) {
+      var li = lis[i];
+      if (li.__mcCollapseTimer) {
+        clearTimeout(li.__mcCollapseTimer);
+        li.__mcCollapseTimer = null;
+      }
+      if (li.__mcBounceTimer) {
+        clearTimeout(li.__mcBounceTimer);
+        li.__mcBounceTimer = null;
+      }
+      li.classList.remove("is-collapsed");
+      var stripe = li.querySelector(".thought-stripe");
+      if (stripe) stripe.classList.remove("is-bouncing");
+    }
+  }
+
+  if (!window.__mcSimplified && typeof window.__mcRefreshCategoryTimers === "function") {
+    window.__mcRefreshCategoryTimers();
+  }
+  return true;
+})();
+`;
 }
 
 export const REFRESH_CATEGORY_TIMERS_SCRIPT = `
@@ -763,6 +851,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   }
 
   function bounceStripe(li) {
+    if (window.__mcSimplified) return;
     var stripe = li && li.querySelector(".thought-stripe");
     if (!stripe) return;
     if (li.__mcBounceTimer) {
@@ -779,7 +868,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   }
 
   function collapseThoughtCategory(li) {
-    if (!li) return;
+    if (!li || window.__mcSimplified) return;
     li.classList.add("is-collapsed");
     li.__mcBounceTimer = setTimeout(function () {
       bounceStripe(li);
@@ -798,7 +887,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   }
 
   function scheduleCollapse(li) {
-    if (!li) return;
+    if (!li || window.__mcSimplified) return;
     clearCollapseTimer(li);
     li.classList.remove("is-collapsed");
     var stripe = li.querySelector(".thought-stripe");
@@ -814,6 +903,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   };
 
   window.__mcRefreshCategoryTimers = function () {
+    if (window.__mcSimplified) return;
     var lis = content.querySelectorAll("ul > li.thought-item");
     for (var i = 0; i < lis.length; i++) {
       if (!lis[i].classList.contains("is-collapsed")) {
@@ -825,6 +915,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   content.addEventListener(
     "click",
     function (e) {
+      if (window.__mcSimplified) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
       var chip = closestClass(e.target, "thought-category");

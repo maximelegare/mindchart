@@ -26,6 +26,8 @@ export type IconName =
   | "download"
   | "ellipsis-vertical"
   | "ellipsis"
+  | "eye"
+  | "folder"
   | "funnel"
   | "graph"
   | "headset"
@@ -49,6 +51,7 @@ export type IconName =
   | "rotate-cw"
   | "save"
   | "search"
+  | "settings-2"
   | "settings"
   | "shapes"
   | "shopping-cart"
@@ -170,6 +173,14 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></g>`,
   },
+  eye: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></g>`,
+  },
+  folder: {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path>`,
+  },
   funnel: {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"></path>`,
@@ -261,6 +272,10 @@ export const ICON_METADATA: Record<
   search: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m21 21l-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></g>`,
+  },
+  "settings-2": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 17H5M19 7h-9"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></g>`,
   },
   settings: {
     viewBox: "0 0 24 24",

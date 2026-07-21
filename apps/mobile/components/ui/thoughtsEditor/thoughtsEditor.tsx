@@ -33,6 +33,7 @@ import {
   GRAPH_BUTTON_CLICK_SCRIPT,
   REFRESH_CATEGORY_TIMERS_SCRIPT,
   setShowTitlesScript,
+  setSimplifiedModeScript,
 } from "./bulletEditorScript";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
@@ -91,6 +92,13 @@ const REQUEST_CURSOR_OFFSET_SCRIPT = `
       el = el.parentElement;
     }
     offsetY = offsetY || siblingOffset || rectOffset;
+    // Keep the caret visible when the WebView scrolls internally (fill-height mode).
+    try {
+      var focusEl = node.nodeType === 3 ? node.parentElement : node;
+      if (focusEl && focusEl.scrollIntoView) {
+        focusEl.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
+    } catch (e) {}
     if (offsetY && window.ReactNativeWebView) {
       window.ReactNativeWebView.postMessage(
         JSON.stringify({ type: "OFFSET_Y", data: offsetY })
@@ -156,6 +164,11 @@ type ThoughtsEditorProps = {
   showGraphButtons?: boolean;
   /** No card chrome: transparent background, no border (border still shown while editing). */
   plain?: boolean;
+  /**
+   * View-only plain bullets: no titles/category chrome, static dots (no stripe animation).
+   * Ignored while editing (`readOnly={false}`).
+   */
+  simplified?: boolean;
 };
 
 export function ThoughtsEditor({
@@ -165,12 +178,17 @@ export function ThoughtsEditor({
   readOnly = false,
   showGraphButtons = false,
   plain = false,
+  simplified = false,
 }: ThoughtsEditorProps) {
   const { colorScheme } = useColorScheme();
   const { push } = useRouter();
   const { getValues, setValue, watch } =
     useFormContext<ThoughtsEditorFormValues>();
-  const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
+  // Static simplified chrome only applies in the view editor.
+  const effectiveSimplified = simplified && readOnly;
+  const [showTitles, setShowTitles] = React.useState(
+    effectiveSimplified ? false : defaultShowTitles
+  );
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
   const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
@@ -183,9 +201,14 @@ export function ThoughtsEditor({
   const lastCursorYRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const showTitlesRef = React.useRef(showTitles);
-  showTitlesRef.current = showTitles;
+  const effectiveShowTitles = effectiveSimplified ? false : showTitles;
+  showTitlesRef.current = effectiveShowTitles;
+  const simplifiedRef = React.useRef(effectiveSimplified);
+  simplifiedRef.current = effectiveSimplified;
+  const borderColorRef = React.useRef(hsl("border", colorScheme));
+  borderColorRef.current = hsl("border", colorScheme);
   const initialHtmlRef = React.useRef(
-    thoughtsToHtml(getValues("thoughts"), defaultShowTitles, {
+    thoughtsToHtml(getValues("thoughts"), effectiveShowTitles, {
       showGraphButtons,
     })
   );
@@ -268,7 +291,16 @@ export function ThoughtsEditor({
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
   }, []);
 
+  const applySimplifiedMode = React.useCallback((nextSimplified: boolean) => {
+    richRef.current?.injectJavascript(
+      setSimplifiedModeScript(nextSimplified, borderColorRef.current)
+    );
+  }, []);
+
   const handleEditorInitialized = React.useCallback(() => {
+    // Apply simplified before collapse timers so plain bullets never animate.
+    applyEditorFlags(showTitlesRef.current);
+    applySimplifiedMode(simplifiedRef.current);
     if (readOnly) {
       richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
     } else {
@@ -277,11 +309,10 @@ export function ThoughtsEditor({
     if (showGraphButtons) {
       richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
     }
-    applyEditorFlags(showTitlesRef.current);
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
     });
-  }, [applyEditorFlags, readOnly, showGraphButtons]);
+  }, [applyEditorFlags, applySimplifiedMode, readOnly, showGraphButtons]);
 
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
@@ -311,10 +342,18 @@ export function ThoughtsEditor({
       thoughtsToHtml(empty, showTitlesRef.current, { showGraphButtons })
     );
     refreshCategoryTimers();
-  }, [noteId, refreshCategoryTimers, setValue, showGraphButtons]);
+    applySimplifiedMode(simplifiedRef.current);
+  }, [
+    applySimplifiedMode,
+    noteId,
+    refreshCategoryTimers,
+    setValue,
+    showGraphButtons,
+  ]);
 
   const handleShowTitlesChange = React.useCallback(
     (nextShowTitles: boolean) => {
+      if (simplifiedRef.current) return;
       setShowTitles(nextShowTitles);
       showTitlesRef.current = nextShowTitles;
       applyEditorFlags(nextShowTitles);
@@ -332,15 +371,56 @@ export function ThoughtsEditor({
         thoughtsToHtml(nextThoughts, nextShowTitles, { showGraphButtons })
       );
       refreshCategoryTimers();
+      applySimplifiedMode(simplifiedRef.current);
     },
     [
       applyEditorFlags,
+      applySimplifiedMode,
       getValues,
       refreshCategoryTimers,
       setValue,
       showGraphButtons,
     ]
   );
+
+  const lastSimplifiedRef = React.useRef(effectiveSimplified);
+  React.useEffect(() => {
+    if (lastSimplifiedRef.current === effectiveSimplified) return;
+    lastSimplifiedRef.current = effectiveSimplified;
+
+    if (effectiveSimplified) {
+      showTitlesRef.current = false;
+      applyEditorFlags(false);
+      const nextThoughts = getValues("thoughts").map((thought) => ({
+        ...thought,
+        summary: thought.summary || thought.title,
+      }));
+      setValue("thoughts", nextThoughts, { shouldDirty: true });
+      richRef.current?.setContentHTML(
+        thoughtsToHtml(nextThoughts, false, { showGraphButtons })
+      );
+      refreshCategoryTimers();
+      applySimplifiedMode(true);
+      return;
+    }
+
+    showTitlesRef.current = showTitles;
+    applyEditorFlags(showTitles);
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
+    );
+    refreshCategoryTimers();
+    applySimplifiedMode(false);
+  }, [
+    applyEditorFlags,
+    applySimplifiedMode,
+    effectiveSimplified,
+    getValues,
+    refreshCategoryTimers,
+    setValue,
+    showGraphButtons,
+    showTitles,
+  ]);
 
   const handleEditorMessage = React.useCallback(
     (message: { type: string; data?: unknown }) => {
@@ -429,47 +509,47 @@ export function ThoughtsEditor({
                 </Typography>
               </Button>
 
-              <View className="flex-row items-center gap-3">
-                <Typography className="text-sm text-muted-foreground">
-                  Titles
-                </Typography>
-                <Switch
-                  checked={showTitles}
-                  onCheckedChange={handleShowTitlesChange}
-                  aria-label="Show thought titles"
-                  trackColor={hsl("border", colorScheme)}
-                  trackCheckedColor={hsl("primary", colorScheme)}
-                  thumbColor={hsl("card", colorScheme)}
-                />
-              </View>
+              {showToolbar && !effectiveSimplified ? (
+                <View className="flex-row items-center gap-3">
+                  <Typography className="text-sm text-muted-foreground">
+                    Titles
+                  </Typography>
+                  <Switch
+                    checked={showTitles}
+                    onCheckedChange={handleShowTitlesChange}
+                    aria-label="Show thought titles"
+                    trackColor={hsl("border", colorScheme)}
+                    trackCheckedColor={hsl("primary", colorScheme)}
+                    thumbColor={hsl("card", colorScheme)}
+                  />
+                </View>
+              ) : (
+                <View />
+              )}
             </View>
           ) : null}
 
-          <ScrollView
-            ref={scrollRef}
+          <View
             className="flex-1 min-h-0"
-            nestedScrollEnabled
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="none"
+            style={{
+              paddingTop: showToolbar ? EDITOR_TOOLBAR_HEIGHT : 0,
+              paddingBottom:
+                !readOnly && keyboardOpen ? CARET_BOTTOM_MARGIN : 0,
+            }}
             onLayout={(event) => {
               scrollViewHeightRef.current = event.nativeEvent.layout.height;
               if (keyboardOpenRef.current) {
                 scrollCursorIntoView(lastCursorYRef.current);
               }
             }}
-            contentContainerStyle={{
-              flexGrow: 1,
-              // Keep content clear of the absolute toolbar without changing the outer layout size.
-              paddingTop: showToolbar ? EDITOR_TOOLBAR_HEIGHT : 0,
-              paddingBottom:
-                !readOnly && keyboardOpen ? CARET_BOTTOM_MARGIN : 12,
-            }}
           >
             {fontFaceCss == null ? null : (
               <RichEditor
                 ref={richRef}
-                style={{ flex: 1, minHeight: 160 }}
-                useContainer
+                style={{ flex: 1 }}
+                useContainer={false}
+                scrollEnabled
+                nestedScrollEnabled
                 disabled={readOnly}
                 pasteAsPlainText
                 initialContentHTML={initialHtmlRef.current}
@@ -490,6 +570,8 @@ export function ThoughtsEditor({
                   font-size: 16px;
                   line-height: 1.45;
                   padding: ${plain ? "8px 2px" : "12px"};
+                  min-height: 100%;
+                  box-sizing: border-box;
                 `,
                   cssText: `
                   ul {
@@ -640,7 +722,7 @@ export function ThoughtsEditor({
                 onMessage={handleEditorMessage}
               />
             )}
-          </ScrollView>
+          </View>
         </View>
       </View>
 
