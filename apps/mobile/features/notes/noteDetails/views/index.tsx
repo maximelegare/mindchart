@@ -222,11 +222,11 @@ function NoteDetailsContent({
 
   // const topicValue = form.watch("topic");
 
-  const [titleInputHeight, setTitleInputHeight] = React.useState(34);
+  const [titleInputHeight, setTitleInputHeight] = React.useState(28);
 
   React.useEffect(() => {
     if (isEditing) {
-      setTitleInputHeight(34);
+      setTitleInputHeight(28);
     }
   }, [isEditing]);
 
@@ -254,10 +254,10 @@ function NoteDetailsContent({
                     width: "100%",
                     maxWidth: "100%",
                     fontFamily: "QuicksandBold",
-                    fontSize: 28,
-                    lineHeight: 34,
-                    minHeight: Math.max(34, titleInputHeight),
-                    height: Math.max(34, titleInputHeight),
+                    fontSize: 22,
+                    lineHeight: 28,
+                    minHeight: Math.max(28, titleInputHeight),
+                    height: Math.max(28, titleInputHeight),
                     padding: 0,
                     margin: 0,
                   }}
@@ -274,8 +274,8 @@ function NoteDetailsContent({
             />
           ) : (
             <Typography
-              variant="h2"
-              className="w-full text-3xl leading-9"
+              variant="h3"
+              className="w-full text-2xl leading-7"
               style={{ flexShrink: 1 }}
             >
               {note.title}
