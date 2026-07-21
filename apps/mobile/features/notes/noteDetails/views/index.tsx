@@ -314,7 +314,7 @@ function NoteDetailsContent({
 
         <View className="flex-1 min-h-0">
           <ThoughtsEditor
-            key={`${note.id}-${isEditing ? "edit" : "view"}`}
+            key={note.id}
             noteId={note.id}
             categories={categoriesData ?? []}
             defaultShowTitles={showTitles}

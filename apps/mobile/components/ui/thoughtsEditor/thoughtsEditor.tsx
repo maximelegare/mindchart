@@ -143,6 +143,9 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
   );
 }
 
+/** Height of the floating Clear / Titles toolbar overlay. */
+const EDITOR_TOOLBAR_HEIGHT = 44;
+
 type ThoughtsEditorProps = {
   noteId: string;
   categories: Category[];
@@ -151,7 +154,7 @@ type ThoughtsEditorProps = {
   readOnly?: boolean;
   /** Show a graph open button on the right of each thought. */
   showGraphButtons?: boolean;
-  /** No card chrome: transparent background, no border. */
+  /** No card chrome: transparent background, no border (border still shown while editing). */
   plain?: boolean;
 };
 
@@ -388,6 +391,8 @@ export function ThoughtsEditor({
   const headerBg = hsl("muted", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
   const graphButtonColor = mutedFg;
+  const showToolbar = !readOnly;
+  const showEditBorder = !readOnly;
 
   return (
     <BottomSheet className="flex-1 min-h-0">
@@ -400,19 +405,23 @@ export function ThoughtsEditor({
 
         <View
           className={
+            plain && !showEditBorder
+              ? "relative flex-1 min-h-0 overflow-hidden"
+              : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
+          }
+          style={
             plain
-              ? "flex-1 min-h-0 overflow-hidden"
-              : "flex-1 min-h-0 overflow-hidden rounded-lg border border-input bg-card"
+              ? { backgroundColor: "transparent" }
+              : { backgroundColor: hsl("card", colorScheme) }
           }
         >
-          {!readOnly ? (
+          {showToolbar ? (
             <View
-              className={
-                plain
-                  ? "flex-row items-center justify-between shrink-0 px-1 py-2"
-                  : "flex-row items-center justify-between shrink-0 border-b border-input px-3 py-2.5"
-              }
-              style={plain ? undefined : { backgroundColor: headerBg }}
+              className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-between border-b border-input px-3"
+              style={{
+                height: EDITOR_TOOLBAR_HEIGHT,
+                backgroundColor: headerBg,
+              }}
             >
               <Button onPress={handleClearContent} variant="ghost" size="sm">
                 <Typography className="text-muted-foreground text-xs">
@@ -450,6 +459,8 @@ export function ThoughtsEditor({
             }}
             contentContainerStyle={{
               flexGrow: 1,
+              // Keep content clear of the absolute toolbar without changing the outer layout size.
+              paddingTop: showToolbar ? EDITOR_TOOLBAR_HEIGHT : 0,
               paddingBottom:
                 !readOnly && keyboardOpen ? CARET_BOTTOM_MARGIN : 12,
             }}
