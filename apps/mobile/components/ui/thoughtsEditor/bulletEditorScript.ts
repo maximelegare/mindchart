@@ -7,7 +7,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
   if (!window.__mcBulletGuardInstalled) {
     window.__mcBulletGuardInstalled = true;
-    window.__mcShowTitles = false;
+    // Preserve a flag set by setShowTitlesScript; only default when unset.
+    if (typeof window.__mcShowTitles !== "boolean") {
+      window.__mcShowTitles = false;
+    }
     var CATEGORY_FADE_MS = 5000;
     var COLLAPSE_TRANSITION_MS = 380;
 
@@ -455,35 +458,18 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function handleEnter(e, li, anchor) {
-      if (!window.__mcShowTitles) {
-        setTimeout(function () {
-          var next = li.nextElementSibling;
-          if (next && next.nodeName === "LI") {
-            next.setAttribute("data-category-id", liCategoryId(li));
-            ensureCategoryChrome(next);
-            scheduleCollapse(next);
-          }
-          normalizeLis();
-          notifyChange();
-          if (next && next.nodeName === "LI") {
-            var field = next.querySelector(".thought-summary") || next;
-            placeCaretAtStartSoon(field);
-          }
-        }, 0);
-        return;
-      }
-
-      var inTitle = closestClass(anchor, "thought-title");
-      if (inTitle) {
-        e.preventDefault();
-        e.stopPropagation();
-        var summary = li.querySelector(".thought-summary");
-        if (summary) placeCaretAtStartSoon(summary);
-        return;
-      }
-
       e.preventDefault();
       e.stopPropagation();
+
+      if (window.__mcShowTitles) {
+        var inTitle = closestClass(anchor, "thought-title");
+        if (inTitle) {
+          var summary = li.querySelector(".thought-summary");
+          if (summary) placeCaretAtStartSoon(summary);
+          return;
+        }
+      }
+
       var newLi = document.createElement("li");
       var categoryId = liCategoryId(li);
       newLi.className = "thought-item";
@@ -495,8 +481,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         li.parentNode.appendChild(newLi);
       }
       scheduleCollapse(newLi);
-      var title = newLi.querySelector(".thought-title");
-      if (title) placeCaretAtStartSoon(title);
+      var focusField = window.__mcShowTitles
+        ? newLi.querySelector(".thought-title")
+        : newLi.querySelector(".thought-summary");
+      if (focusField) placeCaretAtStartSoon(focusField);
       notifyChange();
     }
 

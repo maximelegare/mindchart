@@ -186,9 +186,8 @@ export function ThoughtsEditor({
     useFormContext<ThoughtsEditorFormValues>();
   // Static simplified chrome only applies in the view editor.
   const effectiveSimplified = simplified && readOnly;
-  const [showTitles, setShowTitles] = React.useState(
-    effectiveSimplified ? false : defaultShowTitles
-  );
+  // Keep the user's Titles preference even while simplified view hides them.
+  const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
   const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
@@ -314,6 +313,27 @@ export function ThoughtsEditor({
     });
   }, [applyEditorFlags, applySimplifiedMode, readOnly, showGraphButtons]);
 
+  // View mode only installs collapse chrome; install the Enter/backspace guard when editing.
+  React.useEffect(() => {
+    if (readOnly) return;
+    // Set titles flag before the guard installs/normalizes, or titles get stripped.
+    applyEditorFlags(showTitles);
+    applySimplifiedMode(false);
+    richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
+    );
+    refreshCategoryTimers();
+    // Only re-run when entering edit (and graph chrome changes with it) — not on Titles toggle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- showTitles/getValues read from the edit-entry render
+  }, [
+    applyEditorFlags,
+    applySimplifiedMode,
+    readOnly,
+    refreshCategoryTimers,
+    showGraphButtons,
+  ]);
+
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
       const previous = getValues("thoughts");
@@ -389,15 +409,11 @@ export function ThoughtsEditor({
     lastSimplifiedRef.current = effectiveSimplified;
 
     if (effectiveSimplified) {
+      // Hide titles in the WebView only — keep form title fields and showTitles state.
       showTitlesRef.current = false;
       applyEditorFlags(false);
-      const nextThoughts = getValues("thoughts").map((thought) => ({
-        ...thought,
-        summary: thought.summary || thought.title,
-      }));
-      setValue("thoughts", nextThoughts, { shouldDirty: true });
       richRef.current?.setContentHTML(
-        thoughtsToHtml(nextThoughts, false, { showGraphButtons })
+        thoughtsToHtml(getValues("thoughts"), false, { showGraphButtons })
       );
       refreshCategoryTimers();
       applySimplifiedMode(true);
@@ -417,7 +433,6 @@ export function ThoughtsEditor({
     effectiveSimplified,
     getValues,
     refreshCategoryTimers,
-    setValue,
     showGraphButtons,
     showTitles,
   ]);
