@@ -1,10 +1,3 @@
-import {
-  CategorySchema,
-  GenerateNoteResponseSchema,
-  Note,
-  Thought,
-  Topic,
-} from "@repo/zod-schemas/client";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
@@ -13,9 +6,7 @@ import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import { GenerateNotePreview } from "@/features/notes/notePreview/generateNotePreview";
 import { CategoryKey } from "@repo/sqlite";
-import { z } from "zod";
 import React from "react";
 import { Gradient } from "@/components/ui/gradient";
 import { cn } from "@/lib/cn";
@@ -24,6 +15,9 @@ import {
   KEYBOARD_ACTION_FOOTER_PADDING_Y,
   KeyboardActionFooter,
 } from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
+import { useSaveGeneratedNote } from "@/features/notes/noteCreation/features/generateNote/hooks/useSaveGeneratedNote";
+import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
+import { router } from "expo-router";
 
 const BUTTON_HEIGHT = 48;
 
@@ -47,27 +41,15 @@ export const GenerateNote = ({
 }) => {
   const { notesAndThoughts, categories } = useControllers();
   const { colorScheme } = useColorScheme();
-
   const { aiProviders } = useAISettingsPreferences();
-  const { openModal, setModalContent, closeModal } = useModal();
+  const { openModal, closeModal, setModalContent } = useModal();
+  const { saveGeneratedNote } = useSaveGeneratedNote();
+  const requestFabClose = useNoteCreationStore(
+    (state) => state.requestFabClose
+  );
 
-  const { useInsertNoteAndThoughtsMutation, useGenerateNoteMutation } =
-    notesAndThoughts;
-
-  const { useInsertEmbeddingsMutation, useGenerateLocalEmbeddingsMutation } =
-    useControllers().embeddings;
-
-  const { useInsertNewTopicMutation } = useControllers().topics;
-  const { mutateAsync: insertNewTopicMutateAsync } =
-    useInsertNewTopicMutation();
-
+  const { useGenerateNoteMutation } = notesAndThoughts;
   const { mutateAsync: generateNoteMutateAsync } = useGenerateNoteMutation();
-  const { mutateAsync: generateLocalEmbeddingsMutateAsync } =
-    useGenerateLocalEmbeddingsMutation();
-  const { mutateAsync: insertEmbeddingsMutateAsync } =
-    useInsertEmbeddingsMutation();
-  const { mutateAsync: insertNoteAndThoughtsMutateAsync } =
-    useInsertNoteAndThoughtsMutation();
 
   const { useFetchAllCategoriesQuery } = categories;
   const { data: categoriesData } = useFetchAllCategoriesQuery({
@@ -77,22 +59,6 @@ export const GenerateNote = ({
   const isInputValid =
     currentView === "audio" ? !!fileURI : inputText.trim().length > 0;
   const isDisabled = !isInputValid;
-
-  const handleInsertContent = async (
-    note: Note,
-    thoughts: Thought[],
-    newTopic: Topic | null
-  ) => {
-    const embeddings = await generateLocalEmbeddingsMutateAsync({ thoughts });
-
-    if (newTopic) {
-      await insertNewTopicMutateAsync({ data: newTopic });
-    }
-    await insertNoteAndThoughtsMutateAsync({ note, thoughts });
-    await insertEmbeddingsMutateAsync({ data: embeddings });
-    onSuccess?.();
-    closeModal();
-  };
 
   const handleGenerateNote = async () => {
     if (isDisabled) return;
@@ -130,27 +96,33 @@ export const GenerateNote = ({
         });
       }
 
-      const parsedResponse = GenerateNoteResponseSchema.parse(response);
-      const parsedCategories = z.array(CategorySchema).parse(categoriesData);
-
-      const {
-        responseObject: { note, thoughts, topic },
-      } = parsedResponse;
-
-      if (note && thoughts) {
-        setModalContent({
-          title: "AI Generated Note",
-          customContent: () => (
-            <GenerateNotePreview
-              onAction={handleInsertContent}
-              note={note}
-              topic={topic}
-              thoughts={thoughts}
-              categories={parsedCategories}
-            />
-          ),
-        });
+      if (!response.success || !response.responseObject) {
+        closeModal();
+        return;
       }
+
+      const { note, thoughts, topic } = response.responseObject;
+
+      if (!note || !thoughts?.length || !topic) {
+        closeModal();
+        return;
+      }
+
+      setModalContent({
+        customContent: () => (
+          <LoadingState title="Saving Your Note" size="large" />
+        ),
+      });
+
+      const noteId = await saveGeneratedNote({ note, thoughts, topic });
+
+      closeModal();
+      onSuccess?.();
+      requestFabClose();
+      router.push({
+        pathname: "/notes/[id]",
+        params: { id: noteId, mode: "preview" },
+      });
     } catch (error) {
       console.error(error);
       closeModal();

@@ -91,13 +91,41 @@ function extractLiItems(html: string): LiItem[] {
   return items;
 }
 
+/**
+ * Return the inner HTML of the first div with the given class, respecting nested divs.
+ * A naive non-greedy `.*?<\/div>` stops at the first child closing tag and drops siblings
+ * (e.g. thought-summary after thought-title inside thought-fields).
+ */
 function extractByClass(html: string, className: string): string | null {
-  const regex = new RegExp(
-    `<div\\b[^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/div>`,
+  const openRegex = new RegExp(
+    `<div\\b[^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>`,
     "i"
   );
-  const match = html.match(regex);
-  return match ? (match[1] ?? "") : null;
+  const openMatch = openRegex.exec(html);
+  if (!openMatch || openMatch.index == null) return null;
+
+  const contentStart = openMatch.index + openMatch[0].length;
+  let depth = 1;
+  const tagRegex = /<\/?div\b[^>]*>/gi;
+  tagRegex.lastIndex = contentStart;
+
+  let tag: RegExpExecArray | null;
+  while ((tag = tagRegex.exec(html)) !== null) {
+    const isClose = /^<\//.test(tag[0]);
+    const isSelfClose = /\/>$/.test(tag[0]);
+    if (isClose) {
+      depth -= 1;
+      if (depth === 0) {
+        return html.slice(contentStart, tag.index);
+      }
+      continue;
+    }
+    if (!isSelfClose) {
+      depth += 1;
+    }
+  }
+
+  return null;
 }
 
 function parseTitledLi(liHtml: string): { title: string; summary: string } {
@@ -291,10 +319,11 @@ export function htmlToThoughts(
       const label = title || summary || base.semanticLabel;
       return {
         ...base,
-        title,
-        summary,
+        // Keep existing values when the editor HTML omits a field (e.g. during init sync).
+        title: title || base.title,
+        summary: summary || base.summary,
         categoryId,
-        semanticLabel: label,
+        semanticLabel: label || base.semanticLabel,
       };
     }
 
@@ -304,7 +333,7 @@ export function htmlToThoughts(
     );
     return {
       ...base,
-      summary,
+      summary: summary || base.summary,
       categoryId,
       semanticLabel: base.semanticLabel || summary || base.title,
     };

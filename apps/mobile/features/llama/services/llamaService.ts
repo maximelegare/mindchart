@@ -53,8 +53,8 @@ export const useLlamaService = () => {
           return ServiceResponse.success(
             "Success generating the note & thoughts",
             {
-              ...data,
-              note: { ...data.note, topicId: closestTopic.id },
+              thoughts: data.thoughts,
+              note: { ...noteWithoutTopic, topicId: closestTopic.id },
               topic: closestTopic,
             }
           );
@@ -63,8 +63,8 @@ export const useLlamaService = () => {
         return ServiceResponse.success(
           "Success generating the note & thoughts",
           {
-            ...data,
-            note: { topicId: closestTopic.id, ...noteWithoutTopic },
+            thoughts: data.thoughts,
+            note: { ...noteWithoutTopic, topicId: closestTopic.id },
             topic: closestTopic,
           }
         );

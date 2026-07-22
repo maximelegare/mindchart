@@ -26,6 +26,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FloatingModalTabs } from "@/features/notes/noteCreation/features/floatingButton/components/header";
 import type { FloatingModalTab } from "@/features/notes/noteCreation/features/floatingButton/types/types";
+import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 
 const BUTTON_SIZE = 56;
 const BORDER_RADIUS = BUTTON_SIZE / 2;
@@ -87,6 +88,8 @@ export const FloatingModal = ({
   const { colorScheme } = useColorScheme();
   const { TAB_BAR_HEIGHT } = LAYOUT_SIZES;
   const chromeHidden = useTabChromeStore((state) => state.hidden);
+  const fabCloseNonce = useNoteCreationStore((state) => state.fabCloseNonce);
+  const lastFabCloseNonceRef = useRef(fabCloseNonce);
 
   const tabBarTop = insets.bottom + TAB_BAR_HEIGHT;
 
@@ -157,6 +160,14 @@ export const FloatingModal = ({
       }
     });
   }, [clearTabContentTimer, onCollapseComplete, progress]);
+
+  useEffect(() => {
+    if (fabCloseNonce === lastFabCloseNonceRef.current) return;
+    lastFabCloseNonceRef.current = fabCloseNonce;
+    if (isOpen) {
+      collapse();
+    }
+  }, [collapse, fabCloseNonce, isOpen]);
 
   useEffect(() => () => clearTabContentTimer(), [clearTabContentTimer]);
 

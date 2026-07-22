@@ -89,10 +89,10 @@ export const PendingEmbeddingSchema = z.object({
 });
 
 export const LocalAIResThoughtSchema = z.object({
-  title: z.string(),
-  summary: z.string(),
+  title: z.string().default(""),
+  summary: z.string().default(""),
   category: z.string().optional(),
-  semanticLabel: z.string(),
+  semanticLabel: z.string().default(""),
   thoughtId: z.string().optional(),
 });
 
@@ -100,7 +100,11 @@ export const LocalAIResNoteSchema = z.object({
   topic: z.string(),
   topicId: z.string().optional(),
   title: z.string(),
-  summary: z.string(),
+  summary: z
+    .union([z.string(), z.array(z.string())])
+    .transform((value) =>
+      Array.isArray(value) ? value.join(" ").trim() : value
+    ),
   rawText: z.string().optional(),
   thoughts: z.array(LocalAIResThoughtSchema),
 });

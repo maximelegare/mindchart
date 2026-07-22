@@ -13,6 +13,7 @@ import {
 // import { RawTextViewer } from "@/features/notes/noteDetails/components/RawText";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
+import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
 
 type NoteDetailsFeatureProps = {
   isPending: boolean;
@@ -24,6 +25,8 @@ type NoteDetailsFeatureProps = {
   simplified?: boolean;
   topicActionRef?: React.MutableRefObject<((topic: Topic) => void) | null>;
   onTopicChange?: (topic: Topic) => void;
+  /** regular: opened from list/etc. preview: opened after AI generation. */
+  editorMode?: NoteEditorMode;
 };
 
 type NoteRow = NonNullable<ReturnType<typeof parseNoteAndThoughts>>[number];
@@ -387,6 +390,7 @@ export const NoteDetailsFeature = ({
   simplified = false,
   topicActionRef,
   onTopicChange,
+  editorMode: _editorMode = "regular",
 }: NoteDetailsFeatureProps) => {
   if (isPending) return null;
   const noteRow = note?.[0];

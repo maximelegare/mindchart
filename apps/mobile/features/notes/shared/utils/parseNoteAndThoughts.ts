@@ -3,6 +3,28 @@ import {
   NotesJoinThoughtsParsedJSONPageSchema,
   NotesJoinThoughtsParsedJSONPageSchemaModel,
 } from "@repo/zod-schemas/client";
+
+/** Unwrap legacy JSON-stringified note summaries from the DB. */
+function normalizeNoteSummary(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value !== "string") return String(value);
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("[") && trimmed.endsWith("]"))
+  ) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed === "string") return parsed;
+      if (Array.isArray(parsed)) return parsed.map(String).join(" ").trim();
+    } catch {
+      /* keep raw string */
+    }
+  }
+  return value;
+}
+
 export const parseNoteAndThoughts = (
   data: unknown
 ): Array<NotesJoinThoughtsParsedJSONPageSchemaModel> | null => {
@@ -11,7 +33,7 @@ export const parseNoteAndThoughts = (
   const transformed = data.map((row) => ({
     id: row.note_id,
     title: row.note_title ?? "",
-    summary: row.note_summary ?? "",
+    summary: normalizeNoteSummary(row.note_summary),
     rawText: row.note_raw_text ?? "",
     createdAt: row.note_created_at ?? undefined,
     topicId: row.topic_id ?? undefined,

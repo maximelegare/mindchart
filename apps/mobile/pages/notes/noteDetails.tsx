@@ -5,13 +5,28 @@ import { EditNoteButton } from "@/features/notes/editNote/components/editNoteBut
 import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/components/noteDetailsOptionsHeader";
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
+import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
 import { Topic } from "@repo/zod-schemas";
-import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+
+function parseEditorMode(value: string | string[] | undefined): NoteEditorMode {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw === "preview" ? "preview" : "regular";
+}
 
 export const NoteDetailsPage = () => {
+  const { mode: modeParam } = useLocalSearchParams<{
+    id: string;
+    mode?: string;
+  }>();
   const [open, setOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editorMode, setEditorMode] = useState<NoteEditorMode>(() =>
+    parseEditorMode(modeParam)
+  );
+  const [isEditing, setIsEditing] = useState(
+    () => parseEditorMode(modeParam) === "preview"
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [simplified, setSimplified] = useState(false);
   const [headerTopic, setHeaderTopic] = useState<Topic | null>(null);
@@ -20,6 +35,14 @@ export const NoteDetailsPage = () => {
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
   const { noteTitle, isPending, note, noteId } = useNoteDetailsData();
+
+  useEffect(() => {
+    const nextMode = parseEditorMode(modeParam);
+    setEditorMode(nextMode);
+    if (nextMode === "preview") {
+      setIsEditing(true);
+    }
+  }, [modeParam, noteId]);
 
   const handleDeleteNote = () => {
     openModal({
@@ -30,6 +53,20 @@ export const NoteDetailsPage = () => {
         router.replace("/notes");
       },
     });
+  };
+
+  const switchToRegularMode = () => {
+    if (editorMode === "regular") return;
+    setEditorMode("regular");
+    router.setParams({ mode: "regular" });
+  };
+
+  const handleEditingChange = (editing: boolean) => {
+    setIsEditing(editing);
+    // Leaving edit after a preview save promotes the note to regular mode.
+    if (!editing && editorMode === "preview") {
+      switchToRegularMode();
+    }
   };
 
   const handleEditPress = () => {
@@ -49,7 +86,10 @@ export const NoteDetailsPage = () => {
     <PageContainer
       headerVariant="tab"
       title={noteTitle ?? ""}
-      subtitle={{ text: "Note", icon: "notebook-text" }}
+      subtitle={{
+        text: editorMode === "preview" ? "Review note" : "Note",
+        icon: "notebook-text",
+      }}
       hideTabBar
       noScrollView
       optionsHeader={
@@ -90,12 +130,13 @@ export const NoteDetailsPage = () => {
         isPending={isPending}
         note={note}
         isEditing={isEditing}
-        onEditingChange={setIsEditing}
+        onEditingChange={handleEditingChange}
         saveActionRef={saveActionRef}
         onSavingChange={setIsSaving}
         simplified={simplified}
         topicActionRef={topicActionRef}
         onTopicChange={setHeaderTopic}
+        editorMode={editorMode}
       />
     </PageContainer>
   );
