@@ -21,10 +21,12 @@ import { Icon } from "@/components/ui/icons/icon";
 import { Button } from "@/components/ui/button";
 import { X } from "@/lib/icons/Times";
 import { LAYOUT_SIZES } from "@/components/layout/constants";
+import { useTabChromeStore } from "@/components/layout/tabs/tabChromeStore";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FloatingModalTabs } from "@/features/notes/noteCreation/features/floatingButton/components/header";
 import type { FloatingModalTab } from "@/features/notes/noteCreation/features/floatingButton/types/types";
+import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 
 const BUTTON_SIZE = 56;
 const BORDER_RADIUS = BUTTON_SIZE / 2;
@@ -51,6 +53,7 @@ function getExpandedBottomRadius() {
 }
 
 const ANIMATION_MS = 380;
+const CHROME_FADE_MS = 180;
 
 const timingConfig = {
   duration: ANIMATION_MS,
@@ -79,10 +82,14 @@ export const FloatingModal = ({
   const tabContentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progress = useSharedValue(0);
   const iconOpacity = useSharedValue(1);
+  const chromeOpacity = useSharedValue(1);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const { TAB_BAR_HEIGHT } = LAYOUT_SIZES;
+  const chromeHidden = useTabChromeStore((state) => state.hidden);
+  const fabCloseNonce = useNoteCreationStore((state) => state.fabCloseNonce);
+  const lastFabCloseNonceRef = useRef(fabCloseNonce);
 
   const tabBarTop = insets.bottom + TAB_BAR_HEIGHT;
 
@@ -154,7 +161,36 @@ export const FloatingModal = ({
     });
   }, [clearTabContentTimer, onCollapseComplete, progress]);
 
+  useEffect(() => {
+    if (fabCloseNonce === lastFabCloseNonceRef.current) return;
+    lastFabCloseNonceRef.current = fabCloseNonce;
+    if (isOpen) {
+      collapse();
+    }
+  }, [collapse, fabCloseNonce, isOpen]);
+
   useEffect(() => () => clearTabContentTimer(), [clearTabContentTimer]);
+
+  useEffect(() => {
+    if (chromeHidden) {
+      clearTabContentTimer();
+      setIsOpen(false);
+      setMountHeader(false);
+      setMountTabContent(false);
+      progress.value = 0;
+      iconOpacity.value = 1;
+      chromeOpacity.value = withTiming(0, { duration: CHROME_FADE_MS });
+      return;
+    }
+
+    chromeOpacity.value = withTiming(1, { duration: CHROME_FADE_MS });
+  }, [
+    chromeHidden,
+    clearTabContentTimer,
+    chromeOpacity,
+    iconOpacity,
+    progress,
+  ]);
 
   const anchorStyle = useAnimatedStyle(() => ({
     right: interpolate(
@@ -220,8 +256,15 @@ export const FloatingModal = ({
     opacity: iconOpacity.value,
   }));
 
+  const chromeStyle = useAnimatedStyle(() => ({
+    opacity: chromeOpacity.value,
+  }));
+
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
+    <Animated.View
+      style={[StyleSheet.absoluteFillObject, chromeStyle]}
+      pointerEvents={chromeHidden ? "none" : "box-none"}
+    >
       <Animated.View
         pointerEvents="box-none"
         style={[
@@ -302,7 +345,7 @@ export const FloatingModal = ({
           </Animated.View>
         )}
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 };
 

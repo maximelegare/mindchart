@@ -22,24 +22,24 @@ export const CustomTabHeader = ({ options }: CustomTabBarProps) => {
           <HeaderContent
             title={options.title || "Page"}
             hideBackButton
-            buttons={
-              <>
-                <Button
-                  variant="secondary"
-                  onPress={() => push("/graph")}
-                  cornerRadius="full"
-                >
-                  <Icon color="background" name="graph" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  onPress={() => push("/categories")}
-                  cornerRadius="full"
-                >
-                  <Typography>C</Typography>
-                </Button>
-              </>
-            }
+            buttons={[
+              <Button
+                key="graph"
+                variant="secondary"
+                onPress={() => push("/graph")}
+                cornerRadius="full"
+              >
+                <Icon color="background" name="graph" />
+              </Button>,
+              <Button
+                key="categories"
+                variant="secondary"
+                onPress={() => push("/categories")}
+                cornerRadius="full"
+              >
+                <Typography>C</Typography>
+              </Button>,
+            ]}
           />
         </View>
       </Gutter>

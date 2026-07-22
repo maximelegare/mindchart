@@ -9,11 +9,14 @@ type NoteCreationState = {
   inputView: InputView;
   fileURI: string | null;
   inputValue: string;
+  /** Incremented to ask the floating creation modal to collapse. */
+  fabCloseNonce: number;
   setCreationMode: (mode: CreationMode) => void;
   setInputView: (view: InputView) => void;
   setFileURI: (fileURI: string | null) => void;
   setInputValue: (inputValue: string) => void;
   resetInputs: () => void;
+  requestFabClose: () => void;
 };
 
 export const createNoteCreationStore = () =>
@@ -22,11 +25,14 @@ export const createNoteCreationStore = () =>
     inputView: "audio",
     fileURI: null,
     inputValue: "",
+    fabCloseNonce: 0,
     setCreationMode: (creationMode) => set({ creationMode }),
     setInputView: (inputView) => set({ inputView }),
     setFileURI: (fileURI) => set({ fileURI }),
     setInputValue: (inputValue) => set({ inputValue }),
     resetInputs: () => set({ fileURI: null, inputValue: "" }),
+    requestFabClose: () =>
+      set((state) => ({ fabCloseNonce: state.fabCloseNonce + 1 })),
   }));
 
 type NoteCreationStore = StoreApi<NoteCreationState>;

@@ -32,12 +32,17 @@ export const formatNote = (
     const recordId = generateID();
     const categoryId = t.category ?? "uncategorized";
     const thoughtId = t.thoughtId ?? recordId;
+    const thoughtTitle = (t.title ?? "").trim();
+    const thoughtSummary = (t.summary ?? "").trim();
 
     return {
-      ...t,
-      noteId,
       id: recordId,
       thoughtId,
+      noteId,
+      title: thoughtTitle,
+      summary: thoughtSummary,
+      semanticLabel:
+        (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtSummary,
       categoryId: categoryId.toLowerCase(),
       createdAt: new Date().toISOString(),
     };

@@ -22,6 +22,7 @@ import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { MoreOptionsMenuProps } from "../header/moreOptions/moreOptionsMenu";
 import { IconName } from "@/components/ui/icons/icon-registry";
+import { useTabChromeStore } from "../tabs/tabChromeStore";
 
 const { HEADER_HEIGHT, HEADER_OVERLAP, OPTIONS_HEADER_HEIGHT } = LAYOUT_SIZES;
 
@@ -38,15 +39,25 @@ type PageContainerProps = {
   };
   showLogo?: boolean;
   headerVariant?: HeaderVariant;
-  buttons?: React.ReactNode;
+  buttons?: React.ReactNode[];
   children: React.ReactNode;
   noScrollView?: boolean;
   collapsingHeader?: boolean;
   moreOptionsMenu?: {
     state: { open: boolean; setOpen: (open: boolean) => void };
     links: MoreOptionsMenuProps["links"];
+    /**
+     * Header trigger content.
+     * - `IconName`: show that icon
+     * - `"currentWorkspace"` / omitted: show the workspace avatar
+     */
+    trigger?: MoreOptionsMenuProps["trigger"];
+    /** Show the current workspace switcher in the menu. Defaults to true. */
+    currentWorkspace?: boolean;
   };
   optionsHeader?: React.ReactNode;
+  /** Hide the bottom tab bar while this page is focused. */
+  hideTabBar?: boolean;
 };
 
 export const PageContainer = ({
@@ -60,6 +71,7 @@ export const PageContainer = ({
   collapsingHeader = false,
   moreOptionsMenu,
   optionsHeader,
+  hideTabBar = false,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -68,6 +80,16 @@ export const PageContainer = ({
   const { width: windowWidth } = useWindowDimensions();
 
   useScrollToTop(collapsingHeader ? animatedScrollRef : staticScrollRef);
+
+  React.useLayoutEffect(() => {
+    if (!hideTabBar) return;
+
+    useTabChromeStore.getState().setHidden(true);
+
+    return () => {
+      useTabChromeStore.getState().setHidden(false);
+    };
+  }, [hideTabBar]);
 
   const { colorScheme } = useColorScheme();
   const canGoBack = navigation.canGoBack();

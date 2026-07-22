@@ -55,6 +55,10 @@ function stripChrome(liHtml: string): string {
       ""
     )
     .replace(
+      /<div\b[^>]*class=["'][^"']*\bthought-graph\b[^"']*["'][^>]*>[\s\S]*?<\/div>/i,
+      ""
+    )
+    .replace(
       new RegExp(
         `<div\\b[^>]*class=["'][^"']*\\b${CATEGORY_CLASS}\\b[^"']*["'][^>]*>[\\s\\S]*?<\\/div>`,
         "i"
@@ -87,13 +91,41 @@ function extractLiItems(html: string): LiItem[] {
   return items;
 }
 
+/**
+ * Return the inner HTML of the first div with the given class, respecting nested divs.
+ * A naive non-greedy `.*?<\/div>` stops at the first child closing tag and drops siblings
+ * (e.g. thought-summary after thought-title inside thought-fields).
+ */
 function extractByClass(html: string, className: string): string | null {
-  const regex = new RegExp(
-    `<div\\b[^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/div>`,
+  const openRegex = new RegExp(
+    `<div\\b[^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>`,
     "i"
   );
-  const match = html.match(regex);
-  return match ? (match[1] ?? "") : null;
+  const openMatch = openRegex.exec(html);
+  if (!openMatch || openMatch.index == null) return null;
+
+  const contentStart = openMatch.index + openMatch[0].length;
+  let depth = 1;
+  const tagRegex = /<\/?div\b[^>]*>/gi;
+  tagRegex.lastIndex = contentStart;
+
+  let tag: RegExpExecArray | null;
+  while ((tag = tagRegex.exec(html)) !== null) {
+    const isClose = /^<\//.test(tag[0]);
+    const isSelfClose = /\/>$/.test(tag[0]);
+    if (isClose) {
+      depth -= 1;
+      if (depth === 0) {
+        return html.slice(contentStart, tag.index);
+      }
+      continue;
+    }
+    if (!isSelfClose) {
+      depth += 1;
+    }
+  }
+
+  return null;
 }
 
 function parseTitledLi(liHtml: string): { title: string; summary: string } {
@@ -147,10 +179,39 @@ function categoryLabelHtml(categoryId: string): string {
   );
 }
 
-function thoughtItemHtml(categoryId: string, fieldsHtml: string): string {
-  const id = categoryId || "uncategorized";
+const GRAPH_ICON_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="18" height="18" fill="currentColor" aria-hidden="true">` +
+  `<path d="M200 152a31.84 31.84 0 0 0-19.53 6.68l-23.11-18A31.65 31.65 0 0 0 160 128c0-.74 0-1.48-.08-2.21l13.23-4.41A32 32 0 1 0 168 104c0 .74 0 1.48.08 2.21l-13.23 4.41A32 32 0 0 0 128 96a32.6 32.6 0 0 0-5.27.44L115.89 81A32 32 0 1 0 96 88a32.6 32.6 0 0 0 5.27-.44l6.84 15.4a31.92 31.92 0 0 0-8.57 39.64l-25.71 22.84a32.06 32.06 0 1 0 10.63 12l25.71-22.84a31.91 31.91 0 0 0 37.36-1.24l23.11 18A31.65 31.65 0 0 0 168 184a32 32 0 1 0 32-32m0-64a16 16 0 1 1-16 16a16 16 0 0 1 16-16M80 56a16 16 0 1 1 16 16a16 16 0 0 1-16-16M56 208a16 16 0 1 1 16-16a16 16 0 0 1-16 16m56-80a16 16 0 1 1 16 16a16 16 0 0 1-16-16m88 72a16 16 0 1 1 16-16a16 16 0 0 1-16 16"></path>` +
+  `</svg>`;
+
+function graphButtonHtml(thoughtId: string): string {
   return (
-    `<li class="thought-item" data-category-id="${escapeHtml(id)}">` +
+    `<div class="thought-graph" contenteditable="false" data-thought-id="${escapeHtml(thoughtId)}">` +
+    GRAPH_ICON_SVG +
+    `</div>`
+  );
+}
+
+type ThoughtItemOptions = {
+  thoughtId?: string;
+  showGraphButton?: boolean;
+};
+
+function thoughtItemHtml(
+  categoryId: string,
+  fieldsHtml: string,
+  options: ThoughtItemOptions = {}
+): string {
+  const id = categoryId || "uncategorized";
+  const thoughtIdAttr = options.thoughtId
+    ? ` data-thought-id="${escapeHtml(options.thoughtId)}"`
+    : "";
+  const graph =
+    options.showGraphButton && options.thoughtId
+      ? graphButtonHtml(options.thoughtId)
+      : "";
+  return (
+    `<li class="thought-item" data-category-id="${escapeHtml(id)}"${thoughtIdAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
     `</div>` +
@@ -158,12 +219,21 @@ function thoughtItemHtml(categoryId: string, fieldsHtml: string): string {
     categoryLabelHtml(id) +
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
+    graph +
     `</li>`
   );
 }
 
-function liToHtml(thought: ThoughtsFormValue, showTitles: boolean): string {
+function liToHtml(
+  thought: ThoughtsFormValue,
+  showTitles: boolean,
+  showGraphButton: boolean
+): string {
   const categoryId = thought.categoryId || "uncategorized";
+  const options: ThoughtItemOptions = {
+    thoughtId: thought.thoughtId || thought.id,
+    showGraphButton,
+  };
 
   if (showTitles) {
     const title = escapeHtml(thought.title);
@@ -171,7 +241,8 @@ function liToHtml(thought: ThoughtsFormValue, showTitles: boolean): string {
     return thoughtItemHtml(
       categoryId,
       titledFieldHtml(TITLE_CLASS, TITLE_PLACEHOLDER, title) +
-        titledFieldHtml(SUMMARY_CLASS, SUMMARY_PLACEHOLDER, summary)
+        titledFieldHtml(SUMMARY_CLASS, SUMMARY_PLACEHOLDER, summary),
+      options
     );
   }
 
@@ -179,15 +250,23 @@ function liToHtml(thought: ThoughtsFormValue, showTitles: boolean): string {
   const summary = escapeHtml(summaryText).replace(/\n/g, "<br>");
   return thoughtItemHtml(
     categoryId,
-    titledFieldHtml(SUMMARY_CLASS, BULLET_PLACEHOLDER, summary)
+    titledFieldHtml(SUMMARY_CLASS, BULLET_PLACEHOLDER, summary),
+    options
   );
 }
+
+export type ThoughtsToHtmlOptions = {
+  showGraphButtons?: boolean;
+};
 
 /** Serialize thoughts into an HTML unordered list for the rich editor. */
 export function thoughtsToHtml(
   thoughts: ThoughtsFormValue[],
-  showTitles: boolean
+  showTitles: boolean,
+  options: ThoughtsToHtmlOptions = {}
 ): string {
+  const showGraphButtons = options.showGraphButtons ?? false;
+
   if (thoughts.length === 0) {
     const body = showTitles
       ? titledFieldHtml(TITLE_CLASS, TITLE_PLACEHOLDER, "") +
@@ -196,7 +275,9 @@ export function thoughtsToHtml(
     return `<ul>${thoughtItemHtml("uncategorized", body)}</ul>`;
   }
 
-  return `<ul>${thoughts.map((thought) => liToHtml(thought, showTitles)).join("")}</ul>`;
+  return `<ul>${thoughts
+    .map((thought) => liToHtml(thought, showTitles, showGraphButtons))
+    .join("")}</ul>`;
 }
 
 /**
@@ -238,10 +319,11 @@ export function htmlToThoughts(
       const label = title || summary || base.semanticLabel;
       return {
         ...base,
-        title,
-        summary,
+        // Keep existing values when the editor HTML omits a field (e.g. during init sync).
+        title: title || base.title,
+        summary: summary || base.summary,
         categoryId,
-        semanticLabel: label,
+        semanticLabel: label || base.semanticLabel,
       };
     }
 
@@ -251,7 +333,7 @@ export function htmlToThoughts(
     );
     return {
       ...base,
-      summary,
+      summary: summary || base.summary,
       categoryId,
       semanticLabel: base.semanticLabel || summary || base.title,
     };

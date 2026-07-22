@@ -42,14 +42,15 @@ export const TopicSelector = ({
   return (
     <>
       <BottomSheet>
-        <BottomSheetOpenTrigger asChild className="w-fit">
-          <TouchableOpacity className="flex-row items-center gap-1.5 rounded-lg bg-card border border-input px-3 py-2 min-h-[40px]">
+        <BottomSheetOpenTrigger asChild className="self-start">
+          <TouchableOpacity className="flex-row items-center gap-1.5 self-start rounded-full bg-card px-2.5 py-1.5">
+            <Icon name="folder" color="foreground" size={16} />
             {selectedTopic.isNew && (
               <Icon name="plus" size={16} color="foreground" />
             )}
             <Typography
-              variant="h4"
-              className="text-foreground"
+              variant="p"
+              className="shrink text-foreground"
               numberOfLines={1}
             >
               {displayName}

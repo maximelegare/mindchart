@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { Check } from "@/lib/icons/Check";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import { useRouter } from "expo-router";
 import { createEmptyThought, type ThoughtsEditorFormValues } from "./types";
 import {
   htmlToThoughts,
@@ -28,8 +29,11 @@ import {
 } from "./thoughtsHtml";
 import {
   BULLET_EDITOR_GUARD_SCRIPT,
+  CATEGORY_COLLAPSE_SCRIPT,
+  GRAPH_BUTTON_CLICK_SCRIPT,
   REFRESH_CATEGORY_TIMERS_SCRIPT,
   setShowTitlesScript,
+  setSimplifiedModeScript,
 } from "./bulletEditorScript";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
@@ -61,40 +65,48 @@ async function loadEditorFontFaceCss(): Promise<string> {
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
 
-/** Keep the caret slightly above the editor's bottom edge. */
-const CARET_BOTTOM_MARGIN = 28;
+/** Extra space below the caret so it stays clear of the keyboard / viewport edge. */
+const CARET_BOTTOM_MARGIN = 72;
 
-const REQUEST_CURSOR_OFFSET_SCRIPT = `
-  (function () {
-    var sel = window.getSelection();
-    var node = sel && sel.anchorNode;
-    if (!node) return true;
-    var el = node.nodeType === 3 ? node.parentElement : node;
-    var offsetY = 0;
-    var siblingOffset =
-      (el && el.nextSibling && el.nextSibling.offsetTop) ||
-      (el && el.previousSibling && el.previousSibling.offsetTop) ||
-      0;
-    var rectOffset = 0;
-    if (sel.rangeCount > 0) {
-      var rect = sel.getRangeAt(0).getClientRects()[0];
-      rectOffset = rect ? rect.y : 0;
-    }
-    while (el) {
-      if (el.offsetTop) {
-        offsetY = el.offsetTop;
-        break;
-      }
-      el = el.parentElement;
-    }
-    offsetY = offsetY || siblingOffset || rectOffset;
-    if (offsetY && window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OFFSET_Y", data: offsetY })
-      );
+const scrollCaretIntoViewScript = (bottomMargin: number) => `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+
+  var sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return true;
+
+  var range = sel.getRangeAt(0).cloneRange();
+  var rect = range.getClientRects()[0];
+  if (!rect || (rect.height === 0 && rect.width === 0)) {
+    rect = range.getBoundingClientRect();
+  }
+
+  var margin = ${Math.max(24, Math.floor(bottomMargin))};
+  var contentRect = content.getBoundingClientRect();
+
+  if (!rect || (rect.height === 0 && rect.width === 0)) {
+    var node = sel.anchorNode;
+    var el = node && (node.nodeType === 3 ? node.parentElement : node);
+    if (el && el.scrollIntoView) {
+      el.scrollIntoView({ block: "center", inline: "nearest" });
     }
     return true;
-  })();
+  }
+
+  var caretTop = rect.top - contentRect.top + content.scrollTop;
+  var caretBottom = rect.bottom - contentRect.top + content.scrollTop;
+  var visibleTop = content.scrollTop + 8;
+  var visibleBottom = content.scrollTop + content.clientHeight - margin;
+
+  if (caretBottom > visibleBottom) {
+    content.scrollTop = Math.max(0, caretBottom - content.clientHeight + margin);
+  } else if (caretTop < visibleTop) {
+    content.scrollTop = Math.max(0, caretTop - 8);
+  }
+  return true;
+})();
 `;
 
 function buildCategoryColorCss(): string {
@@ -140,20 +152,42 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
   );
 }
 
+/** Height of the floating Clear / Titles toolbar overlay. */
+const EDITOR_TOOLBAR_HEIGHT = 44;
+
 type ThoughtsEditorProps = {
   noteId: string;
   categories: Category[];
   defaultShowTitles?: boolean;
+  /** When true, content is view-only (no editing chrome / Clear). */
+  readOnly?: boolean;
+  /** Show a graph open button on the right of each thought. */
+  showGraphButtons?: boolean;
+  /** No card chrome: transparent background, no border (border still shown while editing). */
+  plain?: boolean;
+  /**
+   * View-only plain bullets: no titles/category chrome, static dots (no stripe animation).
+   * Ignored while editing (`readOnly={false}`).
+   */
+  simplified?: boolean;
 };
 
 export function ThoughtsEditor({
   noteId,
   categories,
   defaultShowTitles = false,
+  readOnly = false,
+  showGraphButtons = false,
+  plain = false,
+  simplified = false,
 }: ThoughtsEditorProps) {
   const { colorScheme } = useColorScheme();
+  const { push } = useRouter();
   const { getValues, setValue, watch } =
     useFormContext<ThoughtsEditorFormValues>();
+  // Static simplified chrome only applies in the view editor.
+  const effectiveSimplified = simplified && readOnly;
+  // Keep the user's Titles preference even while simplified view hides them.
   const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
   const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
@@ -162,14 +196,19 @@ export function ThoughtsEditor({
   >(null);
 
   const richRef = React.useRef<RichEditor>(null);
-  const scrollRef = React.useRef<ScrollView>(null);
   const scrollViewHeightRef = React.useRef(0);
-  const lastCursorYRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const showTitlesRef = React.useRef(showTitles);
-  showTitlesRef.current = showTitles;
+  const effectiveShowTitles = effectiveSimplified ? false : showTitles;
+  showTitlesRef.current = effectiveShowTitles;
+  const simplifiedRef = React.useRef(effectiveSimplified);
+  simplifiedRef.current = effectiveSimplified;
+  const borderColorRef = React.useRef(hsl("border", colorScheme));
+  borderColorRef.current = hsl("border", colorScheme);
   const initialHtmlRef = React.useRef(
-    thoughtsToHtml(getValues("thoughts"), defaultShowTitles)
+    thoughtsToHtml(getValues("thoughts"), effectiveShowTitles, {
+      showGraphButtons,
+    })
   );
   const categoryColorsCssRef = React.useRef(buildCategoryColorCss());
   const {
@@ -184,20 +223,9 @@ export function ThoughtsEditor({
       ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
       : null;
 
-  const requestCursorOffset = React.useCallback(() => {
-    richRef.current?.injectJavascript(REQUEST_CURSOR_OFFSET_SCRIPT);
-  }, []);
-
-  const scrollCursorIntoView = React.useCallback((cursorY: number) => {
-    if (cursorY > 0) {
-      lastCursorYRef.current = cursorY;
-    }
-    const viewportH = scrollViewHeightRef.current;
-    const y = lastCursorYRef.current;
-    if (viewportH <= 0 || y <= 0) return;
-
-    const targetY = Math.max(0, y - (viewportH - CARET_BOTTOM_MARGIN));
-    scrollRef.current?.scrollTo({ y: targetY, animated: true });
+  const scrollCaretIntoView = React.useCallback(() => {
+    const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 28;
+    richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
   }, []);
 
   React.useEffect(() => {
@@ -215,18 +243,19 @@ export function ThoughtsEditor({
   }, []);
 
   React.useEffect(() => {
+    if (readOnly) return;
     const showSub = Keyboard.addListener("keyboardDidShow", () => {
       keyboardOpenRef.current = true;
       setKeyboardOpen(true);
 
       const refresh = () => {
-        scrollCursorIntoView(lastCursorYRef.current);
-        requestCursorOffset();
+        scrollCaretIntoView();
       };
       requestAnimationFrame(() => {
         requestAnimationFrame(refresh);
       });
-      setTimeout(refresh, 120);
+      setTimeout(refresh, 100);
+      setTimeout(refresh, 280);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       keyboardOpenRef.current = false;
@@ -237,25 +266,60 @@ export function ThoughtsEditor({
       showSub.remove();
       hideSub.remove();
     };
-  }, [requestCursorOffset, scrollCursorIntoView]);
+  }, [readOnly, scrollCaretIntoView]);
 
   React.useEffect(() => {
-    if (!keyboardOpen) return;
-    scrollCursorIntoView(lastCursorYRef.current);
-    requestCursorOffset();
-  }, [keyboardOpen, requestCursorOffset, scrollCursorIntoView]);
+    if (readOnly || !keyboardOpen) return;
+    const pad = CARET_BOTTOM_MARGIN + 24;
+    richRef.current?.injectJavascript(`
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.style.paddingBottom = "${pad}px";
+  true;
+})();
+`);
+    scrollCaretIntoView();
+  }, [keyboardOpen, readOnly, scrollCaretIntoView]);
+
+  React.useEffect(() => {
+    if (readOnly || keyboardOpen) return;
+    richRef.current?.injectJavascript(`
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.style.paddingBottom = "12px";
+  true;
+})();
+`);
+  }, [keyboardOpen, readOnly]);
 
   const applyEditorFlags = React.useCallback((nextShowTitles: boolean) => {
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
   }, []);
 
+  const applySimplifiedMode = React.useCallback((nextSimplified: boolean) => {
+    richRef.current?.injectJavascript(
+      setSimplifiedModeScript(nextSimplified, borderColorRef.current)
+    );
+  }, []);
+
   const handleEditorInitialized = React.useCallback(() => {
-    richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+    // Apply simplified before collapse timers so plain bullets never animate.
     applyEditorFlags(showTitlesRef.current);
+    applySimplifiedMode(simplifiedRef.current);
+    if (readOnly) {
+      richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
+    } else {
+      richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+    }
+    if (showGraphButtons) {
+      richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
+    }
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
     });
-  }, [applyEditorFlags]);
+  }, [applyEditorFlags, applySimplifiedMode, readOnly, showGraphButtons]);
 
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
@@ -278,17 +342,45 @@ export function ThoughtsEditor({
     });
   }, []);
 
+  // View mode only installs collapse chrome; install the Enter/backspace guard when editing.
+  React.useEffect(() => {
+    if (readOnly) return;
+    // Set titles flag before the guard installs/normalizes, or titles get stripped.
+    applyEditorFlags(showTitles);
+    applySimplifiedMode(false);
+    richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
+    );
+    refreshCategoryTimers();
+    // Intentionally keyed on edit entry only (readOnly / graph chrome), not Titles toggle.
+  }, [
+    applyEditorFlags,
+    applySimplifiedMode,
+    readOnly,
+    refreshCategoryTimers,
+    showGraphButtons,
+  ]);
+
   const handleClearContent = React.useCallback(() => {
     const empty = [createEmptyThought(noteId)];
     setValue("thoughts", empty, { shouldDirty: true });
     richRef.current?.setContentHTML(
-      thoughtsToHtml(empty, showTitlesRef.current)
+      thoughtsToHtml(empty, showTitlesRef.current, { showGraphButtons })
     );
     refreshCategoryTimers();
-  }, [noteId, refreshCategoryTimers, setValue]);
+    applySimplifiedMode(simplifiedRef.current);
+  }, [
+    applySimplifiedMode,
+    noteId,
+    refreshCategoryTimers,
+    setValue,
+    showGraphButtons,
+  ]);
 
   const handleShowTitlesChange = React.useCallback(
     (nextShowTitles: boolean) => {
+      if (simplifiedRef.current) return;
       setShowTitles(nextShowTitles);
       showTitlesRef.current = nextShowTitles;
       applyEditorFlags(nextShowTitles);
@@ -303,22 +395,76 @@ export function ThoughtsEditor({
       }
 
       richRef.current?.setContentHTML(
-        thoughtsToHtml(nextThoughts, nextShowTitles)
+        thoughtsToHtml(nextThoughts, nextShowTitles, { showGraphButtons })
       );
       refreshCategoryTimers();
+      applySimplifiedMode(simplifiedRef.current);
     },
-    [applyEditorFlags, getValues, refreshCategoryTimers, setValue]
+    [
+      applyEditorFlags,
+      applySimplifiedMode,
+      getValues,
+      refreshCategoryTimers,
+      setValue,
+      showGraphButtons,
+    ]
   );
+
+  const lastSimplifiedRef = React.useRef(effectiveSimplified);
+  React.useEffect(() => {
+    if (lastSimplifiedRef.current === effectiveSimplified) return;
+    lastSimplifiedRef.current = effectiveSimplified;
+
+    if (effectiveSimplified) {
+      // Hide titles in the WebView only — keep form title fields and showTitles state.
+      showTitlesRef.current = false;
+      applyEditorFlags(false);
+      richRef.current?.setContentHTML(
+        thoughtsToHtml(getValues("thoughts"), false, { showGraphButtons })
+      );
+      refreshCategoryTimers();
+      applySimplifiedMode(true);
+      return;
+    }
+
+    showTitlesRef.current = showTitles;
+    applyEditorFlags(showTitles);
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
+    );
+    refreshCategoryTimers();
+    applySimplifiedMode(false);
+  }, [
+    applyEditorFlags,
+    applySimplifiedMode,
+    effectiveSimplified,
+    getValues,
+    refreshCategoryTimers,
+    showGraphButtons,
+    showTitles,
+  ]);
 
   const handleEditorMessage = React.useCallback(
     (message: { type: string; data?: unknown }) => {
-      if (message.type !== "SELECT_CATEGORY") return;
+      if (message.type === "OPEN_GRAPH") {
+        const thoughtId = String(message.data ?? "");
+        if (!thoughtId) return;
+        push({
+          pathname: "/graph/[id]",
+          params: {
+            id: thoughtId,
+            _t: Date.now(),
+          },
+        });
+        return;
+      }
+      if (readOnly || message.type !== "SELECT_CATEGORY") return;
       const index = Number(message.data);
       if (!Number.isFinite(index) || index < 0) return;
       setCategoryPickerIndex(index);
       openCategorySheet();
     },
-    [openCategorySheet]
+    [openCategorySheet, push, readOnly]
   );
 
   const handleSelectCategory = React.useCallback(
@@ -340,68 +486,93 @@ export function ThoughtsEditor({
     [categoryPickerIndex, closeCategorySheet, getValues, setValue]
   );
 
-  const backgroundColor = hsl("card", colorScheme);
+  const backgroundColor = plain ? "transparent" : hsl("card", colorScheme);
   const textColor = hsl("text", colorScheme);
   const placeholderColor = hsl("muted-foreground", colorScheme);
   const caretColor = hsl("primary", colorScheme);
   const headerBg = hsl("muted", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
+  const graphButtonColor = mutedFg;
+  const showToolbar = !readOnly;
+  const showEditBorder = !readOnly;
 
   return (
     <BottomSheet className="flex-1 min-h-0">
       <View className="flex-col flex-1 min-h-0">
-        <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
-          Content
-        </Label>
+        {!readOnly && !plain ? (
+          <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
+            Content
+          </Label>
+        ) : null}
 
-        <View className="flex-1 min-h-0 overflow-hidden rounded-lg border border-input bg-card">
-          <View
-            className="flex-row items-center justify-between shrink-0 border-b border-input px-3 py-2.5"
-            style={{ backgroundColor: headerBg }}
-          >
-            <Button onPress={handleClearContent} variant="ghost" size="sm">
-              <Typography className="text-muted-foreground text-xs">
-                Clear
-              </Typography>
-            </Button>
+        <View
+          className={
+            plain && !showEditBorder
+              ? "relative flex-1 min-h-0 overflow-hidden"
+              : plain && showEditBorder
+                ? "relative flex-1 min-h-0 overflow-hidden rounded-t-lg border border-b-0 border-input"
+                : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
+          }
+          style={
+            plain
+              ? { backgroundColor: "transparent" }
+              : { backgroundColor: hsl("card", colorScheme) }
+          }
+        >
+          {showToolbar ? (
+            <View
+              className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-between border-b border-input px-3"
+              style={{
+                height: EDITOR_TOOLBAR_HEIGHT,
+                backgroundColor: headerBg,
+              }}
+            >
+              <Button onPress={handleClearContent} variant="ghost" size="sm">
+                <Typography className="text-muted-foreground text-xs">
+                  Clear
+                </Typography>
+              </Button>
 
-            <View className="flex-row items-center gap-3">
-              <Typography className="text-sm text-muted-foreground">
-                Titles
-              </Typography>
-              <Switch
-                checked={showTitles}
-                onCheckedChange={handleShowTitlesChange}
-                aria-label="Show thought titles"
-                trackColor={hsl("border", colorScheme)}
-                trackCheckedColor={hsl("primary", colorScheme)}
-                thumbColor={hsl("card", colorScheme)}
-              />
+              {showToolbar && !effectiveSimplified ? (
+                <View className="flex-row items-center gap-3">
+                  <Typography className="text-sm text-muted-foreground">
+                    Titles
+                  </Typography>
+                  <Switch
+                    checked={showTitles}
+                    onCheckedChange={handleShowTitlesChange}
+                    aria-label="Show thought titles"
+                    trackColor={hsl("border", colorScheme)}
+                    trackCheckedColor={hsl("primary", colorScheme)}
+                    thumbColor={hsl("card", colorScheme)}
+                  />
+                </View>
+              ) : (
+                <View />
+              )}
             </View>
-          </View>
+          ) : null}
 
-          <ScrollView
-            ref={scrollRef}
+          <View
             className="flex-1 min-h-0"
-            nestedScrollEnabled
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="none"
+            style={{
+              paddingTop: showToolbar ? EDITOR_TOOLBAR_HEIGHT : 0,
+            }}
             onLayout={(event) => {
               scrollViewHeightRef.current = event.nativeEvent.layout.height;
               if (keyboardOpenRef.current) {
-                scrollCursorIntoView(lastCursorYRef.current);
+                scrollCaretIntoView();
               }
-            }}
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: keyboardOpen ? CARET_BOTTOM_MARGIN : 12,
             }}
           >
             {fontFaceCss == null ? null : (
               <RichEditor
                 ref={richRef}
-                style={{ flex: 1, minHeight: 160 }}
-                useContainer
+                style={{ flex: 1 }}
+                useContainer={false}
+                scrollEnabled
+                nestedScrollEnabled
+                disabled={readOnly}
                 pasteAsPlainText
                 initialContentHTML={initialHtmlRef.current}
                 placeholder=""
@@ -420,7 +591,12 @@ export function ThoughtsEditor({
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
                   line-height: 1.45;
-                  padding: 12px;
+                  padding: ${plain ? "8px 2px" : "12px"};
+                  padding-bottom: ${
+                    !readOnly && keyboardOpen ? CARET_BOTTOM_MARGIN + 24 : 12
+                  }px;
+                  min-height: 100%;
+                  box-sizing: border-box;
                 `,
                   cssText: `
                   ul {
@@ -432,6 +608,7 @@ export function ThoughtsEditor({
                     position: relative;
                     margin-bottom: 0.85em;
                     padding-left: 22px;
+                    padding-right: ${showGraphButtons ? "40px" : "0"};
                   }
                   .thought-rail {
                     position: absolute;
@@ -465,6 +642,26 @@ export function ThoughtsEditor({
                     min-width: 0;
                     display: flex;
                     flex-direction: column;
+                  }
+                  .thought-graph {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    width: 32px;
+                    height: 32px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: ${graphButtonColor};
+                    opacity: 0.8;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    z-index: 3;
+                  }
+                  .thought-graph svg {
+                    display: block;
+                    pointer-events: none;
                   }
                   .thought-category {
                     height: 14px;
@@ -523,6 +720,7 @@ export function ThoughtsEditor({
                     font-family: 'QuicksandBold', sans-serif;
                     font-weight: normal;
                     margin-bottom: 2px;
+                    opacity: 0.75;
                   }
                   .thought-summary {
                     font-family: 'QuicksandRegular', sans-serif;
@@ -544,42 +742,55 @@ export function ThoughtsEditor({
                   ${categoryColorsCssRef.current}
                 `,
                 }}
-                onChange={syncThoughtsFromHtml}
-                onCursorPosition={scrollCursorIntoView}
+                onChange={
+                  readOnly
+                    ? undefined
+                    : (html) => {
+                        syncThoughtsFromHtml(html);
+                        if (keyboardOpenRef.current) {
+                          scrollCaretIntoView();
+                        }
+                      }
+                }
+                onCursorPosition={
+                  readOnly ? undefined : () => scrollCaretIntoView()
+                }
                 onMessage={handleEditorMessage}
               />
             )}
-          </ScrollView>
+          </View>
         </View>
       </View>
 
-      <BottomSheetContent
-        ref={categorySheetRef}
-        style={{ zIndex: 100 }}
-        enablePanDownToClose
-        enableContentPanningGesture={false}
-        onDismiss={() => setCategoryPickerIndex(null)}
-      >
-        <BottomSheetView className="gap-5 pt-6 bg-background">
-          <BottomSheetHeader className="bg-background">
-            <Typography className="text-foreground text-xl font-bold pb-1">
-              Categories
-            </Typography>
-          </BottomSheetHeader>
-          <ScrollView style={{ maxHeight: 300 }}>
-            <View className="flex flex-col w-full flex-wrap gap-2">
-              {categories.map((category) => (
-                <CategoryListItem
-                  key={category.id}
-                  item={category}
-                  onPress={() => handleSelectCategory(category)}
-                  selected={selectedCategoryId === category.id}
-                />
-              ))}
-            </View>
-          </ScrollView>
-        </BottomSheetView>
-      </BottomSheetContent>
+      {!readOnly ? (
+        <BottomSheetContent
+          ref={categorySheetRef}
+          style={{ zIndex: 100 }}
+          enablePanDownToClose
+          enableContentPanningGesture={false}
+          onDismiss={() => setCategoryPickerIndex(null)}
+        >
+          <BottomSheetView className="gap-5 pt-6 bg-background">
+            <BottomSheetHeader className="bg-background">
+              <Typography className="text-foreground text-xl font-bold pb-1">
+                Categories
+              </Typography>
+            </BottomSheetHeader>
+            <ScrollView style={{ maxHeight: 300 }}>
+              <View className="flex flex-col w-full flex-wrap gap-2">
+                {categories.map((category) => (
+                  <CategoryListItem
+                    key={category.id}
+                    item={category}
+                    onPress={() => handleSelectCategory(category)}
+                    selected={selectedCategoryId === category.id}
+                  />
+                ))}
+              </View>
+            </ScrollView>
+          </BottomSheetView>
+        </BottomSheetContent>
+      ) : null}
     </BottomSheet>
   );
 }

@@ -62,7 +62,7 @@ export const EditableField = React.forwardRef<TextInput, EditableFieldProps>(
 
     const inputStyle = {
       fontFamily: fontFamily,
-      fontSize: fontSize === "sm" ? 16 : fontSize === "md" ? 18 : 20,
+      fontSize: fontSize === "sm" ? 16 : fontSize === "md" ? 18 : 22,
       textAlignVertical: "top" as const,
       minHeight: 20,
       ...(style as TextStyle),

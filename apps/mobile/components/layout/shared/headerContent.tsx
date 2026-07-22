@@ -19,10 +19,13 @@ type HeaderContentProps = {
   };
   hideBackButton?: boolean;
   showLogo?: boolean;
-  buttons?: React.ReactNode;
+  /** Header action buttons. Logic stays with the caller; this only renders them. */
+  buttons?: React.ReactNode[];
   moreOptionsMenu?: {
     links: MoreOptionsMenuProps["links"];
     state: { open: boolean; setOpen: (open: boolean) => void };
+    trigger?: MoreOptionsMenuProps["trigger"];
+    currentWorkspace?: boolean;
   };
 };
 
@@ -34,7 +37,7 @@ export const HeaderContent = ({
   showLogo = false,
   subtitle,
 }: HeaderContentProps) => {
-  const { links, state } = moreOptionsMenu ?? {};
+  const { links, state, trigger, currentWorkspace } = moreOptionsMenu ?? {};
   const { back } = useRouter();
 
   return (
@@ -56,7 +59,7 @@ export const HeaderContent = ({
               {title}
             </Typography>
           )}
-          <View className="flex-row items-center gap-1">
+          <View className="flex-row items-center gap-1 mr-1">
             {subtitle?.icon && (
               <Icon size={12} color="background" name={subtitle.icon} />
             )}
@@ -72,12 +75,19 @@ export const HeaderContent = ({
           </View>
         </View>
       </View>
-      <View className="shrink-0 flex-row items-center">
-        {buttons}
+      <View className="shrink-0 flex-row items-center gap-1">
+        <View className="flex-row items-center">
+          {buttons?.map((button, index) => (
+            <React.Fragment key={index}>{button}</React.Fragment>
+          ))}
+        </View>
         {links && state && (
-          <View className="-ml-2">
-            <MoreOptionsMenu links={links} state={state} />
-          </View>
+          <MoreOptionsMenu
+            links={links}
+            state={state}
+            trigger={trigger}
+            currentWorkspace={currentWorkspace}
+          />
         )}
       </View>
     </View>

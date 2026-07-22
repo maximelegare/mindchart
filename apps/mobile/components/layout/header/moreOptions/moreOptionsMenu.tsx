@@ -66,14 +66,27 @@ export type MoreOptionsMenuLink =
   | MoreOptionsMenuComponentLink
   | MoreOptionsMenuActionLink;
 
+/** Icon trigger, or the workspace avatar logo. */
+export type MoreOptionsMenuTrigger = IconName | "currentWorkspace";
+
 export type MoreOptionsMenuProps = {
   links: MoreOptionsMenuLink[];
   state: { open: boolean; setOpen: (open: boolean) => void };
+  /**
+   * Header trigger content.
+   * - `IconName`: show that icon
+   * - `"currentWorkspace"` / omitted: show the workspace avatar
+   */
+  trigger?: MoreOptionsMenuTrigger;
+  /** Show the current workspace switcher at the top of the menu. Defaults to true. */
+  currentWorkspace?: boolean;
 };
 
 export function MoreOptionsMenu({
   links,
   state: { open, setOpen },
+  trigger = "currentWorkspace",
+  currentWorkspace = true,
 }: MoreOptionsMenuProps) {
   const router = useRouter();
 
@@ -117,7 +130,10 @@ export function MoreOptionsMenu({
     }
   };
 
-  if (!links || links.length === 0) return null;
+  const hasLinks = links != null && links.length > 0;
+  if (!hasLinks && !currentWorkspace) return null;
+
+  const showWorkspaceTrigger = trigger === "currentWorkspace";
 
   return (
     <DropdownMenu
@@ -126,8 +142,12 @@ export function MoreOptionsMenu({
       className="relative"
     >
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="w-14">
-          <WorkspaceAvatar />
+        <Button variant="ghost" size="icon" className="mr-1">
+          {showWorkspaceTrigger ? (
+            <WorkspaceAvatar />
+          ) : (
+            <Icon name={trigger} size={26} color="background" />
+          )}
         </Button>
       </DropdownMenuTrigger>
 
@@ -140,8 +160,12 @@ export function MoreOptionsMenu({
         >
           <Animated.View style={[{ flex: 1 }, animatedMenuOpacity]}>
             <DropdownMenuGroup className="overflow-hidden w-full">
-              <CurrentWorkspace />
-              <DropdownMenuSeparator className="my-0" />
+              {currentWorkspace ? (
+                <>
+                  <CurrentWorkspace />
+                  {hasLinks ? <DropdownMenuSeparator className="my-0" /> : null}
+                </>
+              ) : null}
               {links.map((link, index) => (
                 <React.Fragment key={link.label}>
                   {link.href !== undefined ? (

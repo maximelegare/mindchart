@@ -48,7 +48,7 @@ type PageContainerProps = {
   };
   showLogo?: boolean;
   headerVariant?: HeaderVariant;
-  buttons?: React.ReactNode;
+  buttons?: React.ReactNode[];
   children: React.ReactNode;
   noScrollView?: boolean;
   /** When true, header + options hide/show with scroll. Off by default. */

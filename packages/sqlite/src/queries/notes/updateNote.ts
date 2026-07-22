@@ -11,11 +11,16 @@ export const updateNoteQuery = async (db: DB, data: Note) => {
       .update(NoteTable)
       .set({
         title: data.title,
-        summary: JSON.stringify(data.summary),
+        summary:
+          typeof data.summary === "string"
+            ? data.summary
+            : JSON.stringify(data.summary ?? ""),
         rawText: data.rawText,
+        topicId: data.topicId,
       })
       .where(eq(NoteTable.id, data.id));
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };

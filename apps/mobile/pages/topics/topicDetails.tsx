@@ -13,7 +13,7 @@ export const TopicDetailsPage = () => {
       headerVariant="tab"
       title={topicName ?? ""}
       subtitle={{ text: "Topic", icon: "tag" }}
-      buttons={<SearchFeature />}
+      buttons={[<SearchFeature />]}
       moreOptionsMenu={{
         links: [{ label: "Settings", icon: "settings", href: "/settings" }],
         state: { open, setOpen },
