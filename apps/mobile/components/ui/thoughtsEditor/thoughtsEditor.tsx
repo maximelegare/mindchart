@@ -65,47 +65,48 @@ async function loadEditorFontFaceCss(): Promise<string> {
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
 
-/** Keep the caret slightly above the editor's bottom edge. */
-const CARET_BOTTOM_MARGIN = 28;
+/** Extra space below the caret so it stays clear of the keyboard / viewport edge. */
+const CARET_BOTTOM_MARGIN = 72;
 
-const REQUEST_CURSOR_OFFSET_SCRIPT = `
-  (function () {
-    var sel = window.getSelection();
-    var node = sel && sel.anchorNode;
-    if (!node) return true;
-    var el = node.nodeType === 3 ? node.parentElement : node;
-    var offsetY = 0;
-    var siblingOffset =
-      (el && el.nextSibling && el.nextSibling.offsetTop) ||
-      (el && el.previousSibling && el.previousSibling.offsetTop) ||
-      0;
-    var rectOffset = 0;
-    if (sel.rangeCount > 0) {
-      var rect = sel.getRangeAt(0).getClientRects()[0];
-      rectOffset = rect ? rect.y : 0;
-    }
-    while (el) {
-      if (el.offsetTop) {
-        offsetY = el.offsetTop;
-        break;
-      }
-      el = el.parentElement;
-    }
-    offsetY = offsetY || siblingOffset || rectOffset;
-    // Keep the caret visible when the WebView scrolls internally (fill-height mode).
-    try {
-      var focusEl = node.nodeType === 3 ? node.parentElement : node;
-      if (focusEl && focusEl.scrollIntoView) {
-        focusEl.scrollIntoView({ block: "nearest", inline: "nearest" });
-      }
-    } catch (e) {}
-    if (offsetY && window.ReactNativeWebView) {
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OFFSET_Y", data: offsetY })
-      );
+const scrollCaretIntoViewScript = (bottomMargin: number) => `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+
+  var sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return true;
+
+  var range = sel.getRangeAt(0).cloneRange();
+  var rect = range.getClientRects()[0];
+  if (!rect || (rect.height === 0 && rect.width === 0)) {
+    rect = range.getBoundingClientRect();
+  }
+
+  var margin = ${Math.max(24, Math.floor(bottomMargin))};
+  var contentRect = content.getBoundingClientRect();
+
+  if (!rect || (rect.height === 0 && rect.width === 0)) {
+    var node = sel.anchorNode;
+    var el = node && (node.nodeType === 3 ? node.parentElement : node);
+    if (el && el.scrollIntoView) {
+      el.scrollIntoView({ block: "center", inline: "nearest" });
     }
     return true;
-  })();
+  }
+
+  var caretTop = rect.top - contentRect.top + content.scrollTop;
+  var caretBottom = rect.bottom - contentRect.top + content.scrollTop;
+  var visibleTop = content.scrollTop + 8;
+  var visibleBottom = content.scrollTop + content.clientHeight - margin;
+
+  if (caretBottom > visibleBottom) {
+    content.scrollTop = Math.max(0, caretBottom - content.clientHeight + margin);
+  } else if (caretTop < visibleTop) {
+    content.scrollTop = Math.max(0, caretTop - 8);
+  }
+  return true;
+})();
 `;
 
 function buildCategoryColorCss(): string {
@@ -195,9 +196,7 @@ export function ThoughtsEditor({
   >(null);
 
   const richRef = React.useRef<RichEditor>(null);
-  const scrollRef = React.useRef<ScrollView>(null);
   const scrollViewHeightRef = React.useRef(0);
-  const lastCursorYRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const showTitlesRef = React.useRef(showTitles);
   const effectiveShowTitles = effectiveSimplified ? false : showTitles;
@@ -224,20 +223,9 @@ export function ThoughtsEditor({
       ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
       : null;
 
-  const requestCursorOffset = React.useCallback(() => {
-    richRef.current?.injectJavascript(REQUEST_CURSOR_OFFSET_SCRIPT);
-  }, []);
-
-  const scrollCursorIntoView = React.useCallback((cursorY: number) => {
-    if (cursorY > 0) {
-      lastCursorYRef.current = cursorY;
-    }
-    const viewportH = scrollViewHeightRef.current;
-    const y = lastCursorYRef.current;
-    if (viewportH <= 0 || y <= 0) return;
-
-    const targetY = Math.max(0, y - (viewportH - CARET_BOTTOM_MARGIN));
-    scrollRef.current?.scrollTo({ y: targetY, animated: true });
+  const scrollCaretIntoView = React.useCallback(() => {
+    const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 28;
+    richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
   }, []);
 
   React.useEffect(() => {
@@ -261,13 +249,13 @@ export function ThoughtsEditor({
       setKeyboardOpen(true);
 
       const refresh = () => {
-        scrollCursorIntoView(lastCursorYRef.current);
-        requestCursorOffset();
+        scrollCaretIntoView();
       };
       requestAnimationFrame(() => {
         requestAnimationFrame(refresh);
       });
-      setTimeout(refresh, 120);
+      setTimeout(refresh, 100);
+      setTimeout(refresh, 280);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       keyboardOpenRef.current = false;
@@ -278,13 +266,33 @@ export function ThoughtsEditor({
       showSub.remove();
       hideSub.remove();
     };
-  }, [readOnly, requestCursorOffset, scrollCursorIntoView]);
+  }, [readOnly, scrollCaretIntoView]);
 
   React.useEffect(() => {
     if (readOnly || !keyboardOpen) return;
-    scrollCursorIntoView(lastCursorYRef.current);
-    requestCursorOffset();
-  }, [keyboardOpen, readOnly, requestCursorOffset, scrollCursorIntoView]);
+    const pad = CARET_BOTTOM_MARGIN + 24;
+    richRef.current?.injectJavascript(`
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.style.paddingBottom = "${pad}px";
+  true;
+})();
+`);
+    scrollCaretIntoView();
+  }, [keyboardOpen, readOnly, scrollCaretIntoView]);
+
+  React.useEffect(() => {
+    if (readOnly || keyboardOpen) return;
+    richRef.current?.injectJavascript(`
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.style.paddingBottom = "12px";
+  true;
+})();
+`);
+  }, [keyboardOpen, readOnly]);
 
   const applyEditorFlags = React.useCallback((nextShowTitles: boolean) => {
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
@@ -313,27 +321,6 @@ export function ThoughtsEditor({
     });
   }, [applyEditorFlags, applySimplifiedMode, readOnly, showGraphButtons]);
 
-  // View mode only installs collapse chrome; install the Enter/backspace guard when editing.
-  React.useEffect(() => {
-    if (readOnly) return;
-    // Set titles flag before the guard installs/normalizes, or titles get stripped.
-    applyEditorFlags(showTitles);
-    applySimplifiedMode(false);
-    richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
-    richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
-    );
-    refreshCategoryTimers();
-    // Only re-run when entering edit (and graph chrome changes with it) — not on Titles toggle.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- showTitles/getValues read from the edit-entry render
-  }, [
-    applyEditorFlags,
-    applySimplifiedMode,
-    readOnly,
-    refreshCategoryTimers,
-    showGraphButtons,
-  ]);
-
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
       const previous = getValues("thoughts");
@@ -354,6 +341,26 @@ export function ThoughtsEditor({
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
     });
   }, []);
+
+  // View mode only installs collapse chrome; install the Enter/backspace guard when editing.
+  React.useEffect(() => {
+    if (readOnly) return;
+    // Set titles flag before the guard installs/normalizes, or titles get stripped.
+    applyEditorFlags(showTitles);
+    applySimplifiedMode(false);
+    richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
+    );
+    refreshCategoryTimers();
+    // Intentionally keyed on edit entry only (readOnly / graph chrome), not Titles toggle.
+  }, [
+    applyEditorFlags,
+    applySimplifiedMode,
+    readOnly,
+    refreshCategoryTimers,
+    showGraphButtons,
+  ]);
 
   const handleClearContent = React.useCallback(() => {
     const empty = [createEmptyThought(noteId)];
@@ -550,13 +557,11 @@ export function ThoughtsEditor({
             className="flex-1 min-h-0"
             style={{
               paddingTop: showToolbar ? EDITOR_TOOLBAR_HEIGHT : 0,
-              paddingBottom:
-                !readOnly && keyboardOpen ? CARET_BOTTOM_MARGIN : 0,
             }}
             onLayout={(event) => {
               scrollViewHeightRef.current = event.nativeEvent.layout.height;
               if (keyboardOpenRef.current) {
-                scrollCursorIntoView(lastCursorYRef.current);
+                scrollCaretIntoView();
               }
             }}
           >
@@ -587,6 +592,9 @@ export function ThoughtsEditor({
                   font-size: 16px;
                   line-height: 1.45;
                   padding: ${plain ? "8px 2px" : "12px"};
+                  padding-bottom: ${
+                    !readOnly && keyboardOpen ? CARET_BOTTOM_MARGIN + 24 : 12
+                  }px;
                   min-height: 100%;
                   box-sizing: border-box;
                 `,
@@ -734,8 +742,19 @@ export function ThoughtsEditor({
                   ${categoryColorsCssRef.current}
                 `,
                 }}
-                onChange={readOnly ? undefined : syncThoughtsFromHtml}
-                onCursorPosition={readOnly ? undefined : scrollCursorIntoView}
+                onChange={
+                  readOnly
+                    ? undefined
+                    : (html) => {
+                        syncThoughtsFromHtml(html);
+                        if (keyboardOpenRef.current) {
+                          scrollCaretIntoView();
+                        }
+                      }
+                }
+                onCursorPosition={
+                  readOnly ? undefined : () => scrollCaretIntoView()
+                }
                 onMessage={handleEditorMessage}
               />
             )}
