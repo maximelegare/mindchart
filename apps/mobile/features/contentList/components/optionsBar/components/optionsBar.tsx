@@ -132,6 +132,20 @@ function NewFolderButton({ onPress }: { onPress: () => void }) {
   );
 }
 
+function BreadcrumbsSurface({ children }: { children: React.ReactNode }) {
+  const { colorScheme } = useColorScheme();
+  const backgroundColor = hsl("card", colorScheme);
+
+  return (
+    <View
+      className="min-w-0 overflow-hidden flex-1 flex-row items-center rounded-full"
+      style={{ backgroundColor }}
+    >
+      {children}
+    </View>
+  );
+}
+
 export const OptionsBar = () => {
   const [expanded, setExpanded] = useState(false);
   const handleSortByChange = useOptionsBar((state) => state.handleSortByChange);
@@ -262,21 +276,22 @@ export const OptionsBar = () => {
           />
         </View>
 
-        <Breadcrumbs
-          items={breadcrumbItems}
-          onNavigate={onNavigateFolder}
-          renderItem={({ item, isLast }) => (
-            <FolderBreadcrumbCrumb
-              item={item}
-              isLast={isLast}
-              folder={
-                item.id === "root" ? null : (foldersById.get(item.id) ?? null)
-              }
-              onNavigate={onNavigateFolder}
-            />
-          )}
-        />
-
+        <BreadcrumbsSurface>
+          <Breadcrumbs
+            items={breadcrumbItems}
+            onNavigate={onNavigateFolder}
+            renderItem={({ item, isLast }) => (
+              <FolderBreadcrumbCrumb
+                item={item}
+                isLast={isLast}
+                folder={
+                  item.id === "root" ? null : (foldersById.get(item.id) ?? null)
+                }
+                onNavigate={onNavigateFolder}
+              />
+            )}
+          />
+        </BreadcrumbsSurface>
         <NewFolderButton onPress={onCreateFolder} />
       </View>
     </PageOptionsHeaderContainer>
