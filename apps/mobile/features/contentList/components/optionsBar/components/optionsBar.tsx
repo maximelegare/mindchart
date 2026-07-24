@@ -308,12 +308,14 @@ export const OptionsBar = () => {
                 options={SORT_OPTIONS}
                 onValueChange={onSortByChange}
               />
-              <OptionsDropdown
-                title="Group by:"
-                value={groupBy}
-                options={GROUP_OPTIONS}
-                onValueChange={onGroupByChange}
-              />
+              {localFoldersMode === "without" ? (
+                <OptionsDropdown
+                  title="Group by:"
+                  value={groupBy}
+                  options={GROUP_OPTIONS}
+                  onValueChange={onGroupByChange}
+                />
+              ) : null}
               <OptionsDropdown
                 title="Display:"
                 value={displayMode}
