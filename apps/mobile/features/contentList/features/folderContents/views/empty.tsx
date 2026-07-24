@@ -10,7 +10,7 @@ export const FolderContentsEmptyView = () => {
   folders.useFetchFolderContentsQuery(currentFolderId);
 
   return (
-    <View className="items-center justify-center px-6 py-16">
+    <View className="items-center justify-center px-6 py-10">
       <Typography variant="p" className="text-center text-muted-foreground">
         This folder is empty.
       </Typography>

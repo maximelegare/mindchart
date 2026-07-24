@@ -10,7 +10,7 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";
 import { useOptionsBar } from "../context/optionBarContext";
-import { FolderFormModalContent } from "../components/folderFormModalContent";
+import { FolderFormModalContent } from "../components/folders/folderFormModalContent";
 
 type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
 

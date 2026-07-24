@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
-import { FilterChip } from "@/features/contentList/components/optionsBar/components/filterChips";
+import { FilterChip } from "@/features/contentList/components/optionsBar/components/filters/filterChips";
 import { FunnelFilterChip } from "@/features/contentList/components/optionsBar/components/funnelFilterChip";
 import { memo, useEffect, useState } from "react";
 import { View } from "react-native";

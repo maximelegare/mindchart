@@ -2,7 +2,7 @@ import { Pressable, View } from "react-native";
 import React from "react";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { FilterChipProps } from "./filterChips";
+import { FilterChipProps } from "./filters/filterChips";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui";
 

@@ -24,9 +24,8 @@ import {
   useOptionsBar,
 } from "../context/optionBarContext";
 import { useFolderActions } from "../hooks/useFolderActions";
-import { ChildFoldersRow } from "./childFoldersRow";
-import { FilterChip } from "./filterChips";
-import { FolderBreadcrumbCrumb } from "./folderActionsMenu";
+import { FilterChip } from "./filters/filterChips";
+import { FolderBreadcrumbCrumb } from "./folders/folderActionsMenu";
 import { FunnelFilterChip } from "./funnelFilterChip";
 
 type OptionItem<T extends string> = {
@@ -171,11 +170,6 @@ export const OptionsBar = () => {
     }
   }, [allFolders, currentFolderId, handleCurrentFolderChange]);
 
-  const parentPathForChildren = currentFolder?.path ?? null;
-  const { data: childFolders = [] } = folders.useFetchChildFoldersQuery(
-    parentPathForChildren
-  );
-
   const breadcrumbItems = useMemo(() => {
     const root = { id: "root", name: "Root" };
     if (!currentFolder) return [root];
@@ -234,34 +228,28 @@ export const OptionsBar = () => {
   return (
     <PageOptionsHeaderContainer
       footer={
-        <>
-          <ChildFoldersRow
-            folders={childFolders ?? []}
-            onNavigate={handleCurrentFolderChange}
-          />
-          <CollapsibleContainer expanded={expanded}>
-            <View className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
-              <OptionsDropdown
-                title="Sort by:"
-                value={sortBy}
-                options={SORT_OPTIONS}
-                onValueChange={onSortByChange}
-              />
-              <OptionsDropdown
-                title="Group by:"
-                value={groupBy}
-                options={GROUP_OPTIONS}
-                onValueChange={onGroupByChange}
-              />
-              <OptionsDropdown
-                title="Display:"
-                value={displayMode}
-                options={DISPLAY_OPTIONS}
-                onValueChange={onDisplayModeChange}
-              />
-            </View>
-          </CollapsibleContainer>
-        </>
+        <CollapsibleContainer expanded={expanded}>
+          <View className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
+            <OptionsDropdown
+              title="Sort by:"
+              value={sortBy}
+              options={SORT_OPTIONS}
+              onValueChange={onSortByChange}
+            />
+            <OptionsDropdown
+              title="Group by:"
+              value={groupBy}
+              options={GROUP_OPTIONS}
+              onValueChange={onGroupByChange}
+            />
+            <OptionsDropdown
+              title="Display:"
+              value={displayMode}
+              options={DISPLAY_OPTIONS}
+              onValueChange={onDisplayModeChange}
+            />
+          </View>
+        </CollapsibleContainer>
       }
     >
       <View className="h-full w-full flex-row items-center gap-2">

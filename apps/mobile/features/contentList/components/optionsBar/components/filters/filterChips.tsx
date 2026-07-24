@@ -9,7 +9,7 @@ import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import React, { ReactNode, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { useOptionsBar } from "../context/optionBarContext";
+import { useOptionsBar } from "../../context/optionBarContext";
 
 type ChipItem = {
   id: string;

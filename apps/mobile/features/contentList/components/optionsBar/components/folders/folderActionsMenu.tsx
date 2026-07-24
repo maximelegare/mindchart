@@ -10,7 +10,7 @@ import {
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/cn";
-import { useFolderActions } from "../hooks/useFolderActions";
+import { useFolderActions } from "../../hooks/useFolderActions";
 
 type FolderActionsMenuProps = {
   /** Root target or a real folder */
