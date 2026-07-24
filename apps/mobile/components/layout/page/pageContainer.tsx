@@ -6,7 +6,11 @@ import {
   ScrollView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useScrollToTop, useNavigation } from "@react-navigation/native";
+import {
+  useScrollToTop,
+  useNavigation,
+  useFocusEffect,
+} from "@react-navigation/native";
 import Animated, {
   clamp,
   useAnimatedScrollHandler,
@@ -81,15 +85,17 @@ export const PageContainer = ({
 
   useScrollToTop(collapsingHeader ? animatedScrollRef : staticScrollRef);
 
-  React.useLayoutEffect(() => {
-    if (!hideTabBar) return;
-
-    useTabChromeStore.getState().setHidden(true);
-
-    return () => {
-      useTabChromeStore.getState().setHidden(false);
-    };
-  }, [hideTabBar]);
+  // Hide while focused only — stack pushes (e.g. note → graph) keep this screen
+  // mounted, so mount/unmount cleanup would leave the tab bar stuck hidden.
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!hideTabBar) return;
+      useTabChromeStore.getState().setHidden(true);
+      return () => {
+        useTabChromeStore.getState().setHidden(false);
+      };
+    }, [hideTabBar])
+  );
 
   const { colorScheme } = useColorScheme();
   const canGoBack = navigation.canGoBack();
