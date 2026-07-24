@@ -308,6 +308,12 @@ export const OptionsBar = () => {
                 options={SORT_OPTIONS}
                 onValueChange={onSortByChange}
               />
+              <OptionsDropdown
+                title="Display:"
+                value={displayMode}
+                options={DISPLAY_OPTIONS}
+                onValueChange={onDisplayModeChange}
+              />
               {localFoldersMode === "without" ? (
                 <OptionsDropdown
                   title="Group by:"
@@ -316,12 +322,6 @@ export const OptionsBar = () => {
                   onValueChange={onGroupByChange}
                 />
               ) : null}
-              <OptionsDropdown
-                title="Display:"
-                value={displayMode}
-                options={DISPLAY_OPTIONS}
-                onValueChange={onDisplayModeChange}
-              />
             </ScrollView>
           </Gutter>
         </CollapsibleContainer>
