@@ -26,7 +26,7 @@ import {
 import { useFolderActions } from "../hooks/useFolderActions";
 import { FilterChip } from "./filters/filterChips";
 import { FolderBreadcrumbCrumb } from "./folders/folderActionsMenu";
-import { FunnelFilterChip } from "./funnelFilterChip";
+import { TriggerFilterChip } from "./triggerFilterChip";
 
 type OptionItem<T extends string> = {
   value: T;
@@ -268,8 +268,8 @@ export const OptionsBar = () => {
     >
       <View className="h-full w-full flex-row items-center gap-2">
         <View className="shrink-0">
-          <FunnelFilterChip
-            icon="funnel"
+          <TriggerFilterChip
+            icon="settings-2"
             selected={expanded}
             showDot={hasNonDefaultOptions}
             onPress={() => setExpanded((prev) => !prev)}

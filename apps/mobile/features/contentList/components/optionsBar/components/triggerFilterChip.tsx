@@ -6,13 +6,13 @@ import { FilterChipProps } from "./filters/filterChips";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui";
 
-type FunnelFilterChipProps = FilterChipProps & {
+type TriggerFilterChipProps = FilterChipProps & {
   showDot?: boolean;
 };
 
-export const FunnelFilterChip = React.forwardRef<
+export const TriggerFilterChip = React.forwardRef<
   React.ElementRef<typeof Pressable>,
-  FunnelFilterChipProps
+  TriggerFilterChipProps
 >(function FunnelFilterChip(
   {
     label,

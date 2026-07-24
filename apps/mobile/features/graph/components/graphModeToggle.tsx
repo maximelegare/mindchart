@@ -12,7 +12,7 @@ import {
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import { FilterChip } from "@/features/contentList/components/optionsBar/components/filters/filterChips";
-import { FunnelFilterChip } from "@/features/contentList/components/optionsBar/components/funnelFilterChip";
+import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { memo, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useGraphStore } from "../context/graphContext";
@@ -100,7 +100,7 @@ export const GraphModeToggle = memo(function GraphModeToggle() {
   );
 
   const funnelToggle = (
-    <FunnelFilterChip
+    <TriggerFilterChip
       icon="funnel"
       selected={expanded}
       showDot={mode !== DEFAULT_GRAPH_MODE}

@@ -5,7 +5,7 @@ import { Button, Typography } from "@/components/ui";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
-import { FunnelFilterChip } from "@/features/contentList/components/optionsBar/components/funnelFilterChip";
+import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { Icon } from "@/components/ui/icons/icon";
 
 type NoteDetailsOptionsHeaderProps = {
@@ -47,7 +47,7 @@ export function NoteDetailsOptionsHeader({
       }
     >
       <View className="flex-row items-center gap-3">
-        <FunnelFilterChip
+        <TriggerFilterChip
           icon="settings-2"
           selected={expanded}
           showDot={simplified}
