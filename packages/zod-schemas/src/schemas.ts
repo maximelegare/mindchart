@@ -72,6 +72,8 @@ export const NoteSchema = z.object({
   rawText: z.string().default(""),
   topicId: z.string().nullable().optional(),
   topicName: z.string().nullable().optional(),
+  folderId: z.string().nullable().optional(),
+  folderLabel: z.string().nullable().optional(),
   createdAt: z.string().optional(),
 });
 

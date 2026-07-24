@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { NoteTable, TopicTable } from "../../schema.root";
+import { FolderTable, NoteTable, TopicTable } from "../../schema.root";
 import { type DB } from "../../utils/initialize/getOPDatabase";
 
 export const getAllNotesQuery = async (db: DB) => {
@@ -12,10 +12,13 @@ export const getAllNotesQuery = async (db: DB) => {
         rawText: NoteTable.rawText,
         topic_id: NoteTable.topicId,
         topic_name: TopicTable.name,
+        folder_id: NoteTable.folderId,
+        folder_label: FolderTable.label,
         createdAt: NoteTable.createdAt,
       })
       .from(NoteTable)
-      .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id));
+      .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id))
+      .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id));
   } catch (error) {
     console.error(error);
   }

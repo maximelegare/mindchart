@@ -2,7 +2,7 @@ import { memo, useDeferredValue, useMemo } from "react";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
 import { resolveContentView } from "./contentViewRegistry";
 import { getUiKey } from "./getUiKey";
-import { FolderContentsEmptyView } from "../../features/folderContents/views/empty";
+import { FolderContentsView } from "../../features/folderContents/views/empty";
 
 export { getDisplayKey, getUiKey } from "./getUiKey";
 export {
@@ -31,7 +31,7 @@ export const UiGetter = memo(function UiGetter() {
   const ViewComponent = useMemo(() => resolveContentView(uiKey), [uiKey]);
 
   if (deferredFoldersMode === "with" && deferredFolderId) {
-    return <FolderContentsEmptyView />;
+    return <FolderContentsView />;
   }
 
   return <ViewComponent />;

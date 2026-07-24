@@ -9,6 +9,8 @@ type NoteQueryRow = {
   rawText: string | null;
   topic_id: string | null;
   topic_name: string | null;
+  folder_id?: string | null;
+  folder_label?: string | null;
   createdAt: string;
 };
 
@@ -22,6 +24,8 @@ export const normalizeNotesFromQuery = (data: unknown): Note[] | null => {
     rawText: row.rawText ?? "",
     topicId: row.topic_id ?? undefined,
     topicName: row.topic_name ?? undefined,
+    folderId: row.folder_id ?? undefined,
+    folderLabel: row.folder_label ?? undefined,
     createdAt: row.createdAt,
   }));
 

@@ -6,6 +6,7 @@ export type SaveGeneratedNoteInput = {
   note: Note;
   thoughts: Thought[];
   topic: Topic & { isNew?: boolean };
+  folderId?: string | null;
 };
 
 function asText(value: unknown): string {
@@ -37,13 +38,14 @@ export const useSaveGeneratedNote = () => {
     useInsertNewTopicMutation();
 
   const saveGeneratedNote = useCallback(
-    async ({ note, thoughts, topic }: SaveGeneratedNoteInput) => {
+    async ({ note, thoughts, topic, folderId }: SaveGeneratedNoteInput) => {
       const noteToInsert: Note = {
         id: note.id,
         title: asText(note.title),
         summary: asText(note.summary),
         rawText: note.rawText ?? "",
         topicId: topic.id || note.topicId,
+        folderId: folderId ?? note.folderId ?? null,
         createdAt: note.createdAt ?? new Date().toISOString(),
       };
 

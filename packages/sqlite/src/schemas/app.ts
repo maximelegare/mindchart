@@ -8,6 +8,15 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { float32ArrayBlob } from "./fields/embeddingTable";
 
+export const FolderTable = sqliteTable("folder", {
+  id: text("id").notNull().primaryKey(),
+  path: text("path").notNull().unique(),
+  label: text("label").notNull(),
+  createdAt: text("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
 export const ThoughtTable = sqliteTable(
   "thought",
   {
@@ -43,6 +52,7 @@ export const NoteTable = sqliteTable(
     summary: text("summary"),
     rawText: text("raw_text"),
     topicId: text("topic_id"),
+    folderId: text("folder_id"),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -52,6 +62,10 @@ export const NoteTable = sqliteTable(
       columns: [note.topicId],
       foreignColumns: [TopicTable.id],
     }).onDelete("cascade"),
+    foreignKey({
+      columns: [note.folderId],
+      foreignColumns: [FolderTable.id],
+    }).onDelete("set null"),
   ]
 );
 
@@ -106,13 +120,4 @@ export const SettingTable = sqliteTable("setting", {
   id: text("id").notNull().primaryKey(),
   name: text("name").notNull(),
   data: text("data").notNull(),
-});
-
-export const FolderTable = sqliteTable("folder", {
-  id: text("id").notNull().primaryKey(),
-  path: text("path").notNull().unique(),
-  label: text("label").notNull(),
-  createdAt: text("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
 });

@@ -1,0 +1,247 @@
+import React, { useMemo, useState } from "react";
+import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
+import { getFolderIdsFromPath, getParentFolderPath } from "@repo/sqlite";
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetOpenTrigger,
+  BottomSheetView,
+} from "@/components/primitives/bottomSheet/bottom-sheet.native";
+import { Typography } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Check } from "@/lib/icons/Check";
+import { useBottomSheetModal } from "@gorhom/bottom-sheet";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { Folder } from "@repo/zod-schemas/src/schemas";
+import { hsl } from "@/utils/hsl";
+import { useControllers } from "@/api/controllers/useControllers";
+import { Icon } from "@/components/ui/icons/icon";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+
+export type FolderSelection = Folder | null;
+
+const isDirectChild = (parentPath: string | null, folder: Folder) => {
+  if (parentPath === null) {
+    return getParentFolderPath(folder.path) === null;
+  }
+  return getParentFolderPath(folder.path) === parentPath;
+};
+
+export const FolderSelector = ({
+  onSelect,
+  selectedFolder,
+  maxChars,
+}: {
+  onSelect: (folder: FolderSelection) => void;
+  selectedFolder: FolderSelection;
+  maxChars?: number;
+}) => {
+  const { folders } = useControllers();
+  const { data: allFolders } = folders.useFetchAllFoldersQuery();
+
+  const label = selectedFolder?.label ?? "No folder";
+  const displayName =
+    maxChars && label.length > maxChars
+      ? `${label.slice(0, maxChars)}…`
+      : label;
+
+  return (
+    <BottomSheet>
+      <BottomSheetOpenTrigger asChild className="self-start">
+        <TouchableOpacity className="flex-row items-center gap-1.5 self-start rounded-full bg-card px-2.5 py-1.5">
+          <Icon name="folder" color="foreground" size={16} />
+          <Typography
+            variant="p"
+            className="shrink text-foreground"
+            numberOfLines={1}
+          >
+            {displayName}
+          </Typography>
+        </TouchableOpacity>
+      </BottomSheetOpenTrigger>
+      <BottomSheetContent
+        style={{ zIndex: 100 }}
+        enablePanDownToClose
+        enableContentPanningGesture={false}
+      >
+        <BottomSheetView
+          className="gap-4 pt-6 bg-background"
+          style={{ left: 19 }}
+        >
+          <BottomSheetHeader className="bg-background">
+            <Typography className="text-foreground text-xl font-bold pb-1">
+              Folders
+            </Typography>
+          </BottomSheetHeader>
+          <FolderPickerBrowser
+            folders={allFolders ?? []}
+            selectedFolder={selectedFolder}
+            onSelect={onSelect}
+          />
+        </BottomSheetView>
+      </BottomSheetContent>
+    </BottomSheet>
+  );
+};
+
+function FolderPickerBrowser({
+  folders,
+  selectedFolder,
+  onSelect,
+}: {
+  folders: Folder[];
+  selectedFolder: FolderSelection;
+  onSelect: (folder: FolderSelection) => void;
+}) {
+  const { dismiss } = useBottomSheetModal();
+  const { colorScheme } = useColorScheme();
+  const foldersById = useMemo(
+    () => new Map(folders.map((folder) => [folder.id, folder])),
+    [folders]
+  );
+
+  // Start browsing at the selected folder (or root).
+  const [browseFolderId, setBrowseFolderId] = useState<string | null>(
+    () => selectedFolder?.id ?? null
+  );
+
+  const browseFolder = browseFolderId
+    ? (foldersById.get(browseFolderId) ?? null)
+    : null;
+
+  const childFolders = useMemo(() => {
+    const parentPath = browseFolder?.path ?? null;
+    return folders
+      .filter((folder) => isDirectChild(parentPath, folder))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [browseFolder?.path, folders]);
+
+  const breadcrumbItems = useMemo(() => {
+    const root = { id: "root", name: "Root" };
+    if (!browseFolder) return [root];
+    const ids = getFolderIdsFromPath(browseFolder.path);
+    return [
+      root,
+      ...ids.map((id) => ({
+        id,
+        name: foldersById.get(id)?.label ?? id,
+      })),
+    ];
+  }, [browseFolder, foldersById]);
+
+  const handleSelect = (folder: FolderSelection) => {
+    onSelect(folder);
+    dismiss();
+  };
+
+  const isCurrentSelected =
+    browseFolder === null
+      ? selectedFolder === null
+      : selectedFolder?.id === browseFolder.id;
+
+  return (
+    <View className="gap-3">
+      <Breadcrumbs
+        items={breadcrumbItems}
+        onNavigate={(id) => setBrowseFolderId(id === "root" ? null : id)}
+        className="rounded-full bg-card px-1"
+      />
+
+      <Pressable
+        className="py-3 px-3 w-full rounded-lg border border-solid flex-row items-center justify-between"
+        style={{
+          borderColor: isCurrentSelected
+            ? hsl("border", colorScheme)
+            : hsl("card", colorScheme),
+          backgroundColor: hsl("card", colorScheme),
+        }}
+        onPress={() => handleSelect(browseFolder)}
+      >
+        <View className="flex-row items-center gap-2 flex-1">
+          <Icon
+            name={browseFolder ? "folder" : "circle-off"}
+            color="muted-foreground"
+            size={16}
+          />
+          <Typography>
+            {browseFolder ? `Select “${browseFolder.label}”` : "No folder"}
+          </Typography>
+        </View>
+        {isCurrentSelected ? (
+          <Check className="text-accent-foreground" />
+        ) : null}
+      </Pressable>
+
+      <ScrollView style={{ maxHeight: 260 }}>
+        <View className="flex flex-col w-full gap-1">
+          {childFolders.length === 0 ? (
+            <Typography
+              variant="p"
+              className="px-2 py-4 text-muted-foreground text-center"
+            >
+              No subfolders
+            </Typography>
+          ) : (
+            childFolders.map((folder) => (
+              <FolderNavRow
+                key={folder.id}
+                folder={folder}
+                selected={selectedFolder?.id === folder.id}
+                onOpen={() => setBrowseFolderId(folder.id)}
+                onSelect={() => handleSelect(folder)}
+              />
+            ))
+          )}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function FolderNavRow({
+  folder,
+  selected,
+  onOpen,
+  onSelect,
+}: {
+  folder: Folder;
+  selected: boolean;
+  onOpen: () => void;
+  onSelect: () => void;
+}) {
+  const { colorScheme } = useColorScheme();
+
+  return (
+    <View
+      className="flex-row items-center rounded-lg border border-solid"
+      style={{
+        borderColor: selected ? hsl("border", colorScheme) : "transparent",
+      }}
+    >
+      <Pressable
+        className="flex-1 flex-row items-center gap-2 py-3.5 px-2"
+        onPress={onOpen}
+      >
+        <Icon name="folder" color="muted-foreground" size={16} />
+        <Typography className="flex-1" numberOfLines={1}>
+          {folder.label}
+        </Typography>
+        <Icon name="chevron-right" color="muted-foreground" size={16} />
+      </Pressable>
+      <Button
+        variant="ghost"
+        size="xs"
+        className="mr-1"
+        onPress={onSelect}
+        accessibilityLabel={`Select ${folder.label}`}
+      >
+        {selected ? (
+          <Check className="text-accent-foreground" />
+        ) : (
+          <Typography className="text-xs text-muted-foreground">Use</Typography>
+        )}
+      </Button>
+    </View>
+  );
+}
