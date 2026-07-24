@@ -1,17 +1,17 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
-import { useSelectedTopicId } from "@/features/contentList/hooks/useContentListFilter";
+import { useSelectedFolderId } from "@/features/contentList/hooks/useContentListFilter";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
 import {
   latestDate,
   sortContentList,
 } from "@/features/contentList/utils/sortContentList";
+import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useMemo } from "react";
-import { groupNotesByTopic } from "../utils/groupNotesByTopic";
-import { normalizeNotesFromQuery } from "../utils/normalizeNotesFromQuery";
+import { groupNotesByFolder } from "../utils/groupNotesByFolder";
 
-const sortTopicGroups = <
+const sortFolderGroups = <
   T extends {
     id: string;
     name: string;
@@ -19,23 +19,18 @@ const sortTopicGroups = <
   },
 >(
   groups: T[] | null,
-  sortBy: ReturnType<typeof useContentListSort>,
-  selectedTopicId: string | null
+  sortBy: ReturnType<typeof useContentListSort>
 ) => {
-  if (!groups) return null;
-  const filtered = selectedTopicId
-    ? groups.filter((group) => group.id === selectedTopicId)
-    : groups;
-  if (!filtered.length) return null;
-  return sortContentList(filtered, sortBy, {
+  if (!groups?.length) return null;
+  return sortContentList(groups, sortBy, {
     getName: (group) => group.name,
     getDate: (group) => latestDate(group.notes.map((note) => note.createdAt)),
   });
 };
 
-export const useGroupByTopicsNotesWithOverviewData = () => {
+export const useGroupByFoldersNotesWithOverviewData = () => {
   const sortBy = useContentListSort();
-  const selectedTopicId = useSelectedTopicId();
+  const selectedFolderId = useSelectedFolderId();
   const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
   const { data, refetch } = useFetchNotesAndThoughtsQuery();
 
@@ -47,17 +42,16 @@ export const useGroupByTopicsNotesWithOverviewData = () => {
 
   return useMemo(() => {
     const notes = parseNoteAndThoughts(data);
-    return sortTopicGroups(
-      groupNotesByTopic(notes ?? []),
-      sortBy,
-      selectedTopicId
-    );
-  }, [data, selectedTopicId, sortBy]);
+    const filtered = selectedFolderId
+      ? (notes ?? []).filter((note) => note.folderId === selectedFolderId)
+      : (notes ?? []);
+    return sortFolderGroups(groupNotesByFolder(filtered), sortBy);
+  }, [data, selectedFolderId, sortBy]);
 };
 
-export const useGroupByTopicsNotesWithoutOverviewData = () => {
+export const useGroupByFoldersNotesWithoutOverviewData = () => {
   const sortBy = useContentListSort();
-  const selectedTopicId = useSelectedTopicId();
+  const selectedFolderId = useSelectedFolderId();
   const { useFetchAllNotesQuery } = useControllers().notesAndThoughts;
   const { data, refetch } = useFetchAllNotesQuery();
 
@@ -69,10 +63,9 @@ export const useGroupByTopicsNotesWithoutOverviewData = () => {
 
   return useMemo(() => {
     const notes = normalizeNotesFromQuery(data);
-    return sortTopicGroups(
-      groupNotesByTopic(notes ?? []),
-      sortBy,
-      selectedTopicId
-    );
-  }, [data, selectedTopicId, sortBy]);
+    const filtered = selectedFolderId
+      ? (notes ?? []).filter((note) => note.folderId === selectedFolderId)
+      : (notes ?? []);
+    return sortFolderGroups(groupNotesByFolder(filtered), sortBy);
+  }, [data, selectedFolderId, sortBy]);
 };

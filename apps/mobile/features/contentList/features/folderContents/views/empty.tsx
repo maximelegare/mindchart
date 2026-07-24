@@ -4,7 +4,7 @@ import { Typography } from "@/components/ui";
 import { useControllers } from "@/api/controllers/useControllers";
 import { NoteWithoutOverview } from "@/features/contentList/components/cards/noteWithoutOverview";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
-import { normalizeNotesFromQuery } from "@/features/contentList/features/groupByTopics/notes/utils/normalizeNotesFromQuery";
+import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
 import { sortContentList } from "@/features/contentList/utils/sortContentList";
 

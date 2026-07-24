@@ -1,6 +1,7 @@
 import {
   deleteFolderByPathQuery,
   getAllFoldersQuery,
+  getAllFoldersWithNotesInfosQuery,
   getChildFoldersQuery,
   getFolderByIdQuery,
   getFolderContentsQuery,
@@ -13,6 +14,11 @@ import { Folder } from "@repo/zod-schemas/src/schemas";
 export const getAllFolders = async () => {
   const db = getOPDatabase();
   return await getAllFoldersQuery(db);
+};
+
+export const getAllFoldersWithNotesInfos = async () => {
+  const db = getOPDatabase();
+  return await getAllFoldersWithNotesInfosQuery(db);
 };
 
 export const getFolderById = async (id: string) => {

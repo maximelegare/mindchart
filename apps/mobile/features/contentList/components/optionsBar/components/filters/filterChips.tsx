@@ -91,25 +91,25 @@ export function ContentListFilterChips({
 }: ContentListFilterChipsProps) {
   const groupBy = useOptionsBar((state) => state.groupBy);
   const displayMode = useOptionsBar((state) => state.displayMode);
-  const selectedTopicId = useOptionsBar((state) => state.selectedTopicId);
+  const selectedFolderId = useOptionsBar((state) => state.selectedFolderId);
   const selectedCategoryId = useOptionsBar((state) => state.selectedCategoryId);
-  const handleSelectedTopicChange = useOptionsBar(
-    (state) => state.handleSelectedTopicChange
+  const handleSelectedFolderChange = useOptionsBar(
+    (state) => state.handleSelectedFolderChange
   );
   const handleSelectedCategoryChange = useOptionsBar(
     (state) => state.handleSelectedCategoryChange
   );
 
-  const { useFetchAllTopicsWithNotesInfosQuery } = useControllers().topics;
+  const { useFetchAllFoldersWithNotesInfosQuery } = useControllers().folders;
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
 
   const showCategories =
     groupBy === "categories" || displayMode === "categories";
-  const showTopics = !showCategories;
+  const showFolders = !showCategories;
 
-  const { data: topicsData } = useFetchAllTopicsWithNotesInfosQuery({
-    enabled: showTopics,
+  const { data: foldersData } = useFetchAllFoldersWithNotesInfosQuery({
+    enabled: showFolders,
   });
   const { data: categoriesData } = useFetchAllCategoriesWithThoughtsInfosQuery({
     enabled: showCategories,
@@ -127,22 +127,22 @@ export function ContentListFilterChips({
         }));
     }
 
-    if (!topicsData || !Array.isArray(topicsData)) return [];
-    return topicsData
-      .filter((topic) => (topic.noteCount ?? 0) > 0)
-      .map((topic) => ({
-        id: topic.id,
-        label: topic.name,
+    if (!foldersData || !Array.isArray(foldersData)) return [];
+    return foldersData
+      .filter((folder) => (folder.noteCount ?? 0) > 0)
+      .map((folder) => ({
+        id: folder.id,
+        label: folder.label,
       }));
-  }, [categoriesData, showCategories, topicsData]);
+  }, [categoriesData, foldersData, showCategories]);
 
-  const selectedId = showCategories ? selectedCategoryId : selectedTopicId;
+  const selectedId = showCategories ? selectedCategoryId : selectedFolderId;
   const onSelect = (id: string | null) => {
     if (showCategories) {
       handleSelectedCategoryChange(id);
       return;
     }
-    handleSelectedTopicChange(id);
+    handleSelectedFolderChange(id);
   };
 
   if (!leading && chips.length === 0) return null;

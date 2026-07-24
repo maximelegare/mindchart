@@ -1,16 +1,16 @@
 import { TopicsListFeature } from "@/features/topics/features/topicsList/views/index";
-import { useSelectedTopicId } from "@/features/contentList/hooks/useContentListFilter";
+import { useSelectedFolderId } from "@/features/contentList/hooks/useContentListFilter";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
 
 export const TopicsOnlyViewFeature = () => {
   const sortBy = useContentListSort();
-  const selectedTopicId = useSelectedTopicId();
+  const selectedFolderId = useSelectedFolderId();
 
   return (
     <TopicsListFeature
       withSpaceFiller={false}
       sortBy={sortBy}
-      selectedTopicId={selectedTopicId}
+      selectedFolderId={selectedFolderId}
     />
   );
 };

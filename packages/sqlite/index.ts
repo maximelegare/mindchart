@@ -59,9 +59,11 @@ import { deleteTopicByIdQuery } from "./src/queries/topics/deleteTopicById";
 import { updateTopicByIdQuery } from "./src/queries/topics/updateTopicById";
 import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
 import { getAllFoldersQuery } from "./src/queries/folders/getAllFolders";
+import { getAllFoldersWithNotesInfosQuery } from "./src/queries/folders/getAllFoldersWithNotesInfos";
 import { getFolderByIdQuery } from "./src/queries/folders/getFolderById";
 import { getChildFoldersQuery } from "./src/queries/folders/getChildFolders";
 import { insertFolderQuery } from "./src/queries/folders/insertFolder";
+import { insertFoldersQuery } from "./src/queries/folders/insertFolders";
 import { updateFolderLabelQuery } from "./src/queries/folders/updateFolderLabel";
 import { deleteFolderByPathQuery } from "./src/queries/folders/deleteFolderByPath";
 import { getFolderContentsQuery } from "./src/queries/folders/getFolderContents";
@@ -128,9 +130,11 @@ export {
   getAllCategoriesWithThoughtsInfosQuery,
   getNotesByTopicWithAssociatedThoughtsQuery,
   getAllFoldersQuery,
+  getAllFoldersWithNotesInfosQuery,
   getFolderByIdQuery,
   getChildFoldersQuery,
   insertFolderQuery,
+  insertFoldersQuery,
   updateFolderLabelQuery,
   deleteFolderByPathQuery,
   getFolderContentsQuery,

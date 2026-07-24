@@ -6,12 +6,12 @@ export type FoldersMode = "with" | "without";
 
 export type OptionsBar = {
   sortBy: "newest" | "oldest" | "az" | "za";
-  groupBy: "topics" | "categories" | "none";
+  groupBy: "folders" | "categories" | "none";
   displayMode: DisplayMode;
-  /** Browse via folders + breadcrumbs, or via topic/category filter chips */
+  /** Browse via folders + breadcrumbs, or via folder/category filter chips */
   foldersMode: FoldersMode;
-  /** `null` = All topics */
-  selectedTopicId: string | null;
+  /** `null` = All folders */
+  selectedFolderId: string | null;
   /** `null` = All categories */
   selectedCategoryId: string | null;
   /** `null` = root (no folder selected) */

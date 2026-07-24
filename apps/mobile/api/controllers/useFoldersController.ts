@@ -8,6 +8,7 @@ import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
 import {
   deleteFolderByPath,
   getAllFolders,
+  getAllFoldersWithNotesInfos,
   getChildFolders,
   getFolderById,
   getFolderContents,
@@ -21,6 +22,9 @@ const invalidateFolderQueries = async (
 ) => {
   await queryClient.invalidateQueries({
     queryKey: [REACT_QUERY_KEYS.fetchAllFolders],
+  });
+  await queryClient.invalidateQueries({
+    queryKey: [REACT_QUERY_KEYS.fetchAllFoldersWithNotesInfos],
   });
   await queryClient.invalidateQueries({
     queryKey: [REACT_QUERY_KEYS.fetchChildFolders],
@@ -38,6 +42,15 @@ export const useFoldersController = () => {
     useQuery<Awaited<ReturnType<typeof getAllFolders>>>({
       queryKey: [REACT_QUERY_KEYS.fetchAllFolders],
       queryFn: getAllFolders,
+      staleTime: 60_000,
+      placeholderData: keepPreviousData,
+      ...options,
+    });
+
+  const useFetchAllFoldersWithNotesInfosQuery = (options?: ReactQueryOptions) =>
+    useQuery<Awaited<ReturnType<typeof getAllFoldersWithNotesInfos>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchAllFoldersWithNotesInfos],
+      queryFn: getAllFoldersWithNotesInfos,
       staleTime: 60_000,
       placeholderData: keepPreviousData,
       ...options,
@@ -124,6 +137,7 @@ export const useFoldersController = () => {
 
   return {
     useFetchAllFoldersQuery,
+    useFetchAllFoldersWithNotesInfosQuery,
     useFetchFolderByIdQuery,
     useFetchChildFoldersQuery,
     useFetchFolderContentsQuery,

@@ -55,6 +55,7 @@ export const REACT_QUERY_KEYS = {
   updateMigratingStatus: "update_migrating_status",
   fetchNoteDetails: "fetch_note_details",
   fetchAllFolders: "fetch_all_folders",
+  fetchAllFoldersWithNotesInfos: "fetch_all_folders_with_notes_infos",
   fetchFolderById: "fetch_folder_by_id",
   fetchChildFolders: "fetch_child_folders",
   fetchFolderContents: "fetch_folder_contents",

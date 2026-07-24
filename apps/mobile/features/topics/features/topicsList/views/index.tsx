@@ -7,26 +7,39 @@ import {
   SortBy,
   sortContentList,
 } from "@/features/contentList/utils/sortContentList";
+import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
 
 export const TopicsListFeature = ({
   withSpaceFiller = true,
   sortBy,
-  selectedTopicId,
+  selectedFolderId,
 }: {
   withSpaceFiller?: boolean;
   sortBy?: SortBy;
-  selectedTopicId?: string | null;
+  selectedFolderId?: string | null;
 }) => {
   const { useFetchAllTopicsWithNotesInfosQuery } = useControllers().topics;
+  const { useFetchAllNotesQuery } = useControllers().notesAndThoughts;
 
   const { data } = useFetchAllTopicsWithNotesInfosQuery();
+  const { data: notesData } = useFetchAllNotesQuery({
+    enabled: !!selectedFolderId,
+  });
 
   const sortedData = useMemo(() => {
     if (!data) return undefined;
 
-    const filtered = selectedTopicId
-      ? data.filter((topic) => topic.id === selectedTopicId)
-      : data;
+    let filtered = data;
+    if (selectedFolderId) {
+      const notes = normalizeNotesFromQuery(notesData);
+      const topicIds = new Set(
+        (notes ?? [])
+          .filter((note) => note.folderId === selectedFolderId)
+          .map((note) => note.topicId)
+          .filter((id): id is string => !!id)
+      );
+      filtered = data.filter((topic) => topicIds.has(topic.id));
+    }
 
     if (!sortBy) return filtered;
 
@@ -34,7 +47,7 @@ export const TopicsListFeature = ({
       getName: (topic) => topic.name,
       getDate: (topic) => topic.createdAt,
     });
-  }, [data, selectedTopicId, sortBy]);
+  }, [data, notesData, selectedFolderId, sortBy]);
 
   return (
     <List className="gap-2 border-[0px]" style={{ paddingTop: 20 }}>

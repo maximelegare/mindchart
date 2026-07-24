@@ -114,7 +114,7 @@ export const LocalAIResNoteSchema = z.object({
 });
 
 export const SeedLocalAIResNoteSchema = z.object({
-  topicId: z.string(),
+  folderId: z.string(),
   title: z.string(),
   summary: z.string(),
   thoughts: z.array(LocalAIResThoughtSchema),

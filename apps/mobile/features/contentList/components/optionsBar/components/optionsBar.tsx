@@ -49,7 +49,7 @@ const SORT_OPTIONS: OptionItem<OptionsBarType["sortBy"]>[] = [
 ];
 
 const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
-  { icon: "tag", value: "topics", label: "By topic" },
+  { icon: "folder", value: "folders", label: "By folder" },
   { icon: "shapes", value: "categories", label: "By category" },
   { icon: "circle-off", value: "none", label: "None" },
 ];
