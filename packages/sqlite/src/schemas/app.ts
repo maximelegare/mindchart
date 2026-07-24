@@ -107,3 +107,12 @@ export const SettingTable = sqliteTable("setting", {
   name: text("name").notNull(),
   data: text("data").notNull(),
 });
+
+export const FolderTable = sqliteTable("folder", {
+  id: text("id").notNull().primaryKey(),
+  path: text("path").notNull().unique(),
+  label: text("label").notNull(),
+  createdAt: text("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});

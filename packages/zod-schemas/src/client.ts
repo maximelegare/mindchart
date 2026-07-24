@@ -141,7 +141,12 @@ export type LocalAIResNoteSchemaModel = z.infer<typeof LocalAIResNoteSchema>;
 export type LocalAIResThought = z.infer<typeof LocalAIResThoughtSchema>;
 export type PendingEmbedding = z.infer<typeof PendingEmbeddingSchema>;
 // Re-export shared schemas for convenience
-export { NoteSchema, ThoughtSchema, CategorySchema } from "./schemas";
+export {
+  NoteSchema,
+  ThoughtSchema,
+  CategorySchema,
+  FolderSchema,
+} from "./schemas";
 
 export type {
   Note,
@@ -150,4 +155,5 @@ export type {
   Category,
   Topic,
   Embedding,
+  Folder,
 } from "./schemas";

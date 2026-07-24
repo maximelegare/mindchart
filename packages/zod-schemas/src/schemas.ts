@@ -76,3 +76,12 @@ export const NoteSchema = z.object({
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);
+
+export const FolderSchema = z.object({
+  id: z.string(),
+  path: z.string(),
+  label: z.string(),
+  createdAt: z.string().optional(),
+});
+
+export type Folder = z.infer<typeof FolderSchema>;

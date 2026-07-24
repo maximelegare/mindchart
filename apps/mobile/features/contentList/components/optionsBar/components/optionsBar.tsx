@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Pressable, View } from "react-native";
+import { getFolderIdsFromPath } from "@repo/sqlite";
 import { Typography } from "@/components/ui";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 import {
@@ -13,12 +15,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
+import { useControllers } from "@/api/controllers/useControllers";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 import { DisplayMode, OptionsBar as OptionsBarType } from "../../../types";
 import {
   OPTIONS_BAR_DEFAULTS,
   useOptionsBar,
 } from "../context/optionBarContext";
-import { ContentListFilterChips, FilterChip } from "./filterChips";
+import { useFolderActions } from "../hooks/useFolderActions";
+import { ChildFoldersRow } from "./childFoldersRow";
+import { FilterChip } from "./filterChips";
+import { FolderBreadcrumbCrumb } from "./folderActionsMenu";
 import { FunnelFilterChip } from "./funnelFilterChip";
 
 type OptionItem<T extends string> = {
@@ -106,6 +114,25 @@ function OptionsDropdown<T extends string>({
   );
 }
 
+function NewFolderButton({ onPress }: { onPress: () => void }) {
+  const { colorScheme } = useColorScheme();
+  const backgroundColor = hsl("card", colorScheme);
+  const borderColor = hsl("card", colorScheme);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      className="min-w-10 shrink-0 flex-row items-center gap-1.5 rounded-full border px-3 py-2"
+      style={{ backgroundColor, borderColor }}
+      accessibilityRole="button"
+      accessibilityLabel="New folder"
+    >
+      <Icon name="folder" color="muted-foreground" size={16} />
+      <Icon name="plus" color="muted-foreground" size={14} />
+    </Pressable>
+  );
+}
+
 export const OptionsBar = () => {
   const [expanded, setExpanded] = useState(false);
   const handleSortByChange = useOptionsBar((state) => state.handleSortByChange);
@@ -115,6 +142,10 @@ export const OptionsBar = () => {
   const handleDisplayModeChange = useOptionsBar(
     (state) => state.handleDisplayModeChange
   );
+  const currentFolderId = useOptionsBar((state) => state.currentFolderId);
+  const handleCurrentFolderChange = useOptionsBar(
+    (state) => state.handleCurrentFolderChange
+  );
 
   const [sortBy, setSortBy] = useState(() => useOptionsBar.getState().sortBy);
   const [groupBy, setGroupBy] = useState(
@@ -123,6 +154,59 @@ export const OptionsBar = () => {
   const [displayMode, setDisplayMode] = useState(
     () => useOptionsBar.getState().displayMode
   );
+
+  const { folders } = useControllers();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery();
+  const { openCreateFolderModal } = useFolderActions();
+
+  const currentFolder = useMemo(
+    () => allFolders?.find((f) => f.id === currentFolderId) ?? null,
+    [allFolders, currentFolderId]
+  );
+
+  useEffect(() => {
+    if (!currentFolderId || !allFolders) return;
+    if (!allFolders.some((f) => f.id === currentFolderId)) {
+      handleCurrentFolderChange(null);
+    }
+  }, [allFolders, currentFolderId, handleCurrentFolderChange]);
+
+  const parentPathForChildren = currentFolder?.path ?? null;
+  const { data: childFolders = [] } = folders.useFetchChildFoldersQuery(
+    parentPathForChildren
+  );
+
+  const breadcrumbItems = useMemo(() => {
+    const root = { id: "root", name: "Root" };
+    if (!currentFolder) return [root];
+
+    const ids = getFolderIdsFromPath(currentFolder.path);
+    const byId = new Map((allFolders ?? []).map((f) => [f.id, f]));
+    return [
+      root,
+      ...ids.map((id) => ({
+        id,
+        name: byId.get(id)?.label ?? id,
+      })),
+    ];
+  }, [allFolders, currentFolder]);
+
+  const foldersById = useMemo(
+    () => new Map((allFolders ?? []).map((f) => [f.id, f])),
+    [allFolders]
+  );
+
+  const onNavigateFolder = (id: string) => {
+    handleCurrentFolderChange(id === "root" ? null : id);
+  };
+
+  const onCreateFolder = () => {
+    openCreateFolderModal(
+      currentFolder
+        ? { kind: "folder", folder: currentFolder }
+        : { kind: "root" }
+    );
+  };
 
   const onSortByChange = (value: OptionsBarType["sortBy"]) => {
     setSortBy(value);
@@ -147,43 +231,66 @@ export const OptionsBar = () => {
     groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
     displayMode !== OPTIONS_BAR_DEFAULTS.displayMode;
 
-  const funnelToggle = (
-    <FunnelFilterChip
-      icon="funnel"
-      selected={expanded}
-      showDot={hasNonDefaultOptions}
-      onPress={() => setExpanded((prev) => !prev)}
-    />
-  );
-
   return (
     <PageOptionsHeaderContainer
       footer={
-        <CollapsibleContainer expanded={expanded}>
-          <View className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
-            <OptionsDropdown
-              title="Sort by:"
-              value={sortBy}
-              options={SORT_OPTIONS}
-              onValueChange={onSortByChange}
-            />
-            <OptionsDropdown
-              title="Group by:"
-              value={groupBy}
-              options={GROUP_OPTIONS}
-              onValueChange={onGroupByChange}
-            />
-            <OptionsDropdown
-              title="Display:"
-              value={displayMode}
-              options={DISPLAY_OPTIONS}
-              onValueChange={onDisplayModeChange}
-            />
-          </View>
-        </CollapsibleContainer>
+        <>
+          <ChildFoldersRow
+            folders={childFolders ?? []}
+            onNavigate={handleCurrentFolderChange}
+          />
+          <CollapsibleContainer expanded={expanded}>
+            <View className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
+              <OptionsDropdown
+                title="Sort by:"
+                value={sortBy}
+                options={SORT_OPTIONS}
+                onValueChange={onSortByChange}
+              />
+              <OptionsDropdown
+                title="Group by:"
+                value={groupBy}
+                options={GROUP_OPTIONS}
+                onValueChange={onGroupByChange}
+              />
+              <OptionsDropdown
+                title="Display:"
+                value={displayMode}
+                options={DISPLAY_OPTIONS}
+                onValueChange={onDisplayModeChange}
+              />
+            </View>
+          </CollapsibleContainer>
+        </>
       }
     >
-      <ContentListFilterChips leading={funnelToggle} />
+      <View className="h-full w-full flex-row items-center gap-2">
+        <View className="shrink-0">
+          <FunnelFilterChip
+            icon="funnel"
+            selected={expanded}
+            showDot={hasNonDefaultOptions}
+            onPress={() => setExpanded((prev) => !prev)}
+          />
+        </View>
+
+        <Breadcrumbs
+          items={breadcrumbItems}
+          onNavigate={onNavigateFolder}
+          renderItem={({ item, isLast }) => (
+            <FolderBreadcrumbCrumb
+              item={item}
+              isLast={isLast}
+              folder={
+                item.id === "root" ? null : (foldersById.get(item.id) ?? null)
+              }
+              onNavigate={onNavigateFolder}
+            />
+          )}
+        />
+
+        <NewFolderButton onPress={onCreateFolder} />
+      </View>
     </PageOptionsHeaderContainer>
   );
 };

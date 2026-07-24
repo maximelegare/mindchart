@@ -2,6 +2,7 @@ import { useAIController } from "./useAIController";
 import { useCategoriesController } from "./useCategoriesController";
 import { useDatabaseInspectorController } from "./useDatabaseInspectorController";
 import { useEmbeddingsController } from "./useEmbeddingsContolller";
+import { useFoldersController } from "./useFoldersController";
 import { useGraphController } from "./useGraphController";
 import { useNotesAndThoughtsController } from "./useNotesAndThoughtsController";
 import { useSearchController } from "./useSearch";
@@ -15,6 +16,7 @@ export const useControllers = () => ({
   embeddings: useEmbeddingsController(),
   notesAndThoughts: useNotesAndThoughtsController(),
   categories: useCategoriesController(),
+  folders: useFoldersController(),
   graph: useGraphController(),
   databaseInspector: useDatabaseInspectorController(),
   settings: useSettingsController(),

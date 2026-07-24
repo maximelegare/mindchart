@@ -10,6 +10,8 @@ export type OptionsBar = {
   selectedTopicId: string | null;
   /** `null` = All categories */
   selectedCategoryId: string | null;
+  /** `null` = root (no folder selected) */
+  currentFolderId: string | null;
 };
 
 export type UiKey = `groupBy=${OptionsBar["groupBy"]}&display=${DisplayKey}`;

@@ -62,8 +62,14 @@ function useRootContext() {
   return context;
 }
 
-const Trigger = React.forwardRef<PressableRef, SlottablePressableProps>(
-  ({ asChild, disabled = false, ...props }, ref) => {
+const Trigger = React.forwardRef<
+  PressableRef,
+  SlottablePressableProps & { openOnLongPress?: boolean }
+>(
+  (
+    { asChild, disabled = false, openOnLongPress: _openOnLongPress, ...props },
+    ref
+  ) => {
     const augmentedRef = useAugmentedRef({ ref });
     const { open } = useRootContext();
 

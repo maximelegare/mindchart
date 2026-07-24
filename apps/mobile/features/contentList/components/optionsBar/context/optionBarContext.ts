@@ -7,6 +7,7 @@ export const OPTIONS_BAR_DEFAULTS = {
   displayMode: "notes",
   selectedTopicId: null,
   selectedCategoryId: null,
+  currentFolderId: null,
 } as const satisfies OptionsBar;
 
 export type OptionsBarStore = OptionsBar & {
@@ -15,6 +16,7 @@ export type OptionsBarStore = OptionsBar & {
   handleDisplayModeChange: (displayMode: OptionsBar["displayMode"]) => void;
   handleSelectedTopicChange: (topicId: string | null) => void;
   handleSelectedCategoryChange: (categoryId: string | null) => void;
+  handleCurrentFolderChange: (folderId: string | null) => void;
 };
 
 export const useOptionsBar = create<OptionsBarStore>((set) => ({
@@ -33,4 +35,5 @@ export const useOptionsBar = create<OptionsBarStore>((set) => ({
   handleSelectedTopicChange: (selectedTopicId) => set({ selectedTopicId }),
   handleSelectedCategoryChange: (selectedCategoryId) =>
     set({ selectedCategoryId }),
+  handleCurrentFolderChange: (currentFolderId) => set({ currentFolderId }),
 }));

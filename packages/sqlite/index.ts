@@ -21,6 +21,7 @@ import {
   ThoughtTable,
   NoteTable,
   EmbeddingTable,
+  FolderTable,
 } from "./src/schemas/app";
 import { getGraphDataQuery } from "./src/queries/graph/getGraphData";
 import { updateGraphDataQuery } from "./src/queries/graph/updateGraphData";
@@ -57,6 +58,20 @@ import { getAllTopicsWithNotesInfosQuery } from "./src/queries/topics/getAllTopi
 import { deleteTopicByIdQuery } from "./src/queries/topics/deleteTopicById";
 import { updateTopicByIdQuery } from "./src/queries/topics/updateTopicById";
 import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
+import { getAllFoldersQuery } from "./src/queries/folders/getAllFolders";
+import { getFolderByIdQuery } from "./src/queries/folders/getFolderById";
+import { getChildFoldersQuery } from "./src/queries/folders/getChildFolders";
+import { insertFolderQuery } from "./src/queries/folders/insertFolder";
+import { updateFolderLabelQuery } from "./src/queries/folders/updateFolderLabel";
+import { deleteFolderByPathQuery } from "./src/queries/folders/deleteFolderByPath";
+import { getFolderContentsQuery } from "./src/queries/folders/getFolderContents";
+export {
+  buildRootFolderPath,
+  buildChildFolderPath,
+  getParentFolderPath,
+  getFolderIdsFromPath,
+  isFolderPathUnder,
+} from "./src/queries/folders/folderPath";
 export {
   getMigratingStatusQuery,
   updateMigratingStatusQuery,
@@ -112,4 +127,12 @@ export {
   updateTopicByIdQuery,
   getAllCategoriesWithThoughtsInfosQuery,
   getNotesByTopicWithAssociatedThoughtsQuery,
+  getAllFoldersQuery,
+  getFolderByIdQuery,
+  getChildFoldersQuery,
+  insertFolderQuery,
+  updateFolderLabelQuery,
+  deleteFolderByPathQuery,
+  getFolderContentsQuery,
+  FolderTable,
 };
