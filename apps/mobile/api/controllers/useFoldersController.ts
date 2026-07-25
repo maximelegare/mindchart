@@ -15,6 +15,7 @@ import {
   insertFolder,
   updateFolderLabel,
 } from "../endpoints/folders";
+import { updateSyncGraphData } from "../endpoints/graph";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 
 const invalidateFolderQueries = async (
@@ -34,6 +35,15 @@ const invalidateFolderQueries = async (
   });
   await queryClient.invalidateQueries({
     queryKey: [REACT_QUERY_KEYS.fetchFolderContents],
+  });
+};
+
+const markGraphDirty = async (
+  queryClient: ReturnType<typeof useQueryClient>
+) => {
+  await updateSyncGraphData(true);
+  await queryClient.invalidateQueries({
+    queryKey: [REACT_QUERY_KEYS.fetchSyncGraph],
   });
 };
 
@@ -101,6 +111,7 @@ export const useFoldersController = () => {
       mutationFn: ({ data }) => insertFolder(data),
       onSuccess: async () => {
         await invalidateFolderQueries(queryClient);
+        await markGraphDirty(queryClient);
       },
     });
   };
@@ -116,6 +127,7 @@ export const useFoldersController = () => {
       mutationFn: (data) => updateFolderLabel(data),
       onSuccess: async () => {
         await invalidateFolderQueries(queryClient);
+        await markGraphDirty(queryClient);
       },
     });
   };
@@ -131,6 +143,7 @@ export const useFoldersController = () => {
       mutationFn: ({ path }) => deleteFolderByPath(path),
       onSuccess: async () => {
         await invalidateFolderQueries(queryClient);
+        await markGraphDirty(queryClient);
       },
     });
   };

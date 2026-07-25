@@ -5,21 +5,26 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
 
 type GraphBreadcrumbsProps = {
+  /** Visible pack hierarchy (may be window-sliced). */
   hierarchy: NodeDatum;
+  /** Full filtered tree — used so folder crumbs include ancestors outside the window. */
+  pathHierarchy?: NodeDatum | null;
   activeNode: NodeDatum | null;
 };
 
 export const GraphBreadcrumbs = ({
   hierarchy,
+  pathHierarchy,
   activeNode,
 }: GraphBreadcrumbsProps) => {
   const breadcrumbs = useMemo(() => {
     const targetId = activeNode?.id ?? "root";
-    return findNodePath(hierarchy, targetId).map((node) => ({
+    const source = pathHierarchy ?? hierarchy;
+    return findNodePath(source, targetId).map((node) => ({
       id: node.id,
       name: formatBreadcrumbLabel(node),
     }));
-  }, [activeNode?.id, hierarchy]);
+  }, [activeNode?.id, hierarchy, pathHierarchy]);
 
   const { setParams } = useRouter();
 

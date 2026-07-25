@@ -19,20 +19,22 @@ type GraphFilterChipsProps = {
 
 export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
   const mode = useGraphStore((state) => state.mode);
-  const selectedTopicId = useGraphStore((state) => state.selectedTopicId);
+  const selectedFolderId = useGraphStore((state) => state.selectedFolderId);
   const selectedCategoryId = useGraphStore((state) => state.selectedCategoryId);
-  const setSelectedTopicId = useGraphStore((state) => state.setSelectedTopicId);
+  const setSelectedFolderId = useGraphStore(
+    (state) => state.setSelectedFolderId
+  );
   const setSelectedCategoryId = useGraphStore(
     (state) => state.setSelectedCategoryId
   );
 
   const showCategories = mode === "category";
 
-  const { useFetchAllTopicsWithNotesInfosQuery } = useControllers().topics;
+  const { useFetchAllFoldersWithNotesInfosQuery } = useControllers().folders;
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
 
-  const { data: topicsData } = useFetchAllTopicsWithNotesInfosQuery({
+  const { data: foldersData } = useFetchAllFoldersWithNotesInfosQuery({
     enabled: !showCategories,
   });
   const { data: categoriesData } = useFetchAllCategoriesWithThoughtsInfosQuery({
@@ -54,22 +56,22 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
         });
     }
 
-    if (!topicsData || !Array.isArray(topicsData)) return [];
-    return topicsData
-      .filter((topic) => (topic.noteCount ?? 0) > 0)
-      .map((topic) => ({
-        id: topic.id,
-        label: topic.name,
+    if (!foldersData || !Array.isArray(foldersData)) return [];
+    return foldersData
+      .filter((folder) => (folder.noteCount ?? 0) > 0)
+      .map((folder) => ({
+        id: folder.id,
+        label: folder.label,
       }));
-  }, [categoriesData, showCategories, topicsData]);
+  }, [categoriesData, foldersData, showCategories]);
 
-  const selectedId = showCategories ? selectedCategoryId : selectedTopicId;
+  const selectedId = showCategories ? selectedCategoryId : selectedFolderId;
   const onSelect = (id: string | null) => {
     if (showCategories) {
       setSelectedCategoryId(id);
       return;
     }
-    setSelectedTopicId(id);
+    setSelectedFolderId(id);
   };
 
   if (!leading && chips.length === 0) return null;

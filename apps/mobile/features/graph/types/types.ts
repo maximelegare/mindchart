@@ -1,4 +1,4 @@
-export type GraphMode = "category" | "topic";
+export type GraphMode = "category" | "folder";
 
 export type NodeDatum = {
   name: string;
@@ -7,6 +7,11 @@ export type NodeDatum = {
   children?: NodeDatum[];
   topicId?: string;
   topicName?: string | null;
+  folderId?: string;
+  folderPath?: string | null;
+  folderLabel?: string | null;
+  /** True when deeper folder children exist beyond the visible window. */
+  hasHiddenChildren?: boolean;
   // Thought fields (optional, only present on leaf nodes)
   thoughtId?: string;
   title?: string | null;
@@ -21,4 +26,7 @@ export type GraphDataCache = Record<GraphMode, NodeDatum>;
 
 export const parseGraphMode = (
   value: string | string[] | undefined
-): GraphMode => (value === "topic" ? "topic" : "category");
+): GraphMode => {
+  if (value === "folder" || value === "topic") return "folder";
+  return "category";
+};

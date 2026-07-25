@@ -9,6 +9,7 @@ import {
   Text,
   RoundedRect,
   useFont,
+  vec,
 } from "@shopify/react-native-skia";
 import * as d3 from "d3-hierarchy";
 import {
@@ -26,12 +27,23 @@ import {
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
-import { NodeDatum } from "@/features/graph/types/types";
+import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { GRAPH_CANVAS_SIZE } from "../constants";
+
+const withAlpha = (hslColor: string, alpha: number) => {
+  const inside = hslColor.replace(/^hsla?\(|\)$/g, "").trim();
+  const parts = inside.includes(",")
+    ? inside.split(",").map((part) => part.trim())
+    : inside.split(/\s+/);
+  if (parts.length >= 3) {
+    return `hsla(${parts[0]}, ${parts[1]}, ${parts[2]}, ${alpha})`;
+  }
+  return `hsla(${inside}, ${alpha})`;
+};
 
 const SIZE = GRAPH_CANVAS_SIZE;
 const PACK_PADDING = 8;
@@ -120,12 +132,12 @@ const getOrComputeLayout = (
 
 export const warmupGraphLayouts = (cache: {
   category: NodeDatum;
-  topic: NodeDatum;
+  folder: NodeDatum;
 }) => {
   setTimeout(() => {
     getOrComputeLayout(cache.category, PACK_PADDING);
     setTimeout(() => {
-      getOrComputeLayout(cache.topic, PACK_PADDING);
+      getOrComputeLayout(cache.folder, PACK_PADDING);
     }, 0);
   }, 0);
 };
@@ -216,9 +228,14 @@ const buildHatchLines = (r: number, lineColor: string) => {
 
 interface Props {
   data: NodeDatum;
+  /** Full tree for breadcrumbs when `data` is a window slice. */
+  pathHierarchy?: NodeDatum | null;
+  graphMode?: GraphMode;
   focusedThoughtId?: string;
   trigger?: string | number;
   onNodeSelected?: (node: NodeDatum, parent?: NodeDatum) => void;
+  onRevealFolder?: (node: NodeDatum) => void;
+  onAscendFolderWindow?: () => void;
 }
 
 export default function CirclePackSkia(props: Props) {
@@ -273,10 +290,14 @@ export default function CirclePackSkia(props: Props) {
 
 function CirclePackSkiaRenderer({
   data,
+  pathHierarchy,
   layout,
+  graphMode = "category",
   focusedThoughtId,
   trigger,
   onNodeSelected,
+  onRevealFolder,
+  onAscendFolderWindow,
 }: Props & { layout: Layout }) {
   const { colorScheme } = useColorScheme();
   const isTransitioningInternal = useRef(false);
@@ -366,6 +387,11 @@ function CirclePackSkiaRenderer({
       const dy = gy - n.y;
 
       if (Math.sqrt(dx * dx + dy * dy) <= n.r) {
+        if (n.rawData.hasHiddenChildren && onRevealFolder) {
+          runOnJS(onRevealFolder)(n.rawData);
+          break;
+        }
+
         isTransitioningInternal.current = true; // Block the next useEffect
         let targetToProcess = n;
 
@@ -413,6 +439,13 @@ function CirclePackSkiaRenderer({
   };
 
   const handleZoomOut = () => {
+    if (
+      activeViewNode.internalId === rootNode.internalId &&
+      onAscendFolderWindow
+    ) {
+      onAscendFolderWindow();
+      return;
+    }
     const current = nodeMap.get(activeInternalId.value);
     if (current?.rawData.name === "Root") return;
     else navigateToNode(rootNode, false, true);
@@ -420,12 +453,18 @@ function CirclePackSkiaRenderer({
 
   // ---------- 6. Dynamic Color Logic ----------
   const getNodeColor = (node: NodeInfo) => {
-    if (!node.hasChildren) return "white";
+    if (!node.hasChildren && !node.rawData.hasHiddenChildren) return "white";
+
+    if (graphMode === "folder") {
+      const base = hsl("primary", colorScheme);
+      const opacity = Math.min(1, 0.25 * (node.depth + 1));
+      return withAlpha(base, opacity);
+    }
 
     const cat = resolveNodeCategoryKey(node.rawData);
     const filteredRoot = !isSyntheticRoot(data);
 
-    // Full graph: neutral root shell. Filtered: depth 0 is the category/topic itself.
+    // Full graph: neutral root shell. Filtered: depth 0 is the category itself.
     if (node.depth === 0 && !filteredRoot) {
       return hsl("card", colorScheme);
     }
@@ -508,6 +547,8 @@ function CirclePackSkiaRenderer({
                   viewY={viewY}
                   viewR={viewR}
                   color={getNodeColor(node)}
+                  showPlus={!!node.rawData.hasHiddenChildren}
+                  plusColor={hsl("primary-foreground", colorScheme)}
                   isFocusedThought={
                     hatchHighlightActive &&
                     !!focusedDbId &&
@@ -553,20 +594,25 @@ function CirclePackSkiaRenderer({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleZoomOut}
-              disabled={isAtRoot}
+              disabled={isAtRoot && !onAscendFolderWindow}
               style={{
                 ...styles.zoomBtn,
                 backgroundColor: hsl("background", colorScheme),
-                opacity: isAtRoot ? 0.4 : 1,
+                opacity: isAtRoot && !onAscendFolderWindow ? 0.4 : 1,
               }}
             >
-              <Icon name="house" color="text" opacity={isAtRoot ? 50 : 100} />
+              <Icon
+                name="house"
+                color="text"
+                opacity={isAtRoot && !onAscendFolderWindow ? 50 : 100}
+              />
             </TouchableOpacity>
           </View>
         </View>
 
         <GraphBreadcrumbs
           hierarchy={data}
+          pathHierarchy={pathHierarchy}
           activeNode={activeViewNode.rawData}
         />
       </View>
@@ -650,6 +696,8 @@ type SkCircleProps = {
   viewY: { value: number };
   viewR: { value: number };
   color: string;
+  showPlus?: boolean;
+  plusColor?: string;
   isFocusedThought: boolean;
   hatchLineColor: string;
 };
@@ -660,6 +708,8 @@ const SkCircle = ({
   viewY,
   viewR,
   color,
+  showPlus = false,
+  plusColor = "white",
   isFocusedThought,
   hatchLineColor,
 }: SkCircleProps) => {
@@ -683,6 +733,9 @@ const SkCircle = ({
     [node.r, hatchLineColor]
   );
 
+  const plusSize = Math.max(4, node.r * 0.35);
+  const plusStroke = Math.max(1.5, node.r * 0.08);
+
   return (
     <Group transform={transform}>
       {isFocusedThought ? (
@@ -701,6 +754,22 @@ const SkCircle = ({
         strokeWidth={0.5}
         color="rgba(0,0,0,0.1)"
       />
+      {showPlus ? (
+        <Group>
+          <Line
+            p1={vec(-plusSize, 0)}
+            p2={vec(plusSize, 0)}
+            color={plusColor}
+            strokeWidth={plusStroke}
+          />
+          <Line
+            p1={vec(0, -plusSize)}
+            p2={vec(0, plusSize)}
+            color={plusColor}
+            strokeWidth={plusStroke}
+          />
+        </Group>
+      ) : null}
     </Group>
   );
 };

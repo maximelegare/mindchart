@@ -132,12 +132,16 @@ const isCategoryNode = (nodeId?: string | null) =>
 const isTopicNode = (nodeId?: string | null) =>
   typeof nodeId === "string" && nodeId.startsWith("topic-");
 
+const isFolderGraphNode = (nodeId?: string | null) =>
+  typeof nodeId === "string" && nodeId.startsWith("folder-");
+
 const showMainColorStripe = (
   parentNodeId: string | undefined,
   _thought: NodeDatum
 ) =>
   parentNodeId === "root" ||
   isTopicNode(parentNodeId) ||
+  isFolderGraphNode(parentNodeId) ||
   isCategoryNode(parentNodeId);
 
 const showExpandedNestedStripe = (

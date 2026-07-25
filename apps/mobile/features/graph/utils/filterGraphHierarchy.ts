@@ -13,24 +13,19 @@ const matchesCategory = (node: NodeDatum, selectedCategoryId: string) => {
   return false;
 };
 
-const matchesTopic = (node: NodeDatum, selectedTopicId: string) => {
-  const id = selectedTopicId.toLowerCase();
-  if (node.topicId?.toLowerCase() === id) return true;
-  if (node.id.toLowerCase() === `topic-${id}`) return true;
-  if (
-    node.id.toLowerCase().startsWith("topic-") &&
-    node.id.toLowerCase().endsWith(`-${id}`)
-  )
-    return true;
+const matchesFolder = (node: NodeDatum, selectedFolderId: string) => {
+  const id = selectedFolderId.toLowerCase();
+  if (node.folderId?.toLowerCase() === id) return true;
+  if (node.id.toLowerCase() === `folder-${id}`) return true;
   if (node.name?.toLowerCase() === id) return true;
   return false;
 };
 
-/** Use the matched topic/category node as the pack root (not the synthetic root). */
+/** Use the matched folder/category node as the pack root (not the synthetic root). */
 export function filterGraphHierarchy(
   hierarchy: NodeDatum,
   mode: GraphMode,
-  selectedTopicId: string | null,
+  selectedFolderId: string | null,
   selectedCategoryId: string | null
 ): NodeDatum {
   if (mode === "category" && selectedCategoryId) {
@@ -40,9 +35,9 @@ export function filterGraphHierarchy(
     return match ?? hierarchy;
   }
 
-  if (mode === "topic" && selectedTopicId) {
+  if (mode === "folder" && selectedFolderId) {
     const match = hierarchy.children?.find((child) =>
-      matchesTopic(child, selectedTopicId)
+      matchesFolder(child, selectedFolderId)
     );
     return match ?? hierarchy;
   }

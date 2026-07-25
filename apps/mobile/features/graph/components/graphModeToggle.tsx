@@ -29,7 +29,7 @@ type ModeOption = {
 
 const MODE_OPTIONS: ModeOption[] = [
   { icon: "shapes", value: "category", label: "Categories" },
-  { icon: "tag", value: "topic", label: "Topics" },
+  { icon: "folder", value: "folder", label: "Folders" },
 ];
 
 type ModeDropdownProps = {

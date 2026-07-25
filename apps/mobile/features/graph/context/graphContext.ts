@@ -6,11 +6,14 @@ import { GraphMode, parseGraphMode } from "../types/types";
 type GraphStore = {
   mode: GraphMode;
   renderMode: GraphMode;
-  selectedTopicId: string | null;
+  selectedFolderId: string | null;
   selectedCategoryId: string | null;
+  /** Folder that is currently the pack window root (`null` = graph root). */
+  folderWindowRootId: string | null;
   setGraphMode: (mode: GraphMode) => void;
-  setSelectedTopicId: (topicId: string | null) => void;
+  setSelectedFolderId: (folderId: string | null) => void;
   setSelectedCategoryId: (categoryId: string | null) => void;
+  setFolderWindowRootId: (folderId: string | null) => void;
 };
 
 let pendingUpdate: ReturnType<typeof setTimeout> | null = null;
@@ -20,23 +23,28 @@ export const useGraphStore = create<GraphStore>()(
     (set) => ({
       mode: "category",
       renderMode: "category",
-      selectedTopicId: null,
+      selectedFolderId: null,
       selectedCategoryId: null,
+      folderWindowRootId: null,
       setGraphMode: (mode) => {
         if (pendingUpdate) clearTimeout(pendingUpdate);
         pendingUpdate = setTimeout(() => {
           set({
             mode,
             renderMode: mode,
-            selectedTopicId: null,
+            selectedFolderId: null,
             selectedCategoryId: null,
+            folderWindowRootId: null,
           });
           pendingUpdate = null;
         }, 0);
       },
-      setSelectedTopicId: (selectedTopicId) => set({ selectedTopicId }),
+      setSelectedFolderId: (selectedFolderId) =>
+        set({ selectedFolderId, folderWindowRootId: null }),
       setSelectedCategoryId: (selectedCategoryId) =>
         set({ selectedCategoryId }),
+      setFolderWindowRootId: (folderWindowRootId) =>
+        set({ folderWindowRootId }),
     }),
     {
       ...mmkv("graph"),
@@ -61,7 +69,8 @@ export const setGraphModeImmediate = (mode: GraphMode) => {
   useGraphStore.setState({
     mode,
     renderMode: mode,
-    selectedTopicId: null,
+    selectedFolderId: null,
     selectedCategoryId: null,
+    folderWindowRootId: null,
   });
 };
