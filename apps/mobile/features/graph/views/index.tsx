@@ -9,10 +9,6 @@ import GraphInfos from "../components/graphInfos/graphInfos";
 import { NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { filterGraphHierarchy } from "../utils/filterGraphHierarchy";
-import {
-  findParentFolderId,
-  sliceFolderWindow,
-} from "../utils/windowFolderHierarchy";
 
 export const GraphFeature = ({
   focusedThoughtId,
@@ -24,13 +20,9 @@ export const GraphFeature = ({
   const renderMode = useGraphStore((state) => state.renderMode);
   const selectedFolderId = useGraphStore((state) => state.selectedFolderId);
   const selectedCategoryId = useGraphStore((state) => state.selectedCategoryId);
-  const folderWindowRootId = useGraphStore((state) => state.folderWindowRootId);
-  const setFolderWindowRootId = useGraphStore(
-    (state) => state.setFolderWindowRootId
-  );
   const { hierarchies, isLoading, refetchGraph, refetchSyncFlag } = useGraph();
 
-  const filteredHierarchy = useMemo(() => {
+  const hierarchy = useMemo(() => {
     if (!hierarchies) return null;
     return filterGraphHierarchy(
       hierarchies[renderMode],
@@ -39,12 +31,6 @@ export const GraphFeature = ({
       selectedCategoryId
     );
   }, [hierarchies, renderMode, selectedFolderId, selectedCategoryId]);
-
-  const hierarchy = useMemo(() => {
-    if (!filteredHierarchy) return null;
-    if (renderMode !== "folder") return filteredHierarchy;
-    return sliceFolderWindow(filteredHierarchy, folderWindowRootId);
-  }, [filteredHierarchy, folderWindowRootId, renderMode]);
 
   const [selection, setSelection] = useState<{
     active: NodeDatum | null;
@@ -68,25 +54,9 @@ export const GraphFeature = ({
     []
   );
 
-  const handleRevealFolder = useCallback(
-    (node: NodeDatum) => {
-      if (!node.folderId) return;
-      setFolderWindowRootId(node.folderId);
-      setSelection({ active: null, parent: null });
-    },
-    [setFolderWindowRootId]
-  );
-
-  const handleAscendFolderWindow = useCallback(() => {
-    if (!filteredHierarchy || !folderWindowRootId) return;
-    const parentId = findParentFolderId(filteredHierarchy, folderWindowRootId);
-    setFolderWindowRootId(parentId);
-    setSelection({ active: null, parent: null });
-  }, [filteredHierarchy, folderWindowRootId, setFolderWindowRootId]);
-
   useEffect(() => {
     setSelection({ active: null, parent: null });
-  }, [renderMode, selectedFolderId, selectedCategoryId, folderWindowRootId]);
+  }, [renderMode, selectedFolderId, selectedCategoryId]);
 
   if (isLoading || !hierarchy) {
     return (
@@ -105,19 +75,10 @@ export const GraphFeature = ({
     <View className="flex-col gap-4 items-center flex-1">
       <CirclePackSkia
         data={hierarchy}
-        pathHierarchy={filteredHierarchy}
         graphMode={renderMode}
         focusedThoughtId={focusedThoughtId}
         trigger={trigger}
         onNodeSelected={handleNodeSelected}
-        onRevealFolder={
-          renderMode === "folder" ? handleRevealFolder : undefined
-        }
-        onAscendFolderWindow={
-          renderMode === "folder" && folderWindowRootId
-            ? handleAscendFolderWindow
-            : undefined
-        }
       />
 
       <View className="w-full flex-1">

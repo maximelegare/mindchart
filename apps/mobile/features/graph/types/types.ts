@@ -10,8 +10,6 @@ export type NodeDatum = {
   folderId?: string;
   folderPath?: string | null;
   folderLabel?: string | null;
-  /** True when deeper folder children exist beyond the visible window. */
-  hasHiddenChildren?: boolean;
   // Thought fields (optional, only present on leaf nodes)
   thoughtId?: string;
   title?: string | null;

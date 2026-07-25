@@ -8,12 +8,9 @@ type GraphStore = {
   renderMode: GraphMode;
   selectedFolderId: string | null;
   selectedCategoryId: string | null;
-  /** Folder that is currently the pack window root (`null` = graph root). */
-  folderWindowRootId: string | null;
   setGraphMode: (mode: GraphMode) => void;
   setSelectedFolderId: (folderId: string | null) => void;
   setSelectedCategoryId: (categoryId: string | null) => void;
-  setFolderWindowRootId: (folderId: string | null) => void;
 };
 
 let pendingUpdate: ReturnType<typeof setTimeout> | null = null;
@@ -25,7 +22,6 @@ export const useGraphStore = create<GraphStore>()(
       renderMode: "category",
       selectedFolderId: null,
       selectedCategoryId: null,
-      folderWindowRootId: null,
       setGraphMode: (mode) => {
         if (pendingUpdate) clearTimeout(pendingUpdate);
         pendingUpdate = setTimeout(() => {
@@ -34,17 +30,13 @@ export const useGraphStore = create<GraphStore>()(
             renderMode: mode,
             selectedFolderId: null,
             selectedCategoryId: null,
-            folderWindowRootId: null,
           });
           pendingUpdate = null;
         }, 0);
       },
-      setSelectedFolderId: (selectedFolderId) =>
-        set({ selectedFolderId, folderWindowRootId: null }),
+      setSelectedFolderId: (selectedFolderId) => set({ selectedFolderId }),
       setSelectedCategoryId: (selectedCategoryId) =>
         set({ selectedCategoryId }),
-      setFolderWindowRootId: (folderWindowRootId) =>
-        set({ folderWindowRootId }),
     }),
     {
       ...mmkv("graph"),
@@ -71,6 +63,5 @@ export const setGraphModeImmediate = (mode: GraphMode) => {
     renderMode: mode,
     selectedFolderId: null,
     selectedCategoryId: null,
-    folderWindowRootId: null,
   });
 };
