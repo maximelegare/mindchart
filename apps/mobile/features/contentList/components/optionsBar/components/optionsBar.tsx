@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { getFolderIdsFromPath } from "@repo/sqlite";
+import { canCreateChildFolder, getFolderIdsFromPath } from "@repo/sqlite";
 import { Typography } from "@/components/ui";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
@@ -348,7 +348,9 @@ export const OptionsBar = () => {
               )}
             />
           </BreadcrumbsSurface>
-          <NewFolderButton onPress={onCreateFolder} />
+          {canCreateChildFolder(currentFolder?.path ?? null) ? (
+            <NewFolderButton onPress={onCreateFolder} />
+          ) : null}
         </View>
       ) : (
         <ContentListFilterChips leading={settingsToggle} />

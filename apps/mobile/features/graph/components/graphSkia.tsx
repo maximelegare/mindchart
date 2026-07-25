@@ -57,16 +57,13 @@ const mixHslToward = (base: string, mixWith: string, strength: number) => {
   return `hsl(${from.h}, ${s}%, ${l}%)`;
 };
 
-/** Folder pack fills cycle 33% → 66% → 100% by depth (opaque, so nesting stays readable). */
+/** Folder pack fills: root→5%, then 20%, 40%, 70%, 100%; leaves stay white. */
 const folderDepthColor = (
   depth: number,
   colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
 ) => {
-  const strengths = [0.33, 0.66, 1] as const;
-  const strength =
-    strengths[
-      ((depth % strengths.length) + strengths.length) % strengths.length
-    ];
+  const strengths = [0.05, 0.2, 0.4, 0.7, 1] as const;
+  const strength = strengths[Math.min(depth, strengths.length - 1)];
   return mixHslToward(
     hsl("primary", colorScheme),
     hsl("card", colorScheme),

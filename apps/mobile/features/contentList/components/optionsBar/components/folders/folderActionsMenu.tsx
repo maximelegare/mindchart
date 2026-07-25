@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, View } from "react-native";
+import { canCreateChildFolder, canMoveFolderTo } from "@repo/sqlite";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import {
   FolderPickerSheet,
   FolderSelection,
 } from "@/features/notes/notePreview/folderSelector";
+import { useControllers } from "@/api/controllers/useControllers";
 import { useFolderActions } from "../../hooks/useFolderActions";
 
 type FolderActionsMenuProps = {
@@ -44,6 +46,15 @@ export const FolderActionsMenu = ({
 
   const isRoot = target.kind === "root";
   const movingFolder = target.kind === "folder" ? target.folder : null;
+  const canCreateHere = canCreateChildFolder(
+    target.kind === "root" ? null : target.folder.path
+  );
+  const { folders } = useControllers();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery();
+  const allPaths = useMemo(
+    () => allFolders.map((folder) => folder.path),
+    [allFolders]
+  );
 
   const openMoveSheet = useCallback(() => {
     setOpen(false);
@@ -67,6 +78,18 @@ export const FolderActionsMenu = ({
     [moveFolderTo, movingFolder]
   );
 
+  const isMoveDestinationEnabled = useCallback(
+    (destination: FolderSelection) => {
+      if (!movingFolder) return true;
+      return canMoveFolderTo(
+        movingFolder.path,
+        destination?.path ?? null,
+        allPaths
+      );
+    },
+    [allPaths, movingFolder]
+  );
+
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -86,18 +109,23 @@ export const FolderActionsMenu = ({
           className="border border-border bg-popover shadow-md"
           style={{ minWidth: 160, marginTop: 4 }}
         >
-          <DropdownMenuItem
-            className="flex-row items-center gap-2"
-            onPress={() => {
-              setOpen(false);
-              openCreateFolderModal(target);
-            }}
-          >
-            <Icon name="folder" color="text" size={16} />
-            <Typography variant="p" className="text-md text-popover-foreground">
-              New folder
-            </Typography>
-          </DropdownMenuItem>
+          {canCreateHere ? (
+            <DropdownMenuItem
+              className="flex-row items-center gap-2"
+              onPress={() => {
+                setOpen(false);
+                openCreateFolderModal(target);
+              }}
+            >
+              <Icon name="folder" color="text" size={16} />
+              <Typography
+                variant="p"
+                className="text-md text-popover-foreground"
+              >
+                New folder
+              </Typography>
+            </DropdownMenuItem>
+          ) : null}
 
           {!isRoot && target.kind === "folder" ? (
             <>
@@ -158,6 +186,7 @@ export const FolderActionsMenu = ({
           rootLabel="Move to root"
           onSelect={handleMoveSelect}
           onDismiss={() => setMoveActive(false)}
+          isDestinationEnabled={isMoveDestinationEnabled}
         />
       ) : null}
     </>

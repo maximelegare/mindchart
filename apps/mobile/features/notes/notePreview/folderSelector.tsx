@@ -45,6 +45,8 @@ export type FolderPickerBrowserProps = {
   allowRoot?: boolean;
   /** If true, dismiss the hosting bottom sheet after select. */
   dismissOnSelect?: boolean;
+  /** When false, that destination cannot be chosen (still browsable). */
+  isDestinationEnabled?: (folder: FolderSelection) => boolean;
 };
 
 export const FolderSelector = ({
@@ -113,6 +115,7 @@ type FolderPickerSheetProps = {
   sheet: ReturnType<typeof useBottomSheet>;
   active: boolean;
   onDismiss?: () => void;
+  isDestinationEnabled?: (folder: FolderSelection) => boolean;
 };
 
 /** Imperative bottom sheet hosting the folder browser (for Move actions). */
@@ -125,6 +128,7 @@ export const FolderPickerSheet = ({
   sheet,
   active,
   onDismiss,
+  isDestinationEnabled,
 }: FolderPickerSheetProps) => {
   const { folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery({
@@ -157,6 +161,7 @@ export const FolderPickerSheet = ({
               rootLabel={rootLabel}
               onSelect={onSelect}
               dismissOnSelect
+              isDestinationEnabled={isDestinationEnabled}
             />
           </BottomSheetView>
         ) : null}
@@ -173,6 +178,7 @@ export function FolderPickerBrowser({
   rootLabel = "No folder",
   allowRoot = true,
   dismissOnSelect = true,
+  isDestinationEnabled,
 }: FolderPickerBrowserProps) {
   const { dismiss } = useBottomSheetModal();
   const { colorScheme } = useColorScheme();
@@ -228,7 +234,11 @@ export function FolderPickerBrowser({
     ];
   }, [browseFolder, excludePathPrefix, foldersById]);
 
+  const canSelect = (folder: FolderSelection) =>
+    isDestinationEnabled ? isDestinationEnabled(folder) : true;
+
   const handleSelect = (folder: FolderSelection) => {
+    if (!canSelect(folder)) return;
     onSelect(folder);
     if (dismissOnSelect) dismiss();
   };
@@ -237,6 +247,7 @@ export function FolderPickerBrowser({
     browseFolder === null
       ? selectedFolder === null
       : selectedFolder?.id === browseFolder.id;
+  const canSelectCurrent = canSelect(browseFolder);
 
   return (
     <View className="gap-3">
@@ -254,7 +265,9 @@ export function FolderPickerBrowser({
               ? hsl("border", colorScheme)
               : hsl("card", colorScheme),
             backgroundColor: hsl("card", colorScheme),
+            opacity: canSelectCurrent ? 1 : 0.45,
           }}
+          disabled={!canSelectCurrent}
           onPress={() => handleSelect(browseFolder)}
         >
           <View className="flex-row items-center gap-2 flex-1">
@@ -265,9 +278,10 @@ export function FolderPickerBrowser({
             />
             <Typography>
               {browseFolder ? `Select “${browseFolder.label}”` : rootLabel}
+              {!canSelectCurrent ? " (max depth)" : ""}
             </Typography>
           </View>
-          {isCurrentSelected ? (
+          {isCurrentSelected && canSelectCurrent ? (
             <Check className="text-accent-foreground" />
           ) : null}
         </Pressable>
@@ -288,6 +302,7 @@ export function FolderPickerBrowser({
                 key={folder.id}
                 folder={folder}
                 selected={selectedFolder?.id === folder.id}
+                canSelect={canSelect(folder)}
                 onOpen={() => setBrowseFolderId(folder.id)}
                 onSelect={() => handleSelect(folder)}
               />
@@ -302,11 +317,13 @@ export function FolderPickerBrowser({
 function FolderNavRow({
   folder,
   selected,
+  canSelect,
   onOpen,
   onSelect,
 }: {
   folder: Folder;
   selected: boolean;
+  canSelect: boolean;
   onOpen: () => void;
   onSelect: () => void;
 }) {
@@ -317,6 +334,7 @@ function FolderNavRow({
       className="flex-row items-center rounded-lg border border-solid"
       style={{
         borderColor: selected ? hsl("border", colorScheme) : "transparent",
+        opacity: canSelect ? 1 : 0.7,
       }}
     >
       <Pressable
@@ -333,13 +351,16 @@ function FolderNavRow({
         variant="ghost"
         size="xs"
         className="mr-1"
+        disabled={!canSelect}
         onPress={onSelect}
         accessibilityLabel={`Select ${folder.label}`}
       >
-        {selected ? (
+        {selected && canSelect ? (
           <Check className="text-accent-foreground" />
         ) : (
-          <Typography className="text-xs text-muted-foreground">Use</Typography>
+          <Typography className="text-xs text-muted-foreground">
+            {canSelect ? "Use" : "Max"}
+          </Typography>
         )}
       </Button>
     </View>

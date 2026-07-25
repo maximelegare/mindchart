@@ -70,11 +70,16 @@ import { deleteFolderByPathQuery } from "./src/queries/folders/deleteFolderByPat
 import { getFolderContentsQuery } from "./src/queries/folders/getFolderContents";
 import { updateNoteFolderIdQuery } from "./src/queries/notes/updateNoteFolderId";
 export {
+  MAX_FOLDER_DEPTH,
   buildRootFolderPath,
   buildChildFolderPath,
   getParentFolderPath,
   getFolderIdsFromPath,
+  getFolderDepth,
+  canCreateChildFolder,
   isFolderPathUnder,
+  getSubtreeExtraDepth,
+  canMoveFolderTo,
 } from "./src/queries/folders/folderPath";
 export {
   getMigratingStatusQuery,

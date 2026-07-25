@@ -2,7 +2,9 @@ import { eq, like, or } from "drizzle-orm";
 import {
   buildChildFolderPath,
   buildRootFolderPath,
+  canMoveFolderTo,
   isFolderPathUnder,
+  MAX_FOLDER_DEPTH,
 } from "./folderPath";
 import { FolderTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
@@ -44,6 +46,16 @@ export const moveFolderQuery = async (
         isFolderPathUnder(oldPath, data.newParentPath))
     ) {
       throw new Error("Cannot move a folder into itself or a descendant");
+    }
+
+    const allFolders = await tx
+      .select({ path: FolderTable.path })
+      .from(FolderTable);
+    const allPaths = allFolders.map((row) => row.path);
+    if (!canMoveFolderTo(oldPath, data.newParentPath, allPaths)) {
+      throw new Error(
+        `Folders can only be nested ${MAX_FOLDER_DEPTH} levels deep`
+      );
     }
 
     const conflict = await tx

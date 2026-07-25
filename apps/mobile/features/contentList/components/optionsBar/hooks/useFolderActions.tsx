@@ -2,9 +2,11 @@ import { useCallback } from "react";
 import {
   buildChildFolderPath,
   buildRootFolderPath,
+  canCreateChildFolder,
   getParentFolderPath,
   isFolderPathUnder,
 } from "@repo/sqlite";
+import { Alert } from "react-native";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
@@ -55,6 +57,14 @@ export const useFolderActions = () => {
 
   const openCreateFolderModal = useCallback(
     (target: FolderTarget) => {
+      const parentPath = target.kind === "root" ? null : target.folder.path;
+      if (!canCreateChildFolder(parentPath)) {
+        Alert.alert(
+          "Maximum depth",
+          "Folders can only be nested 3 levels deep."
+        );
+        return;
+      }
       openModal({
         customContent: () => (
           <FolderFormModalContent
