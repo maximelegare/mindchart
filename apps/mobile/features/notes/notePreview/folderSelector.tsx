@@ -1,12 +1,17 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
-import { getFolderIdsFromPath, getParentFolderPath } from "@repo/sqlite";
+import {
+  getFolderIdsFromPath,
+  getParentFolderPath,
+  isFolderPathUnder,
+} from "@repo/sqlite";
 import {
   BottomSheet,
   BottomSheetContent,
   BottomSheetHeader,
   BottomSheetOpenTrigger,
   BottomSheetView,
+  useBottomSheet,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
@@ -26,6 +31,20 @@ const isDirectChild = (parentPath: string | null, folder: Folder) => {
     return getParentFolderPath(folder.path) === null;
   }
   return getParentFolderPath(folder.path) === parentPath;
+};
+
+export type FolderPickerBrowserProps = {
+  folders: Folder[];
+  selectedFolder: FolderSelection;
+  onSelect: (folder: FolderSelection) => void;
+  /** Hide this path and its descendants (e.g. folder being moved). */
+  excludePathPrefix?: string | null;
+  /** Label for the root / clear option. */
+  rootLabel?: string;
+  /** When false, root selection is hidden (unused today; kept for flexibility). */
+  allowRoot?: boolean;
+  /** If true, dismiss the hosting bottom sheet after select. */
+  dismissOnSelect?: boolean;
 };
 
 export const FolderSelector = ({
@@ -85,15 +104,76 @@ export const FolderSelector = ({
   );
 };
 
-function FolderPickerBrowser({
+type FolderPickerSheetProps = {
+  title?: string;
+  selectedFolder: FolderSelection;
+  excludePathPrefix?: string | null;
+  rootLabel?: string;
+  onSelect: (folder: FolderSelection) => void;
+  sheet: ReturnType<typeof useBottomSheet>;
+  active: boolean;
+  onDismiss?: () => void;
+};
+
+/** Imperative bottom sheet hosting the folder browser (for Move actions). */
+export const FolderPickerSheet = ({
+  title = "Move to…",
+  selectedFolder,
+  excludePathPrefix,
+  rootLabel = "No folder",
+  onSelect,
+  sheet,
+  active,
+  onDismiss,
+}: FolderPickerSheetProps) => {
+  const { folders } = useControllers();
+  const { data: allFolders } = folders.useFetchAllFoldersQuery({
+    enabled: active,
+  });
+
+  return (
+    <BottomSheet>
+      <BottomSheetContent
+        ref={sheet.ref}
+        style={{ zIndex: 100 }}
+        enablePanDownToClose
+        enableContentPanningGesture={false}
+        onDismiss={onDismiss}
+      >
+        {active ? (
+          <BottomSheetView
+            className="gap-4 pt-6 bg-background"
+            style={{ left: 19 }}
+          >
+            <BottomSheetHeader className="bg-background" onDismiss={onDismiss}>
+              <Typography className="text-foreground text-xl font-bold pb-1">
+                {title}
+              </Typography>
+            </BottomSheetHeader>
+            <FolderPickerBrowser
+              folders={allFolders ?? []}
+              selectedFolder={selectedFolder}
+              excludePathPrefix={excludePathPrefix}
+              rootLabel={rootLabel}
+              onSelect={onSelect}
+              dismissOnSelect
+            />
+          </BottomSheetView>
+        ) : null}
+      </BottomSheetContent>
+    </BottomSheet>
+  );
+};
+
+export function FolderPickerBrowser({
   folders,
   selectedFolder,
   onSelect,
-}: {
-  folders: Folder[];
-  selectedFolder: FolderSelection;
-  onSelect: (folder: FolderSelection) => void;
-}) {
+  excludePathPrefix = null,
+  rootLabel = "No folder",
+  allowRoot = true,
+  dismissOnSelect = true,
+}: FolderPickerBrowserProps) {
   const { dismiss } = useBottomSheetModal();
   const { colorScheme } = useColorScheme();
   const foldersById = useMemo(
@@ -101,10 +181,24 @@ function FolderPickerBrowser({
     [folders]
   );
 
-  // Start browsing at the selected folder (or root).
-  const [browseFolderId, setBrowseFolderId] = useState<string | null>(
-    () => selectedFolder?.id ?? null
-  );
+  const visibleFolders = useMemo(() => {
+    if (!excludePathPrefix) return folders;
+    return folders.filter(
+      (folder) => !isFolderPathUnder(excludePathPrefix, folder.path)
+    );
+  }, [excludePathPrefix, folders]);
+
+  // Start browsing at the selected folder (or root), unless excluded.
+  const [browseFolderId, setBrowseFolderId] = useState<string | null>(() => {
+    if (!selectedFolder) return null;
+    if (
+      excludePathPrefix &&
+      isFolderPathUnder(excludePathPrefix, selectedFolder.path)
+    ) {
+      return null;
+    }
+    return selectedFolder.id;
+  });
 
   const browseFolder = browseFolderId
     ? (foldersById.get(browseFolderId) ?? null)
@@ -112,15 +206,19 @@ function FolderPickerBrowser({
 
   const childFolders = useMemo(() => {
     const parentPath = browseFolder?.path ?? null;
-    return folders
+    return visibleFolders
       .filter((folder) => isDirectChild(parentPath, folder))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [browseFolder?.path, folders]);
+  }, [browseFolder?.path, visibleFolders]);
 
   const breadcrumbItems = useMemo(() => {
     const root = { id: "root", name: "Root" };
     if (!browseFolder) return [root];
-    const ids = getFolderIdsFromPath(browseFolder.path);
+    const ids = getFolderIdsFromPath(browseFolder.path).filter((id) => {
+      const folder = foldersById.get(id);
+      if (!folder || !excludePathPrefix) return true;
+      return !isFolderPathUnder(excludePathPrefix, folder.path);
+    });
     return [
       root,
       ...ids.map((id) => ({
@@ -128,11 +226,11 @@ function FolderPickerBrowser({
         name: foldersById.get(id)?.label ?? id,
       })),
     ];
-  }, [browseFolder, foldersById]);
+  }, [browseFolder, excludePathPrefix, foldersById]);
 
   const handleSelect = (folder: FolderSelection) => {
     onSelect(folder);
-    dismiss();
+    if (dismissOnSelect) dismiss();
   };
 
   const isCurrentSelected =
@@ -148,30 +246,32 @@ function FolderPickerBrowser({
         className="rounded-full bg-card px-1"
       />
 
-      <Pressable
-        className="py-3 px-3 w-full rounded-lg border border-solid flex-row items-center justify-between"
-        style={{
-          borderColor: isCurrentSelected
-            ? hsl("border", colorScheme)
-            : hsl("card", colorScheme),
-          backgroundColor: hsl("card", colorScheme),
-        }}
-        onPress={() => handleSelect(browseFolder)}
-      >
-        <View className="flex-row items-center gap-2 flex-1">
-          <Icon
-            name={browseFolder ? "folder" : "circle-off"}
-            color="muted-foreground"
-            size={16}
-          />
-          <Typography>
-            {browseFolder ? `Select “${browseFolder.label}”` : "No folder"}
-          </Typography>
-        </View>
-        {isCurrentSelected ? (
-          <Check className="text-accent-foreground" />
-        ) : null}
-      </Pressable>
+      {allowRoot || browseFolder ? (
+        <Pressable
+          className="py-3 px-3 w-full rounded-lg border border-solid flex-row items-center justify-between"
+          style={{
+            borderColor: isCurrentSelected
+              ? hsl("border", colorScheme)
+              : hsl("card", colorScheme),
+            backgroundColor: hsl("card", colorScheme),
+          }}
+          onPress={() => handleSelect(browseFolder)}
+        >
+          <View className="flex-row items-center gap-2 flex-1">
+            <Icon
+              name={browseFolder ? "folder" : "circle-off"}
+              color="muted-foreground"
+              size={16}
+            />
+            <Typography>
+              {browseFolder ? `Select “${browseFolder.label}”` : rootLabel}
+            </Typography>
+          </View>
+          {isCurrentSelected ? (
+            <Check className="text-accent-foreground" />
+          ) : null}
+        </Pressable>
+      ) : null}
 
       <ScrollView style={{ maxHeight: 260 }}>
         <View className="flex flex-col w-full gap-1">

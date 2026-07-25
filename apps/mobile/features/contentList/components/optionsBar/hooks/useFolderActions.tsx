@@ -11,6 +11,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";
 import { useOptionsBar } from "../context/optionBarContext";
 import { FolderFormModalContent } from "../components/folders/folderFormModalContent";
+import { FolderSelection } from "@/features/notes/notePreview/folderSelector";
 
 type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
 
@@ -26,6 +27,7 @@ export const useFolderActions = () => {
     folders.useUpdateFolderLabelMutation();
   const { mutateAsync: deleteFolderByPath } =
     folders.useDeleteFolderByPathMutation();
+  const { mutateAsync: moveFolder } = folders.useMoveFolderMutation();
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
 
   const resetIfCurrentDeleted = useCallback(
@@ -108,9 +110,30 @@ export const useFolderActions = () => {
     [closeModal, deleteFolderByPath, openModal, resetIfCurrentDeleted]
   );
 
+  const getFolderParent = useCallback(
+    (folder: Folder): FolderSelection => {
+      const parentPath = getParentFolderPath(folder.path);
+      if (!parentPath || !allFolders) return null;
+      return allFolders.find((f) => f.path === parentPath) ?? null;
+    },
+    [allFolders]
+  );
+
+  const moveFolderTo = useCallback(
+    async (folder: Folder, newParent: FolderSelection) => {
+      await moveFolder({
+        folderId: folder.id,
+        newParentPath: newParent?.path ?? null,
+      });
+    },
+    [moveFolder]
+  );
+
   return {
     openCreateFolderModal,
     openRenameFolderModal,
     openDeleteFolderModal,
+    getFolderParent,
+    moveFolderTo,
   };
 };

@@ -65,8 +65,10 @@ import { getChildFoldersQuery } from "./src/queries/folders/getChildFolders";
 import { insertFolderQuery } from "./src/queries/folders/insertFolder";
 import { insertFoldersQuery } from "./src/queries/folders/insertFolders";
 import { updateFolderLabelQuery } from "./src/queries/folders/updateFolderLabel";
+import { moveFolderQuery } from "./src/queries/folders/moveFolder";
 import { deleteFolderByPathQuery } from "./src/queries/folders/deleteFolderByPath";
 import { getFolderContentsQuery } from "./src/queries/folders/getFolderContents";
+import { updateNoteFolderIdQuery } from "./src/queries/notes/updateNoteFolderId";
 export {
   buildRootFolderPath,
   buildChildFolderPath,
@@ -136,7 +138,9 @@ export {
   insertFolderQuery,
   insertFoldersQuery,
   updateFolderLabelQuery,
+  moveFolderQuery,
   deleteFolderByPathQuery,
   getFolderContentsQuery,
+  updateNoteFolderIdQuery,
   FolderTable,
 };

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Pressable, View } from "react-native";
+import React, { useCallback, useState } from "react";
+import { Alert, Pressable, View } from "react-native";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import {
   DropdownMenu,
@@ -10,6 +10,11 @@ import {
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/cn";
+import { useBottomSheet } from "@/components/primitives/bottomSheet/bottom-sheet.native";
+import {
+  FolderPickerSheet,
+  FolderSelection,
+} from "@/features/notes/notePreview/folderSelector";
 import { useFolderActions } from "../../hooks/useFolderActions";
 
 type FolderActionsMenuProps = {
@@ -27,81 +32,135 @@ export const FolderActionsMenu = ({
   className,
 }: FolderActionsMenuProps) => {
   const [open, setOpen] = useState(false);
+  const [moveActive, setMoveActive] = useState(false);
+  const moveSheet = useBottomSheet();
   const {
     openCreateFolderModal,
     openRenameFolderModal,
     openDeleteFolderModal,
+    getFolderParent,
+    moveFolderTo,
   } = useFolderActions();
 
   const isRoot = target.kind === "root";
+  const movingFolder = target.kind === "folder" ? target.folder : null;
+
+  const openMoveSheet = useCallback(() => {
+    setOpen(false);
+    setMoveActive(true);
+    setTimeout(() => {
+      moveSheet.open();
+    }, 200);
+  }, [moveSheet]);
+
+  const handleMoveSelect = useCallback(
+    async (destination: FolderSelection) => {
+      if (!movingFolder) return;
+      try {
+        await moveFolderTo(movingFolder, destination);
+      } catch (error) {
+        Alert.alert("Move failed", String(error));
+      } finally {
+        setMoveActive(false);
+      }
+    },
+    [moveFolderTo, movingFolder]
+  );
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild openOnLongPress>
-        <Pressable
-          onPress={() => onNavigate?.()}
-          className={cn("shrink-0", className)}
-          hitSlop={8}
-        >
-          {children}
-        </Pressable>
-      </DropdownMenuTrigger>
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger asChild openOnLongPress>
+          <Pressable
+            onPress={() => onNavigate?.()}
+            className={cn("shrink-0", className)}
+            hitSlop={8}
+          >
+            {children}
+          </Pressable>
+        </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        side="bottom"
-        align="start"
-        className="border border-border bg-popover shadow-md"
-        style={{ minWidth: 160, marginTop: 4 }}
-      >
-        <DropdownMenuItem
-          className="flex-row items-center gap-2"
-          onPress={() => {
-            setOpen(false);
-            openCreateFolderModal(target);
-          }}
+        <DropdownMenuContent
+          side="bottom"
+          align="start"
+          className="border border-border bg-popover shadow-md"
+          style={{ minWidth: 160, marginTop: 4 }}
         >
-          <Icon name="folder" color="text" size={16} />
-          <Typography variant="p" className="text-md text-popover-foreground">
-            New folder
-          </Typography>
-        </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex-row items-center gap-2"
+            onPress={() => {
+              setOpen(false);
+              openCreateFolderModal(target);
+            }}
+          >
+            <Icon name="folder" color="text" size={16} />
+            <Typography variant="p" className="text-md text-popover-foreground">
+              New folder
+            </Typography>
+          </DropdownMenuItem>
 
-        {!isRoot && target.kind === "folder" ? (
-          <>
-            <DropdownMenuItem
-              className="flex-row items-center gap-2"
-              onPress={() => {
-                setOpen(false);
-                openRenameFolderModal(target.folder);
-              }}
-            >
-              <Icon name="pencil" color="text" size={16} />
-              <Typography
-                variant="p"
-                className="text-md text-popover-foreground"
+          {!isRoot && target.kind === "folder" ? (
+            <>
+              <DropdownMenuItem
+                className="flex-row items-center gap-2"
+                onPress={() => {
+                  setOpen(false);
+                  openRenameFolderModal(target.folder);
+                }}
               >
-                Rename
-              </Typography>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="flex-row items-center gap-2"
-              onPress={() => {
-                setOpen(false);
-                openDeleteFolderModal(target.folder);
-              }}
-            >
-              <Icon name="trash-2" color="destructive-foreground" size={16} />
-              <Typography
-                variant="p"
-                className="text-md text-destructive-foreground"
+                <Icon name="pencil" color="text" size={16} />
+                <Typography
+                  variant="p"
+                  className="text-md text-popover-foreground"
+                >
+                  Rename
+                </Typography>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex-row items-center gap-2"
+                onPress={openMoveSheet}
               >
-                Delete
-              </Typography>
-            </DropdownMenuItem>
-          </>
-        ) : null}
-      </DropdownMenuContent>
-    </DropdownMenu>
+                <Icon name="arrow-right-left" color="text" size={16} />
+                <Typography
+                  variant="p"
+                  className="text-md text-popover-foreground"
+                >
+                  Move
+                </Typography>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex-row items-center gap-2"
+                onPress={() => {
+                  setOpen(false);
+                  openDeleteFolderModal(target.folder);
+                }}
+              >
+                <Icon name="trash-2" color="destructive-foreground" size={16} />
+                <Typography
+                  variant="p"
+                  className="text-md text-destructive-foreground"
+                >
+                  Delete
+                </Typography>
+              </DropdownMenuItem>
+            </>
+          ) : null}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {movingFolder ? (
+        <FolderPickerSheet
+          title="Move folder to…"
+          sheet={moveSheet}
+          active={moveActive}
+          selectedFolder={getFolderParent(movingFolder)}
+          excludePathPrefix={movingFolder.path}
+          rootLabel="Move to root"
+          onSelect={handleMoveSelect}
+          onDismiss={() => setMoveActive(false)}
+        />
+      ) : null}
+    </>
   );
 };
 

@@ -4,6 +4,7 @@ import {
   fetchAllNotes,
   insertNoteAndThoughts,
   updateNoteAndThoughts,
+  updateNoteFolderId,
 } from "@/api/endpoints/notes";
 import {
   InferMutationOptions,
@@ -197,6 +198,34 @@ export const useNotesAndThoughtsController = () => {
     });
   };
 
+  const useUpdateNoteFolderIdMutation = () => {
+    const queryClient = useQueryClient();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
+    return useMutation<
+      Awaited<ReturnType<typeof updateNoteFolderId>>,
+      Error,
+      { noteId: string; folderId: string | null }
+    >({
+      mutationKey: [REACT_QUERY_KEYS.updateNoteFolderId],
+      mutationFn: updateNoteFolderId,
+      onSuccess: async () => {
+        try {
+          await mutateAsyncGraphData(true);
+        } finally {
+          await invalidateNotesAndThoughtsQueries(queryClient);
+          await queryClient.invalidateQueries({
+            queryKey: [REACT_QUERY_KEYS.fetchAllFoldersWithNotesInfos],
+          });
+          await queryClient.invalidateQueries({
+            queryKey: [REACT_QUERY_KEYS.fetchFolderContents],
+          });
+        }
+      },
+    });
+  };
+
   return {
     useGenerateNoteMutation,
     useInsertNoteAndThoughtsMutation,
@@ -207,6 +236,7 @@ export const useNotesAndThoughtsController = () => {
     useUpdateNoteAndThoughtsMutation,
     useDeleteThoughtsByIdsMutation,
     useDeleteNoteByIdMutation,
+    useUpdateNoteFolderIdMutation,
     useFetchAllNotesQuery,
     useFetchNoteByTopic,
   };

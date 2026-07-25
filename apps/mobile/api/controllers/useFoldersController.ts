@@ -13,6 +13,7 @@ import {
   getFolderById,
   getFolderContents,
   insertFolder,
+  moveFolder,
   updateFolderLabel,
 } from "../endpoints/folders";
 import { updateSyncGraphData } from "../endpoints/graph";
@@ -148,6 +149,22 @@ export const useFoldersController = () => {
     });
   };
 
+  const useMoveFolderMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation<
+      Awaited<ReturnType<typeof moveFolder>>,
+      Error,
+      { folderId: string; newParentPath: string | null }
+    >({
+      mutationKey: [REACT_QUERY_KEYS.moveFolder],
+      mutationFn: (data) => moveFolder(data),
+      onSuccess: async () => {
+        await invalidateFolderQueries(queryClient);
+        await markGraphDirty(queryClient);
+      },
+    });
+  };
+
   return {
     useFetchAllFoldersQuery,
     useFetchAllFoldersWithNotesInfosQuery,
@@ -157,5 +174,6 @@ export const useFoldersController = () => {
     useInsertFolderMutation,
     useUpdateFolderLabelMutation,
     useDeleteFolderByPathMutation,
+    useMoveFolderMutation,
   };
 };

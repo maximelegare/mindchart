@@ -7,6 +7,7 @@ import {
   getFolderContentsQuery,
   getOPDatabase,
   insertFolderQuery,
+  moveFolderQuery,
   updateFolderLabelQuery,
 } from "@repo/sqlite";
 import { Folder } from "@repo/zod-schemas/src/schemas";
@@ -42,6 +43,14 @@ export const updateFolderLabel = async (data: {
 }) => {
   const db = getOPDatabase();
   return await updateFolderLabelQuery(db, data);
+};
+
+export const moveFolder = async (data: {
+  folderId: string;
+  newParentPath: string | null;
+}) => {
+  const db = getOPDatabase();
+  return await moveFolderQuery(db, data);
 };
 
 export const deleteFolderByPath = async (path: string) => {

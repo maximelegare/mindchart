@@ -61,5 +61,7 @@ export const REACT_QUERY_KEYS = {
   fetchFolderContents: "fetch_folder_contents",
   insertFolder: "insert_folder",
   updateFolderLabel: "update_folder_label",
+  moveFolder: "move_folder",
   deleteFolderByPath: "delete_folder_by_path",
+  updateNoteFolderId: "update_note_folder_id",
 } as const;

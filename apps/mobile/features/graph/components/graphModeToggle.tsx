@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
-import { FilterChip } from "@/features/contentList/components/optionsBar/components/filters/filterChips";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { memo, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useGraphStore } from "../context/graphContext";
 import { GraphMode } from "../types/types";
 import { GraphFilterChips } from "./graphFilterChips";
+import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
 
 const DEFAULT_GRAPH_MODE: GraphMode = "category";
 
@@ -46,7 +46,7 @@ function ModeDropdown({ value, onValueChange }: ModeDropdownProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <FilterChip icon={selectedIcon} label={selectedLabel} selected={open} />
+        <OptionChip icon={selectedIcon} label={selectedLabel} selected={open} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
