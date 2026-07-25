@@ -2,27 +2,30 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import { Typography } from "@/components/ui";
 import { useControllers } from "@/api/controllers/useControllers";
-import { NoteWithoutOverview } from "@/features/contentList/components/cards/noteWithoutOverview";
+import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
-import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
 import { sortContentList } from "@/features/contentList/utils/sortContentList";
+import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 
-/** Notes assigned to the current folder (via folderId). */
+/** Notes assigned to the current folder (via folderId), with thought overviews. */
 export const FolderContentsView = () => {
   const currentFolderId = useOptionsBar((s) => s.currentFolderId);
   const sortBy = useContentListSort();
-  const { folders } = useControllers();
-  const { data } = folders.useFetchFolderContentsQuery(currentFolderId);
+  const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
+  const { data } = useFetchNotesAndThoughtsQuery();
 
   const notes = useMemo(() => {
-    const parsed = normalizeNotesFromQuery(data);
-    if (!parsed) return [];
-    return sortContentList(parsed, sortBy, {
+    const parsed = parseNoteAndThoughts(data);
+    if (!parsed || !currentFolderId) return [];
+
+    const filtered = parsed.filter((note) => note.folderId === currentFolderId);
+
+    return sortContentList(filtered, sortBy, {
       getName: (note) => note.title,
       getDate: (note) => note.createdAt,
     });
-  }, [data, sortBy]);
+  }, [currentFolderId, data, sortBy]);
 
   if (notes.length === 0) {
     return (
@@ -37,7 +40,15 @@ export const FolderContentsView = () => {
   return (
     <View className="gap-2" style={{ paddingTop: 12 }}>
       {notes.map((note) => (
-        <NoteWithoutOverview key={note.id} {...note} />
+        <NoteWithThoughts
+          key={note.id}
+          id={note.id}
+          title={note.title}
+          category="idea"
+          date={note.createdAt ?? ""}
+          topic={note.topicName}
+          overviewItems={note.thoughts.map((thought) => thought.summary)}
+        />
       ))}
     </View>
   );

@@ -56,7 +56,6 @@ const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
 
 const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
   { icon: "notebook-text", value: "notes", label: "Notes" },
-  { icon: "tag", value: "topics", label: "Topics" },
   { icon: "layers", value: "categories", label: "Categories" },
 ];
 

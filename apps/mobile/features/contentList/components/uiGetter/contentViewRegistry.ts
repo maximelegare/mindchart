@@ -1,7 +1,6 @@
 import { ComponentType } from "react";
 import { UiKey } from "../../types";
 import { NotesListWithOverviewFeature } from "@/features/contentList/features/groupByNone/views/withOverview";
-import { TopicsOnlyViewFeature } from "@/features/contentList/features/topicsOnly";
 import { NotesListGroupByFoldersWithoutOverviewFeature } from "@/features/contentList/features/groupByFolders/notes/views/withoutOverview";
 import { NotesListGroupByFoldersWithOverviewFeature } from "@/features/contentList/features/groupByFolders/notes/views/withOverview";
 import { getUiKey } from "./getUiKey";
@@ -13,15 +12,13 @@ import { ThoughtsListGroupByCategoriesWithOverviewFeature } from "@/features/con
 
 /**
  * Maps each groupBy + display combination to a dedicated view.
- * display is one of: notes, notes-overview, topics, categories.
+ * display is one of: notes, notes-overview, categories.
  */
 export const CONTENT_VIEW_REGISTRY = {
   "groupBy=none&display=notes": NotesListWithoutOverviewFeature,
   "groupBy=none&display=notes-overview": NotesListWithOverviewFeature,
-  "groupBy=none&display=topics": TopicsOnlyViewFeature,
   "groupBy=none&display=categories": CategoriesOnlyViewFeature,
 
-  "groupBy=folders&display=topics": TopicsOnlyViewFeature,
   "groupBy=folders&display=notes":
     NotesListGroupByFoldersWithoutOverviewFeature,
   "groupBy=folders&display=notes-overview":
@@ -33,7 +30,6 @@ export const CONTENT_VIEW_REGISTRY = {
     ThoughtsListGroupByCategoriesWithoutOverviewFeature,
   "groupBy=categories&display=notes-overview":
     ThoughtsListGroupByCategoriesWithOverviewFeature,
-  "groupBy=categories&display=topics": TopicsOnlyViewFeature,
 } as const satisfies Partial<Record<UiKey, ComponentType>>;
 
 export type RegisteredUiKey = keyof typeof CONTENT_VIEW_REGISTRY;

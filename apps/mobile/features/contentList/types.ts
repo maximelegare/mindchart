@@ -1,6 +1,6 @@
-export type DisplayMode = "notes" | "topics" | "categories";
+export type DisplayMode = "notes" | "categories";
 
-export type DisplayKey = "notes" | "notes-overview" | "topics" | "categories";
+export type DisplayKey = "notes" | "notes-overview" | "categories";
 
 export type FoldersMode = "with" | "without";
 

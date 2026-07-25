@@ -7,47 +7,27 @@ import {
   SortBy,
   sortContentList,
 } from "@/features/contentList/utils/sortContentList";
-import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
 
 export const TopicsListFeature = ({
   withSpaceFiller = true,
   sortBy,
-  selectedFolderId,
 }: {
   withSpaceFiller?: boolean;
   sortBy?: SortBy;
-  selectedFolderId?: string | null;
 }) => {
   const { useFetchAllTopicsWithNotesInfosQuery } = useControllers().topics;
-  const { useFetchAllNotesQuery } = useControllers().notesAndThoughts;
 
   const { data } = useFetchAllTopicsWithNotesInfosQuery();
-  const { data: notesData } = useFetchAllNotesQuery({
-    enabled: !!selectedFolderId,
-  });
 
   const sortedData = useMemo(() => {
     if (!data) return undefined;
+    if (!sortBy) return data;
 
-    let filtered = data;
-    if (selectedFolderId) {
-      const notes = normalizeNotesFromQuery(notesData);
-      const topicIds = new Set(
-        (notes ?? [])
-          .filter((note) => note.folderId === selectedFolderId)
-          .map((note) => note.topicId)
-          .filter((id): id is string => !!id)
-      );
-      filtered = data.filter((topic) => topicIds.has(topic.id));
-    }
-
-    if (!sortBy) return filtered;
-
-    return sortContentList(filtered, sortBy, {
+    return sortContentList(data, sortBy, {
       getName: (topic) => topic.name,
       getDate: (topic) => topic.createdAt,
     });
-  }, [data, notesData, selectedFolderId, sortBy]);
+  }, [data, sortBy]);
 
   return (
     <List className="gap-2 border-[0px]" style={{ paddingTop: 20 }}>

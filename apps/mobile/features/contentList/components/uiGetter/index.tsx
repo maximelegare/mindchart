@@ -30,7 +30,10 @@ export const UiGetter = memo(function UiGetter() {
 
   const ViewComponent = useMemo(() => resolveContentView(uiKey), [uiKey]);
 
-  if (deferredFoldersMode === "with" && deferredFolderId) {
+  // Folder browse mode: only show notes inside a selected folder, never the
+  // global list under the folder cards.
+  if (deferredFoldersMode === "with") {
+    if (!deferredFolderId) return null;
     return <FolderContentsView />;
   }
 
