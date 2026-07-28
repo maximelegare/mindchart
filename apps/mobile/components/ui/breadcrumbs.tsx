@@ -89,7 +89,7 @@ export const Breadcrumbs = ({
                 {item.id === "root" || item.name.toLowerCase() === "root" ? (
                   <Icon name="house" color="text" size={18} />
                 ) : (
-                  <Typography variant="h3" numberOfLines={1}>
+                  <Typography variant="h5" numberOfLines={1}>
                     {item.name}
                   </Typography>
                 )}
