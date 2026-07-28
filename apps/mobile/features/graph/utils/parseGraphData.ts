@@ -1,5 +1,6 @@
 import { NodeDatum, GraphDataCache } from "../types/types";
 import { buildGraphByFolder } from "./buildGraphByFolder";
+import { categoryGraphNeedsRebuild } from "./buildGraphByCategoryFolders";
 import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
 
 const isRootNode = (data: unknown): data is NodeDatum =>
@@ -17,11 +18,13 @@ const treeContainsTopicNodes = (root: NodeDatum): boolean => {
   return (root.children ?? []).some(treeContainsTopicNodes);
 };
 
-/** True when cache is missing folder mode or still nests topic nodes. */
+/** True when cache is legacy/topic-based or category packs need flattening/scoped ids. */
 export const needsFolderGraphRebuild = (data: unknown): boolean => {
   if (!isGraphDataCache(data)) return true;
   return (
-    treeContainsTopicNodes(data.category) || treeContainsTopicNodes(data.folder)
+    treeContainsTopicNodes(data.category) ||
+    treeContainsTopicNodes(data.folder) ||
+    categoryGraphNeedsRebuild(data.category)
   );
 };
 

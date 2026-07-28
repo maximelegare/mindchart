@@ -34,7 +34,10 @@ const buildSyncSignature = (
     .sort()
     .join("|");
   const thoughtPart = thoughts
-    .map((thought) => `${thought.thoughtId}:${thought.folderId ?? ""}`)
+    .map(
+      (thought) =>
+        `${thought.thoughtId}:${thought.folderId ?? ""}:${thought.categoryId ?? ""}`
+    )
     .sort()
     .join("|");
   return `${folderPart}::${thoughtPart}`;

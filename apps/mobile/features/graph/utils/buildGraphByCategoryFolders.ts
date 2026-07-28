@@ -9,7 +9,7 @@ const stampCategoryId = (node: NodeDatum, categoryId: string): NodeDatum => ({
   children: node.children?.map((child) => stampCategoryId(child, categoryId)),
 });
 
-/** Category → nested folders → thoughts (replaces the old category → topic tree). */
+/** Category → root folders only → thoughts (nested folders collapse into their root). */
 export function buildGraphByCategoryFolders(
   folders: Folder[],
   thoughts: ThoughtWithEmbedding[]
@@ -29,7 +29,12 @@ export function buildGraphByCategoryFolders(
     name: "root",
     children: Array.from(byCategory.entries()).map(
       ([categoryId, categoryThoughts]) => {
-        const folderTree = buildGraphByFolder(folders, categoryThoughts);
+        const folderTree = buildGraphByFolder(folders, categoryThoughts, {
+          maxFolderDepth: 1,
+          // Same folder under two categories must not share a graph node id,
+          // or zoom/focus lands on the first match (often wrong after moves).
+          folderIdScope: categoryId,
+        });
         return {
           id: `category-${categoryId}`,
           name: categoryId,
@@ -42,3 +47,33 @@ export function buildGraphByCategoryFolders(
     ),
   };
 }
+
+/** True when category packs still nest folders or use unscoped folder ids. */
+export const categoryGraphNeedsRebuild = (root: NodeDatum): boolean => {
+  for (const category of root.children ?? []) {
+    if (!category.id.startsWith("category-")) continue;
+    const categoryId =
+      category.categoryId ?? category.id.slice("category-".length);
+
+    for (const child of category.children ?? []) {
+      if (child.thoughtId) continue;
+
+      const isFolderChild =
+        child.folderId != null || child.id.startsWith("folder-");
+      if (!isFolderChild) continue;
+
+      // Scoped ids look like `folder-${categoryId}-…`
+      if (!child.id.startsWith(`folder-${categoryId}-`)) {
+        return true;
+      }
+
+      const hasNestedFolder = (child.children ?? []).some(
+        (nested) =>
+          !nested.thoughtId &&
+          (nested.folderId != null || nested.id.startsWith("folder-"))
+      );
+      if (hasNestedFolder) return true;
+    }
+  }
+  return false;
+};
