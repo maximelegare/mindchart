@@ -42,6 +42,8 @@ export type IconName =
   | "mic"
   | "notebook-text"
   | "palette"
+  | "panel-right-close"
+  | "panel-right-open"
   | "pencil"
   | "piggy-bank"
   | "plane"
@@ -236,6 +238,14 @@ export const ICON_METADATA: Record<
   palette: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 22a1 1 0 0 1 0-20a10 9 0 0 1 10 9a5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"></path><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle></g>`,
+  },
+  "panel-right-close": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M15 3v18M8 9l3 3l-3 3"></path></g>`,
+  },
+  "panel-right-open": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M15 3v18M10 15l-3-3l3-3"></path></g>`,
   },
   pencil: {
     viewBox: "0 0 24 24",

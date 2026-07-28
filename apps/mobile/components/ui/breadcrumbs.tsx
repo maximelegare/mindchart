@@ -36,7 +36,7 @@ export const Breadcrumbs = ({
   };
 
   return (
-    <View className={cn("flex-1 flex-row items-center", className)}>
+    <View className={cn("min-w-0 w-full flex-row items-center", className)}>
       <TouchableOpacity
         disabled={items.length <= 1}
         onPress={handleGoBack}

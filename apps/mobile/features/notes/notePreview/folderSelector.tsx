@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import {
   getFolderIdsFromPath,
@@ -15,7 +15,6 @@ import {
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
-import { Check } from "@/lib/icons/Check";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Folder } from "@repo/zod-schemas/src/schemas";
@@ -23,14 +22,38 @@ import { hsl } from "@/utils/hsl";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Icon } from "@/components/ui/icons/icon";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { cn } from "@/lib/cn";
 
 export type FolderSelection = Folder | null;
+
+const ROOT_ID = "root";
 
 const isDirectChild = (parentPath: string | null, folder: Folder) => {
   if (parentPath === null) {
     return getParentFolderPath(folder.path) === null;
   }
   return getParentFolderPath(folder.path) === parentPath;
+};
+
+const parentIdOf = (folder: Folder): string | null => {
+  const parentPath = getParentFolderPath(folder.path);
+  if (!parentPath) return null;
+  return parentPath.split("/").filter(Boolean).pop() ?? null;
+};
+
+/** Children keyed by parent folder id (`null` = root). */
+const buildChildrenByParentId = (folders: Folder[]) => {
+  const map = new Map<string | null, Folder[]>();
+  for (const folder of folders) {
+    const parentId = parentIdOf(folder);
+    const list = map.get(parentId) ?? [];
+    list.push(folder);
+    map.set(parentId, list);
+  }
+  for (const list of map.values()) {
+    list.sort((a, b) => a.label.localeCompare(b.label));
+  }
+  return map;
 };
 
 export type FolderPickerBrowserProps = {
@@ -43,8 +66,10 @@ export type FolderPickerBrowserProps = {
   rootLabel?: string;
   /** When false, root selection is hidden (unused today; kept for flexibility). */
   allowRoot?: boolean;
-  /** If true, dismiss the hosting bottom sheet after select. */
+  /** If true, dismiss the hosting bottom sheet after confirm. */
   dismissOnSelect?: boolean;
+  /** Prefix for the confirm button, e.g. "Move into" → "Move into Work". */
+  actionVerb?: string;
   /** When false, that destination cannot be chosen (still browsable). */
   isDestinationEnabled?: (folder: FolderSelection) => boolean;
 };
@@ -70,7 +95,7 @@ export const FolderSelector = ({
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild className="self-start">
-        <TouchableOpacity className="flex-row items-center gap-1.5 self-start rounded-full bg-card px-2.5 py-1.5">
+        <TouchableOpacity className="flex-row items-center gap-1.5 self-start rounded-full bg-card py-1.5">
           <Icon name="folder" color="foreground" size={16} />
           <Typography
             variant="p"
@@ -83,13 +108,12 @@ export const FolderSelector = ({
       </BottomSheetOpenTrigger>
       <BottomSheetContent
         style={{ zIndex: 100 }}
+        snapPoints={["100%"]}
+        enableDynamicSizing={false}
         enablePanDownToClose
         enableContentPanningGesture={false}
       >
-        <BottomSheetView
-          className="gap-4 pt-6 bg-background"
-          style={{ left: 19 }}
-        >
+        <BottomSheetView className="flex-1 h-full gap-4 pt-4 px-4 pb-6 bg-background">
           <BottomSheetHeader className="bg-background">
             <Typography className="text-foreground text-xl font-bold pb-1">
               Folders
@@ -99,6 +123,7 @@ export const FolderSelector = ({
             folders={allFolders ?? []}
             selectedFolder={selectedFolder}
             onSelect={onSelect}
+            actionVerb="Select"
           />
         </BottomSheetView>
       </BottomSheetContent>
@@ -116,6 +141,7 @@ type FolderPickerSheetProps = {
   active: boolean;
   onDismiss?: () => void;
   isDestinationEnabled?: (folder: FolderSelection) => boolean;
+  actionVerb?: string;
 };
 
 /** Imperative bottom sheet hosting the folder browser (for Move actions). */
@@ -129,6 +155,7 @@ export const FolderPickerSheet = ({
   active,
   onDismiss,
   isDestinationEnabled,
+  actionVerb = "Move into",
 }: FolderPickerSheetProps) => {
   const { folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery({
@@ -140,15 +167,14 @@ export const FolderPickerSheet = ({
       <BottomSheetContent
         ref={sheet.ref}
         style={{ zIndex: 100 }}
+        snapPoints={["100%"]}
+        enableDynamicSizing={false}
         enablePanDownToClose
         enableContentPanningGesture={false}
         onDismiss={onDismiss}
       >
         {active ? (
-          <BottomSheetView
-            className="gap-4 pt-6 bg-background"
-            style={{ left: 19 }}
-          >
+          <BottomSheetView className="flex-1 h-full gap-4 pt-4 px-4 pb-6 bg-background">
             <BottomSheetHeader className="bg-background" onDismiss={onDismiss}>
               <Typography className="text-foreground text-xl font-bold pb-1">
                 {title}
@@ -161,6 +187,7 @@ export const FolderPickerSheet = ({
               rootLabel={rootLabel}
               onSelect={onSelect}
               dismissOnSelect
+              actionVerb={actionVerb}
               isDestinationEnabled={isDestinationEnabled}
             />
           </BottomSheetView>
@@ -178,10 +205,12 @@ export function FolderPickerBrowser({
   rootLabel = "No folder",
   allowRoot = true,
   dismissOnSelect = true,
+  actionVerb = "Move into",
   isDestinationEnabled,
 }: FolderPickerBrowserProps) {
   const { dismiss } = useBottomSheetModal();
   const { colorScheme } = useColorScheme();
+
   const foldersById = useMemo(
     () => new Map(folders.map((folder) => [folder.id, folder])),
     [folders]
@@ -193,6 +222,11 @@ export function FolderPickerBrowser({
       (folder) => !isFolderPathUnder(excludePathPrefix, folder.path)
     );
   }, [excludePathPrefix, folders]);
+
+  const childrenByParentId = useMemo(
+    () => buildChildrenByParentId(visibleFolders),
+    [visibleFolders]
+  );
 
   // Start browsing at the selected folder (or root), unless excluded.
   const [browseFolderId, setBrowseFolderId] = useState<string | null>(() => {
@@ -206,9 +240,33 @@ export function FolderPickerBrowser({
     return selectedFolder.id;
   });
 
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
+    const initial = new Set<string>([ROOT_ID]);
+    if (selectedFolder) {
+      for (const id of getFolderIdsFromPath(selectedFolder.path)) {
+        initial.add(id);
+      }
+    }
+    return initial;
+  });
+
   const browseFolder = browseFolderId
     ? (foldersById.get(browseFolderId) ?? null)
     : null;
+
+  // Keep the tree open along the path to the current location.
+  useEffect(() => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.add(ROOT_ID);
+      if (browseFolder) {
+        for (const id of getFolderIdsFromPath(browseFolder.path)) {
+          next.add(id);
+        }
+      }
+      return next;
+    });
+  }, [browseFolder]);
 
   const childFolders = useMemo(() => {
     const parentPath = browseFolder?.path ?? null;
@@ -218,7 +276,7 @@ export function FolderPickerBrowser({
   }, [browseFolder?.path, visibleFolders]);
 
   const breadcrumbItems = useMemo(() => {
-    const root = { id: "root", name: "Root" };
+    const root = { id: ROOT_ID, name: "Root" };
     if (!browseFolder) return [root];
     const ids = getFolderIdsFromPath(browseFolder.path).filter((id) => {
       const folder = foldersById.get(id);
@@ -237,132 +295,309 @@ export function FolderPickerBrowser({
   const canSelect = (folder: FolderSelection) =>
     isDestinationEnabled ? isDestinationEnabled(folder) : true;
 
-  const handleSelect = (folder: FolderSelection) => {
-    if (!canSelect(folder)) return;
-    onSelect(folder);
+  const canSelectCurrent = allowRoot || browseFolder != null;
+  const destinationEnabled = canSelectCurrent && canSelect(browseFolder);
+
+  const destinationLabel =
+    browseFolder?.label ?? (rootLabel === "Move to root" ? "Root" : rootLabel);
+
+  const handleConfirm = () => {
+    if (!destinationEnabled) return;
+    onSelect(browseFolder);
     if (dismissOnSelect) dismiss();
   };
 
-  const isCurrentSelected =
-    browseFolder === null
-      ? selectedFolder === null
-      : selectedFolder?.id === browseFolder.id;
-  const canSelectCurrent = canSelect(browseFolder);
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const paneBorder = hsl("border", colorScheme);
+  const currentBg = hsl("card", colorScheme);
+  const [showContentPanel, setShowContentPanel] = useState(true);
 
   return (
-    <View className="gap-3">
-      <Breadcrumbs
-        items={breadcrumbItems}
-        onNavigate={(id) => setBrowseFolderId(id === "root" ? null : id)}
-        className="rounded-full bg-card px-1"
-      />
+    <View className="flex-1 gap-3">
+      <View
+        className="h-10 w-full flex-row items-center overflow-hidden rounded-full shrink-0"
+        style={{ backgroundColor: currentBg }}
+      >
+        <Breadcrumbs
+          items={breadcrumbItems}
+          onNavigate={(id) => setBrowseFolderId(id === ROOT_ID ? null : id)}
+        />
+      </View>
 
-      {allowRoot || browseFolder ? (
-        <Pressable
-          className="py-3 px-3 w-full rounded-lg border border-solid flex-row items-center justify-between"
-          style={{
-            borderColor: isCurrentSelected
-              ? hsl("border", colorScheme)
-              : hsl("card", colorScheme),
-            backgroundColor: hsl("card", colorScheme),
-            opacity: canSelectCurrent ? 1 : 0.45,
-          }}
-          disabled={!canSelectCurrent}
-          onPress={() => handleSelect(browseFolder)}
-        >
-          <View className="flex-row items-center gap-2 flex-1">
+      <View className="flex-1 min-h-[280px] overflow-hidden rounded-3xl bg-card">
+        <View className="flex-row items-center px-3 py-2 border-b border-border">
+          <Typography variant="h5" className="flex-1 opacity-60">
+            Location
+          </Typography>
+          <TouchableOpacity
+            onPress={() => setShowContentPanel((prev) => !prev)}
+            className="flex-row items-center gap-1.5"
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={
+              showContentPanel ? "Hide content panel" : "Show content panel"
+            }
+          >
+            {showContentPanel ? (
+              <Typography variant="h5" className="opacity-60">
+                Content
+              </Typography>
+            ) : null}
             <Icon
-              name={browseFolder ? "folder" : "circle-off"}
-              color="muted-foreground"
+              name={showContentPanel ? "panel-right-close" : "panel-right-open"}
+              color="foreground"
               size={16}
             />
-            <Typography>
-              {browseFolder ? `Select “${browseFolder.label}”` : rootLabel}
-              {!canSelectCurrent ? " (max depth)" : ""}
-            </Typography>
-          </View>
-          {isCurrentSelected && canSelectCurrent ? (
-            <Check className="text-accent-foreground" />
-          ) : null}
-        </Pressable>
-      ) : null}
-
-      <ScrollView style={{ maxHeight: 260 }}>
-        <View className="flex flex-col w-full gap-1">
-          {childFolders.length === 0 ? (
-            <Typography
-              variant="p"
-              className="px-2 py-4 text-muted-foreground text-center"
-            >
-              No subfolders
-            </Typography>
-          ) : (
-            childFolders.map((folder) => (
-              <FolderNavRow
-                key={folder.id}
-                folder={folder}
-                selected={selectedFolder?.id === folder.id}
-                canSelect={canSelect(folder)}
-                onOpen={() => setBrowseFolderId(folder.id)}
-                onSelect={() => handleSelect(folder)}
-              />
-            ))
-          )}
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+
+        <View className="flex-1 flex-row">
+          {/* Left: expandable folder tree */}
+          <View className="flex-1">
+            <ScrollView
+              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{
+                paddingVertical: 4,
+                paddingHorizontal: 4,
+              }}
+            >
+              <FolderTreeRow
+                id={ROOT_ID}
+                label="Root"
+                depth={0}
+                isCurrent={browseFolderId === null}
+                hasChildren={(childrenByParentId.get(null) ?? []).length > 0}
+                expanded={expandedIds.has(ROOT_ID)}
+                borderColor={paneBorder}
+                onToggle={() => toggleExpanded(ROOT_ID)}
+                onNavigate={() => setBrowseFolderId(null)}
+              />
+              {expandedIds.has(ROOT_ID)
+                ? (childrenByParentId.get(null) ?? []).map((folder) => (
+                    <FolderTreeBranch
+                      key={folder.id}
+                      folder={folder}
+                      depth={1}
+                      childrenByParentId={childrenByParentId}
+                      expandedIds={expandedIds}
+                      browseFolderId={browseFolderId}
+                      borderColor={paneBorder}
+                      onToggle={toggleExpanded}
+                      onNavigate={setBrowseFolderId}
+                    />
+                  ))
+                : null}
+            </ScrollView>
+          </View>
+
+          {showContentPanel ? (
+            <>
+              {/* Divider between location tree and contents */}
+              <View
+                className="self-stretch"
+                style={{ width: 1, backgroundColor: paneBorder }}
+              />
+
+              {/* Right: contents of the browsed folder */}
+              <View className="flex-1">
+                <ScrollView
+                  nestedScrollEnabled
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{
+                    paddingVertical: 4,
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  {childFolders.length === 0 ? (
+                    <Typography
+                      variant="p"
+                      className="px-2 py-6 text-muted-foreground text-center"
+                    >
+                      Empty folder
+                    </Typography>
+                  ) : (
+                    childFolders.map((folder) => (
+                      <Pressable
+                        key={folder.id}
+                        className="flex-row items-center gap-1.5 rounded-lg border border-transparent px-2 py-2"
+                        onPress={() => setBrowseFolderId(folder.id)}
+                      >
+                        <Icon
+                          name="folder"
+                          color="muted-foreground"
+                          size={14}
+                        />
+                        <Typography className="flex-1" numberOfLines={1}>
+                          {folder.label}
+                        </Typography>
+                        <Icon
+                          name="chevron-right"
+                          color="muted-foreground"
+                          size={14}
+                        />
+                      </Pressable>
+                    ))
+                  )}
+                </ScrollView>
+              </View>
+            </>
+          ) : null}
+        </View>
+      </View>
+
+      <Button
+        size="lg"
+        cornerRadius="full"
+        className="w-full"
+        disabled={!destinationEnabled}
+        onPress={handleConfirm}
+        style={{
+          backgroundColor: hsl("popover", colorScheme),
+          borderColor: paneBorder,
+        }}
+      >
+        <View className="flex-row items-center gap-1.5">
+          <Typography variant="h4" style={{ opacity: 0.6 }} numberOfLines={1}>
+            {actionVerb}
+          </Typography>
+          <Typography variant="h4" className="font-semibold" numberOfLines={1}>
+            "{destinationLabel}"
+          </Typography>
+        </View>
+      </Button>
     </View>
   );
 }
 
-function FolderNavRow({
+function FolderTreeBranch({
   folder,
-  selected,
-  canSelect,
-  onOpen,
-  onSelect,
+  depth,
+  childrenByParentId,
+  expandedIds,
+  browseFolderId,
+  borderColor,
+  onToggle,
+  onNavigate,
 }: {
   folder: Folder;
-  selected: boolean;
-  canSelect: boolean;
-  onOpen: () => void;
-  onSelect: () => void;
+  depth: number;
+  childrenByParentId: Map<string | null, Folder[]>;
+  expandedIds: Set<string>;
+  browseFolderId: string | null;
+  borderColor: string;
+  onToggle: (id: string) => void;
+  onNavigate: (id: string) => void;
 }) {
-  const { colorScheme } = useColorScheme();
+  const children = childrenByParentId.get(folder.id) ?? [];
+  const expanded = expandedIds.has(folder.id);
 
   return (
+    <>
+      <FolderTreeRow
+        id={folder.id}
+        label={folder.label}
+        depth={depth}
+        isCurrent={browseFolderId === folder.id}
+        hasChildren={children.length > 0}
+        expanded={expanded}
+        borderColor={borderColor}
+        onToggle={() => onToggle(folder.id)}
+        onNavigate={() => onNavigate(folder.id)}
+      />
+      {expanded
+        ? children.map((child) => (
+            <FolderTreeBranch
+              key={child.id}
+              folder={child}
+              depth={depth + 1}
+              childrenByParentId={childrenByParentId}
+              expandedIds={expandedIds}
+              browseFolderId={browseFolderId}
+              borderColor={borderColor}
+              onToggle={onToggle}
+              onNavigate={onNavigate}
+            />
+          ))
+        : null}
+    </>
+  );
+}
+
+function FolderTreeRow({
+  label,
+  depth,
+  isCurrent,
+  hasChildren,
+  expanded,
+  borderColor,
+  onToggle,
+  onNavigate,
+}: {
+  id: string;
+  label: string;
+  depth: number;
+  isCurrent: boolean;
+  hasChildren: boolean;
+  expanded: boolean;
+  borderColor: string;
+  onToggle: () => void;
+  onNavigate: () => void;
+}) {
+  return (
     <View
-      className="flex-row items-center rounded-lg border border-solid"
+      className={cn(
+        "flex-row items-center rounded-2xl border border-transparent",
+        isCurrent ? "opacity-100" : "opacity-90"
+      )}
       style={{
-        borderColor: selected ? hsl("border", colorScheme) : "transparent",
-        opacity: canSelect ? 1 : 0.7,
+        paddingLeft: 4 + depth * 12,
+        backgroundColor: isCurrent ? borderColor : "transparent",
       }}
     >
+      {hasChildren ? (
+        <Pressable
+          onPress={onToggle}
+          hitSlop={8}
+          className="h-8 w-7 items-center justify-center"
+          accessibilityRole="button"
+          accessibilityLabel={expanded ? "Collapse" : "Expand"}
+        >
+          <Icon
+            name={expanded ? "chevron-down" : "chevron-right"}
+            color="muted-foreground"
+            size={14}
+          />
+        </Pressable>
+      ) : (
+        <View className="h-8 w-7" />
+      )}
+
       <Pressable
-        className="flex-1 flex-row items-center gap-2 py-3.5 px-2"
-        onPress={onOpen}
+        onPress={onNavigate}
+        className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
       >
-        <Icon name="folder" color="muted-foreground" size={16} />
-        <Typography className="flex-1" numberOfLines={1}>
-          {folder.label}
+        <Icon
+          name="folder"
+          color={isCurrent ? "foreground" : "muted-foreground"}
+          size={14}
+        />
+        <Typography
+          variant="p"
+          className={cn("flex-1", isCurrent ? "font-semibold" : "")}
+          numberOfLines={1}
+        >
+          {label}
         </Typography>
-        <Icon name="chevron-right" color="muted-foreground" size={16} />
       </Pressable>
-      <Button
-        variant="ghost"
-        size="xs"
-        className="mr-1"
-        disabled={!canSelect}
-        onPress={onSelect}
-        accessibilityLabel={`Select ${folder.label}`}
-      >
-        {selected && canSelect ? (
-          <Check className="text-accent-foreground" />
-        ) : (
-          <Typography className="text-xs text-muted-foreground">
-            {canSelect ? "Use" : "Max"}
-          </Typography>
-        )}
-      </Button>
     </View>
   );
 }
