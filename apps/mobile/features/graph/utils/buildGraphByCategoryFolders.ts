@@ -3,6 +3,12 @@ import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
 import { NodeDatum } from "../types/types";
 import { buildGraphByFolder } from "./buildGraphByFolder";
 
+const stampCategoryId = (node: NodeDatum, categoryId: string): NodeDatum => ({
+  ...node,
+  categoryId: node.categoryId ?? categoryId,
+  children: node.children?.map((child) => stampCategoryId(child, categoryId)),
+});
+
 /** Category → nested folders → thoughts (replaces the old category → topic tree). */
 export function buildGraphByCategoryFolders(
   folders: Folder[],
@@ -28,7 +34,9 @@ export function buildGraphByCategoryFolders(
           id: `category-${categoryId}`,
           name: categoryId,
           categoryId,
-          children: folderTree.children ?? [],
+          children: (folderTree.children ?? []).map((child) =>
+            stampCategoryId(child, categoryId)
+          ),
         };
       }
     ),
