@@ -30,6 +30,7 @@ import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
+import { GraphFolderChips } from "./graphFolderChips";
 import { GRAPH_CANVAS_SIZE } from "../constants";
 
 const parseHslChannels = (hslColor: string) => {
@@ -451,7 +452,17 @@ function CirclePackSkiaRenderer({
 
     let target = rootNode;
     if (focusedThoughtId) {
-      const found = allNodes.find((n) => n.dbId === String(focusedThoughtId));
+      const focusId = String(focusedThoughtId);
+      const found =
+        allNodes.find((n) => n.dbId === focusId) ??
+        allNodes.find((n) => n.rawData.folderId === focusId) ??
+        allNodes.find(
+          (n) =>
+            n.rawData.folderId != null &&
+            (n.dbId === `folder-${n.rawData.folderId}` ||
+              n.dbId.endsWith(`-${n.rawData.folderId}`)) &&
+            focusId.endsWith(n.rawData.folderId)
+        );
       if (found) target = found;
     }
 
@@ -622,6 +633,7 @@ function CirclePackSkiaRenderer({
           },
         ]}
       >
+        <GraphFolderChips />
         <View style={styles.canvasContainer}>
           <GestureDetector gesture={tap}>
             <Canvas style={styles.canvas}>
