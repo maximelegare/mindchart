@@ -17,6 +17,8 @@ type HeaderContentProps = {
     text: string;
     icon?: IconName;
   };
+  /** Replaces the default subtitle row when provided. */
+  subtitleContent?: React.ReactNode;
   hideBackButton?: boolean;
   showLogo?: boolean;
   /** Header action buttons. Logic stays with the caller; this only renders them. */
@@ -36,6 +38,7 @@ export const HeaderContent = ({
   moreOptionsMenu,
   showLogo = false,
   subtitle,
+  subtitleContent,
 }: HeaderContentProps) => {
   const { links, state, trigger, currentWorkspace } = moreOptionsMenu ?? {};
   const { back } = useRouter();
@@ -49,7 +52,7 @@ export const HeaderContent = ({
             <Icon color="background" name="arrow-left" />
           </Button>
         )}
-        <View>
+        <View className="min-w-0 flex-1">
           {title && (
             <Typography
               variant="h3"
@@ -59,20 +62,24 @@ export const HeaderContent = ({
               {title}
             </Typography>
           )}
-          <View className="flex-row items-center gap-1 mr-1">
-            {subtitle?.icon && (
-              <Icon size={12} color="background" name={subtitle.icon} />
-            )}
-            {subtitle && (
-              <Typography
-                variant="h4"
-                numberOfLines={1}
-                className="shrink text-sm text-popover-foreground leading-tight"
-              >
-                {subtitle.text}
-              </Typography>
-            )}
-          </View>
+          {subtitleContent ? (
+            <View style={{ alignSelf: "flex-start" }}>{subtitleContent}</View>
+          ) : (
+            <View className="flex-row items-center gap-1 mr-1">
+              {subtitle?.icon && (
+                <Icon size={12} color="background" name={subtitle.icon} />
+              )}
+              {subtitle && (
+                <Typography
+                  variant="h4"
+                  numberOfLines={1}
+                  className="shrink text-sm text-popover-foreground leading-tight"
+                >
+                  {subtitle.text}
+                </Typography>
+              )}
+            </View>
+          )}
         </View>
       </View>
       <View className="shrink-0 flex-row items-center gap-1">

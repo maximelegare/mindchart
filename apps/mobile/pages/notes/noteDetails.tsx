@@ -3,6 +3,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
 import { EditNoteButton } from "@/features/notes/editNote/components/editNoteButton";
+import { DiscardNoteButton } from "@/features/notes/noteDetails/components/discardNoteButton";
 import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/components/noteDetailsOptionsHeader";
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
@@ -30,6 +31,7 @@ export const NoteDetailsPage = () => {
     () => parseEditorMode(modeParam) === "preview"
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [isDiscarding, setIsDiscarding] = useState(false);
   const [simplified, setSimplified] = useState(false);
   const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
   const saveActionRef = useRef<(() => void) | null>(null);
@@ -41,6 +43,8 @@ export const NoteDetailsPage = () => {
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
   const { mutateAsync: updateNoteFolderId } =
     notesAndThoughts.useUpdateNoteFolderIdMutation();
+
+  const isPreviewMode = editorMode === "preview";
 
   const noteFolder = useMemo((): FolderSelection => {
     const folderId = note?.[0]?.folderId;
@@ -60,13 +64,33 @@ export const NoteDetailsPage = () => {
     }
   }, [modeParam, noteId]);
 
+  const deleteAndLeave = useCallback(async () => {
+    if (!noteId) return;
+    setIsDiscarding(true);
+    try {
+      await deleteNoteAction(noteId);
+      router.replace("/notes");
+    } finally {
+      setIsDiscarding(false);
+    }
+  }, [deleteNoteAction, noteId]);
+
   const handleDeleteNote = () => {
     openModal({
       modalName: "DELETE_NOTE_CONFIRMATION",
       onConfirm: async () => {
         closeModal();
-        await deleteNoteAction(noteId ?? "");
-        router.replace("/notes");
+        await deleteAndLeave();
+      },
+    });
+  };
+
+  const handleDiscardNote = () => {
+    openModal({
+      modalName: "DELETE_NOTE_CONFIRMATION",
+      onConfirm: async () => {
+        closeModal();
+        await deleteAndLeave();
       },
     });
   };
@@ -115,10 +139,23 @@ export const NoteDetailsPage = () => {
     <PageContainer
       headerVariant="tab"
       title={noteTitle ?? ""}
-      subtitle={{
-        text: editorMode === "preview" ? "Review note" : "Note",
-        icon: "notebook-text",
-      }}
+      subtitle={
+        isPreviewMode
+          ? undefined
+          : {
+              text: "Note",
+              icon: "notebook-text",
+            }
+      }
+      subtitleContent={
+        isPreviewMode ? (
+          <DiscardNoteButton
+            onPress={handleDiscardNote}
+            disabled={isDiscarding || !noteId}
+          />
+        ) : undefined
+      }
+      hideBackButton={isPreviewMode}
       hideTabBar
       noScrollView
       optionsHeader={
@@ -136,7 +173,7 @@ export const NoteDetailsPage = () => {
                 key="edit-note"
                 isEditing={isEditing}
                 onPress={handleEditPress}
-                disabled={isSaving}
+                disabled={isSaving || isDiscarding}
               />,
             ]
           : []

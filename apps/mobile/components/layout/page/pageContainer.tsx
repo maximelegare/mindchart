@@ -41,8 +41,12 @@ type PageContainerProps = {
     text: string;
     icon?: IconName;
   };
+  /** Replaces the default subtitle row when provided. */
+  subtitleContent?: React.ReactNode;
   showLogo?: boolean;
   headerVariant?: HeaderVariant;
+  /** Force-hide the back button (also hidden for stack headers / when nothing to pop). */
+  hideBackButton?: boolean;
   buttons?: React.ReactNode[];
   children: React.ReactNode;
   noScrollView?: boolean;
@@ -67,8 +71,10 @@ type PageContainerProps = {
 export const PageContainer = ({
   title,
   subtitle,
+  subtitleContent,
   showLogo = false,
   headerVariant = "stack",
+  hideBackButton = false,
   buttons,
   children,
   noScrollView = false,
@@ -208,8 +214,11 @@ export const PageContainer = ({
         <HeaderContent
           title={displayTitle}
           subtitle={subtitle}
+          subtitleContent={subtitleContent}
           showLogo={showLogo}
-          hideBackButton={headerVariant === "stack" || !canGoBack}
+          hideBackButton={
+            hideBackButton || headerVariant === "stack" || !canGoBack
+          }
           buttons={buttons}
           moreOptionsMenu={moreOptionsMenu}
         />
