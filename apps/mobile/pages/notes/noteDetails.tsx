@@ -210,7 +210,6 @@ export const NoteDetailsPage = () => {
         saveActionRef={saveActionRef}
         onSavingChange={setIsSaving}
         simplified={simplified}
-        editorMode={editorMode}
         folderId={headerFolder?.id ?? null}
         onFolderErrorChange={setFolderRequiredError}
       />

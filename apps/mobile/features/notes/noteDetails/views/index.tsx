@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/thoughtsEditor";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
-import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 
@@ -23,8 +22,6 @@ type NoteDetailsFeatureProps = {
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
   simplified?: boolean;
-  /** regular: opened from list/etc. preview: opened after AI generation. */
-  editorMode?: NoteEditorMode;
   /** Current folder from the header selector (preferred over stale note data). */
   folderId?: string | null;
   /** Called when save validation needs to highlight the folder selector. */
@@ -68,8 +65,6 @@ type NoteDetailsContentProps = {
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
   simplified: boolean;
-  /** When true, title and folder are required before save. */
-  requireTitleAndFolder: boolean;
   folderId: string | null;
   onFolderErrorChange?: (hasError: boolean) => void;
 };
@@ -81,7 +76,6 @@ function NoteDetailsContent({
   saveActionRef,
   onSavingChange,
   simplified,
-  requireTitleAndFolder,
   folderId,
   onFolderErrorChange,
 }: NoteDetailsContentProps) {
@@ -90,8 +84,13 @@ function NoteDetailsContent({
   const { data: categoriesData } = useFetchAllCategoriesQuery();
   const { colorScheme } = useColorScheme();
   const [titleRequiredError, setTitleRequiredError] = React.useState(false);
+  // Remount TextInput when re-showing the error — Android/RN often won't
+  // refresh placeholder text/color on an empty field otherwise.
+  const [titleInputEpoch, setTitleInputEpoch] = React.useState(0);
   const requiredPlaceholderColor = hsl("destructive-foreground", colorScheme);
   const thoughtsEditorRef = React.useRef<ThoughtsEditorHandle>(null);
+  // Latest title from the input — RHF getValues can lag behind native TextInput.
+  const titleDraftRef = React.useRef(note.title ?? "");
 
   const originalThoughtIds = React.useMemo(
     () => new Set(note.thoughts.map((thought) => thought.id)),
@@ -111,31 +110,43 @@ function NoteDetailsContent({
       thoughts: initialThoughts,
     },
   });
-  const { control, reset, getValues } = form;
+  const { control, reset, getValues, setValue } = form;
 
   // Keep form in sync when leaving edit or when note data refreshes in view mode.
   React.useEffect(() => {
     if (isEditing) return;
+    titleDraftRef.current = note.title ?? "";
+    setTitleRequiredError(false);
     reset({
       title: note.title,
       thoughts: initialThoughts,
     });
   }, [initialThoughts, isEditing, note.title, reset]);
 
+  // Entering edit: seed draft from current form/note so validation matches the field.
+  React.useEffect(() => {
+    if (!isEditing) return;
+    const current = (getValues("title") ?? note.title ?? "").toString();
+    titleDraftRef.current = current;
+  }, [getValues, isEditing, note.title]);
+
   const saveNote = React.useCallback(async () => {
     const data = getValues();
-    const title = (data.title ?? "").trim();
+    // Prefer the live TextInput draft over possibly stale form state.
+    const title = (titleDraftRef.current ?? data.title ?? "").trim();
+    setValue("title", title, { shouldDirty: true });
 
     let hasError = false;
 
-    if (requireTitleAndFolder) {
-      const titleMissing = !title;
-      const folderMissing = !folderId;
-      setTitleRequiredError(titleMissing);
-      onFolderErrorChange?.(folderMissing);
-      if (titleMissing || folderMissing) {
-        hasError = true;
-      }
+    const titleMissing = !title;
+    const folderMissing = !folderId;
+    setTitleRequiredError(titleMissing);
+    if (titleMissing) {
+      setTitleInputEpoch((epoch) => epoch + 1);
+    }
+    onFolderErrorChange?.(folderMissing);
+    if (titleMissing || folderMissing) {
+      hasError = true;
     }
 
     const thoughtsValid =
@@ -220,7 +231,7 @@ function NoteDetailsContent({
     onFolderErrorChange,
     onSavingChange,
     originalThoughtIds,
-    requireTitleAndFolder,
+    setValue,
   ]);
 
   React.useEffect(() => {
@@ -256,8 +267,10 @@ function NoteDetailsContent({
               name="title"
               render={({ field: { onChange, value } }) => (
                 <TextInput
+                  key={`note-title-${titleInputEpoch}`}
                   value={value}
                   onChangeText={(next) => {
+                    titleDraftRef.current = next;
                     if (titleRequiredError) {
                       setTitleRequiredError(false);
                     }
@@ -336,7 +349,6 @@ export const NoteDetailsFeature = ({
   saveActionRef,
   onSavingChange,
   simplified = false,
-  editorMode = "regular",
   folderId = null,
   onFolderErrorChange,
 }: NoteDetailsFeatureProps) => {
@@ -353,7 +365,6 @@ export const NoteDetailsFeature = ({
       saveActionRef={saveActionRef}
       onSavingChange={onSavingChange}
       simplified={simplified}
-      requireTitleAndFolder={editorMode === "preview"}
       folderId={folderId ?? noteRow.folderId ?? null}
       onFolderErrorChange={onFolderErrorChange}
     />
