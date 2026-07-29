@@ -189,7 +189,7 @@ export function FileActionsMenu({
       </BottomSheet>
 
       <FolderPickerSheet
-        title={`Move "${title}" to…`}
+        moveTarget={{ name: title, kind: "file" }}
         sheet={moveSheet}
         active={moveActive}
         selectedFolder={currentFolder}

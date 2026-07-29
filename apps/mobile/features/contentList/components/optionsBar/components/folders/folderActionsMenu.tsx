@@ -216,7 +216,7 @@ export const FolderActionsMenu = ({
 
       {movingFolder ? (
         <FolderPickerSheet
-          title={`Move "${movingFolderTitle}" to…`}
+          moveTarget={{ name: movingFolderTitle, kind: "folder" }}
           sheet={moveSheet}
           active={moveActive}
           selectedFolder={movingFolderParent}

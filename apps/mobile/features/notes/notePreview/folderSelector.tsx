@@ -155,6 +155,11 @@ export const FolderSelector = ({
 
 type FolderPickerSheetProps = {
   title?: string;
+  /** Structured move header: small "Move" + icon + quoted name. */
+  moveTarget?: {
+    name: string;
+    kind: "file" | "folder";
+  };
   selectedFolder: FolderSelection;
   excludePathPrefix?: string | null;
   rootLabel?: string;
@@ -174,6 +179,7 @@ type FolderPickerSheetProps = {
 /** Imperative bottom sheet hosting the folder browser (for Move actions). */
 export const FolderPickerSheet = ({
   title = "Move to…",
+  moveTarget,
   selectedFolder,
   excludePathPrefix,
   rootLabel = "No folder",
@@ -207,12 +213,38 @@ export const FolderPickerSheet = ({
         {active ? (
           <BottomSheetView className="flex-1 h-full gap-4 pt-4 px-4 pb-6 bg-background">
             <BottomSheetHeader className="bg-background" onDismiss={onDismiss}>
-              <Typography
-                className="text-foreground text-xl font-bold pb-1"
-                numberOfLines={1}
-              >
-                {title}
-              </Typography>
+              {moveTarget ? (
+                <View className="min-w-0 flex-1 flex-row items-center gap-3 pb-1 pr-2">
+                  <Typography
+                    variant="h4"
+                    // className="shrink-0 text-muted-foreground"
+                  >
+                    Move:
+                  </Typography>
+                  <View className="flex-row items-center gap-1">
+                    <Icon
+                      name={
+                        moveTarget.kind === "folder"
+                          ? "folder"
+                          : "notebook-text"
+                      }
+                      color="foreground"
+                      size={16}
+                    />
+                    <Typography
+                      variant="h3"
+                      className="min-w-0 flex-1"
+                      numberOfLines={1}
+                    >
+                      {moveTarget.name}
+                    </Typography>
+                  </View>
+                </View>
+              ) : (
+                <Typography variant="h3" numberOfLines={1}>
+                  {title}
+                </Typography>
+              )}
             </BottomSheetHeader>
             <FolderPickerBrowser
               folders={allFolders ?? []}
