@@ -15,6 +15,7 @@ type NoteDetailsOptionsHeaderProps = {
   onFolderSelect: (folder: FolderSelection) => void;
   simplified: boolean;
   onSimplifiedChange: (simplified: boolean) => void;
+  folderError?: boolean;
 };
 
 export function NoteDetailsOptionsHeader({
@@ -22,6 +23,7 @@ export function NoteDetailsOptionsHeader({
   onFolderSelect,
   simplified,
   onSimplifiedChange,
+  folderError = false,
 }: NoteDetailsOptionsHeaderProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -59,6 +61,8 @@ export function NoteDetailsOptionsHeader({
           selectedFolder={folder}
           onSelect={onFolderSelect}
           maxChars={22}
+          allowRoot={false}
+          error={folderError}
         />
       </View>
     </PageOptionsHeaderContainer>

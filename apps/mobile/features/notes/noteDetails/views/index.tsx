@@ -6,11 +6,14 @@ import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAnd
 import {
   ThoughtsEditor,
   createEmptyThought,
+  type ThoughtsEditorHandle,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 type NoteDetailsFeatureProps = {
   isPending: boolean;
@@ -22,6 +25,10 @@ type NoteDetailsFeatureProps = {
   simplified?: boolean;
   /** regular: opened from list/etc. preview: opened after AI generation. */
   editorMode?: NoteEditorMode;
+  /** Current folder from the header selector (preferred over stale note data). */
+  folderId?: string | null;
+  /** Called when save validation needs to highlight the folder selector. */
+  onFolderErrorChange?: (hasError: boolean) => void;
 };
 
 type NoteRow = NonNullable<ReturnType<typeof parseNoteAndThoughts>>[number];
@@ -61,6 +68,10 @@ type NoteDetailsContentProps = {
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
   simplified: boolean;
+  /** When true, title and folder are required before save. */
+  requireTitleAndFolder: boolean;
+  folderId: string | null;
+  onFolderErrorChange?: (hasError: boolean) => void;
 };
 
 function NoteDetailsContent({
@@ -70,10 +81,17 @@ function NoteDetailsContent({
   saveActionRef,
   onSavingChange,
   simplified,
+  requireTitleAndFolder,
+  folderId,
+  onFolderErrorChange,
 }: NoteDetailsContentProps) {
   const { editNoteAction } = useEditNote();
   const { useFetchAllCategoriesQuery } = useControllers().categories;
   const { data: categoriesData } = useFetchAllCategoriesQuery();
+  const { colorScheme } = useColorScheme();
+  const [titleRequiredError, setTitleRequiredError] = React.useState(false);
+  const requiredPlaceholderColor = hsl("destructive-foreground", colorScheme);
+  const thoughtsEditorRef = React.useRef<ThoughtsEditorHandle>(null);
 
   const originalThoughtIds = React.useMemo(
     () => new Set(note.thoughts.map((thought) => thought.id)),
@@ -93,7 +111,7 @@ function NoteDetailsContent({
       thoughts: initialThoughts,
     },
   });
-  const { control, handleSubmit, reset } = form;
+  const { control, reset, getValues } = form;
 
   // Keep form in sync when leaving edit or when note data refreshes in view mode.
   React.useEffect(() => {
@@ -104,10 +122,36 @@ function NoteDetailsContent({
     });
   }, [initialThoughts, isEditing, note.title, reset]);
 
-  const handleSave = handleSubmit(async (data) => {
+  const saveNote = React.useCallback(async () => {
+    const data = getValues();
+    const title = (data.title ?? "").trim();
+
+    let hasError = false;
+
+    if (requireTitleAndFolder) {
+      const titleMissing = !title;
+      const folderMissing = !folderId;
+      setTitleRequiredError(titleMissing);
+      onFolderErrorChange?.(folderMissing);
+      if (titleMissing || folderMissing) {
+        hasError = true;
+      }
+    }
+
+    const thoughtsValid =
+      thoughtsEditorRef.current?.validateRequiredContent() ?? true;
+    if (!thoughtsValid) {
+      hasError = true;
+    }
+
+    if (hasError) {
+      return;
+    }
+
     Keyboard.dismiss();
     onSavingChange?.(true);
     try {
+      // Drop fully empty bullets on save; keep only contentful thoughts.
       const nextThoughts = data.thoughts
         .filter(
           (thought) =>
@@ -116,13 +160,13 @@ function NoteDetailsContent({
             thought.semanticLabel.trim()
         )
         .map((thought) => {
-          const title = thought.title.trim();
+          const thoughtTitle = thought.title.trim();
           const summary = thought.summary.trim();
           const semanticLabel =
-            thought.semanticLabel.trim() || title || summary;
+            thought.semanticLabel.trim() || thoughtTitle || summary;
           return {
             ...thought,
-            title,
+            title: thoughtTitle,
             summary,
             semanticLabel,
             status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
@@ -131,7 +175,11 @@ function NoteDetailsContent({
           };
         });
 
-      if (nextThoughts.length === 0) return;
+      // If everything was empty bullets, surface editor validation instead of saving.
+      if (nextThoughts.length === 0) {
+        thoughtsEditorRef.current?.validateRequiredContent();
+        return;
+      }
 
       const remainingIds = new Set(nextThoughts.map((thought) => thought.id));
       const thoughtsToDelete = [...originalThoughtIds].filter(
@@ -141,31 +189,49 @@ function NoteDetailsContent({
       await editNoteAction(
         {
           id: note.id,
-          title: data.title.trim(),
+          title,
           summary: note.summary,
           rawText: note.rawText ?? "",
           topicId: note.topicId,
-          folderId: note.folderId ?? null,
+          folderId: folderId ?? note.folderId ?? null,
           createdAt: note.createdAt,
         },
         nextThoughts,
         thoughtsToDelete
       );
+      setTitleRequiredError(false);
+      onFolderErrorChange?.(false);
+      thoughtsEditorRef.current?.clearValidationErrors();
       onEditingChange(false);
     } finally {
       onSavingChange?.(false);
     }
-  });
+  }, [
+    editNoteAction,
+    folderId,
+    getValues,
+    note.createdAt,
+    note.folderId,
+    note.id,
+    note.rawText,
+    note.summary,
+    note.topicId,
+    onEditingChange,
+    onFolderErrorChange,
+    onSavingChange,
+    originalThoughtIds,
+    requireTitleAndFolder,
+  ]);
 
   React.useEffect(() => {
     if (!saveActionRef) return;
     saveActionRef.current = () => {
-      void handleSave();
+      void saveNote();
     };
     return () => {
       saveActionRef.current = null;
     };
-  }, [handleSave, saveActionRef]);
+  }, [saveActionRef, saveNote]);
 
   const showTitles = note.thoughts.some((thought) => thought.title?.trim());
 
@@ -188,12 +254,23 @@ function NoteDetailsContent({
             <Controller
               control={control}
               name="title"
-              rules={{ required: true }}
               render={({ field: { onChange, value } }) => (
                 <TextInput
                   value={value}
-                  onChangeText={onChange}
-                  placeholder="Enter a title"
+                  onChangeText={(next) => {
+                    if (titleRequiredError) {
+                      setTitleRequiredError(false);
+                    }
+                    onChange(next);
+                  }}
+                  placeholder={
+                    titleRequiredError ? "Title is required" : "Enter a title"
+                  }
+                  placeholderTextColor={
+                    titleRequiredError
+                      ? requiredPlaceholderColor
+                      : hsl("muted-foreground", colorScheme)
+                  }
                   multiline
                   scrollEnabled={false}
                   textAlignVertical="top"
@@ -235,6 +312,7 @@ function NoteDetailsContent({
 
         <View className="flex-1 min-h-0">
           <ThoughtsEditor
+            ref={thoughtsEditorRef}
             key={note.id}
             noteId={note.id}
             categories={categoriesData ?? []}
@@ -258,7 +336,9 @@ export const NoteDetailsFeature = ({
   saveActionRef,
   onSavingChange,
   simplified = false,
-  editorMode: _editorMode = "regular",
+  editorMode = "regular",
+  folderId = null,
+  onFolderErrorChange,
 }: NoteDetailsFeatureProps) => {
   if (isPending) return null;
   const noteRow = note?.[0];
@@ -273,6 +353,9 @@ export const NoteDetailsFeature = ({
       saveActionRef={saveActionRef}
       onSavingChange={onSavingChange}
       simplified={simplified}
+      requireTitleAndFolder={editorMode === "preview"}
+      folderId={folderId ?? noteRow.folderId ?? null}
+      onFolderErrorChange={onFolderErrorChange}
     />
   );
 };

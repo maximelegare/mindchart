@@ -50,28 +50,56 @@ export const FolderSelector = ({
   onSelect,
   selectedFolder,
   maxChars,
+  allowRoot = true,
+  error = false,
 }: {
   onSelect: (folder: FolderSelection) => void;
   selectedFolder: FolderSelection;
   maxChars?: number;
+  /** When false, root cannot be chosen as the destination. */
+  allowRoot?: boolean;
+  /** Highlights the trigger when folder selection is required. */
+  error?: boolean;
 }) => {
   const { folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
+  const { colorScheme } = useColorScheme();
 
-  const label = selectedFolder?.label ?? "No folder";
+  const emptyLabel = allowRoot ? "No folder" : "Select a folder";
+  const label = selectedFolder?.label ?? emptyLabel;
   const displayName =
     maxChars && label.length > maxChars
       ? `${label.slice(0, maxChars)}…`
       : label;
 
+  const errorBorder = hsl("destructive-foreground", colorScheme);
+
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild className="self-start">
-        <TouchableOpacity className="flex-row items-center gap-1.5 px-2 self-start rounded-full bg-card py-1.5">
-          <Icon name="folder" color="foreground" size={16} />
+        <TouchableOpacity
+          className="flex-row items-center gap-1.5 px-2 self-start rounded-full bg-card py-1.5"
+          style={
+            error
+              ? {
+                  borderWidth: 1.5,
+                  borderColor: errorBorder,
+                }
+              : undefined
+          }
+        >
+          <Icon
+            name="folder"
+            color={error ? "destructive-foreground" : "foreground"}
+            size={16}
+          />
           <Typography
             variant="p"
-            className="shrink text-foreground"
+            className={
+              error
+                ? "shrink text-destructive-foreground"
+                : "shrink text-foreground"
+            }
             numberOfLines={1}
           >
             {displayName}
@@ -95,6 +123,8 @@ export const FolderSelector = ({
             folders={allFolders ?? []}
             selectedFolder={selectedFolder}
             onSelect={onSelect}
+            allowRoot={allowRoot}
+            rootLabel={emptyLabel}
             actionVerb="Select"
           />
         </BottomSheetView>
