@@ -67,7 +67,7 @@ export const FolderSelector = ({
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild className="self-start">
-        <TouchableOpacity className="flex-row items-center gap-1.5 self-start rounded-full bg-card py-1.5">
+        <TouchableOpacity className="flex-row items-center gap-1.5 px-2 self-start rounded-full bg-card py-1.5">
           <Icon name="folder" color="foreground" size={16} />
           <Typography
             variant="p"

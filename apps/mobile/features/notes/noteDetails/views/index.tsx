@@ -1,7 +1,6 @@
 import React from "react";
 import { Keyboard, TextInput, View } from "react-native";
 import { Controller, FormProvider, useForm } from "react-hook-form";
-import { Topic } from "@repo/zod-schemas";
 import { Typography } from "@/components/ui/typography";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 import {
@@ -9,8 +8,6 @@ import {
   createEmptyThought,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
-// import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
-// import { RawTextViewer } from "@/features/notes/noteDetails/components/RawText";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
@@ -23,8 +20,6 @@ type NoteDetailsFeatureProps = {
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
   simplified?: boolean;
-  topicActionRef?: React.MutableRefObject<((topic: Topic) => void) | null>;
-  onTopicChange?: (topic: Topic) => void;
   /** regular: opened from list/etc. preview: opened after AI generation. */
   editorMode?: NoteEditorMode;
 };
@@ -33,13 +28,6 @@ type NoteRow = NonNullable<ReturnType<typeof parseNoteAndThoughts>>[number];
 
 type NoteDetailsFormValues = {
   title: string;
-  topic: {
-    id: string;
-    name: string;
-    isNew?: boolean;
-    embedding: Float32Array;
-    createdAt?: string;
-  };
   thoughts: ThoughtsFormValue[];
 };
 
@@ -73,8 +61,6 @@ type NoteDetailsContentProps = {
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
   simplified: boolean;
-  topicActionRef?: React.MutableRefObject<((topic: Topic) => void) | null>;
-  onTopicChange?: (topic: Topic) => void;
 };
 
 function NoteDetailsContent({
@@ -84,34 +70,15 @@ function NoteDetailsContent({
   saveActionRef,
   onSavingChange,
   simplified,
-  topicActionRef,
-  onTopicChange,
 }: NoteDetailsContentProps) {
   const { editNoteAction } = useEditNote();
   const { useFetchAllCategoriesQuery } = useControllers().categories;
-  const { useFetchAllTopicsQuery } = useControllers().topics;
-  const { useUpdateNoteAndThoughtsMutation } =
-    useControllers().notesAndThoughts;
-
   const { data: categoriesData } = useFetchAllCategoriesQuery();
-  const { data: topicsData } = useFetchAllTopicsQuery();
-  const { mutateAsync: updateNoteAndThoughts } =
-    useUpdateNoteAndThoughtsMutation();
 
   const originalThoughtIds = React.useMemo(
     () => new Set(note.thoughts.map((thought) => thought.id)),
     [note.thoughts]
   );
-
-  const initialTopic = React.useMemo<Topic>(() => {
-    const fromList = topicsData?.find((t) => t.id === note.topicId);
-    if (fromList) return fromList;
-    return {
-      id: note.topicId ?? "",
-      name: note.topicName ?? "No topic",
-      embedding: new Float32Array(),
-    };
-  }, [note.topicId, note.topicName, topicsData]);
 
   const initialThoughts = React.useMemo(() => {
     if (!note.thoughts.length) return [createEmptyThought(note.id)];
@@ -123,88 +90,19 @@ function NoteDetailsContent({
   const form = useForm<NoteDetailsFormValues>({
     defaultValues: {
       title: note.title,
-      topic: {
-        id: initialTopic.id,
-        name: initialTopic.name,
-        isNew: initialTopic.isNew,
-        embedding: initialTopic.embedding,
-        createdAt: initialTopic.createdAt,
-      },
       thoughts: initialThoughts,
     },
   });
-  const { control, handleSubmit, reset, setValue } = form;
-
-  React.useEffect(() => {
-    onTopicChange?.(initialTopic);
-  }, [initialTopic, onTopicChange]);
+  const { control, handleSubmit, reset } = form;
 
   // Keep form in sync when leaving edit or when note data refreshes in view mode.
   React.useEffect(() => {
     if (isEditing) return;
     reset({
       title: note.title,
-      topic: {
-        id: initialTopic.id,
-        name: initialTopic.name,
-        isNew: initialTopic.isNew,
-        embedding: initialTopic.embedding,
-        createdAt: initialTopic.createdAt,
-      },
       thoughts: initialThoughts,
     });
-    onTopicChange?.(initialTopic);
-  }, [
-    initialThoughts,
-    initialTopic,
-    isEditing,
-    note.title,
-    onTopicChange,
-    reset,
-  ]);
-
-  const handleTopicSelect = React.useCallback(
-    async (topic: Topic) => {
-      onTopicChange?.(topic);
-      setValue(
-        "topic",
-        {
-          id: topic.id,
-          name: topic.name,
-          isNew: topic.isNew,
-          embedding: topic.embedding,
-          createdAt: topic.createdAt,
-        },
-        { shouldDirty: true }
-      );
-
-      if (isEditing) return;
-      if (topic.id === note.topicId) return;
-
-      await updateNoteAndThoughts({
-        note: {
-          id: note.id,
-          title: note.title,
-          summary: note.summary,
-          rawText: note.rawText ?? "",
-          topicId: topic.id,
-          createdAt: note.createdAt,
-        },
-        thoughts: [],
-      });
-    },
-    [isEditing, note, onTopicChange, setValue, updateNoteAndThoughts]
-  );
-
-  React.useEffect(() => {
-    if (!topicActionRef) return;
-    topicActionRef.current = (topic: Topic) => {
-      void handleTopicSelect(topic);
-    };
-    return () => {
-      topicActionRef.current = null;
-    };
-  }, [handleTopicSelect, topicActionRef]);
+  }, [initialThoughts, isEditing, note.title, reset]);
 
   const handleSave = handleSubmit(async (data) => {
     Keyboard.dismiss();
@@ -246,7 +144,8 @@ function NoteDetailsContent({
           title: data.title.trim(),
           summary: note.summary,
           rawText: note.rawText ?? "",
-          topicId: data.topic.id,
+          topicId: note.topicId,
+          folderId: note.folderId ?? null,
           createdAt: note.createdAt,
         },
         nextThoughts,
@@ -332,36 +231,7 @@ function NoteDetailsContent({
               {note.title}
             </Typography>
           )}
-          {/* {note.rawText ? (
-            <RawTextViewer rawText={note.rawText} />
-          ) : null} */}
         </View>
-
-        {/* <View className="shrink-0">
-          {isEditing ? (
-            <Controller
-              control={control}
-              name="topic"
-              render={({ field: { onChange, value } }) => (
-                <TopicSelector
-                  selectedTopic={{ ...value }}
-                  onSelect={(topic) => onChange({ ...topic })}
-                  maxChars={18}
-                />
-              )}
-            />
-          ) : (
-            <TopicSelector
-              selectedTopic={topicValue}
-              onSelect={handleTopicSelectView}
-              maxChars={18}
-            />
-          )}
-        </View> */}
-
-        {/* {isEditing && note.rawText ? (
-          <RawTextViewer rawText={note.rawText} />
-        ) : null} */}
 
         <View className="flex-1 min-h-0">
           <ThoughtsEditor
@@ -388,8 +258,6 @@ export const NoteDetailsFeature = ({
   saveActionRef,
   onSavingChange,
   simplified = false,
-  topicActionRef,
-  onTopicChange,
   editorMode: _editorMode = "regular",
 }: NoteDetailsFeatureProps) => {
   if (isPending) return null;
@@ -405,8 +273,6 @@ export const NoteDetailsFeature = ({
       saveActionRef={saveActionRef}
       onSavingChange={onSavingChange}
       simplified={simplified}
-      topicActionRef={topicActionRef}
-      onTopicChange={onTopicChange}
     />
   );
 };

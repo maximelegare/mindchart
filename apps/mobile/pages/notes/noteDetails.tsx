@@ -1,14 +1,16 @@
 import { PageContainer } from "@/components/layout/page/pageContainer";
 import { useModal } from "@/components/ui/modal/modal";
+import { useControllers } from "@/api/controllers/useControllers";
 import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
 import { EditNoteButton } from "@/features/notes/editNote/components/editNoteButton";
 import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/components/noteDetailsOptionsHeader";
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
-import { Topic } from "@repo/zod-schemas";
+import type { FolderSelection } from "@/features/notes/notePreview/folderSelector";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert } from "react-native";
 
 function parseEditorMode(value: string | string[] | undefined): NoteEditorMode {
   const raw = Array.isArray(value) ? value[0] : value;
@@ -29,12 +31,26 @@ export const NoteDetailsPage = () => {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [simplified, setSimplified] = useState(false);
-  const [headerTopic, setHeaderTopic] = useState<Topic | null>(null);
+  const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
   const saveActionRef = useRef<(() => void) | null>(null);
-  const topicActionRef = useRef<((topic: Topic) => void) | null>(null);
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
   const { noteTitle, isPending, note, noteId } = useNoteDetailsData();
+
+  const { notesAndThoughts, folders } = useControllers();
+  const { data: allFolders } = folders.useFetchAllFoldersQuery();
+  const { mutateAsync: updateNoteFolderId } =
+    notesAndThoughts.useUpdateNoteFolderIdMutation();
+
+  const noteFolder = useMemo((): FolderSelection => {
+    const folderId = note?.[0]?.folderId;
+    if (!folderId || !allFolders) return null;
+    return allFolders.find((folder) => folder.id === folderId) ?? null;
+  }, [allFolders, note]);
+
+  useEffect(() => {
+    setHeaderFolder(noteFolder);
+  }, [noteFolder]);
 
   useEffect(() => {
     const nextMode = parseEditorMode(modeParam);
@@ -77,10 +93,23 @@ export const NoteDetailsPage = () => {
     setIsEditing(true);
   };
 
-  const handleTopicSelect = (topic: Topic) => {
-    setHeaderTopic(topic);
-    topicActionRef.current?.(topic);
-  };
+  const handleFolderSelect = useCallback(
+    async (folder: FolderSelection) => {
+      setHeaderFolder(folder);
+      if (!noteId) return;
+      if ((folder?.id ?? null) === (note?.[0]?.folderId ?? null)) return;
+      try {
+        await updateNoteFolderId({
+          noteId,
+          folderId: folder?.id ?? null,
+        });
+      } catch (error) {
+        setHeaderFolder(noteFolder);
+        Alert.alert("Move failed", String(error));
+      }
+    },
+    [note, noteFolder, noteId, updateNoteFolderId]
+  );
 
   return (
     <PageContainer
@@ -94,8 +123,8 @@ export const NoteDetailsPage = () => {
       noScrollView
       optionsHeader={
         <NoteDetailsOptionsHeader
-          topic={headerTopic}
-          onTopicSelect={handleTopicSelect}
+          folder={headerFolder}
+          onFolderSelect={handleFolderSelect}
           simplified={simplified}
           onSimplifiedChange={setSimplified}
         />
@@ -134,8 +163,6 @@ export const NoteDetailsPage = () => {
         saveActionRef={saveActionRef}
         onSavingChange={setIsSaving}
         simplified={simplified}
-        topicActionRef={topicActionRef}
-        onTopicChange={setHeaderTopic}
         editorMode={editorMode}
       />
     </PageContainer>
