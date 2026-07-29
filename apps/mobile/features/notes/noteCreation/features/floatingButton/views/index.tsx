@@ -232,6 +232,7 @@ export const FloatingModal = ({
         key: "note",
         label: "New note",
         icon: "notebook-text",
+        createAction: "notes",
         onPress: () => {
           void handleCreateNote();
         },
@@ -240,12 +241,14 @@ export const FloatingModal = ({
         key: "folder",
         label: "New folder",
         icon: "folder",
+        createAction: "folders",
         onPress: handleCreateFolder,
       },
       {
         key: "ai",
         label: "New AI generated",
         icon: "sparkles",
+        createAction: "aiGenerated",
         onPress: handleGenerateWithAi,
       },
     ],

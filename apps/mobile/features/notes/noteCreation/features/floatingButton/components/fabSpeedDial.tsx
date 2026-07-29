@@ -9,7 +9,10 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { Theme } from "@repo/theme/global";
+import {
+  CREATE_ACTION_COLORS,
+  type CreateActionKey,
+} from "@repo/theme/createActions";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
 import type { IconName } from "@/components/ui/icons/icon-registry";
@@ -38,24 +41,17 @@ const ITEM_GAP = FAB_SPEED_DIAL_ITEM_GAP;
 const STAGGER_MS = 45;
 const ANIM_MS = 220;
 
-const DEFAULT_ICON_BACKGROUND: Theme = "popover";
-const DEFAULT_ICON_COLOR: Theme = "popover-foreground";
-const DEFAULT_LABEL_BACKGROUND: Theme = "card";
-const DEFAULT_LABEL_COLOR: Theme = "card-foreground";
+function toHsl(channels: string) {
+  return channels.startsWith("hsl(") ? channels : `hsl(${channels})`;
+}
 
 export type FabSpeedDialAction = {
   key: string;
   label: string;
   icon: IconName;
   onPress: () => void;
-  /** Background for the circular icon button. Defaults to popover. */
-  iconBackground?: Theme;
-  /** Icon glyph color. Defaults to popover-foreground. */
-  iconColor?: Theme | "text";
-  /** Background for the text label chip. Defaults to card. */
-  labelBackground?: Theme;
-  /** Label text color. Defaults to card-foreground. */
-  labelColor?: Theme | "text";
+  /** Maps to CREATE_ACTION_COLORS for icon + label accents. */
+  createAction?: CreateActionKey;
 };
 
 type FabSpeedDialProps = {
@@ -79,17 +75,23 @@ const FabSpeedDialItem = ({
 }: FabSpeedDialItemProps) => {
   const progress = useSharedValue(0);
   const { colorScheme } = useColorScheme();
+  const scheme = colorScheme === "dark" ? "dark" : "light";
+  const actionColors = action.createAction
+    ? CREATE_ACTION_COLORS[scheme][action.createAction]
+    : null;
 
-  const iconBackground = hsl(
-    action.iconBackground ?? DEFAULT_ICON_BACKGROUND,
-    colorScheme
-  );
-  const labelBackground = hsl(
-    action.labelBackground ?? DEFAULT_LABEL_BACKGROUND,
-    colorScheme
-  );
-  const labelColor = hsl(action.labelColor ?? DEFAULT_LABEL_COLOR, colorScheme);
-  const iconColor = action.iconColor ?? DEFAULT_ICON_COLOR;
+  const iconBackground = actionColors
+    ? toHsl(actionColors.background)
+    : hsl("popover", colorScheme);
+  const labelBackground = actionColors
+    ? toHsl(actionColors.label)
+    : hsl("card", colorScheme);
+  const labelColor = actionColors
+    ? toHsl(actionColors.labelForeground)
+    : hsl("card-foreground", colorScheme);
+  const iconHslColor = actionColors
+    ? toHsl(actionColors.foreground)
+    : undefined;
   const borderColor = hsl("background", colorScheme);
 
   // Open from nearest-to-FAB first; close in reverse.
@@ -148,7 +150,6 @@ const FabSpeedDialItem = ({
             styles.labelChip,
             {
               backgroundColor: labelBackground,
-              borderColor,
             },
           ]}
         >
@@ -165,7 +166,7 @@ const FabSpeedDialItem = ({
             },
           ]}
         >
-          <Icon name={action.icon} size={20} color={iconColor} />
+          <Icon name={action.icon} size={20} hslColor={iconHslColor} />
         </View>
       </Pressable>
     </Animated.View>
@@ -212,7 +213,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
-    borderWidth: 2,
   },
   actionButton: {
     width: ACTION_SIZE,
