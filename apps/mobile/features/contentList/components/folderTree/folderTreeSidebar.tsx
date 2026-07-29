@@ -1,17 +1,18 @@
 import React, { useMemo } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
-import { getFolderIdsFromPath } from "@repo/sqlite";
+import { canCreateChildFolder, getFolderIdsFromPath } from "@repo/sqlite";
+import { Button } from "@/components/ui";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Icon } from "@/components/ui/icons/icon";
 import { Sidebar } from "@/components/ui/sidebar/sidebar";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import { useFolderActions } from "../optionsBar/hooks/useFolderActions";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
 import { FolderTree, FolderTreeFile } from "./folderTree";
 import { FOLDER_TREE_ROOT_ID } from "./folderTreeUtils";
-import { Button } from "@/components/ui";
 
 export function FolderTreeSidebar() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export function FolderTreeSidebar() {
   const handleFoldersModeChange = useOptionsBar(
     (s) => s.handleFoldersModeChange
   );
+  const { openCreateFolderModal } = useFolderActions();
 
   const { folders, notesAndThoughts } = useControllers();
   const { data: allFolders = [] } = folders.useFetchAllFoldersQuery({
@@ -40,6 +42,8 @@ export function FolderTreeSidebar() {
     () => allFolders.find((folder) => folder.id === currentFolderId) ?? null,
     [allFolders, currentFolderId]
   );
+
+  const canCreateHere = canCreateChildFolder(currentFolder?.path ?? null);
 
   const breadcrumbItems = useMemo(() => {
     const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
@@ -81,11 +85,22 @@ export function FolderTreeSidebar() {
     router.push({ pathname: "/notes/[id]", params: { id: fileId } });
   };
 
+  const onCreateFolder = () => {
+    openCreateFolderModal(
+      currentFolder
+        ? { kind: "folder", folder: currentFolder }
+        : { kind: "root" }
+    );
+  };
+
+  const cardBg = hsl("card", colorScheme);
+
   return (
     <Sidebar
       open={open}
       onClose={onClose}
       side="right"
+      width={360}
       header={
         <View className="w-full flex-row items-center gap-2">
           <Button variant="ghost" size="icon" onPress={onClose}>
@@ -93,13 +108,25 @@ export function FolderTreeSidebar() {
           </Button>
           <View
             className="h-10 min-w-0 flex-1 flex-row items-center overflow-hidden rounded-full"
-            style={{ backgroundColor: hsl("card", colorScheme) }}
+            style={{ backgroundColor: cardBg }}
           >
             <Breadcrumbs
               items={breadcrumbItems}
               onNavigate={onNavigateBreadcrumb}
             />
           </View>
+          {canCreateHere ? (
+            <Pressable
+              onPress={onCreateFolder}
+              className="min-w-10 h-10 shrink-0 flex-row items-center justify-center gap-1 rounded-full border px-3"
+              style={{ backgroundColor: cardBg, borderColor: cardBg }}
+              accessibilityRole="button"
+              accessibilityLabel="New folder"
+            >
+              <Icon name="folder" color="muted-foreground" size={16} />
+              <Icon name="plus" color="muted-foreground" size={14} />
+            </Pressable>
+          ) : null}
         </View>
       }
     >

@@ -11,7 +11,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { cn } from "@/lib/cn";
 
-const DEFAULT_WIDTH = 280;
+const DEFAULT_WIDTH = 320;
 const ANIMATION = { duration: 240, easing: Easing.out(Easing.cubic) };
 
 export type SidebarProps = {
