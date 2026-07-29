@@ -283,6 +283,8 @@ export function FolderPickerBrowser({
 }: FolderPickerBrowserProps) {
   const { dismiss } = useBottomSheetModal();
   const { colorScheme } = useColorScheme();
+  const { notesAndThoughts } = useControllers();
+  const { data: allNotes = [] } = notesAndThoughts.useFetchAllNotesQuery();
 
   const foldersById = useMemo(
     () => new Map(folders.map((folder) => [folder.id, folder])),
@@ -328,6 +330,18 @@ export function FolderPickerBrowser({
       .filter((folder) => isDirectChild(parentPath, folder))
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [browseFolder?.path, visibleFolders]);
+
+  const childFiles = useMemo(() => {
+    return (allNotes ?? [])
+      .filter((note) => (note.folder_id ?? null) === browseFolderId)
+      .map((note) => ({
+        id: note.id,
+        title: (note.title as string)?.trim() || "Untitled",
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }, [allNotes, browseFolderId]);
+
+  const contentIsEmpty = childFolders.length === 0 && childFiles.length === 0;
 
   const breadcrumbItems = useMemo(() => {
     const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
@@ -443,7 +457,7 @@ export function FolderPickerBrowser({
                     paddingHorizontal: 4,
                   }}
                 >
-                  {childFolders.length === 0 ? (
+                  {contentIsEmpty ? (
                     <Typography
                       variant="p"
                       className="px-2 py-6 text-muted-foreground text-center"
@@ -451,27 +465,51 @@ export function FolderPickerBrowser({
                       Empty folder
                     </Typography>
                   ) : (
-                    childFolders.map((folder) => (
-                      <Pressable
-                        key={folder.id}
-                        className="flex-row items-center gap-1.5 rounded-lg border border-transparent px-2 py-2"
-                        onPress={() => setBrowseFolderId(folder.id)}
-                      >
-                        <Icon
-                          name="folder"
-                          color="muted-foreground"
-                          size={14}
-                        />
-                        <Typography className="flex-1" numberOfLines={1}>
-                          {folder.label}
-                        </Typography>
-                        <Icon
-                          name="chevron-right"
-                          color="muted-foreground"
-                          size={14}
-                        />
-                      </Pressable>
-                    ))
+                    <>
+                      {childFolders.map((folder) => (
+                        <Pressable
+                          key={folder.id}
+                          className="flex-row items-center gap-1.5 rounded-lg border border-transparent px-2 py-2"
+                          onPress={() => setBrowseFolderId(folder.id)}
+                        >
+                          <Icon
+                            name="folder"
+                            color="muted-foreground"
+                            size={14}
+                          />
+                          <Typography className="flex-1" numberOfLines={1}>
+                            {folder.label}
+                          </Typography>
+                          <Icon
+                            name="chevron-right"
+                            color="muted-foreground"
+                            size={14}
+                          />
+                        </Pressable>
+                      ))}
+                      {childFiles.map((file) => (
+                        <View
+                          key={file.id}
+                          className="flex-row items-center gap-1.5 rounded-lg px-2 py-2 opacity-50"
+                          accessible
+                          accessibilityRole="text"
+                          accessibilityState={{ disabled: true }}
+                          accessibilityLabel={`${file.title}, note`}
+                        >
+                          <Icon
+                            name="notebook-text"
+                            color="muted-foreground"
+                            size={14}
+                          />
+                          <Typography
+                            className="flex-1 text-muted-foreground"
+                            numberOfLines={1}
+                          >
+                            {file.title}
+                          </Typography>
+                        </View>
+                      ))}
+                    </>
                   )}
                 </ScrollView>
               </View>
