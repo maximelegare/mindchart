@@ -6,6 +6,7 @@
   "type": "module",
   "exports": {
     "./categories": "./categories",
+    "./createActions": "./createActions",
     "./global": "./global"
   },
   "publishConfig": {

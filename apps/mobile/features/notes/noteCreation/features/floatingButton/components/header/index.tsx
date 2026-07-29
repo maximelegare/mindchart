@@ -9,25 +9,19 @@ import { Button } from "@/components/ui/button";
 import { X } from "@/lib/icons/Times";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import {
+  InputView,
+  useNoteCreationStore,
+} from "@/features/notes/noteCreation/context/noteCreationContext";
 import { FloatingModalTabBar } from "./tabBar";
 import { TabViewSwitcher } from "./tabViewSwitcher";
 import { FloatingModalTab, FloatingModalTabId } from "../../types/types";
-import {
-  CreationMode,
-  InputView,
-} from "@/features/notes/noteCreation/context/noteCreationContext";
-
-const tabFromStore = (
-  creationMode: CreationMode,
-  inputView: InputView
-): FloatingModalTabId => {
-  if (creationMode === "manual") return "manual";
-  return inputView === "input" ? "keyboard" : "create";
-};
 import { RecorderView } from "../../views/ai/recorder";
 import { KeyboardView } from "../../views/ai/keyboard";
-import { ManualEntryView } from "../../views/manualEntry";
-import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
+
+const tabFromStore = (inputView: InputView): FloatingModalTabId => {
+  return inputView === "input" ? "keyboard" : "create";
+};
 
 const DEFAULT_TABS: FloatingModalTab[] = [
   {
@@ -41,12 +35,6 @@ const DEFAULT_TABS: FloatingModalTab[] = [
     label: "Keyboard",
     icon: "keyboard",
     render: () => <KeyboardView />,
-  },
-  {
-    id: "manual",
-    label: "Without AI",
-    icon: "brain-off",
-    render: () => <ManualEntryView />,
   },
 ];
 
@@ -66,34 +54,29 @@ export const FloatingModalTabs = ({
 }: FloatingModalTabsProps) => {
   const { colorScheme } = useColorScheme();
   const headerOpacity = useSharedValue(0);
-  const creationMode = useNoteCreationStore((state) => state.creationMode);
   const inputView = useNoteCreationStore((state) => state.inputView);
   const setCreationMode = useNoteCreationStore(
     (state) => state.setCreationMode
   );
   const setInputView = useNoteCreationStore((state) => state.setInputView);
   const [activeTab, setActiveTab] = useState<FloatingModalTabId>(() =>
-    tabFromStore(creationMode, inputView)
+    tabFromStore(inputView)
   );
 
   const handleTabChange = (tabId: FloatingModalTabId) => {
     setActiveTab(tabId);
-    if (tabId === "manual") {
-      setCreationMode("manual");
-    } else {
-      setCreationMode("ai");
-      if (tabId === "create") {
-        setInputView("audio");
-      } else if (tabId === "keyboard") {
-        setInputView("input");
-      }
+    setCreationMode("ai");
+    if (tabId === "create") {
+      setInputView("audio");
+    } else if (tabId === "keyboard") {
+      setInputView("input");
     }
   };
 
   useEffect(() => {
-    const nextTab = tabFromStore(creationMode, inputView);
+    const nextTab = tabFromStore(inputView);
     setActiveTab((current) => (current === nextTab ? current : nextTab));
-  }, [creationMode, inputView]);
+  }, [inputView]);
 
   useEffect(() => {
     headerOpacity.value = withTiming(1, { duration: HEADER_FADE_MS });
