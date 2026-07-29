@@ -189,11 +189,12 @@ export function FileActionsMenu({
       </BottomSheet>
 
       <FolderPickerSheet
-        title="Move note to…"
+        title={`Move "${title}" to…`}
         sheet={moveSheet}
         active={moveActive}
         selectedFolder={currentFolder}
         allowRoot={false}
+        showLocationPin
         onSelect={handleMoveSelect}
         onDismiss={() => setMoveActive(false)}
       />

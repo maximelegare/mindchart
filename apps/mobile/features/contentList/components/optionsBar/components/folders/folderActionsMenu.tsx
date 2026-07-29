@@ -101,6 +101,15 @@ export const FolderActionsMenu = ({
     [allPaths, movingFolder]
   );
 
+  const movingFolderParent = movingFolder
+    ? getFolderParent(movingFolder)
+    : null;
+  const movingFolderTitle = (() => {
+    if (!movingFolder) return "Folder";
+    const raw = movingFolder.label?.trim() || "Folder";
+    return raw.length > 28 ? `${raw.slice(0, 28)}…` : raw;
+  })();
+
   return (
     <>
       <Pressable
@@ -207,12 +216,13 @@ export const FolderActionsMenu = ({
 
       {movingFolder ? (
         <FolderPickerSheet
-          title="Move folder to…"
+          title={`Move "${movingFolderTitle}" to…`}
           sheet={moveSheet}
           active={moveActive}
-          selectedFolder={getFolderParent(movingFolder)}
+          selectedFolder={movingFolderParent}
           excludePathPrefix={movingFolder.path}
           rootLabel="Move to root"
+          showLocationPin
           onSelect={handleMoveSelect}
           onDismiss={() => setMoveActive(false)}
           isDestinationEnabled={isMoveDestinationEnabled}

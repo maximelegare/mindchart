@@ -43,6 +43,12 @@ export type FolderTreeProps = {
   enableFileActions?: boolean;
   /** Called before navigating away from a file action (e.g. close sidebar). */
   onFileActionNavigate?: () => void;
+  /**
+   * When `showLocationPin` is true, mark this folder with a light map-pin
+   * (`null` = root).
+   */
+  locationPinFolderId?: string | null;
+  showLocationPin?: boolean;
 };
 
 export function FolderTree({
@@ -60,9 +66,12 @@ export function FolderTree({
   enableFolderActions = false,
   enableFileActions = false,
   onFileActionNavigate,
+  locationPinFolderId = null,
+  showLocationPin = false,
 }: FolderTreeProps) {
   const { colorScheme } = useColorScheme();
   const highlightColor = hsl("border", colorScheme);
+  const locationPinColor = hsl("muted", colorScheme);
 
   const visibleFolders = useMemo(
     () => filterFoldersExcludingPath(folders, excludePathPrefix),
@@ -107,22 +116,26 @@ export function FolderTree({
     return initial;
   });
 
-  // Keep ancestors expanded so the current folder stays visible.
+  // Keep ancestors expanded so the current / pinned folder stays visible.
   useEffect(() => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
       next.add(FOLDER_TREE_ROOT_ID);
-      if (selectedFolderId) {
-        const folder = foldersById.get(selectedFolderId);
-        if (folder) {
-          for (const id of getFolderIdsFromPath(folder.path)) {
-            next.add(id);
-          }
+      const ensurePath = (folderId: string | null) => {
+        if (!folderId) return;
+        const folder = foldersById.get(folderId);
+        if (!folder) return;
+        for (const id of getFolderIdsFromPath(folder.path)) {
+          next.add(id);
         }
+      };
+      ensurePath(selectedFolderId);
+      if (showLocationPin) {
+        ensurePath(locationPinFolderId);
       }
       return next;
     });
-  }, [foldersById, selectedFolderId]);
+  }, [foldersById, locationPinFolderId, selectedFolderId, showLocationPin]);
 
   const toggleExpanded = (id: string) => {
     setExpandedIds((prev) => {
@@ -145,9 +158,11 @@ export function FolderTree({
         depth={0}
         kind="root"
         isCurrent={selectedFolderId === null && !selectedFileId}
+        showLocationPin={showLocationPin && locationPinFolderId === null}
         hasChildren={rootHasChildren}
         expanded={expandedIds.has(FOLDER_TREE_ROOT_ID)}
         highlightColor={highlightColor}
+        locationPinColor={locationPinColor}
         onToggle={() => toggleExpanded(FOLDER_TREE_ROOT_ID)}
         onNavigate={() => onSelect(null)}
         enableFolderActions={enableFolderActions}
@@ -165,10 +180,13 @@ export function FolderTree({
               expandedIds={expandedIds}
               selectedFolderId={selectedFolderId}
               selectedFileId={selectedFileId}
+              locationPinFolderId={locationPinFolderId}
+              showLocationPin={showLocationPin}
               showFiles={showFiles}
               enableFolderActions={enableFolderActions}
               enableFileActions={enableFileActions}
               highlightColor={highlightColor}
+              locationPinColor={locationPinColor}
               onToggle={toggleExpanded}
               onNavigate={onSelect}
               onFileSelect={onFileSelect}
@@ -226,10 +244,13 @@ function FolderTreeBranch({
   expandedIds,
   selectedFolderId,
   selectedFileId,
+  locationPinFolderId,
+  showLocationPin,
   showFiles,
   enableFolderActions,
   enableFileActions,
   highlightColor,
+  locationPinColor,
   onToggle,
   onNavigate,
   onFileSelect,
@@ -242,10 +263,13 @@ function FolderTreeBranch({
   expandedIds: Set<string>;
   selectedFolderId: string | null;
   selectedFileId: string | null;
+  locationPinFolderId: string | null;
+  showLocationPin: boolean;
   showFiles: boolean;
   enableFolderActions: boolean;
   enableFileActions: boolean;
   highlightColor: string;
+  locationPinColor: string;
   onToggle: (id: string) => void;
   onNavigate: (id: string | null) => void;
   onFileSelect?: (fileId: string) => void;
@@ -264,9 +288,11 @@ function FolderTreeBranch({
         depth={depth}
         kind="folder"
         isCurrent={selectedFolderId === folder.id && !selectedFileId}
+        showLocationPin={showLocationPin && locationPinFolderId === folder.id}
         hasChildren={hasChildren}
         expanded={expanded}
         highlightColor={highlightColor}
+        locationPinColor={locationPinColor}
         onToggle={() => onToggle(folder.id)}
         onNavigate={() => onNavigate(folder.id)}
         enableFolderActions={enableFolderActions}
@@ -284,10 +310,13 @@ function FolderTreeBranch({
               expandedIds={expandedIds}
               selectedFolderId={selectedFolderId}
               selectedFileId={selectedFileId}
+              locationPinFolderId={locationPinFolderId}
+              showLocationPin={showLocationPin}
               showFiles={showFiles}
               enableFolderActions={enableFolderActions}
               enableFileActions={enableFileActions}
               highlightColor={highlightColor}
+              locationPinColor={locationPinColor}
               onToggle={onToggle}
               onNavigate={onNavigate}
               onFileSelect={onFileSelect}
@@ -324,9 +353,11 @@ function FolderTreeRow({
   depth,
   kind,
   isCurrent,
+  showLocationPin = false,
   hasChildren,
   expanded,
   highlightColor,
+  locationPinColor,
   onToggle,
   onNavigate,
   enableFolderActions = false,
@@ -339,9 +370,11 @@ function FolderTreeRow({
   depth: number;
   kind: "root" | "folder" | "file";
   isCurrent: boolean;
+  showLocationPin?: boolean;
   hasChildren: boolean;
   expanded: boolean;
   highlightColor: string;
+  locationPinColor?: string;
   onToggle: () => void;
   onNavigate: () => void;
   enableFolderActions?: boolean;
@@ -357,6 +390,18 @@ function FolderTreeRow({
   const useFileMenu = Boolean(
     kind === "file" && enableFileActions && fileActionsTarget
   );
+
+  const locationPin = showLocationPin ? (
+    <View style={{ opacity: 0.35 }}>
+      <Icon name="map-pin-simple" color="muted-foreground" size={12} />
+    </View>
+  ) : null;
+
+  const rowBackground = isCurrent
+    ? highlightColor
+    : showLocationPin && locationPinColor
+      ? locationPinColor
+      : "transparent";
 
   const labelContent = (
     <View
@@ -375,6 +420,7 @@ function FolderTreeRow({
       >
         {kind === "root" ? "Root" : label}
       </Typography>
+      {locationPin}
     </View>
   );
 
@@ -382,11 +428,11 @@ function FolderTreeRow({
     <View
       className={cn(
         "flex-row items-center rounded-2xl border border-transparent",
-        isCurrent ? "opacity-100" : "opacity-90"
+        isCurrent || showLocationPin ? "opacity-100" : "opacity-90"
       )}
       style={{
         paddingLeft: 4 + depth * 12,
-        backgroundColor: isCurrent ? highlightColor : "transparent",
+        backgroundColor: rowBackground,
       }}
     >
       {hasChildren ? (
@@ -442,6 +488,7 @@ function FolderTreeRow({
           >
             {kind === "root" ? "Root" : label}
           </Typography>
+          {locationPin}
         </Pressable>
       )}
     </View>

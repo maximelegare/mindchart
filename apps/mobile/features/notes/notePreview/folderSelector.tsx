@@ -42,9 +42,29 @@ export type FolderPickerBrowserProps = {
   dismissOnSelect?: boolean;
   /** Prefix for the confirm button, e.g. "Move into" → "Move into Work". */
   actionVerb?: string;
+  /**
+   * When set, confirm button reads `from "source" to "destination"`
+   * instead of `{actionVerb} "destination"`.
+   */
+  fromLabel?: string | null;
+  /** Max characters for folder names on the confirm button. */
+  labelMaxChars?: number;
+  /**
+   * When true, mark `selectedFolder` (or root if null) in the tree with a
+   * light map-pin as the item's current location.
+   */
+  showLocationPin?: boolean;
   /** When false, that destination cannot be chosen (still browsable). */
   isDestinationEnabled?: (folder: FolderSelection) => boolean;
 };
+
+const DEFAULT_LABEL_MAX_CHARS = 16;
+
+function truncateFolderLabel(label: string, maxChars: number): string {
+  const trimmed = label.trim();
+  if (trimmed.length <= maxChars) return trimmed;
+  return `${trimmed.slice(0, maxChars)}…`;
+}
 
 export const FolderSelector = ({
   onSelect,
@@ -146,6 +166,9 @@ type FolderPickerSheetProps = {
   onDismiss?: () => void;
   isDestinationEnabled?: (folder: FolderSelection) => boolean;
   actionVerb?: string;
+  fromLabel?: string | null;
+  labelMaxChars?: number;
+  showLocationPin?: boolean;
 };
 
 /** Imperative bottom sheet hosting the folder browser (for Move actions). */
@@ -161,6 +184,9 @@ export const FolderPickerSheet = ({
   onDismiss,
   isDestinationEnabled,
   actionVerb = "Move into",
+  fromLabel,
+  labelMaxChars,
+  showLocationPin = false,
 }: FolderPickerSheetProps) => {
   const { folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery({
@@ -181,7 +207,10 @@ export const FolderPickerSheet = ({
         {active ? (
           <BottomSheetView className="flex-1 h-full gap-4 pt-4 px-4 pb-6 bg-background">
             <BottomSheetHeader className="bg-background" onDismiss={onDismiss}>
-              <Typography className="text-foreground text-xl font-bold pb-1">
+              <Typography
+                className="text-foreground text-xl font-bold pb-1"
+                numberOfLines={1}
+              >
                 {title}
               </Typography>
             </BottomSheetHeader>
@@ -194,6 +223,9 @@ export const FolderPickerSheet = ({
               onSelect={onSelect}
               dismissOnSelect
               actionVerb={actionVerb}
+              fromLabel={fromLabel}
+              labelMaxChars={labelMaxChars}
+              showLocationPin={showLocationPin}
               isDestinationEnabled={isDestinationEnabled}
             />
           </BottomSheetView>
@@ -212,6 +244,9 @@ export function FolderPickerBrowser({
   allowRoot = true,
   dismissOnSelect = true,
   actionVerb = "Move into",
+  fromLabel = null,
+  labelMaxChars = DEFAULT_LABEL_MAX_CHARS,
+  showLocationPin = false,
   isDestinationEnabled,
 }: FolderPickerBrowserProps) {
   const { dismiss } = useBottomSheetModal();
@@ -287,6 +322,13 @@ export function FolderPickerBrowser({
 
   const destinationLabel =
     browseFolder?.label ?? (rootLabel === "Move to root" ? "Root" : rootLabel);
+  const truncatedDestination = truncateFolderLabel(
+    destinationLabel,
+    labelMaxChars
+  );
+  const truncatedFrom = fromLabel
+    ? truncateFolderLabel(fromLabel, labelMaxChars)
+    : null;
 
   const handleConfirm = () => {
     if (!destinationEnabled) return;
@@ -348,6 +390,8 @@ export function FolderPickerBrowser({
               excludePathPrefix={excludePathPrefix}
               rootLabel="Root"
               className="flex-1"
+              showLocationPin={showLocationPin}
+              locationPinFolderId={selectedFolder?.id ?? null}
             />
           </View>
 
@@ -416,12 +460,55 @@ export function FolderPickerBrowser({
         }}
       >
         <View className="flex-row items-center gap-1.5">
-          <Typography variant="h4" style={{ opacity: 0.6 }} numberOfLines={1}>
-            {actionVerb}
-          </Typography>
-          <Typography variant="h4" className="font-semibold" numberOfLines={1}>
-            "{destinationLabel}"
-          </Typography>
+          {truncatedFrom ? (
+            <>
+              <Typography
+                variant="h4"
+                style={{ opacity: 0.6 }}
+                numberOfLines={1}
+              >
+                from
+              </Typography>
+              <Typography
+                variant="h4"
+                className="font-semibold"
+                numberOfLines={1}
+              >
+                "{truncatedFrom}"
+              </Typography>
+              <Typography
+                variant="h4"
+                style={{ opacity: 0.6 }}
+                numberOfLines={1}
+              >
+                to
+              </Typography>
+              <Typography
+                variant="h4"
+                className="font-semibold"
+                numberOfLines={1}
+              >
+                "{truncatedDestination}"
+              </Typography>
+            </>
+          ) : (
+            <>
+              <Typography
+                variant="h4"
+                style={{ opacity: 0.6 }}
+                numberOfLines={1}
+              >
+                {actionVerb}
+              </Typography>
+              <Typography
+                variant="h4"
+                className="font-semibold"
+                numberOfLines={1}
+              >
+                "{truncatedDestination}"
+              </Typography>
+            </>
+          )}
         </View>
       </Button>
     </View>

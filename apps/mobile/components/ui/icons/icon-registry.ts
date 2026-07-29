@@ -40,6 +40,7 @@ export type IconName =
   | "keyboard"
   | "layers"
   | "lock-keyhole"
+  | "map-pin-simple"
   | "mic"
   | "notebook-text"
   | "palette"
@@ -231,6 +232,10 @@ export const ICON_METADATA: Record<
   "lock-keyhole": {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="16" r="1"></circle><rect width="18" height="12" x="3" y="10" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></g>`,
+  },
+  "map-pin-simple": {
+    viewBox: "0 0 256 256",
+    content: `<path fill="currentColor" d="M184 72a56 56 0 1 0-64 55.42V232a8 8 0 0 0 16 0V127.42A56.09 56.09 0 0 0 184 72m-56 40a40 40 0 1 1 40-40a40 40 0 0 1-40 40"></path>`,
   },
   mic: {
     viewBox: "0 0 24 24",
