@@ -1,17 +1,18 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Alert, Pressable, View } from "react-native";
 import { canCreateChildFolder, canMoveFolderTo } from "@repo/sqlite";
 import { Folder } from "@repo/zod-schemas/src/schemas";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/cn";
-import { useBottomSheet } from "@/components/primitives/bottomSheet/bottom-sheet.native";
+import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetView,
+  useBottomSheet,
+} from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import {
   FolderPickerSheet,
   FolderSelection,
@@ -19,9 +20,12 @@ import {
 import { useControllers } from "@/api/controllers/useControllers";
 import { useFolderActions } from "../../hooks/useFolderActions";
 
+export type FolderActionsTarget =
+  | { kind: "root" }
+  | { kind: "folder"; folder: Folder };
+
 type FolderActionsMenuProps = {
-  /** Root target or a real folder */
-  target: { kind: "root" } | { kind: "folder"; folder: Folder };
+  target: FolderActionsTarget;
   onNavigate?: () => void;
   children: React.ReactNode;
   className?: string;
@@ -33,9 +37,9 @@ export const FolderActionsMenu = ({
   children,
   className,
 }: FolderActionsMenuProps) => {
-  const [open, setOpen] = useState(false);
-  const [moveActive, setMoveActive] = useState(false);
+  const actionsSheet = useBottomSheet();
   const moveSheet = useBottomSheet();
+  const [moveActive, setMoveActive] = React.useState(false);
   const {
     openCreateFolderModal,
     openRenameFolderModal,
@@ -56,13 +60,20 @@ export const FolderActionsMenu = ({
     [allFolders]
   );
 
+  const title =
+    target.kind === "root" ? "Root" : target.folder.label || "Folder";
+
+  const closeActions = useCallback(() => {
+    actionsSheet.close();
+  }, [actionsSheet]);
+
   const openMoveSheet = useCallback(() => {
-    setOpen(false);
+    closeActions();
     setMoveActive(true);
     setTimeout(() => {
       moveSheet.open();
     }, 200);
-  }, [moveSheet]);
+  }, [closeActions, moveSheet]);
 
   const handleMoveSelect = useCallback(
     async (destination: FolderSelection) => {
@@ -92,89 +103,107 @@ export const FolderActionsMenu = ({
 
   return (
     <>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild openOnLongPress>
-          <Pressable
-            onPress={() => onNavigate?.()}
-            className={cn("shrink-0", className)}
-            hitSlop={8}
-          >
-            {children}
-          </Pressable>
-        </DropdownMenuTrigger>
+      <Pressable
+        onPress={() => onNavigate?.()}
+        onLongPress={() => actionsSheet.open()}
+        delayLongPress={400}
+        className={cn("shrink-0", className)}
+        hitSlop={8}
+      >
+        {children}
+      </Pressable>
 
-        <DropdownMenuContent
-          side="bottom"
-          align="start"
-          className="border border-border bg-popover shadow-md"
-          style={{ minWidth: 160, marginTop: 4 }}
+      <BottomSheet>
+        <BottomSheetContent
+          ref={actionsSheet.ref}
+          style={{ zIndex: 200 }}
+          enablePanDownToClose
+          enableContentPanningGesture={false}
         >
-          {canCreateHere ? (
-            <DropdownMenuItem
-              className="flex-row items-center gap-2"
-              onPress={() => {
-                setOpen(false);
-                openCreateFolderModal(target);
-              }}
+          <BottomSheetView className="gap-3 pt-4 bg-background">
+            <BottomSheetHeader
+              className="bg-background"
+              onDismiss={closeActions}
             >
-              <Icon name="folder" color="text" size={16} />
-              <Typography
-                variant="p"
-                className="text-md text-popover-foreground"
-              >
-                New folder
-              </Typography>
-            </DropdownMenuItem>
-          ) : null}
+              <View className="flex-row items-center gap-2">
+                <Icon
+                  name={isRoot ? "house" : "folder"}
+                  color="foreground"
+                  size={18}
+                />
+                <Typography variant="h3" numberOfLines={1}>
+                  {title}
+                </Typography>
+              </View>
+            </BottomSheetHeader>
 
-          {!isRoot && target.kind === "folder" ? (
-            <>
-              <DropdownMenuItem
-                className="flex-row items-center gap-2"
+            {canCreateHere ? (
+              <Button
+                variant="outline"
+                size="default"
                 onPress={() => {
-                  setOpen(false);
-                  openRenameFolderModal(target.folder);
+                  closeActions();
+                  openCreateFolderModal(target);
                 }}
               >
-                <Icon name="pencil" color="text" size={16} />
-                <Typography
-                  variant="p"
-                  className="text-md text-popover-foreground"
+                <View className="flex-row items-center gap-2">
+                  <Icon name="folder" color="foreground" size={18} />
+                  <Typography variant="h3">New folder</Typography>
+                </View>
+              </Button>
+            ) : null}
+
+            {!isRoot && target.kind === "folder" ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="default"
+                  onPress={() => {
+                    closeActions();
+                    openRenameFolderModal(target.folder);
+                  }}
                 >
-                  Rename
-                </Typography>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex-row items-center gap-2"
-                onPress={openMoveSheet}
-              >
-                <Icon name="arrow-right-left" color="text" size={16} />
-                <Typography
-                  variant="p"
-                  className="text-md text-popover-foreground"
+                  <View className="flex-row items-center gap-2">
+                    <Icon name="pencil" color="foreground" size={18} />
+                    <Typography variant="h3">Rename</Typography>
+                  </View>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="default"
+                  onPress={openMoveSheet}
                 >
-                  Move
-                </Typography>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex-row items-center gap-2"
-                onPress={() => {
-                  setOpen(false);
-                  openDeleteFolderModal(target.folder);
-                }}
-              >
-                <Icon name="trash-2" color="destructive-foreground" size={16} />
-                <Typography
-                  variant="p"
-                  className="text-md text-destructive-foreground"
+                  <View className="flex-row items-center gap-2">
+                    <Icon
+                      name="arrow-right-left"
+                      color="foreground"
+                      size={18}
+                    />
+                    <Typography variant="h3">Move</Typography>
+                  </View>
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="default"
+                  onPress={() => {
+                    closeActions();
+                    openDeleteFolderModal(target.folder);
+                  }}
                 >
-                  Delete
-                </Typography>
-              </DropdownMenuItem>
-            </>
-          ) : null}
-        </DropdownMenuContent>
-      </DropdownMenu>
+                  <View className="flex-row items-center gap-2">
+                    <Icon
+                      name="trash-2"
+                      color="destructive-foreground"
+                      size={18}
+                    />
+                    <Typography variant="h3">Delete</Typography>
+                  </View>
+                </Button>
+              </>
+            ) : null}
+          </BottomSheetView>
+        </BottomSheetContent>
+      </BottomSheet>
 
       {movingFolder ? (
         <FolderPickerSheet
@@ -206,8 +235,8 @@ export const FolderBreadcrumbCrumb = ({
   folder,
   onNavigate,
 }: FolderBreadcrumbCrumbProps) => {
-  const isRoot = item.id === "root";
-  const target =
+  const isRoot = item.id === "root" || item.id === "Root";
+  const target: FolderActionsTarget =
     isRoot || !folder
       ? ({ kind: "root" } as const)
       : ({ kind: "folder", folder } as const);

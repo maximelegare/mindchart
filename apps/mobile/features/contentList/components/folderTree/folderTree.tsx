@@ -8,6 +8,10 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { cn } from "@/lib/cn";
 import {
+  FolderActionsMenu,
+  FolderActionsTarget,
+} from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+import {
   FOLDER_TREE_ROOT_ID,
   buildChildrenByParentId,
   filterFoldersExcludingPath,
@@ -35,6 +39,8 @@ export type FolderTreeProps = {
   files?: FolderTreeFile[];
   selectedFileId?: string | null;
   onFileSelect?: (fileId: string) => void;
+  /** Long-press opens folder actions bottom sheet. */
+  enableFolderActions?: boolean;
 };
 
 export function FolderTree({
@@ -49,6 +55,7 @@ export function FolderTree({
   files = [],
   selectedFileId = null,
   onFileSelect,
+  enableFolderActions = false,
 }: FolderTreeProps) {
   const { colorScheme } = useColorScheme();
   const highlightColor = hsl("border", colorScheme);
@@ -139,6 +146,8 @@ export function FolderTree({
         highlightColor={highlightColor}
         onToggle={() => toggleExpanded(FOLDER_TREE_ROOT_ID)}
         onNavigate={() => onSelect(null)}
+        enableFolderActions={enableFolderActions}
+        actionsTarget={{ kind: "root" }}
       />
       {expandedIds.has(FOLDER_TREE_ROOT_ID) ? (
         <>
@@ -153,6 +162,7 @@ export function FolderTree({
               selectedFolderId={selectedFolderId}
               selectedFileId={selectedFileId}
               showFiles={showFiles}
+              enableFolderActions={enableFolderActions}
               highlightColor={highlightColor}
               onToggle={toggleExpanded}
               onNavigate={onSelect}
@@ -208,6 +218,7 @@ function FolderTreeBranch({
   selectedFolderId,
   selectedFileId,
   showFiles,
+  enableFolderActions,
   highlightColor,
   onToggle,
   onNavigate,
@@ -221,6 +232,7 @@ function FolderTreeBranch({
   selectedFolderId: string | null;
   selectedFileId: string | null;
   showFiles: boolean;
+  enableFolderActions: boolean;
   highlightColor: string;
   onToggle: (id: string) => void;
   onNavigate: (id: string | null) => void;
@@ -244,6 +256,8 @@ function FolderTreeBranch({
         highlightColor={highlightColor}
         onToggle={() => onToggle(folder.id)}
         onNavigate={() => onNavigate(folder.id)}
+        enableFolderActions={enableFolderActions}
+        actionsTarget={{ kind: "folder", folder }}
       />
       {expanded ? (
         <>
@@ -258,6 +272,7 @@ function FolderTreeBranch({
               selectedFolderId={selectedFolderId}
               selectedFileId={selectedFileId}
               showFiles={showFiles}
+              enableFolderActions={enableFolderActions}
               highlightColor={highlightColor}
               onToggle={onToggle}
               onNavigate={onNavigate}
@@ -296,6 +311,8 @@ function FolderTreeRow({
   highlightColor,
   onToggle,
   onNavigate,
+  enableFolderActions = false,
+  actionsTarget,
 }: {
   label: string;
   depth: number;
@@ -306,9 +323,31 @@ function FolderTreeRow({
   highlightColor: string;
   onToggle: () => void;
   onNavigate: () => void;
+  enableFolderActions?: boolean;
+  actionsTarget?: FolderActionsTarget;
 }) {
   const iconName =
     kind === "root" ? "house" : kind === "folder" ? "folder" : "notebook-text";
+
+  const labelContent = (
+    <View
+      pointerEvents={enableFolderActions && actionsTarget ? "box-only" : "auto"}
+      className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
+    >
+      <Icon
+        name={iconName}
+        color={isCurrent ? "foreground" : "muted-foreground"}
+        size={kind === "root" ? 16 : 14}
+      />
+      <Typography
+        variant="p"
+        className={cn("flex-1", isCurrent ? "font-semibold" : "")}
+        numberOfLines={1}
+      >
+        {kind === "root" ? "Root" : label}
+      </Typography>
+    </View>
+  );
 
   return (
     <View
@@ -339,24 +378,34 @@ function FolderTreeRow({
         <View className="h-8 w-7" />
       )}
 
-      <Pressable
-        onPress={onNavigate}
-        className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
-        accessibilityLabel={kind === "root" ? "Root" : label}
-      >
-        <Icon
-          name={iconName}
-          color={isCurrent ? "foreground" : "muted-foreground"}
-          size={kind === "root" ? 16 : 14}
-        />
-        <Typography
-          variant="p"
-          className={cn("flex-1", isCurrent ? "font-semibold" : "")}
-          numberOfLines={1}
+      {enableFolderActions && actionsTarget ? (
+        <FolderActionsMenu
+          target={actionsTarget}
+          onNavigate={onNavigate}
+          className="flex-1 min-w-0"
         >
-          {kind === "root" ? "Root" : label}
-        </Typography>
-      </Pressable>
+          {labelContent}
+        </FolderActionsMenu>
+      ) : (
+        <Pressable
+          onPress={onNavigate}
+          className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
+          accessibilityLabel={kind === "root" ? "Root" : label}
+        >
+          <Icon
+            name={iconName}
+            color={isCurrent ? "foreground" : "muted-foreground"}
+            size={kind === "root" ? 16 : 14}
+          />
+          <Typography
+            variant="p"
+            className={cn("flex-1", isCurrent ? "font-semibold" : "")}
+            numberOfLines={1}
+          >
+            {kind === "root" ? "Root" : label}
+          </Typography>
+        </Pressable>
+      )}
     </View>
   );
 }

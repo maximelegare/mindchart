@@ -11,6 +11,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useFolderActions } from "../optionsBar/hooks/useFolderActions";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
+import { FolderBreadcrumbCrumb } from "../optionsBar/components/folders/folderActionsMenu";
 import { FolderTree, FolderTreeFile } from "./folderTree";
 import { FOLDER_TREE_ROOT_ID } from "./folderTreeUtils";
 
@@ -58,6 +59,11 @@ export function FolderTreeSidebar() {
       })),
     ];
   }, [allFolders, currentFolder]);
+
+  const foldersById = useMemo(
+    () => new Map(allFolders.map((folder) => [folder.id, folder])),
+    [allFolders]
+  );
 
   const files = useMemo<FolderTreeFile[]>(
     () =>
@@ -113,6 +119,18 @@ export function FolderTreeSidebar() {
             <Breadcrumbs
               items={breadcrumbItems}
               onNavigate={onNavigateBreadcrumb}
+              renderItem={({ item, isLast }) => (
+                <FolderBreadcrumbCrumb
+                  item={item}
+                  isLast={isLast}
+                  folder={
+                    item.id === FOLDER_TREE_ROOT_ID
+                      ? null
+                      : (foldersById.get(item.id) ?? null)
+                  }
+                  onNavigate={onNavigateBreadcrumb}
+                />
+              )}
             />
           </View>
           {canCreateHere ? (
@@ -148,6 +166,7 @@ export function FolderTreeSidebar() {
           showFiles
           files={files}
           onFileSelect={onFileSelect}
+          enableFolderActions
           scrollable={false}
         />
       </ScrollView>
