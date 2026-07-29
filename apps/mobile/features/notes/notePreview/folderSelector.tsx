@@ -138,6 +138,8 @@ type FolderPickerSheetProps = {
   selectedFolder: FolderSelection;
   excludePathPrefix?: string | null;
   rootLabel?: string;
+  /** When false, root cannot be chosen as the destination. */
+  allowRoot?: boolean;
   onSelect: (folder: FolderSelection) => void;
   sheet: ReturnType<typeof useBottomSheet>;
   active: boolean;
@@ -152,6 +154,7 @@ export const FolderPickerSheet = ({
   selectedFolder,
   excludePathPrefix,
   rootLabel = "No folder",
+  allowRoot = true,
   onSelect,
   sheet,
   active,
@@ -187,6 +190,7 @@ export const FolderPickerSheet = ({
               selectedFolder={selectedFolder}
               excludePathPrefix={excludePathPrefix}
               rootLabel={rootLabel}
+              allowRoot={allowRoot}
               onSelect={onSelect}
               dismissOnSelect
               actionVerb={actionVerb}

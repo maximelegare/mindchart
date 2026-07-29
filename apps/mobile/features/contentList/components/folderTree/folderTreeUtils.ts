@@ -5,6 +5,12 @@ export const FOLDER_TREE_ROOT_ID = "root";
 
 export type FolderSelection = Folder | null;
 
+export type FolderTreeFile = {
+  id: string;
+  title: string;
+  folderId: string | null;
+};
+
 export const parentIdOf = (folder: Folder): string | null => {
   const parentPath = getParentFolderPath(folder.path);
   if (!parentPath) return null;

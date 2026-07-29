@@ -167,6 +167,8 @@ export function FolderTreeSidebar() {
           files={files}
           onFileSelect={onFileSelect}
           enableFolderActions
+          enableFileActions
+          onFileActionNavigate={onClose}
           scrollable={false}
         />
       </ScrollView>

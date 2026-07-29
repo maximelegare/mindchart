@@ -11,17 +11,15 @@ import {
   FolderActionsMenu,
   FolderActionsTarget,
 } from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+import { FileActionsMenu } from "./fileActionsMenu";
 import {
   FOLDER_TREE_ROOT_ID,
   buildChildrenByParentId,
   filterFoldersExcludingPath,
+  type FolderTreeFile,
 } from "./folderTreeUtils";
 
-export type FolderTreeFile = {
-  id: string;
-  title: string;
-  folderId: string | null;
-};
+export type { FolderTreeFile };
 
 export type FolderTreeProps = {
   folders: Folder[];
@@ -41,6 +39,10 @@ export type FolderTreeProps = {
   onFileSelect?: (fileId: string) => void;
   /** Long-press opens folder actions bottom sheet. */
   enableFolderActions?: boolean;
+  /** Long-press opens file actions bottom sheet (view / edit / delete). */
+  enableFileActions?: boolean;
+  /** Called before navigating away from a file action (e.g. close sidebar). */
+  onFileActionNavigate?: () => void;
 };
 
 export function FolderTree({
@@ -56,6 +58,8 @@ export function FolderTree({
   selectedFileId = null,
   onFileSelect,
   enableFolderActions = false,
+  enableFileActions = false,
+  onFileActionNavigate,
 }: FolderTreeProps) {
   const { colorScheme } = useColorScheme();
   const highlightColor = hsl("border", colorScheme);
@@ -163,10 +167,12 @@ export function FolderTree({
               selectedFileId={selectedFileId}
               showFiles={showFiles}
               enableFolderActions={enableFolderActions}
+              enableFileActions={enableFileActions}
               highlightColor={highlightColor}
               onToggle={toggleExpanded}
               onNavigate={onSelect}
               onFileSelect={onFileSelect}
+              onFileActionNavigate={onFileActionNavigate}
             />
           ))}
           {showFiles
@@ -182,6 +188,9 @@ export function FolderTree({
                   highlightColor={highlightColor}
                   onToggle={() => undefined}
                   onNavigate={() => onFileSelect?.(file.id)}
+                  enableFileActions={enableFileActions}
+                  fileActionsTarget={file}
+                  onFileActionNavigate={onFileActionNavigate}
                 />
               ))
             : null}
@@ -219,10 +228,12 @@ function FolderTreeBranch({
   selectedFileId,
   showFiles,
   enableFolderActions,
+  enableFileActions,
   highlightColor,
   onToggle,
   onNavigate,
   onFileSelect,
+  onFileActionNavigate,
 }: {
   folder: Folder;
   depth: number;
@@ -233,10 +244,12 @@ function FolderTreeBranch({
   selectedFileId: string | null;
   showFiles: boolean;
   enableFolderActions: boolean;
+  enableFileActions: boolean;
   highlightColor: string;
   onToggle: (id: string) => void;
   onNavigate: (id: string | null) => void;
   onFileSelect?: (fileId: string) => void;
+  onFileActionNavigate?: () => void;
 }) {
   const children = childrenByParentId.get(folder.id) ?? [];
   const folderFiles = filesByFolderId.get(folder.id) ?? [];
@@ -273,10 +286,12 @@ function FolderTreeBranch({
               selectedFileId={selectedFileId}
               showFiles={showFiles}
               enableFolderActions={enableFolderActions}
+              enableFileActions={enableFileActions}
               highlightColor={highlightColor}
               onToggle={onToggle}
               onNavigate={onNavigate}
               onFileSelect={onFileSelect}
+              onFileActionNavigate={onFileActionNavigate}
             />
           ))}
           {showFiles
@@ -292,6 +307,9 @@ function FolderTreeBranch({
                   highlightColor={highlightColor}
                   onToggle={() => undefined}
                   onNavigate={() => onFileSelect?.(file.id)}
+                  enableFileActions={enableFileActions}
+                  fileActionsTarget={file}
+                  onFileActionNavigate={onFileActionNavigate}
                 />
               ))
             : null}
@@ -313,6 +331,9 @@ function FolderTreeRow({
   onNavigate,
   enableFolderActions = false,
   actionsTarget,
+  enableFileActions = false,
+  fileActionsTarget,
+  onFileActionNavigate,
 }: {
   label: string;
   depth: number;
@@ -325,13 +346,21 @@ function FolderTreeRow({
   onNavigate: () => void;
   enableFolderActions?: boolean;
   actionsTarget?: FolderActionsTarget;
+  enableFileActions?: boolean;
+  fileActionsTarget?: FolderTreeFile;
+  onFileActionNavigate?: () => void;
 }) {
   const iconName =
     kind === "root" ? "house" : kind === "folder" ? "folder" : "notebook-text";
 
+  const useFolderMenu = Boolean(enableFolderActions && actionsTarget);
+  const useFileMenu = Boolean(
+    kind === "file" && enableFileActions && fileActionsTarget
+  );
+
   const labelContent = (
     <View
-      pointerEvents={enableFolderActions && actionsTarget ? "box-only" : "auto"}
+      pointerEvents={useFolderMenu || useFileMenu ? "box-only" : "auto"}
       className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
     >
       <Icon
@@ -378,7 +407,7 @@ function FolderTreeRow({
         <View className="h-8 w-7" />
       )}
 
-      {enableFolderActions && actionsTarget ? (
+      {useFolderMenu && actionsTarget ? (
         <FolderActionsMenu
           target={actionsTarget}
           onNavigate={onNavigate}
@@ -386,6 +415,15 @@ function FolderTreeRow({
         >
           {labelContent}
         </FolderActionsMenu>
+      ) : useFileMenu && fileActionsTarget ? (
+        <FileActionsMenu
+          file={fileActionsTarget}
+          onNavigate={onNavigate}
+          onCloseSidebar={onFileActionNavigate}
+          className="flex-1 min-w-0"
+        >
+          {labelContent}
+        </FileActionsMenu>
       ) : (
         <Pressable
           onPress={onNavigate}

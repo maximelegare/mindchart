@@ -18,6 +18,11 @@ function parseEditorMode(value: string | string[] | undefined): NoteEditorMode {
   return raw === "preview" ? "preview" : "regular";
 }
 
+function shouldStartEditing(value: string | string[] | undefined): boolean {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw === "preview" || raw === "edit";
+}
+
 export const NoteDetailsPage = () => {
   const { mode: modeParam } = useLocalSearchParams<{
     id: string;
@@ -27,8 +32,8 @@ export const NoteDetailsPage = () => {
   const [editorMode, setEditorMode] = useState<NoteEditorMode>(() =>
     parseEditorMode(modeParam)
   );
-  const [isEditing, setIsEditing] = useState(
-    () => parseEditorMode(modeParam) === "preview"
+  const [isEditing, setIsEditing] = useState(() =>
+    shouldStartEditing(modeParam)
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
@@ -60,7 +65,7 @@ export const NoteDetailsPage = () => {
   useEffect(() => {
     const nextMode = parseEditorMode(modeParam);
     setEditorMode(nextMode);
-    if (nextMode === "preview") {
+    if (shouldStartEditing(modeParam)) {
       setIsEditing(true);
     }
   }, [modeParam, noteId]);
