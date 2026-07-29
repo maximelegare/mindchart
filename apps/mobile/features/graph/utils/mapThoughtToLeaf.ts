@@ -12,6 +12,9 @@ export const mapThoughtToLeaf = (t: ThoughtWithEmbedding): NodeDatum => ({
   categoryId: t.categoryId,
   topicId: t.topicId,
   topicName: t.topicName,
+  folderId: t.folderId ?? undefined,
+  folderLabel: t.folderLabel ?? undefined,
+  folderPath: t.folderPath ?? undefined,
   createdAt: t.createdAt,
   embedding: t.embedding,
 });

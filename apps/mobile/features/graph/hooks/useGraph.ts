@@ -1,12 +1,17 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import { warmupGraphLayouts } from "../components/graphSkia";
-import { buildGraphByTopic } from "../utils/buildGraphByTopic";
-import { buildGraphWithTopics } from "../utils/buildGraphWithTopics";
-import { normalizeGraphData } from "../utils/parseGraphData";
+import { buildGraphByFolder } from "../utils/buildGraphByFolder";
+import { buildGraphByCategoryFolders } from "../utils/buildGraphByCategoryFolders";
+import {
+  isGraphDataCache,
+  needsFolderGraphRebuild,
+  normalizeGraphData,
+} from "../utils/parseGraphData";
 import { ThoughtWithEmbedding } from "@repo/zod-schemas";
 import { useEffect, useRef, useState } from "react";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 import { GraphDataCache, NodeDatum } from "../types/types";
+import { Folder } from "@repo/zod-schemas/src/schemas";
 
 export type { NodeDatum };
 
@@ -19,18 +24,40 @@ export type NodeType = {
   children: boolean;
 };
 
+/** Signature that changes when folder tree or note placement changes. */
+const buildSyncSignature = (
+  thoughts: ThoughtWithEmbedding[],
+  folders: Folder[]
+) => {
+  const folderPart = folders
+    .map((folder) => `${folder.id}:${folder.path}`)
+    .sort()
+    .join("|");
+  const thoughtPart = thoughts
+    .map(
+      (thought) =>
+        `${thought.thoughtId}:${thought.folderId ?? ""}:${thought.categoryId ?? ""}`
+    )
+    .sort()
+    .join("|");
+  return `${folderPart}::${thoughtPart}`;
+};
+
 export const useGraph = () => {
-  const { graph, notesAndThoughts } = useControllers();
+  const { graph, notesAndThoughts, folders } = useControllers();
 
   const {
     useFetchGraphDataQuery,
     useFetchSyncGraphQuery,
     useUpdateGraphDataMutation,
+    useUpdateSyncGraphDataMutation,
   } = graph;
 
   const { useFetchAllThoughtsWithEmbeddingsQuery } = notesAndThoughts;
+  const { useFetchAllFoldersQuery } = folders;
 
   const { mutateAsync: mutateGraph } = useUpdateGraphDataMutation();
+  const { mutateAsync: mutateSyncGraph } = useUpdateSyncGraphDataMutation();
 
   const { data: syncFlag, refetch: refetchSyncGraph } = useFetchSyncGraphQuery({
     staleTime: 30_000,
@@ -40,10 +67,23 @@ export const useGraph = () => {
 
   const syncGraph = syncFlag?.data;
 
-  const { data: thoughts, isFetching: thoughtsIsFetching } =
-    useFetchAllThoughtsWithEmbeddingsQuery({
-      enabled: syncGraph,
-    });
+  const {
+    data: thoughts,
+    isFetching: thoughtsIsFetching,
+    refetch: refetchThoughts,
+  } = useFetchAllThoughtsWithEmbeddingsQuery({
+    enabled: !!syncGraph,
+    staleTime: 0,
+  });
+
+  const {
+    data: allFolders,
+    isFetching: foldersIsFetching,
+    refetch: refetchFolders,
+  } = useFetchAllFoldersQuery({
+    enabled: !!syncGraph,
+    staleTime: 0,
+  });
 
   const graphQuery = useFetchGraphDataQuery({
     enabled: !syncGraph,
@@ -52,13 +92,36 @@ export const useGraph = () => {
   const graphData = graphQuery.data?.data;
 
   const [hierarchies, setHierarchies] = useState<GraphDataCache | null>(null);
+  const [syncInputsReady, setSyncInputsReady] = useState(false);
   const builtForRef = useRef<string | null>(null);
 
   const activeWorkspaceId = useWorkspacesStore((s) => s.activeWorkspaceId);
   useEffect(() => {
     setHierarchies(null);
     builtForRef.current = null;
+    setSyncInputsReady(false);
   }, [activeWorkspaceId]);
+
+  // Refetch inputs whenever sync is requested, then rebuild from fresh data.
+  // Counts alone are not enough (e.g. moving a note keeps the same lengths).
+  useEffect(() => {
+    if (!syncGraph) {
+      setSyncInputsReady(false);
+      return;
+    }
+
+    builtForRef.current = null;
+    setSyncInputsReady(false);
+
+    let cancelled = false;
+    void Promise.all([refetchThoughts(), refetchFolders()]).then(() => {
+      if (!cancelled) setSyncInputsReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [syncGraph, refetchThoughts, refetchFolders]);
 
   const applyCache = (cache: GraphDataCache, cacheKey: string) => {
     builtForRef.current = cacheKey;
@@ -68,6 +131,14 @@ export const useGraph = () => {
 
   useEffect(() => {
     if (syncGraph || !graphData) return;
+
+    // Legacy topic-based cache → rebuild with folders.
+    if (needsFolderGraphRebuild(graphData)) {
+      void mutateSyncGraph(true);
+      return;
+    }
+
+    if (!isGraphDataCache(graphData)) return;
 
     const normalized = normalizeGraphData(graphData);
     if (!normalized) return;
@@ -80,19 +151,31 @@ export const useGraph = () => {
     }, 0);
 
     return () => clearTimeout(id);
-  }, [syncGraph, graphData, activeWorkspaceId]);
+  }, [syncGraph, graphData, activeWorkspaceId, mutateSyncGraph]);
 
   useEffect(() => {
-    if (!syncGraph || thoughtsIsFetching || !thoughts) return;
+    if (
+      !syncGraph ||
+      !syncInputsReady ||
+      thoughtsIsFetching ||
+      foldersIsFetching ||
+      !thoughts ||
+      !allFolders
+    )
+      return;
 
-    const cacheKey = `thoughts:${activeWorkspaceId}:${thoughts.length}`;
+    const typedThoughts = thoughts as ThoughtWithEmbedding[];
+    const signature = buildSyncSignature(typedThoughts, allFolders);
+    const cacheKey = `thoughts:${activeWorkspaceId}:${signature}`;
     if (builtForRef.current === cacheKey) return;
 
     const id = setTimeout(() => {
-      const typedThoughts = thoughts as ThoughtWithEmbedding[];
       const cache: GraphDataCache = {
-        category: buildGraphWithTopics(typedThoughts) as NodeDatum,
-        topic: buildGraphByTopic(typedThoughts) as NodeDatum,
+        category: buildGraphByCategoryFolders(
+          allFolders,
+          typedThoughts
+        ) as NodeDatum,
+        folder: buildGraphByFolder(allFolders, typedThoughts) as NodeDatum,
       };
 
       applyCache(cache, cacheKey);
@@ -100,11 +183,26 @@ export const useGraph = () => {
     }, 0);
 
     return () => clearTimeout(id);
-  }, [syncGraph, thoughtsIsFetching, thoughts, activeWorkspaceId, mutateGraph]);
+  }, [
+    syncGraph,
+    syncInputsReady,
+    thoughtsIsFetching,
+    foldersIsFetching,
+    thoughts,
+    allFolders,
+    activeWorkspaceId,
+    mutateGraph,
+  ]);
 
   const isLoading =
     !hierarchies &&
-    (syncGraph ? thoughtsIsFetching || !thoughts : graphQuery.isLoading);
+    (syncGraph
+      ? !syncInputsReady ||
+        thoughtsIsFetching ||
+        foldersIsFetching ||
+        !thoughts ||
+        !allFolders
+      : graphQuery.isLoading);
 
   return {
     syncGraph,

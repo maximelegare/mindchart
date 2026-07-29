@@ -1,4 +1,5 @@
-import { Category, Note, Thought, Topic } from "@repo/zod-schemas";
+import { Category, Note, Thought } from "@repo/zod-schemas";
+import { Folder } from "@repo/zod-schemas/src/schemas";
 import React from "react";
 import { Keyboard, ScrollView, TextInput, View } from "react-native";
 import { useForm, Controller, FormProvider } from "react-hook-form";
@@ -12,7 +13,10 @@ import {
   createEmptyThought,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
-import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
+import {
+  FolderSelector,
+  type FolderSelection,
+} from "@/features/notes/notePreview/folderSelector";
 import { Icon } from "@/components/ui/icons/icon";
 import {
   GENERATE_NOTE_BUTTON_HEIGHT,
@@ -23,29 +27,23 @@ import { KeyboardActionFooter } from "@/features/notes/noteCreation/features/flo
 type ManualNoteFormData = {
   title: string;
   summary: string;
-  topic: {
-    id: string;
-    name: string;
-    isNew?: boolean;
-    embedding: Float32Array;
-    createdAt?: string;
-  };
+  folder: FolderSelection;
   thoughts: ThoughtsFormValue[];
 };
 
 type ManualNoteFormDefaultValues = {
   title?: string;
   summary?: string;
-  topic?: Topic;
+  folder?: Folder | null;
   thoughts?: Thought[];
 };
 
 type ManualNoteFormProps = {
   noteId: string;
-  defaultTopic: Topic;
   categories: Category[];
   onSubmit: (note: Note, thoughts: Thought[]) => void;
   defaultValues?: ManualNoteFormDefaultValues;
+  defaultFolder?: FolderSelection;
 };
 
 const mapThoughtToFormValue = (thought: Thought, noteId: string) => ({
@@ -61,21 +59,16 @@ const mapThoughtToFormValue = (thought: Thought, noteId: string) => ({
 
 const buildFormDefaultValues = (
   noteId: string,
-  defaultTopic: Topic,
+  defaultFolder: FolderSelection,
   defaultValues?: ManualNoteFormDefaultValues
 ): ManualNoteFormData => {
-  const topic = defaultValues?.topic ?? defaultTopic;
+  const folder =
+    defaultValues?.folder !== undefined ? defaultValues.folder : defaultFolder;
 
   return {
     title: defaultValues?.title ?? "",
     summary: defaultValues?.summary ?? "",
-    topic: {
-      id: topic.id,
-      name: topic.name,
-      isNew: topic.isNew,
-      embedding: topic.embedding,
-      createdAt: topic.createdAt,
-    },
+    folder,
     thoughts: defaultValues?.thoughts?.length
       ? defaultValues.thoughts.map((thought) =>
           mapThoughtToFormValue(thought, noteId)
@@ -94,10 +87,10 @@ const FALLBACK_FOOTER_CONTENT_HEIGHT =
 
 export const ManualNoteForm = ({
   noteId,
-  defaultTopic,
   categories,
   onSubmit,
   defaultValues,
+  defaultFolder = null,
 }: ManualNoteFormProps) => {
   const insets = useSafeAreaInsets();
   const [titleContainerWidth, setTitleContainerWidth] = React.useState(0);
@@ -129,8 +122,6 @@ export const ManualNoteForm = ({
     };
   }, []);
 
-  // Keep the editor card entirely above the absolute Save footer.
-  // Closed: button row + home-indicator inset. Open: button row + keyboard.
   const editorBottomInset =
     footerContentHeight +
     FOOTER_BORDER_WIDTH +
@@ -138,7 +129,7 @@ export const ManualNoteForm = ({
     (keyboardHeight > 0 ? keyboardHeight : insets.bottom);
 
   const form = useForm<ManualNoteFormData>({
-    defaultValues: buildFormDefaultValues(noteId, defaultTopic, defaultValues),
+    defaultValues: buildFormDefaultValues(noteId, defaultFolder, defaultValues),
   });
   const { control, handleSubmit } = form;
 
@@ -173,7 +164,7 @@ export const ManualNoteForm = ({
       title: data.title.trim(),
       summary: data.summary.trim(),
       rawText: "",
-      topicId: data.topic.id,
+      folderId: data.folder?.id ?? null,
       createdAt: new Date().toISOString(),
     };
 
@@ -239,16 +230,16 @@ export const ManualNoteForm = ({
             </View>
 
             <View className="shrink-0 flex-col">
-              <Label className="mb-0 text-popover-foreground" nativeID="topic">
-                Topic
+              <Label className="mb-0 text-popover-foreground" nativeID="folder">
+                Folder
               </Label>
               <Controller
                 control={control}
-                name="topic"
+                name="folder"
                 render={({ field: { onChange, value } }) => (
-                  <TopicSelector
-                    selectedTopic={{ ...value }}
-                    onSelect={(topic) => onChange({ ...topic })}
+                  <FolderSelector
+                    selectedFolder={value}
+                    onSelect={onChange}
                     maxChars={18}
                   />
                 )}

@@ -1,0 +1,67 @@
+[
+  {
+    "id": "folder_001",
+    "path": "/folder_001",
+    "label": "Product Experience Design"
+  },
+  {
+    "id": "folder_002",
+    "path": "/folder_002",
+    "label": "Financial Strategy"
+  },
+  {
+    "id": "folder_003",
+    "path": "/folder_003",
+    "label": "Sustainable Urban Development"
+  },
+  {
+    "id": "folder_004",
+    "path": "/folder_004",
+    "label": "Productivity and Performance"
+  },
+  {
+    "id": "folder_005",
+    "path": "/folder_005",
+    "label": "Software Project Management"
+  },
+  {
+    "id": "folder_006",
+    "path": "/folder_006",
+    "label": "Home and Garden"
+  },
+  {
+    "id": "folder_007",
+    "path": "/folder_007",
+    "label": "Travel and Outdoors"
+  },
+  {
+    "id": "folder_008",
+    "path": "/folder_008",
+    "label": "Creative Media Production"
+  },
+  {
+    "id": "folder_009",
+    "path": "/folder_009",
+    "label": "Health and Wellness"
+  },
+  {
+    "id": "folder_010",
+    "path": "/folder_010",
+    "label": "Professional Development"
+  },
+  {
+    "id": "folder_011",
+    "path": "/folder_011",
+    "label": "Modern Technology Trends"
+  },
+  {
+    "id": "folder_012",
+    "path": "/folder_012",
+    "label": "Event Planning"
+  },
+  {
+    "id": "folder_013",
+    "path": "/folder_013",
+    "label": "Self-Reflection"
+  }
+]

@@ -6,10 +6,10 @@ import { GraphMode, parseGraphMode } from "../types/types";
 type GraphStore = {
   mode: GraphMode;
   renderMode: GraphMode;
-  selectedTopicId: string | null;
+  selectedFolderId: string | null;
   selectedCategoryId: string | null;
   setGraphMode: (mode: GraphMode) => void;
-  setSelectedTopicId: (topicId: string | null) => void;
+  setSelectedFolderId: (folderId: string | null) => void;
   setSelectedCategoryId: (categoryId: string | null) => void;
 };
 
@@ -20,7 +20,7 @@ export const useGraphStore = create<GraphStore>()(
     (set) => ({
       mode: "category",
       renderMode: "category",
-      selectedTopicId: null,
+      selectedFolderId: null,
       selectedCategoryId: null,
       setGraphMode: (mode) => {
         if (pendingUpdate) clearTimeout(pendingUpdate);
@@ -28,13 +28,13 @@ export const useGraphStore = create<GraphStore>()(
           set({
             mode,
             renderMode: mode,
-            selectedTopicId: null,
+            selectedFolderId: null,
             selectedCategoryId: null,
           });
           pendingUpdate = null;
         }, 0);
       },
-      setSelectedTopicId: (selectedTopicId) => set({ selectedTopicId }),
+      setSelectedFolderId: (selectedFolderId) => set({ selectedFolderId }),
       setSelectedCategoryId: (selectedCategoryId) =>
         set({ selectedCategoryId }),
     }),
@@ -61,7 +61,7 @@ export const setGraphModeImmediate = (mode: GraphMode) => {
   useGraphStore.setState({
     mode,
     renderMode: mode,
-    selectedTopicId: null,
+    selectedFolderId: null,
     selectedCategoryId: null,
   });
 };

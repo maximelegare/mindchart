@@ -1,19 +1,16 @@
-import { Note, Thought, Topic } from "@repo/zod-schemas";
+import { Folder, Note, Thought } from "@repo/zod-schemas";
 import { seedFormatNote } from "./utils/seedFormatNote";
 import { useGenerateLocalEmbeddingsService } from "../features/embeddings/services/useGenerateLocalEmbeddingService";
 import { getOPDatabase, seedDatabaseQuery } from "@repo/sqlite";
 import { ServiceResponse } from "@/api/utils/responseObject";
 import seedNotes from "./data/mock.json" with { type: "json" };
-import seedTopics from "./data/mock_topics.json" with { type: "json" };
-import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
+import seedFolders from "./data/mock_folders.json" with { type: "json" };
 
 const useSeedDatabaseService = () => {
   const db = getOPDatabase();
   const { generateEmbeddings } = useGenerateLocalEmbeddingsService();
-  const { embed } = useLlamaEmbeddings();
 
   const seedDatabaseService = async (numberOfNotes: number) => {
-    // const fakeData = generateGraphNotes(numberOfNotes);
     if (numberOfNotes > seedNotes.length) {
       return ServiceResponse.failure(
         `Enter a number less than or equal to ${seedNotes.length}`,
@@ -41,28 +38,18 @@ const useSeedDatabaseService = () => {
       }
       const embeddings = embeddingsByNote.flat();
 
-      const topics: Topic[] = [];
-
-      for (const topic of seedTopics) {
-        const vector = await embed(topic.name, "clustering");
-
-        const floatArray =
-          vector instanceof Float32Array
-            ? vector.slice()
-            : new Float32Array(vector);
-        topics.push({
-          id: topic.id,
-          name: topic.name,
-          embedding: floatArray.buffer as unknown as Topic["embedding"],
-          createdAt: new Date().toISOString(),
-        });
-      }
+      const folders: Folder[] = seedFolders.map((folder) => ({
+        id: folder.id,
+        path: folder.path,
+        label: folder.label,
+        createdAt: new Date().toISOString(),
+      }));
 
       await seedDatabaseQuery(db, {
         notes: formatedStructuredData.notes,
         thoughts: formatedStructuredData.thoughts,
         embeddings,
-        topics,
+        folders,
       });
 
       return ServiceResponse.success("Database seeded successfully", null);

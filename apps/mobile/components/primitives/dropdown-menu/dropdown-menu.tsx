@@ -87,8 +87,21 @@ function useRootContext() {
   return context;
 }
 
-const Trigger = React.forwardRef<PressableRef, SlottablePressableProps>(
-  ({ asChild, onPress: onPressProp, disabled = false, ...props }, ref) => {
+const Trigger = React.forwardRef<
+  PressableRef,
+  SlottablePressableProps & { openOnLongPress?: boolean }
+>(
+  (
+    {
+      asChild,
+      onPress: onPressProp,
+      onLongPress: onLongPressProp,
+      openOnLongPress = false,
+      disabled = false,
+      ...props
+    },
+    ref
+  ) => {
     const triggerRef = React.useRef<View>(null);
     const { open, onOpenChange, setTriggerPosition } = useRootContext();
 
@@ -99,14 +112,29 @@ const Trigger = React.forwardRef<PressableRef, SlottablePressableProps>(
       return triggerRef.current;
     }, [triggerRef.current]);
 
-    function onPress(ev: GestureResponderEvent) {
-      if (disabled) return;
+    function measureAndToggle(nextOpen: boolean) {
       triggerRef.current?.measure((_x, _y, width, height, pageX, pageY) => {
         setTriggerPosition({ width, pageX, pageY: pageY, height });
       });
-      const newValue = !open;
-      onOpenChange(newValue);
+      onOpenChange(nextOpen);
+    }
+
+    function onPress(ev: GestureResponderEvent) {
+      if (disabled) return;
+      if (openOnLongPress) {
+        onPressProp?.(ev);
+        return;
+      }
+      measureAndToggle(!open);
       onPressProp?.(ev);
+    }
+
+    function onLongPress(ev: GestureResponderEvent) {
+      if (disabled) return;
+      if (openOnLongPress) {
+        measureAndToggle(true);
+      }
+      onLongPressProp?.(ev);
     }
 
     const Component = asChild ? Slot.Pressable : Pressable;
@@ -115,10 +143,14 @@ const Trigger = React.forwardRef<PressableRef, SlottablePressableProps>(
         ref={triggerRef}
         aria-disabled={disabled ?? undefined}
         role="button"
-        onPress={onPress}
         disabled={disabled ?? undefined}
         aria-expanded={open}
         {...props}
+        onPress={onPress}
+        onLongPress={
+          openOnLongPress || onLongPressProp ? onLongPress : undefined
+        }
+        delayLongPress={openOnLongPress ? 400 : undefined}
       />
     );
   }

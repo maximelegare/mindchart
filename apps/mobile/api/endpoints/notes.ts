@@ -3,6 +3,7 @@ import {
   deleteNoteByIdQuery,
   getAllNotesQuery,
   insertNoteQuery,
+  updateNoteFolderIdQuery,
   updateNoteQuery,
   updateThoughtsQuery,
 } from "@repo/sqlite";
@@ -42,6 +43,14 @@ export const updateNoteAndThoughts = async ({
 export const deleteNoteById = async ({ noteId }: { noteId: string }) => {
   const db = getOPDatabase();
   await deleteNoteByIdQuery(db, noteId);
+};
+
+export const updateNoteFolderId = async (data: {
+  noteId: string;
+  folderId: string | null;
+}) => {
+  const db = getOPDatabase();
+  return await updateNoteFolderIdQuery(db, data);
 };
 
 export const generateNote = async (body: FormData) => {

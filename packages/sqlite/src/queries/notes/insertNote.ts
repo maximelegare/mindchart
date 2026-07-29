@@ -16,6 +16,7 @@ export const insertNoteQuery = async (db: DB, data: Note) => {
           : JSON.stringify(data.summary ?? ""),
       rawText: data.rawText ?? "",
       topicId: data.topicId,
+      folderId: data.folderId ?? null,
       createdAt: data.createdAt ?? new Date().toISOString(),
     });
   } catch (error) {

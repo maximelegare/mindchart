@@ -2,7 +2,7 @@
   {
     "title": "Refining the User Onboarding Flow for Mobile App",
     "summary": "A discussion on reducing friction during the initial sign-up process and implementing a progress bar for user engagement.",
-    "topicId": "topic_001",
+    "folderId": "folder_001",
     "thoughts": [
       {
         "title": "Simplify Social Login Integration",
@@ -21,7 +21,7 @@
   {
     "title": "Quarterly Financial Review and Budget Planning for Q3",
     "summary": "Analysis of current spending patterns and reallocating resources toward the marketing department for the upcoming product launch.",
-    "topicId": "topic_002",
+    "folderId": "folder_002",
     "thoughts": [
       {
         "title": "Overspending in Cloud Infrastructure",
@@ -40,7 +40,7 @@
   {
     "title": "Exploring Sustainable Architecture Trends in Urban Areas",
     "summary": "Learning about vertical forests and passive cooling systems used in modern city developments to combat rising heat.",
-    "topicId": "topic_003",
+    "folderId": "folder_003",
     "thoughts": [
       {
         "title": "Passive Cooling System Efficiency",
@@ -59,7 +59,7 @@
   {
     "title": "Personal Reflections on Morning Routine and Productivity",
     "summary": "A look at how waking up at 6 AM has impacted mood and the ability to focus on deep work.",
-    "topicId": "topic_004",
+    "folderId": "folder_004",
     "thoughts": [
       {
         "title": "Morning Calm Increases Clarity",
@@ -78,7 +78,7 @@
   {
     "title": "Project Alpha Development Roadmap Update",
     "summary": "Synchronizing the engineering and design teams on the final milestones before the beta release in May.",
-    "topicId": "topic_005",
+    "folderId": "folder_005",
     "thoughts": [
       {
         "title": "Final UI Polish Deadline",
@@ -97,7 +97,7 @@
   {
     "title": "Gardening Log and Seasonal Planting Schedule",
     "summary": "Organizing the backyard layout for spring vegetables and checking the soil pH levels.",
-    "topicId": "topic_006",
+    "folderId": "folder_006",
     "thoughts": [
       {
         "title": "Rotate Tomato Crop Location",
@@ -116,7 +116,7 @@
   {
     "title": "Notes on Deep Work by Cal Newport",
     "summary": "Key takeaways regarding the ability to focus without distraction on cognitively demanding tasks.",
-    "topicId": "topic_004",
+    "folderId": "folder_004",
     "thoughts": [
       {
         "title": "Shallow Work vs Deep Work",
@@ -135,7 +135,7 @@
   {
     "title": "Weekend Trip to the Catskills Mountains",
     "summary": "Planning a short hiking excursion to clear the mind and spend time in nature with friends.",
-    "topicId": "topic_007",
+    "folderId": "folder_007",
     "thoughts": [
       {
         "title": "Kaaterskill Falls Trailhead",
@@ -154,7 +154,7 @@
   {
     "title": "Brainstorming Session for New Podcast Series",
     "summary": "Initial concepts for a show focusing on the history of failed technological innovations.",
-    "topicId": "topic_008",
+    "folderId": "folder_008",
     "thoughts": [
       {
         "title": "The Rise and Fall of Segway",
@@ -173,7 +173,7 @@
   {
     "title": "Home Renovation Ideas for the Guest Room",
     "summary": "Converting the spare bedroom into a dual-purpose guest suite and home office space.",
-    "topicId": "topic_006",
+    "folderId": "folder_006",
     "thoughts": [
       {
         "title": "Murphy Bed Installation",
@@ -192,7 +192,7 @@
   {
     "title": "Investment Strategy for High Inflation Periods",
     "summary": "Researching asset classes that typically perform well when currency purchasing power declines.",
-    "topicId": "topic_002",
+    "folderId": "folder_002",
     "thoughts": [
       {
         "title": "Treasury Inflation-Protected Securities",
@@ -211,7 +211,7 @@
   {
     "title": "Memories of the 2018 Summer Road Trip",
     "summary": "Recalling the specific feeling of driving through the desert at sunset and the music we played.",
-    "topicId": "topic_007",
+    "folderId": "folder_007",
     "thoughts": [
       {
         "title": "The Grand Canyon Vista",
@@ -230,7 +230,7 @@
   {
     "title": "Kitchen Appliance Upgrade Research",
     "summary": "Comparing induction cooktops versus traditional gas ranges for the upcoming kitchen remodel.",
-    "topicId": "topic_006",
+    "folderId": "folder_006",
     "thoughts": [
       {
         "title": "Induction Heating Speed",
@@ -249,7 +249,7 @@
   {
     "title": "Weekly Meal Prep and Grocery Shopping",
     "summary": "Planning a Mediterranean-themed menu for the week to improve heart health and save time.",
-    "topicId": "topic_009",
+    "folderId": "folder_009",
     "thoughts": [
       {
         "title": "Bulk Cook Quinoa and Chickpeas",
@@ -268,7 +268,7 @@
   {
     "title": "Preparing for the Annual Performance Review",
     "summary": "Compiling a list of achievements and areas for growth to discuss with the manager.",
-    "topicId": "topic_010",
+    "folderId": "folder_010",
     "thoughts": [
       {
         "title": "Lead the API Migration Project",
@@ -287,7 +287,7 @@
   {
     "title": "The Impact of Artificial Intelligence on Copywriting",
     "summary": "Observing how generative models are changing the speed and quality of marketing content creation.",
-    "topicId": "topic_011",
+    "folderId": "folder_011",
     "thoughts": [
       {
         "title": "AI as a First Draft Tool",
@@ -306,7 +306,7 @@
   {
     "title": "Meeting with the Wedding Coordinator",
     "summary": "Discussing the floor plan for the reception and finalizing the floral arrangements.",
-    "topicId": "topic_012",
+    "folderId": "folder_012",
     "thoughts": [
       {
         "title": "Confirm Table Count for Seating",
@@ -325,7 +325,7 @@
   {
     "title": "Common Bugs Found During UAT Testing",
     "summary": "A list of issues reported by the QA team that need to be addressed before the release candidate.",
-    "topicId": "topic_005",
+    "folderId": "folder_005",
     "thoughts": [
       {
         "title": "Dark Mode Contrast Issues",
@@ -344,7 +344,7 @@
   {
     "title": "Dream Journal Entry: The Floating Library",
     "summary": "A vivid dream about a library where the books were made of light and drifted through the air.",
-    "topicId": "topic_013",
+    "folderId": "folder_013",
     "thoughts": [
       {
         "title": "Weightless Sensation",

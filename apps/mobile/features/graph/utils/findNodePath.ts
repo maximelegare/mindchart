@@ -28,6 +28,6 @@ export const findNodePath = (
 
 export const formatBreadcrumbLabel = (node: NodeDatum) => {
   if (node.id === "root") return "Root";
-  const label = node.name || node.title || node.id;
+  const label = node.folderLabel || node.name || node.title || node.id;
   return label.charAt(0).toUpperCase() + label.slice(1);
 };

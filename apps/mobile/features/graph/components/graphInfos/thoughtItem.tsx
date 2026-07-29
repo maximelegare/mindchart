@@ -52,7 +52,7 @@ const ExpandCaret = ({ expanded }: { expanded: boolean }) => {
   }));
 
   return (
-    <View style={{ marginTop: 4, width: CARET_SIZE, height: CARET_SIZE }}>
+    <View style={{ width: CARET_SIZE, height: CARET_SIZE }}>
       <Animated.View
         style={[
           {
@@ -132,19 +132,30 @@ const isCategoryNode = (nodeId?: string | null) =>
 const isTopicNode = (nodeId?: string | null) =>
   typeof nodeId === "string" && nodeId.startsWith("topic-");
 
+const isFolderGraphNode = (nodeId?: string | null) =>
+  typeof nodeId === "string" && nodeId.startsWith("folder-");
+
 const showMainColorStripe = (
   parentNodeId: string | undefined,
-  _thought: NodeDatum
-) =>
-  parentNodeId === "root" ||
-  isTopicNode(parentNodeId) ||
-  isCategoryNode(parentNodeId);
+  _thought: NodeDatum,
+  graphMode: GraphMode
+) => {
+  if (graphMode === "folder") return false;
+  return (
+    parentNodeId === "root" ||
+    isTopicNode(parentNodeId) ||
+    isFolderGraphNode(parentNodeId) ||
+    isCategoryNode(parentNodeId)
+  );
+};
 
 const showExpandedNestedStripe = (
   parentNodeId: string | undefined,
   expandedNode: NodeDatum,
   graphMode: GraphMode
 ) => {
+  if (graphMode === "folder") return false;
+
   if (graphMode === "category") {
     return (
       isCategoryGraphRoot(graphMode, parentNodeId) &&
@@ -154,6 +165,13 @@ const showExpandedNestedStripe = (
 
   return !isCategoryNode(parentNodeId) && !isCategoryNode(expandedNode.id);
 };
+
+const isFolderNode = (node: NodeDatum) =>
+  !!node.folderId || isFolderGraphNode(node.id);
+
+const FolderTitleIcon = () => (
+  <Icon name="folder" color="muted-foreground" size={14} />
+);
 
 const ColoredStripe = ({
   node,
@@ -196,7 +214,9 @@ const ColoredStripe = ({
 
 const THOUGHT_BULLET_SIZE = 6;
 const THOUGHT_BULLET_GAP = 8;
-const THOUGHT_BULLET_INDENT = THOUGHT_BULLET_SIZE + THOUGHT_BULLET_GAP;
+const THOUGHT_BULLET_OFFSET = 20;
+const THOUGHT_BULLET_INDENT =
+  THOUGHT_BULLET_OFFSET + THOUGHT_BULLET_SIZE + THOUGHT_BULLET_GAP;
 
 const ThoughtBulletDot = ({ className }: { className?: string }) => {
   const { colorScheme } = useColorScheme();
@@ -220,7 +240,10 @@ const ThoughtBulletTitleRow = ({
   children: React.ReactNode;
   trailing?: React.ReactNode;
 }) => (
-  <View className="flex-row items-center">
+  <View
+    className="flex-row items-center"
+    style={{ paddingLeft: THOUGHT_BULLET_OFFSET }}
+  >
     <ThoughtBulletDot />
     <View className="flex-1 min-w-0">{children}</View>
     {trailing}
@@ -352,17 +375,31 @@ const ExpandedContent = ({
   }
 
   if (hasGroupingChildren(thought)) {
+    const directThoughts = thought.children!.filter((child) =>
+      isThoughtLeaf(child)
+    );
+    const directGroups = thought.children!.filter(
+      (child) => !isThoughtLeaf(child)
+    );
+
     return (
       <View className="gap-3">
-        {thought.children!.map((group) => (
-          <ColoredStripe
-            key={group.id}
-            node={group}
+        {directThoughts.map((child) => (
+          <ThoughtContent
+            key={child.thoughtId ?? child.id}
+            thought={child}
             showColorStripe={nestedColorStripe}
-            useInputColor={isCategoryRoot}
-          >
-            <View className="gap-2 py-1 px-2">
-              <View className="flex-row items-center gap-2">
+          />
+        ))}
+        {directGroups.map((group) => {
+          const hasNestedContent = !!group.children?.length;
+
+          const groupBody = (
+            <View className="gap-2 py-1 px-2 flex-1 min-w-0">
+              <View className="flex-row items-center gap-1.5">
+                {graphMode === "folder" && isFolderNode(group) ? (
+                  <FolderTitleIcon />
+                ) : null}
                 <Pressable
                   className="bg-muted border border-input rounded-full leading-none px-2 py-0.5 self-start"
                   onPress={() => navigateToGraphNode(group.id)}
@@ -373,24 +410,35 @@ const ExpandedContent = ({
                 </Pressable>
               </View>
 
-              {group.children?.length ? (
-                <View className="gap-3">
-                  {group.children.map((child) => (
-                    <ThoughtContent
-                      key={child.thoughtId ?? child.id}
-                      thought={child}
-                      showColorStripe={false}
-                    />
-                  ))}
-                </View>
+              {hasNestedContent ? (
+                <ExpandedContent thought={group} parentNodeId={group.id} />
               ) : (
                 <Typography variant="p" className="opacity-50">
                   No content
                 </Typography>
               )}
             </View>
-          </ColoredStripe>
-        ))}
+          );
+
+          if (graphMode === "folder") {
+            return (
+              <View key={group.id} className="w-full">
+                {groupBody}
+              </View>
+            );
+          }
+
+          return (
+            <ColoredStripe
+              key={group.id}
+              node={group}
+              showColorStripe={nestedColorStripe}
+              useInputColor={isCategoryRoot}
+            >
+              {groupBody}
+            </ColoredStripe>
+          );
+        })}
       </View>
     );
   }
@@ -412,6 +460,8 @@ export const ThoughtItem: React.FC<ThoughtItemProps> = ({
 
   const { colorScheme } = useColorScheme();
   const { setParams, push } = useRouter();
+  const graphMode = useGraphStore((state) => state.mode);
+  const isFolderMode = graphMode === "folder";
 
   const handleZoom = () => {
     setParams({
@@ -436,7 +486,9 @@ export const ThoughtItem: React.FC<ThoughtItemProps> = ({
 
   const canExpand = hasThoughtChildren(thought) || hasGroupingChildren(thought);
 
-  const mainColorStripe = showMainColorStripe(parentNodeId, thought);
+  const mainColorStripe = showMainColorStripe(parentNodeId, thought, graphMode);
+  const showFolderIcon =
+    isFolderMode && !isThoughtLeaf(thought) && isFolderNode(thought);
 
   return (
     <Card className={cn("w-full overflow-hidden", isHighlighted && "border-2")}>
@@ -448,12 +500,8 @@ export const ThoughtItem: React.FC<ThoughtItemProps> = ({
           />
         ) : null}
         <View className="flex-1 min-w-0 p-2">
-          <View
-            className={cn(
-              "flex-row gap-2",
-              noteId ? "items-start" : "items-center"
-            )}
-          >
+          <View className="flex-row items-center gap-2">
+            {showFolderIcon ? <FolderTitleIcon /> : null}
             <View className="flex-1 min-w-0">
               {!isThoughtLeaf(thought) ? (
                 <>
@@ -499,23 +547,16 @@ export const ThoughtItem: React.FC<ThoughtItemProps> = ({
                 </>
               )}
             </View>
-            <View
-              className={cn(
-                "flex-row shrink-0 gap-4",
-                noteId ? "items-start" : "items-center"
-              )}
-            >
+            <View className="flex-row shrink-0 items-center gap-4">
               {canExpand ? (
-                <View className="mt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex-row items-center gap-2 px-1 self-start"
-                    onPress={() => setExpanded((prev) => !prev)}
-                  >
-                    <ExpandCaret expanded={expanded} />
-                  </Button>
-                </View>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-row items-center gap-2 px-1 self-center"
+                  onPress={() => setExpanded((prev) => !prev)}
+                >
+                  <ExpandCaret expanded={expanded} />
+                </Button>
               ) : null}
               {children ? (
                 <Button

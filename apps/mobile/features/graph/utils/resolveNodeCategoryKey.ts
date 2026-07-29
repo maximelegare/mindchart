@@ -1,23 +1,31 @@
 import { CategoryKey } from "@repo/sqlite";
 import { NodeDatum } from "../types/types";
 
+const asCategoryKey = (value: string | undefined): CategoryKey | undefined =>
+  value ? (value.toLowerCase() as CategoryKey) : undefined;
+
+/** Walk descendants until a categoryId is found (nested folders often omit it). */
+const findCategoryIdInTree = (node: NodeDatum): CategoryKey | undefined => {
+  const own = asCategoryKey(node.categoryId);
+  if (own) return own;
+  for (const child of node.children ?? []) {
+    const found = findCategoryIdInTree(child);
+    if (found) return found;
+  }
+  return undefined;
+};
+
 export const resolveNodeCategoryKey = (
   node: NodeDatum
 ): CategoryKey | undefined => {
-  if (node.categoryId) {
-    return node.categoryId.toLowerCase() as CategoryKey;
-  }
+  const own = asCategoryKey(node.categoryId);
+  if (own) return own;
 
   if (node.id.startsWith("category-") && node.name) {
-    return node.name.toLowerCase() as CategoryKey;
+    return asCategoryKey(node.name);
   }
 
-  const fromChild = node.children?.[0]?.categoryId;
-  if (fromChild) {
-    return fromChild.toLowerCase() as CategoryKey;
-  }
-
-  return undefined;
+  return findCategoryIdInTree(node);
 };
 
 export const resolveListItemCategoryShade = (

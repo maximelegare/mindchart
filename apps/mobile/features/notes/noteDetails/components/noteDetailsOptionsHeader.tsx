@@ -1,23 +1,25 @@
 import React, { useState } from "react";
 import { View } from "react-native";
-import { Topic } from "@repo/zod-schemas";
 import { Button, Typography } from "@/components/ui";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
-import { TopicSelector } from "@/features/notes/notePreview/topicSelector";
-import { FunnelFilterChip } from "@/features/contentList/components/optionsBar/components/funnelFilterChip";
+import {
+  FolderSelector,
+  type FolderSelection,
+} from "@/features/notes/notePreview/folderSelector";
+import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { Icon } from "@/components/ui/icons/icon";
 
 type NoteDetailsOptionsHeaderProps = {
-  topic: Topic | null;
-  onTopicSelect: (topic: Topic) => void;
+  folder: FolderSelection;
+  onFolderSelect: (folder: FolderSelection) => void;
   simplified: boolean;
   onSimplifiedChange: (simplified: boolean) => void;
 };
 
 export function NoteDetailsOptionsHeader({
-  topic,
-  onTopicSelect,
+  folder,
+  onFolderSelect,
   simplified,
   onSimplifiedChange,
 }: NoteDetailsOptionsHeaderProps) {
@@ -47,19 +49,17 @@ export function NoteDetailsOptionsHeader({
       }
     >
       <View className="flex-row items-center gap-3">
-        <FunnelFilterChip
+        <TriggerFilterChip
           icon="settings-2"
           selected={expanded}
           showDot={simplified}
           onPress={() => setExpanded((prev) => !prev)}
         />
-        {topic ? (
-          <TopicSelector
-            selectedTopic={topic}
-            onSelect={onTopicSelect}
-            maxChars={22}
-          />
-        ) : null}
+        <FolderSelector
+          selectedFolder={folder}
+          onSelect={onFolderSelect}
+          maxChars={22}
+        />
       </View>
     </PageOptionsHeaderContainer>
   );

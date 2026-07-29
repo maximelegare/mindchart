@@ -18,6 +18,10 @@ import {
 import { useSaveGeneratedNote } from "@/features/notes/noteCreation/features/generateNote/hooks/useSaveGeneratedNote";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { router } from "expo-router";
+import {
+  FolderSelector,
+  type FolderSelection,
+} from "@/features/notes/notePreview/folderSelector";
 
 const BUTTON_HEIGHT = 48;
 
@@ -55,6 +59,9 @@ export const GenerateNote = ({
   const { data: categoriesData } = useFetchAllCategoriesQuery({
     enabled: !!fileURI || !!inputText,
   });
+
+  const [selectedFolder, setSelectedFolder] =
+    React.useState<FolderSelection>(null);
 
   const isInputValid =
     currentView === "audio" ? !!fileURI : inputText.trim().length > 0;
@@ -114,7 +121,12 @@ export const GenerateNote = ({
         ),
       });
 
-      const noteId = await saveGeneratedNote({ note, thoughts, topic });
+      const noteId = await saveGeneratedNote({
+        note,
+        thoughts,
+        topic,
+        folderId: selectedFolder?.id ?? null,
+      });
 
       closeModal();
       onSuccess?.();
@@ -131,7 +143,12 @@ export const GenerateNote = ({
 
   if (variant === "centered") {
     return (
-      <View className="items-center px-4 pb-4 pt-2">
+      <View className="items-center gap-3 px-4 pb-4 pt-2">
+        <FolderSelector
+          selectedFolder={selectedFolder}
+          onSelect={setSelectedFolder}
+          maxChars={22}
+        />
         <Button
           variant="outline"
           size="lg"
@@ -172,17 +189,24 @@ export const GenerateNote = ({
 
   return (
     <KeyboardActionFooter>
-      <Button
-        onPress={handleGenerateNote}
-        disabled={isDisabled}
-        variant="secondary"
-        size="default"
-        cornerRadius="full"
-        className="flex-row items-center gap-2 px-6"
-      >
-        <Icon name="sparkles" color="card" />
-        <Typography variant="h4">Generate Note</Typography>
-      </Button>
+      <View className="flex-row items-center gap-3">
+        <FolderSelector
+          selectedFolder={selectedFolder}
+          onSelect={setSelectedFolder}
+          maxChars={14}
+        />
+        <Button
+          onPress={handleGenerateNote}
+          disabled={isDisabled}
+          variant="secondary"
+          size="default"
+          cornerRadius="full"
+          className="flex-row items-center gap-2 px-6"
+        >
+          <Icon name="sparkles" color="card" />
+          <Typography variant="h4">Generate Note</Typography>
+        </Button>
+      </View>
     </KeyboardActionFooter>
   );
 };

@@ -10,14 +10,13 @@ import { generateID } from "@/utils/genrateID";
 export const seedFormatNote = (
   data: SeedLocalAIResNoteSchemaModel
 ): { note: Note; thoughts: Thought[] } => {
-  console.log("data", data);
-  const { summary, thoughts, title, topicId } =
+  const { summary, thoughts, title, folderId } =
     SeedLocalAIResNoteSchema.parse(data);
 
   const noteId = generateID();
 
   const formatedNote = {
-    topicId,
+    folderId,
     id: noteId,
     title,
     summary,
@@ -40,7 +39,5 @@ export const seedFormatNote = (
     };
   });
 
-  const ret = { note: formatedNote, thoughts: formatedToughts };
-
-  return ret;
+  return { note: formatedNote, thoughts: formatedToughts };
 };

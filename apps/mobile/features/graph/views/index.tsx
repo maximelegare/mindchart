@@ -18,7 +18,7 @@ export const GraphFeature = ({
   trigger?: string;
 }) => {
   const renderMode = useGraphStore((state) => state.renderMode);
-  const selectedTopicId = useGraphStore((state) => state.selectedTopicId);
+  const selectedFolderId = useGraphStore((state) => state.selectedFolderId);
   const selectedCategoryId = useGraphStore((state) => state.selectedCategoryId);
   const { hierarchies, isLoading, refetchGraph, refetchSyncFlag } = useGraph();
 
@@ -27,10 +27,10 @@ export const GraphFeature = ({
     return filterGraphHierarchy(
       hierarchies[renderMode],
       renderMode,
-      selectedTopicId,
+      selectedFolderId,
       selectedCategoryId
     );
-  }, [hierarchies, renderMode, selectedTopicId, selectedCategoryId]);
+  }, [hierarchies, renderMode, selectedFolderId, selectedCategoryId]);
 
   const [selection, setSelection] = useState<{
     active: NodeDatum | null;
@@ -56,7 +56,7 @@ export const GraphFeature = ({
 
   useEffect(() => {
     setSelection({ active: null, parent: null });
-  }, [renderMode, selectedTopicId, selectedCategoryId]);
+  }, [renderMode, selectedFolderId, selectedCategoryId]);
 
   if (isLoading || !hierarchy) {
     return (
@@ -75,6 +75,7 @@ export const GraphFeature = ({
     <View className="flex-col gap-4 items-center flex-1">
       <CirclePackSkia
         data={hierarchy}
+        graphMode={renderMode}
         focusedThoughtId={focusedThoughtId}
         trigger={trigger}
         onNodeSelected={handleNodeSelected}

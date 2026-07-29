@@ -48,6 +48,9 @@ export const ThoughtSchema = z.object({
   title: z.string(),
   topicName: z.string().optional(),
   topicId: z.string().optional(),
+  folderId: z.string().nullable().optional(),
+  folderLabel: z.string().nullable().optional(),
+  folderPath: z.string().nullable().optional(),
   summary: z.string(),
   semanticLabel: z.string(),
   noteId: z.string(),
@@ -72,7 +75,18 @@ export const NoteSchema = z.object({
   rawText: z.string().default(""),
   topicId: z.string().nullable().optional(),
   topicName: z.string().nullable().optional(),
+  folderId: z.string().nullable().optional(),
+  folderLabel: z.string().nullable().optional(),
   createdAt: z.string().optional(),
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);
+
+export const FolderSchema = z.object({
+  id: z.string(),
+  path: z.string(),
+  label: z.string(),
+  createdAt: z.string().optional(),
+});
+
+export type Folder = z.infer<typeof FolderSchema>;

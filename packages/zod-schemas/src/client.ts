@@ -35,6 +35,8 @@ export const NotesJoinThoughtsPageSchema = z.object({
   note_created_at: z.string().nullable(),
   topic_id: z.string().nullable().optional(),
   topic_name: z.string().nullable().optional(),
+  folder_id: z.string().nullable().optional(),
+  folder_label: z.string().nullable().optional(),
   thoughts_json: z.string(),
 });
 
@@ -46,6 +48,8 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   rawText: z.string(),
   topicId: z.string().nullable().optional(),
   topicName: z.string().nullable().optional(),
+  folderId: z.string().nullable().optional(),
+  folderLabel: z.string().nullable().optional(),
   thoughts: z.array(ThoughtSchema),
 });
 
@@ -110,7 +114,7 @@ export const LocalAIResNoteSchema = z.object({
 });
 
 export const SeedLocalAIResNoteSchema = z.object({
-  topicId: z.string(),
+  folderId: z.string(),
   title: z.string(),
   summary: z.string(),
   thoughts: z.array(LocalAIResThoughtSchema),
@@ -141,7 +145,12 @@ export type LocalAIResNoteSchemaModel = z.infer<typeof LocalAIResNoteSchema>;
 export type LocalAIResThought = z.infer<typeof LocalAIResThoughtSchema>;
 export type PendingEmbedding = z.infer<typeof PendingEmbeddingSchema>;
 // Re-export shared schemas for convenience
-export { NoteSchema, ThoughtSchema, CategorySchema } from "./schemas";
+export {
+  NoteSchema,
+  ThoughtSchema,
+  CategorySchema,
+  FolderSchema,
+} from "./schemas";
 
 export type {
   Note,
@@ -150,4 +159,5 @@ export type {
   Category,
   Topic,
   Embedding,
+  Folder,
 } from "./schemas";

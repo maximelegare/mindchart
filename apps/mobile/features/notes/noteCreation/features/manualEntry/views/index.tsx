@@ -10,12 +10,9 @@ export function ManualModeFeature({ onSuccess }: { onSuccess?: () => void }) {
   const [formKey, setFormKey] = React.useState(0);
   const noteId = React.useMemo(() => generateID(), [formKey]);
 
-  const { categories, topics } = useControllers();
+  const { categories } = useControllers();
   const { useFetchAllCategoriesQuery } = categories;
-  const { useFetchAllTopicsQuery } = topics;
-
   const { data: categoriesData } = useFetchAllCategoriesQuery();
-  const { data: topicsData } = useFetchAllTopicsQuery();
 
   const handleSuccess = React.useCallback(() => {
     setFormKey((key) => key + 1);
@@ -23,16 +20,6 @@ export function ManualModeFeature({ onSuccess }: { onSuccess?: () => void }) {
   }, [onSuccess]);
 
   const { saveManualNote } = useSaveManualNote(handleSuccess);
-
-  if (!topicsData?.length) {
-    return (
-      <View className="flex-1 items-center justify-center px-6">
-        <Typography className="text-center text-muted-foreground">
-          Add a topic first in Manage Topics before creating a manual note.
-        </Typography>
-      </View>
-    );
-  }
 
   if (!categoriesData?.length) {
     return (
@@ -49,7 +36,6 @@ export function ManualModeFeature({ onSuccess }: { onSuccess?: () => void }) {
       <ManualNoteForm
         key={formKey}
         noteId={noteId}
-        defaultTopic={topicsData[0]}
         categories={categoriesData}
         onSubmit={saveManualNote}
       />

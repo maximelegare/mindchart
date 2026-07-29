@@ -1,15 +1,23 @@
-export type DisplayMode = "notes" | "topics" | "categories";
+export type DisplayMode = "notes" | "categories";
 
-export type DisplayKey = "notes" | "notes-overview" | "topics" | "categories";
+export type DisplayKey = "notes" | "notes-overview" | "categories";
+
+export type FoldersMode = "with" | "without";
 
 export type OptionsBar = {
   sortBy: "newest" | "oldest" | "az" | "za";
-  groupBy: "topics" | "categories" | "none";
+  groupBy: "folders" | "categories" | "none";
   displayMode: DisplayMode;
-  /** `null` = All topics */
-  selectedTopicId: string | null;
+  /** Browse via folders + breadcrumbs, or via folder/category filter chips */
+  foldersMode: FoldersMode;
+  /** `null` = All folders */
+  selectedFolderId: string | null;
   /** `null` = All categories */
   selectedCategoryId: string | null;
+  /** `null` = root (no folder selected) */
+  currentFolderId: string | null;
+  /** Right folder-tree sidebar visibility on the notes list */
+  folderTreeSidebarOpen: boolean;
 };
 
 export type UiKey = `groupBy=${OptionsBar["groupBy"]}&display=${DisplayKey}`;

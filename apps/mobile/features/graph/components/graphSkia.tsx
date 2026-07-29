@@ -26,12 +26,65 @@ import {
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
-import { NodeDatum } from "@/features/graph/types/types";
+import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { GRAPH_CANVAS_SIZE } from "../constants";
+
+const parseHslChannels = (hslColor: string) => {
+  const inside = hslColor.replace(/^hsla?\(|\)$/g, "").trim();
+  const parts = inside.includes(",")
+    ? inside.split(",").map((part) => part.trim())
+    : inside.split(/\s+/);
+  if (parts.length < 3) return null;
+  return {
+    h: parts[0],
+    s: parseFloat(parts[1].replace("%", "")),
+    l: parseFloat(parts[2].replace("%", "")),
+  };
+};
+
+/**
+ * Opaque blend of `base` toward `mixWith` — `strength` 1 = full base color.
+ * Values above 1 extrapolate past the base (richer / deeper).
+ */
+const mixHslToward = (base: string, mixWith: string, strength: number) => {
+  const from = parseHslChannels(base);
+  const to = parseHslChannels(mixWith);
+  if (!from || !to) return base;
+  const t = Math.max(0, strength);
+  const s = Math.min(100, Math.max(0, to.s + (from.s - to.s) * t));
+  const l = Math.min(100, Math.max(0, to.l + (from.l - to.l) * t));
+  return `hsl(${from.h}, ${s}%, ${l}%)`;
+};
+
+/** First pack layer tint; deepest pack layer tint; leaves stay white. */
+const PACK_STRENGTH_FIRST = 0.3;
+const PACK_STRENGTH_LAST = 1.5;
+
+/**
+ * Evenly divide tint from first→last across `layerCount` pack layers.
+ * 1 layer → last (150%); 2 → 30%/150%; 3 → 30%/90%/150%; …
+ */
+const packLayerStrength = (layerIndex: number, layerCount: number) => {
+  if (layerCount <= 1) return PACK_STRENGTH_LAST;
+  const t =
+    Math.min(Math.max(layerIndex, 0), layerCount - 1) / (layerCount - 1);
+  return PACK_STRENGTH_FIRST + (PACK_STRENGTH_LAST - PACK_STRENGTH_FIRST) * t;
+};
+
+/** Neutral mix target (no theme-green card tint in S/L). */
+const neutralMixTarget = (
+  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
+) => (colorScheme === "dark" ? "hsl(0, 0%, 12%)" : "hsl(0, 0%, 100%)");
+
+const tintWithStrength = (
+  base: string,
+  strength: number,
+  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
+) => mixHslToward(base, neutralMixTarget(colorScheme), strength);
 
 const SIZE = GRAPH_CANVAS_SIZE;
 const PACK_PADDING = 8;
@@ -58,6 +111,62 @@ type Layout = {
   rootNode: NodeInfo;
   allNodes: NodeInfo[];
   nodeMap: Map<string, NodeInfo>;
+};
+
+const isCategoryPackNode = (node: NodeInfo) =>
+  node.dbId.startsWith("category-");
+
+const findCategoryPackAncestor = (
+  node: NodeInfo,
+  nodeMap: Map<string, NodeInfo>,
+  rootNode: NodeInfo
+): NodeInfo | null => {
+  let current: NodeInfo | undefined = node;
+  while (current) {
+    if (isCategoryPackNode(current)) return current;
+    current = current.parentId ? nodeMap.get(current.parentId) : undefined;
+  }
+  // Filtered view: the pack root is the category itself.
+  if (isCategoryPackNode(rootNode)) return rootNode;
+  return null;
+};
+
+/**
+ * Pack-layer counts for the shared 30%→150% ladder.
+ * Category mode: keyed by category internalId.
+ * Folder mode: keyed by root internalId (synthetic graph root is excluded from tint).
+ */
+const computePackLayerCounts = (
+  allNodes: NodeInfo[],
+  nodeMap: Map<string, NodeInfo>,
+  rootNode: NodeInfo,
+  graphMode: GraphMode,
+  data: NodeDatum
+) => {
+  const counts = new Map<string, number>();
+  const skipSyntheticRoot = isSyntheticRoot(data);
+
+  for (const node of allNodes) {
+    if (!node.hasChildren) continue;
+
+    if (graphMode === "folder") {
+      // Graph root shell stays neutral — ladder starts at first real folders.
+      if (skipSyntheticRoot && node.depth === 0) continue;
+      const layerIndex = skipSyntheticRoot ? node.depth - 1 : node.depth;
+      const layers = layerIndex + 1;
+      const prev = counts.get(rootNode.internalId) ?? 1;
+      if (layers > prev) counts.set(rootNode.internalId, layers);
+      continue;
+    }
+
+    const category = findCategoryPackAncestor(node, nodeMap, rootNode);
+    if (!category) continue;
+    const layers = node.depth - category.depth + 1;
+    const prev = counts.get(category.internalId) ?? 1;
+    if (layers > prev) counts.set(category.internalId, layers);
+  }
+
+  return counts;
 };
 
 // Module-level cache: d3 hierarchy + circle-pack layout.
@@ -120,12 +229,12 @@ const getOrComputeLayout = (
 
 export const warmupGraphLayouts = (cache: {
   category: NodeDatum;
-  topic: NodeDatum;
+  folder: NodeDatum;
 }) => {
   setTimeout(() => {
     getOrComputeLayout(cache.category, PACK_PADDING);
     setTimeout(() => {
-      getOrComputeLayout(cache.topic, PACK_PADDING);
+      getOrComputeLayout(cache.folder, PACK_PADDING);
     }, 0);
   }, 0);
 };
@@ -216,6 +325,7 @@ const buildHatchLines = (r: number, lineColor: string) => {
 
 interface Props {
   data: NodeDatum;
+  graphMode?: GraphMode;
   focusedThoughtId?: string;
   trigger?: string | number;
   onNodeSelected?: (node: NodeDatum, parent?: NodeDatum) => void;
@@ -274,6 +384,7 @@ export default function CirclePackSkia(props: Props) {
 function CirclePackSkiaRenderer({
   data,
   layout,
+  graphMode = "category",
   focusedThoughtId,
   trigger,
   onNodeSelected,
@@ -418,32 +529,47 @@ function CirclePackSkiaRenderer({
     else navigateToNode(rootNode, false, true);
   };
 
+  const packLayerCounts = useMemo(
+    () => computePackLayerCounts(allNodes, nodeMap, rootNode, graphMode, data),
+    [allNodes, data, graphMode, nodeMap, rootNode]
+  );
+
   // ---------- 6. Dynamic Color Logic ----------
   const getNodeColor = (node: NodeInfo) => {
     if (!node.hasChildren) return "white";
 
-    const cat = resolveNodeCategoryKey(node.rawData);
-    const filteredRoot = !isSyntheticRoot(data);
-
-    // Full graph: neutral root shell. Filtered: depth 0 is the category/topic itself.
-    if (node.depth === 0 && !filteredRoot) {
-      return hsl("card", colorScheme);
+    // Synthetic graph root stays neutral — not the same tint as first real nodes.
+    if (node.depth === 0 && isSyntheticRoot(data)) {
+      return neutralMixTarget(colorScheme);
     }
 
-    if (!cat) return hsl("border", colorScheme);
+    if (graphMode === "folder") {
+      const layerCount = packLayerCounts.get(rootNode.internalId) ?? 1;
+      const layerIndex = isSyntheticRoot(data) ? node.depth - 1 : node.depth;
+      return tintWithStrength(
+        hsl("primary", colorScheme),
+        packLayerStrength(Math.max(0, layerIndex), layerCount),
+        colorScheme
+      );
+    }
 
-    const palette = filteredRoot
-      ? [
-          hsl(cat, colorScheme, undefined, "categories"),
-          hsl(cat, colorScheme, 50, "categories"),
-        ]
-      : [
-          hsl("card", colorScheme),
-          hsl(cat, colorScheme, undefined, "categories"),
-          hsl(cat, colorScheme, 50, "categories"),
-        ];
+    const category = findCategoryPackAncestor(node, nodeMap, rootNode);
+    const cat =
+      resolveNodeCategoryKey(node.rawData) ??
+      (category ? resolveNodeCategoryKey(category.rawData) : undefined);
 
-    return palette[node.depth] || palette[palette.length - 1];
+    if (!cat) return neutralMixTarget(colorScheme);
+
+    const layerIndex = category ? Math.max(0, node.depth - category.depth) : 0;
+    const layerCount = category
+      ? (packLayerCounts.get(category.internalId) ?? 1)
+      : 1;
+
+    return tintWithStrength(
+      hsl(cat, colorScheme, undefined, "categories"),
+      packLayerStrength(layerIndex, layerCount),
+      colorScheme
+    );
   };
 
   const focusedDbId = focusedThoughtId ? String(focusedThoughtId) : undefined;
@@ -492,7 +618,7 @@ function CirclePackSkiaRenderer({
         style={[
           styles.wrapper,
           {
-            backgroundColor: hsl("card", colorScheme),
+            backgroundColor: neutralMixTarget(colorScheme),
             borderColor: hsl("border", colorScheme),
           },
         ]}

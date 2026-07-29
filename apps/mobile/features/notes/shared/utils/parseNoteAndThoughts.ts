@@ -38,6 +38,8 @@ export const parseNoteAndThoughts = (
     createdAt: row.note_created_at ?? undefined,
     topicId: row.topic_id ?? undefined,
     topicName: row.topic_name ?? undefined,
+    folderId: row.folder_id ?? undefined,
+    folderLabel: row.folder_label ?? undefined,
     thoughts: (typeof row.thoughts_json === "string"
       ? JSON.parse(row.thoughts_json)
       : Array.isArray(row.thoughts_json)

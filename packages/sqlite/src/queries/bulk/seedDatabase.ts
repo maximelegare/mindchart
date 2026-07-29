@@ -2,14 +2,14 @@ import { DB } from "../../utils/initialize/getOPDatabase";
 
 import type {
   Embedding,
+  Folder,
   Note,
   Thought,
-  Topic,
 } from "../../../../zod-schemas/src/schemas";
 import { insertNoteQuery } from "../notes/insertNote";
 import { insertThoughtsQuery } from "../thoughts/insertThoughts";
 import { insertEmbeddingsQuery } from "../embeddings/insertEmbeddings";
-import { insertTopicsQuery } from "../topics/insertTopics";
+import { insertFoldersQuery } from "../folders/insertFolders";
 
 export async function seedDatabaseQuery(
   db: DB,
@@ -17,23 +17,19 @@ export async function seedDatabaseQuery(
     notes: Note[];
     thoughts: Thought[];
     embeddings: Embedding[];
-    topics: Topic[];
+    folders: Folder[];
   }
 ) {
   await db.transaction(async (tx) => {
     try {
-      // 0. Topics
-      await insertTopicsQuery(tx, data.topics);
+      await insertFoldersQuery(tx, data.folders);
 
-      // 1. Notes
       for (const note of data.notes) {
         await insertNoteQuery(tx, note);
       }
 
-      // 2. Thoughts
       await insertThoughtsQuery(tx, data.thoughts);
 
-      // 3. Embeddings
       await insertEmbeddingsQuery(tx, data.embeddings);
     } catch (error) {
       console.error(error);

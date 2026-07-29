@@ -5,6 +5,7 @@ const NOTES_LIST_QUERY_KEYS = [
   REACT_QUERY_KEYS.fetchNotesAndThoughts,
   REACT_QUERY_KEYS.fetchNotes,
   REACT_QUERY_KEYS.fetchAllTopicsWithNotesInfos,
+  REACT_QUERY_KEYS.fetchAllFoldersWithNotesInfos,
   REACT_QUERY_KEYS.fetchAllTopics,
   REACT_QUERY_KEYS.fetchNoteDetails,
   REACT_QUERY_KEYS.fetchAllThoughtsGroupByCategory,
