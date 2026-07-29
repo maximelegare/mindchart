@@ -42,9 +42,29 @@ export type FolderPickerBrowserProps = {
   dismissOnSelect?: boolean;
   /** Prefix for the confirm button, e.g. "Move into" → "Move into Work". */
   actionVerb?: string;
+  /**
+   * When set, confirm button reads `from "source" to "destination"`
+   * instead of `{actionVerb} "destination"`.
+   */
+  fromLabel?: string | null;
+  /** Max characters for folder names on the confirm button. */
+  labelMaxChars?: number;
+  /**
+   * When true, mark `selectedFolder` (or root if null) in the tree with a
+   * light map-pin as the item's current location.
+   */
+  showLocationPin?: boolean;
   /** When false, that destination cannot be chosen (still browsable). */
   isDestinationEnabled?: (folder: FolderSelection) => boolean;
 };
+
+const DEFAULT_LABEL_MAX_CHARS = 16;
+
+function truncateFolderLabel(label: string, maxChars: number): string {
+  const trimmed = label.trim();
+  if (trimmed.length <= maxChars) return trimmed;
+  return `${trimmed.slice(0, maxChars)}…`;
+}
 
 export const FolderSelector = ({
   onSelect,
@@ -135,29 +155,44 @@ export const FolderSelector = ({
 
 type FolderPickerSheetProps = {
   title?: string;
+  /** Structured move header: small "Move" + icon + quoted name. */
+  moveTarget?: {
+    name: string;
+    kind: "file" | "folder";
+  };
   selectedFolder: FolderSelection;
   excludePathPrefix?: string | null;
   rootLabel?: string;
+  /** When false, root cannot be chosen as the destination. */
+  allowRoot?: boolean;
   onSelect: (folder: FolderSelection) => void;
   sheet: ReturnType<typeof useBottomSheet>;
   active: boolean;
   onDismiss?: () => void;
   isDestinationEnabled?: (folder: FolderSelection) => boolean;
   actionVerb?: string;
+  fromLabel?: string | null;
+  labelMaxChars?: number;
+  showLocationPin?: boolean;
 };
 
 /** Imperative bottom sheet hosting the folder browser (for Move actions). */
 export const FolderPickerSheet = ({
   title = "Move to…",
+  moveTarget,
   selectedFolder,
   excludePathPrefix,
   rootLabel = "No folder",
+  allowRoot = true,
   onSelect,
   sheet,
   active,
   onDismiss,
   isDestinationEnabled,
   actionVerb = "Move into",
+  fromLabel,
+  labelMaxChars,
+  showLocationPin = false,
 }: FolderPickerSheetProps) => {
   const { folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery({
@@ -178,18 +213,51 @@ export const FolderPickerSheet = ({
         {active ? (
           <BottomSheetView className="flex-1 h-full gap-4 pt-4 px-4 pb-6 bg-background">
             <BottomSheetHeader className="bg-background" onDismiss={onDismiss}>
-              <Typography className="text-foreground text-xl font-bold pb-1">
-                {title}
-              </Typography>
+              {moveTarget ? (
+                <View className="min-w-0 flex-1 flex-row items-center gap-3 pb-1 pr-2">
+                  <Typography
+                    variant="h4"
+                    // className="shrink-0 text-muted-foreground"
+                  >
+                    Move:
+                  </Typography>
+                  <View className="flex-row items-center gap-1">
+                    <Icon
+                      name={
+                        moveTarget.kind === "folder"
+                          ? "folder"
+                          : "notebook-text"
+                      }
+                      color="foreground"
+                      size={16}
+                    />
+                    <Typography
+                      variant="h3"
+                      className="min-w-0 flex-1"
+                      numberOfLines={1}
+                    >
+                      {moveTarget.name}
+                    </Typography>
+                  </View>
+                </View>
+              ) : (
+                <Typography variant="h3" numberOfLines={1}>
+                  {title}
+                </Typography>
+              )}
             </BottomSheetHeader>
             <FolderPickerBrowser
               folders={allFolders ?? []}
               selectedFolder={selectedFolder}
               excludePathPrefix={excludePathPrefix}
               rootLabel={rootLabel}
+              allowRoot={allowRoot}
               onSelect={onSelect}
               dismissOnSelect
               actionVerb={actionVerb}
+              fromLabel={fromLabel}
+              labelMaxChars={labelMaxChars}
+              showLocationPin={showLocationPin}
               isDestinationEnabled={isDestinationEnabled}
             />
           </BottomSheetView>
@@ -208,10 +276,15 @@ export function FolderPickerBrowser({
   allowRoot = true,
   dismissOnSelect = true,
   actionVerb = "Move into",
+  fromLabel = null,
+  labelMaxChars = DEFAULT_LABEL_MAX_CHARS,
+  showLocationPin = false,
   isDestinationEnabled,
 }: FolderPickerBrowserProps) {
   const { dismiss } = useBottomSheetModal();
   const { colorScheme } = useColorScheme();
+  const { notesAndThoughts } = useControllers();
+  const { data: allNotes = [] } = notesAndThoughts.useFetchAllNotesQuery();
 
   const foldersById = useMemo(
     () => new Map(folders.map((folder) => [folder.id, folder])),
@@ -258,6 +331,18 @@ export function FolderPickerBrowser({
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [browseFolder?.path, visibleFolders]);
 
+  const childFiles = useMemo(() => {
+    return (allNotes ?? [])
+      .filter((note) => (note.folder_id ?? null) === browseFolderId)
+      .map((note) => ({
+        id: note.id,
+        title: (note.title as string)?.trim() || "Untitled",
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }, [allNotes, browseFolderId]);
+
+  const contentIsEmpty = childFolders.length === 0 && childFiles.length === 0;
+
   const breadcrumbItems = useMemo(() => {
     const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
     if (!browseFolder) return [root];
@@ -283,6 +368,13 @@ export function FolderPickerBrowser({
 
   const destinationLabel =
     browseFolder?.label ?? (rootLabel === "Move to root" ? "Root" : rootLabel);
+  const truncatedDestination = truncateFolderLabel(
+    destinationLabel,
+    labelMaxChars
+  );
+  const truncatedFrom = fromLabel
+    ? truncateFolderLabel(fromLabel, labelMaxChars)
+    : null;
 
   const handleConfirm = () => {
     if (!destinationEnabled) return;
@@ -344,6 +436,8 @@ export function FolderPickerBrowser({
               excludePathPrefix={excludePathPrefix}
               rootLabel="Root"
               className="flex-1"
+              showLocationPin={showLocationPin}
+              locationPinFolderId={selectedFolder?.id ?? null}
             />
           </View>
 
@@ -363,7 +457,7 @@ export function FolderPickerBrowser({
                     paddingHorizontal: 4,
                   }}
                 >
-                  {childFolders.length === 0 ? (
+                  {contentIsEmpty ? (
                     <Typography
                       variant="p"
                       className="px-2 py-6 text-muted-foreground text-center"
@@ -371,27 +465,51 @@ export function FolderPickerBrowser({
                       Empty folder
                     </Typography>
                   ) : (
-                    childFolders.map((folder) => (
-                      <Pressable
-                        key={folder.id}
-                        className="flex-row items-center gap-1.5 rounded-lg border border-transparent px-2 py-2"
-                        onPress={() => setBrowseFolderId(folder.id)}
-                      >
-                        <Icon
-                          name="folder"
-                          color="muted-foreground"
-                          size={14}
-                        />
-                        <Typography className="flex-1" numberOfLines={1}>
-                          {folder.label}
-                        </Typography>
-                        <Icon
-                          name="chevron-right"
-                          color="muted-foreground"
-                          size={14}
-                        />
-                      </Pressable>
-                    ))
+                    <>
+                      {childFolders.map((folder) => (
+                        <Pressable
+                          key={folder.id}
+                          className="flex-row items-center gap-1.5 rounded-lg border border-transparent px-2 py-2"
+                          onPress={() => setBrowseFolderId(folder.id)}
+                        >
+                          <Icon
+                            name="folder"
+                            color="muted-foreground"
+                            size={14}
+                          />
+                          <Typography className="flex-1" numberOfLines={1}>
+                            {folder.label}
+                          </Typography>
+                          <Icon
+                            name="chevron-right"
+                            color="muted-foreground"
+                            size={14}
+                          />
+                        </Pressable>
+                      ))}
+                      {childFiles.map((file) => (
+                        <View
+                          key={file.id}
+                          className="flex-row items-center gap-1.5 rounded-lg px-2 py-2 opacity-50"
+                          accessible
+                          accessibilityRole="text"
+                          accessibilityState={{ disabled: true }}
+                          accessibilityLabel={`${file.title}, note`}
+                        >
+                          <Icon
+                            name="notebook-text"
+                            color="muted-foreground"
+                            size={14}
+                          />
+                          <Typography
+                            className="flex-1 text-muted-foreground"
+                            numberOfLines={1}
+                          >
+                            {file.title}
+                          </Typography>
+                        </View>
+                      ))}
+                    </>
                   )}
                 </ScrollView>
               </View>
@@ -412,12 +530,55 @@ export function FolderPickerBrowser({
         }}
       >
         <View className="flex-row items-center gap-1.5">
-          <Typography variant="h4" style={{ opacity: 0.6 }} numberOfLines={1}>
-            {actionVerb}
-          </Typography>
-          <Typography variant="h4" className="font-semibold" numberOfLines={1}>
-            "{destinationLabel}"
-          </Typography>
+          {truncatedFrom ? (
+            <>
+              <Typography
+                variant="h4"
+                style={{ opacity: 0.6 }}
+                numberOfLines={1}
+              >
+                from
+              </Typography>
+              <Typography
+                variant="h4"
+                className="font-semibold"
+                numberOfLines={1}
+              >
+                "{truncatedFrom}"
+              </Typography>
+              <Typography
+                variant="h4"
+                style={{ opacity: 0.6 }}
+                numberOfLines={1}
+              >
+                to
+              </Typography>
+              <Typography
+                variant="h4"
+                className="font-semibold"
+                numberOfLines={1}
+              >
+                "{truncatedDestination}"
+              </Typography>
+            </>
+          ) : (
+            <>
+              <Typography
+                variant="h4"
+                style={{ opacity: 0.6 }}
+                numberOfLines={1}
+              >
+                {actionVerb}
+              </Typography>
+              <Typography
+                variant="h4"
+                className="font-semibold"
+                numberOfLines={1}
+              >
+                "{truncatedDestination}"
+              </Typography>
+            </>
+          )}
         </View>
       </Button>
     </View>
