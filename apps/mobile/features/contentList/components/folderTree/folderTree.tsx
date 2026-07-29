@@ -132,7 +132,7 @@ export function FolderTree({
       <FolderTreeRow
         label={rootLabel}
         depth={0}
-        kind="folder"
+        kind="root"
         isCurrent={selectedFolderId === null && !selectedFileId}
         hasChildren={rootHasChildren}
         expanded={expandedIds.has(FOLDER_TREE_ROOT_ID)}
@@ -299,7 +299,7 @@ function FolderTreeRow({
 }: {
   label: string;
   depth: number;
-  kind: "folder" | "file";
+  kind: "root" | "folder" | "file";
   isCurrent: boolean;
   hasChildren: boolean;
   expanded: boolean;
@@ -307,6 +307,9 @@ function FolderTreeRow({
   onToggle: () => void;
   onNavigate: () => void;
 }) {
+  const iconName =
+    kind === "root" ? "house" : kind === "folder" ? "folder" : "notebook-text";
+
   return (
     <View
       className={cn(
@@ -339,18 +342,19 @@ function FolderTreeRow({
       <Pressable
         onPress={onNavigate}
         className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
+        accessibilityLabel={kind === "root" ? "Root" : label}
       >
         <Icon
-          name={kind === "folder" ? "folder" : "notebook-text"}
+          name={iconName}
           color={isCurrent ? "foreground" : "muted-foreground"}
-          size={14}
+          size={kind === "root" ? 16 : 14}
         />
         <Typography
           variant="p"
           className={cn("flex-1", isCurrent ? "font-semibold" : "")}
           numberOfLines={1}
         >
-          {label}
+          {kind === "root" ? "Root" : label}
         </Typography>
       </Pressable>
     </View>

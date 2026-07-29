@@ -368,12 +368,7 @@ export const OptionsBar = () => {
           <View className="shrink-0">{folderTreeToggle}</View>
         </View>
       ) : (
-        <View className="h-full w-full flex-row items-center gap-2">
-          <View className="min-w-0 flex-1">
-            <ContentListFilterChips leading={settingsToggle} />
-          </View>
-          <View className="shrink-0">{folderTreeToggle}</View>
-        </View>
+        <ContentListFilterChips leading={settingsToggle} />
       )}
     </PageOptionsHeaderContainer>
   );

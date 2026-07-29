@@ -5,7 +5,7 @@ export const OPTIONS_BAR_DEFAULTS = {
   sortBy: "newest",
   groupBy: "folders",
   displayMode: "notes",
-  foldersMode: "without",
+  foldersMode: "with",
   selectedFolderId: null,
   selectedCategoryId: null,
   currentFolderId: null,
@@ -43,6 +43,8 @@ export const useOptionsBar = create<OptionsBarStore>((set) => ({
       foldersMode,
       // Leave folder navigation when switching back to filter chips.
       currentFolderId: foldersMode === "without" ? null : state.currentFolderId,
+      folderTreeSidebarOpen:
+        foldersMode === "without" ? false : state.folderTreeSidebarOpen,
     })),
   handleSelectedFolderChange: (selectedFolderId) => set({ selectedFolderId }),
   handleSelectedCategoryChange: (selectedCategoryId) =>
