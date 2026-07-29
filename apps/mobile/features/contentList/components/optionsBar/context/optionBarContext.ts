@@ -9,6 +9,7 @@ export const OPTIONS_BAR_DEFAULTS = {
   selectedFolderId: null,
   selectedCategoryId: null,
   currentFolderId: null,
+  folderTreeSidebarOpen: false,
 } as const satisfies OptionsBar;
 
 export type OptionsBarStore = OptionsBar & {
@@ -19,6 +20,8 @@ export type OptionsBarStore = OptionsBar & {
   handleSelectedFolderChange: (folderId: string | null) => void;
   handleSelectedCategoryChange: (categoryId: string | null) => void;
   handleCurrentFolderChange: (folderId: string | null) => void;
+  setFolderTreeSidebarOpen: (open: boolean) => void;
+  toggleFolderTreeSidebar: () => void;
 };
 
 export const useOptionsBar = create<OptionsBarStore>((set) => ({
@@ -45,4 +48,8 @@ export const useOptionsBar = create<OptionsBarStore>((set) => ({
   handleSelectedCategoryChange: (selectedCategoryId) =>
     set({ selectedCategoryId }),
   handleCurrentFolderChange: (currentFolderId) => set({ currentFolderId }),
+  setFolderTreeSidebarOpen: (folderTreeSidebarOpen) =>
+    set({ folderTreeSidebarOpen }),
+  toggleFolderTreeSidebar: () =>
+    set((state) => ({ folderTreeSidebarOpen: !state.folderTreeSidebarOpen })),
 }));

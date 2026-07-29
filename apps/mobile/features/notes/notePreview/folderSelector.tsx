@@ -1,10 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
-import {
-  getFolderIdsFromPath,
-  getParentFolderPath,
-  isFolderPathUnder,
-} from "@repo/sqlite";
+import { getFolderIdsFromPath, isFolderPathUnder } from "@repo/sqlite";
 import {
   BottomSheet,
   BottomSheetContent,
@@ -22,39 +18,15 @@ import { hsl } from "@/utils/hsl";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Icon } from "@/components/ui/icons/icon";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
-import { cn } from "@/lib/cn";
+import { FolderTree } from "@/features/contentList/components/folderTree/folderTree";
+import {
+  FOLDER_TREE_ROOT_ID,
+  FolderSelection,
+  filterFoldersExcludingPath,
+  isDirectChild,
+} from "@/features/contentList/components/folderTree/folderTreeUtils";
 
-export type FolderSelection = Folder | null;
-
-const ROOT_ID = "root";
-
-const isDirectChild = (parentPath: string | null, folder: Folder) => {
-  if (parentPath === null) {
-    return getParentFolderPath(folder.path) === null;
-  }
-  return getParentFolderPath(folder.path) === parentPath;
-};
-
-const parentIdOf = (folder: Folder): string | null => {
-  const parentPath = getParentFolderPath(folder.path);
-  if (!parentPath) return null;
-  return parentPath.split("/").filter(Boolean).pop() ?? null;
-};
-
-/** Children keyed by parent folder id (`null` = root). */
-const buildChildrenByParentId = (folders: Folder[]) => {
-  const map = new Map<string | null, Folder[]>();
-  for (const folder of folders) {
-    const parentId = parentIdOf(folder);
-    const list = map.get(parentId) ?? [];
-    list.push(folder);
-    map.set(parentId, list);
-  }
-  for (const list of map.values()) {
-    list.sort((a, b) => a.label.localeCompare(b.label));
-  }
-  return map;
-};
+export type { FolderSelection };
 
 export type FolderPickerBrowserProps = {
   folders: Folder[];
@@ -216,16 +188,9 @@ export function FolderPickerBrowser({
     [folders]
   );
 
-  const visibleFolders = useMemo(() => {
-    if (!excludePathPrefix) return folders;
-    return folders.filter(
-      (folder) => !isFolderPathUnder(excludePathPrefix, folder.path)
-    );
-  }, [excludePathPrefix, folders]);
-
-  const childrenByParentId = useMemo(
-    () => buildChildrenByParentId(visibleFolders),
-    [visibleFolders]
+  const visibleFolders = useMemo(
+    () => filterFoldersExcludingPath(folders, excludePathPrefix),
+    [excludePathPrefix, folders]
   );
 
   // Start browsing at the selected folder (or root), unless excluded.
@@ -240,33 +205,21 @@ export function FolderPickerBrowser({
     return selectedFolder.id;
   });
 
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
-    const initial = new Set<string>([ROOT_ID]);
-    if (selectedFolder) {
-      for (const id of getFolderIdsFromPath(selectedFolder.path)) {
-        initial.add(id);
-      }
-    }
-    return initial;
-  });
-
   const browseFolder = browseFolderId
     ? (foldersById.get(browseFolderId) ?? null)
     : null;
 
-  // Keep the tree open along the path to the current location.
+  // Keep browse id in sync if the selected folder changes externally.
   useEffect(() => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      next.add(ROOT_ID);
-      if (browseFolder) {
-        for (const id of getFolderIdsFromPath(browseFolder.path)) {
-          next.add(id);
-        }
-      }
-      return next;
-    });
-  }, [browseFolder]);
+    if (!selectedFolder) return;
+    if (
+      excludePathPrefix &&
+      isFolderPathUnder(excludePathPrefix, selectedFolder.path)
+    ) {
+      return;
+    }
+    setBrowseFolderId(selectedFolder.id);
+  }, [excludePathPrefix, selectedFolder]);
 
   const childFolders = useMemo(() => {
     const parentPath = browseFolder?.path ?? null;
@@ -276,7 +229,7 @@ export function FolderPickerBrowser({
   }, [browseFolder?.path, visibleFolders]);
 
   const breadcrumbItems = useMemo(() => {
-    const root = { id: ROOT_ID, name: "Root" };
+    const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
     if (!browseFolder) return [root];
     const ids = getFolderIdsFromPath(browseFolder.path).filter((id) => {
       const folder = foldersById.get(id);
@@ -307,15 +260,6 @@ export function FolderPickerBrowser({
     if (dismissOnSelect) dismiss();
   };
 
-  const toggleExpanded = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const paneBorder = hsl("border", colorScheme);
   const currentBg = hsl("card", colorScheme);
   const [showContentPanel, setShowContentPanel] = useState(true);
@@ -328,7 +272,9 @@ export function FolderPickerBrowser({
       >
         <Breadcrumbs
           items={breadcrumbItems}
-          onNavigate={(id) => setBrowseFolderId(id === ROOT_ID ? null : id)}
+          onNavigate={(id) =>
+            setBrowseFolderId(id === FOLDER_TREE_ROOT_ID ? null : id)
+          }
         />
       </View>
 
@@ -360,54 +306,24 @@ export function FolderPickerBrowser({
         </View>
 
         <View className="flex-1 flex-row">
-          {/* Left: expandable folder tree */}
           <View className="flex-1">
-            <ScrollView
-              nestedScrollEnabled
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{
-                paddingVertical: 4,
-                paddingHorizontal: 4,
-              }}
-            >
-              <FolderTreeRow
-                id={ROOT_ID}
-                label="Root"
-                depth={0}
-                isCurrent={browseFolderId === null}
-                hasChildren={(childrenByParentId.get(null) ?? []).length > 0}
-                expanded={expandedIds.has(ROOT_ID)}
-                borderColor={paneBorder}
-                onToggle={() => toggleExpanded(ROOT_ID)}
-                onNavigate={() => setBrowseFolderId(null)}
-              />
-              {expandedIds.has(ROOT_ID)
-                ? (childrenByParentId.get(null) ?? []).map((folder) => (
-                    <FolderTreeBranch
-                      key={folder.id}
-                      folder={folder}
-                      depth={1}
-                      childrenByParentId={childrenByParentId}
-                      expandedIds={expandedIds}
-                      browseFolderId={browseFolderId}
-                      borderColor={paneBorder}
-                      onToggle={toggleExpanded}
-                      onNavigate={setBrowseFolderId}
-                    />
-                  ))
-                : null}
-            </ScrollView>
+            <FolderTree
+              folders={folders}
+              selectedFolderId={browseFolderId}
+              onSelect={setBrowseFolderId}
+              excludePathPrefix={excludePathPrefix}
+              rootLabel="Root"
+              className="flex-1"
+            />
           </View>
 
           {showContentPanel ? (
             <>
-              {/* Divider between location tree and contents */}
               <View
                 className="self-stretch"
                 style={{ width: 1, backgroundColor: paneBorder }}
               />
 
-              {/* Right: contents of the browsed folder */}
               <View className="flex-1">
                 <ScrollView
                   nestedScrollEnabled
@@ -474,130 +390,6 @@ export function FolderPickerBrowser({
           </Typography>
         </View>
       </Button>
-    </View>
-  );
-}
-
-function FolderTreeBranch({
-  folder,
-  depth,
-  childrenByParentId,
-  expandedIds,
-  browseFolderId,
-  borderColor,
-  onToggle,
-  onNavigate,
-}: {
-  folder: Folder;
-  depth: number;
-  childrenByParentId: Map<string | null, Folder[]>;
-  expandedIds: Set<string>;
-  browseFolderId: string | null;
-  borderColor: string;
-  onToggle: (id: string) => void;
-  onNavigate: (id: string) => void;
-}) {
-  const children = childrenByParentId.get(folder.id) ?? [];
-  const expanded = expandedIds.has(folder.id);
-
-  return (
-    <>
-      <FolderTreeRow
-        id={folder.id}
-        label={folder.label}
-        depth={depth}
-        isCurrent={browseFolderId === folder.id}
-        hasChildren={children.length > 0}
-        expanded={expanded}
-        borderColor={borderColor}
-        onToggle={() => onToggle(folder.id)}
-        onNavigate={() => onNavigate(folder.id)}
-      />
-      {expanded
-        ? children.map((child) => (
-            <FolderTreeBranch
-              key={child.id}
-              folder={child}
-              depth={depth + 1}
-              childrenByParentId={childrenByParentId}
-              expandedIds={expandedIds}
-              browseFolderId={browseFolderId}
-              borderColor={borderColor}
-              onToggle={onToggle}
-              onNavigate={onNavigate}
-            />
-          ))
-        : null}
-    </>
-  );
-}
-
-function FolderTreeRow({
-  label,
-  depth,
-  isCurrent,
-  hasChildren,
-  expanded,
-  borderColor,
-  onToggle,
-  onNavigate,
-}: {
-  id: string;
-  label: string;
-  depth: number;
-  isCurrent: boolean;
-  hasChildren: boolean;
-  expanded: boolean;
-  borderColor: string;
-  onToggle: () => void;
-  onNavigate: () => void;
-}) {
-  return (
-    <View
-      className={cn(
-        "flex-row items-center rounded-2xl border border-transparent",
-        isCurrent ? "opacity-100" : "opacity-90"
-      )}
-      style={{
-        paddingLeft: 4 + depth * 12,
-        backgroundColor: isCurrent ? borderColor : "transparent",
-      }}
-    >
-      {hasChildren ? (
-        <Pressable
-          onPress={onToggle}
-          hitSlop={8}
-          className="h-8 w-7 items-center justify-center"
-          accessibilityRole="button"
-          accessibilityLabel={expanded ? "Collapse" : "Expand"}
-        >
-          <Icon
-            name={expanded ? "chevron-down" : "chevron-right"}
-            color="muted-foreground"
-            size={14}
-          />
-        </Pressable>
-      ) : (
-        <View className="h-8 w-7" />
-      )}
-
-      <Pressable
-        onPress={onNavigate}
-        className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
-      >
-        <Icon
-          name="folder"
-          color={isCurrent ? "foreground" : "muted-foreground"}
-          size={14}
-        />
-        <Typography
-          variant="p"
-          className={cn("flex-1", isCurrent ? "font-semibold" : "")}
-          numberOfLines={1}
-        >
-          {label}
-        </Typography>
-      </Pressable>
     </View>
   );
 }

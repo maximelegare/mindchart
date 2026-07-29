@@ -164,6 +164,12 @@ export const OptionsBar = () => {
   const handleFoldersModeChange = useOptionsBar(
     (state) => state.handleFoldersModeChange
   );
+  const folderTreeSidebarOpen = useOptionsBar(
+    (state) => state.folderTreeSidebarOpen
+  );
+  const toggleFolderTreeSidebar = useOptionsBar(
+    (state) => state.toggleFolderTreeSidebar
+  );
   const currentFolderId = useOptionsBar((state) => state.currentFolderId);
   const handleCurrentFolderChange = useOptionsBar(
     (state) => state.handleCurrentFolderChange
@@ -270,6 +276,14 @@ export const OptionsBar = () => {
     />
   );
 
+  const folderTreeToggle = (
+    <TriggerFilterChip
+      icon="folder-tree"
+      selected={folderTreeSidebarOpen}
+      onPress={toggleFolderTreeSidebar}
+    />
+  );
+
   return (
     <PageOptionsHeaderContainer
       footer={
@@ -351,9 +365,15 @@ export const OptionsBar = () => {
           {canCreateChildFolder(currentFolder?.path ?? null) ? (
             <NewFolderButton onPress={onCreateFolder} />
           ) : null}
+          <View className="shrink-0">{folderTreeToggle}</View>
         </View>
       ) : (
-        <ContentListFilterChips leading={settingsToggle} />
+        <View className="h-full w-full flex-row items-center gap-2">
+          <View className="min-w-0 flex-1">
+            <ContentListFilterChips leading={settingsToggle} />
+          </View>
+          <View className="shrink-0">{folderTreeToggle}</View>
+        </View>
       )}
     </PageOptionsHeaderContainer>
   );

@@ -16,6 +16,8 @@ export type OptionsBar = {
   selectedCategoryId: string | null;
   /** `null` = root (no folder selected) */
   currentFolderId: string | null;
+  /** Right folder-tree sidebar visibility on the notes list */
+  folderTreeSidebarOpen: boolean;
 };
 
 export type UiKey = `groupBy=${OptionsBar["groupBy"]}&display=${DisplayKey}`;

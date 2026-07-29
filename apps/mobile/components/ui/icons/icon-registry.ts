@@ -27,6 +27,7 @@ export type IconName =
   | "ellipsis-vertical"
   | "ellipsis"
   | "eye"
+  | "folder-tree"
   | "folder"
   | "funnel"
   | "graph"
@@ -178,6 +179,10 @@ export const ICON_METADATA: Record<
   eye: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2.062 12.348a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 19.876 0a1 1 0 0 1 0 .696a10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></g>`,
+  },
+  "folder-tree": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Zm0 11a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1ZM3 5a2 2 0 0 0 2 2h3"></path><path d="M3 3v13a2 2 0 0 0 2 2h3"></path></g>`,
   },
   folder: {
     viewBox: "0 0 24 24",
