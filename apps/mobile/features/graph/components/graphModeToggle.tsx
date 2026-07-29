@@ -16,8 +16,9 @@ import { memo, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useGraphStore } from "../context/graphContext";
 import { GraphMode } from "../types/types";
-import { GraphFilterChips } from "./graphFilterChips";
 import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
+import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
+import { Gutter } from "@/components/ui/gutter";
 
 const DEFAULT_GRAPH_MODE: GraphMode = "category";
 
@@ -99,32 +100,35 @@ export const GraphModeToggle = memo(function GraphModeToggle() {
     []
   );
 
-  const funnelToggle = (
-    <TriggerFilterChip
-      icon="funnel"
-      selected={expanded}
-      showDot={mode !== DEFAULT_GRAPH_MODE}
-      onPress={() => setExpanded((prev) => !prev)}
-    />
-  );
-
   return (
     <PageOptionsHeaderContainer
       footer={
         <CollapsibleContainer expanded={expanded}>
-          <View className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
-            <ModeDropdown
-              value={mode}
-              onValueChange={(next) => {
-                setMode(next);
-                useGraphStore.getState().setGraphMode(next);
-              }}
-            />
-          </View>
+          <Gutter size="md" className="mb-2">
+            <View className="flex-row items-center gap-2 rounded-full px-2.5 py-1.5">
+              <ModeDropdown
+                value={mode}
+                onValueChange={(next) => {
+                  setMode(next);
+                  useGraphStore.getState().setGraphMode(next);
+                }}
+              />
+            </View>
+          </Gutter>
         </CollapsibleContainer>
       }
     >
-      <GraphFilterChips leading={funnelToggle} />
+      <View className="h-full w-full flex-row items-center gap-2">
+        <View className="shrink-0">
+          <TriggerFilterChip
+            icon="funnel"
+            selected={expanded}
+            showDot={mode !== DEFAULT_GRAPH_MODE}
+            onPress={() => setExpanded((prev) => !prev)}
+          />
+        </View>
+        <GraphBreadcrumbs />
+      </View>
     </PageOptionsHeaderContainer>
   );
 });

@@ -29,7 +29,6 @@ import { Icon } from "@/components/ui/icons/icon";
 import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
-import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { GRAPH_CANVAS_SIZE } from "../constants";
 
@@ -690,11 +689,6 @@ function CirclePackSkiaRenderer({
             </TouchableOpacity>
           </View>
         </View>
-
-        <GraphBreadcrumbs
-          hierarchy={data}
-          activeNode={activeViewNode.rawData}
-        />
       </View>
     </GestureHandlerRootView>
   );

@@ -1,16 +1,23 @@
 import { mmkv } from "@/context/bridge/zustand_mmkv";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { GraphMode, parseGraphMode } from "../types/types";
+import { GraphMode, NodeDatum, parseGraphMode } from "../types/types";
 
 type GraphStore = {
   mode: GraphMode;
   renderMode: GraphMode;
   selectedFolderId: string | null;
   selectedCategoryId: string | null;
+  /** Live hierarchy root for the options-header breadcrumbs (not persisted). */
+  breadcrumbHierarchy: NodeDatum | null;
+  breadcrumbActiveId: string | null;
   setGraphMode: (mode: GraphMode) => void;
   setSelectedFolderId: (folderId: string | null) => void;
   setSelectedCategoryId: (categoryId: string | null) => void;
+  setBreadcrumbNav: (
+    hierarchy: NodeDatum | null,
+    activeId: string | null
+  ) => void;
 };
 
 let pendingUpdate: ReturnType<typeof setTimeout> | null = null;
@@ -22,6 +29,8 @@ export const useGraphStore = create<GraphStore>()(
       renderMode: "category",
       selectedFolderId: null,
       selectedCategoryId: null,
+      breadcrumbHierarchy: null,
+      breadcrumbActiveId: null,
       setGraphMode: (mode) => {
         if (pendingUpdate) clearTimeout(pendingUpdate);
         pendingUpdate = setTimeout(() => {
@@ -37,6 +46,8 @@ export const useGraphStore = create<GraphStore>()(
       setSelectedFolderId: (selectedFolderId) => set({ selectedFolderId }),
       setSelectedCategoryId: (selectedCategoryId) =>
         set({ selectedCategoryId }),
+      setBreadcrumbNav: (breadcrumbHierarchy, breadcrumbActiveId) =>
+        set({ breadcrumbHierarchy, breadcrumbActiveId }),
     }),
     {
       ...mmkv("graph"),
