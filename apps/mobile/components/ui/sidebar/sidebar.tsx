@@ -20,7 +20,7 @@ export type SidebarProps = {
   side?: "right" | "left";
   width?: number;
   children: React.ReactNode;
-  /** Optional header rendered above the scrollable body. */
+  /** Fixed header above the scrollable body. */
   header?: React.ReactNode;
   className?: string;
   /** Dimmed pressable overlay behind the panel. Defaults to true. */
@@ -29,8 +29,7 @@ export type SidebarProps = {
 
 /**
  * Absolute side panel that slides in over its parent.
- * Parent should be `position: relative` (or the page root) so the panel
- * covers content without scrolling away.
+ * Mount above chrome (e.g. tab bar) via a high-z overlay layer.
  */
 export function Sidebar({
   open,
@@ -64,14 +63,13 @@ export function Sidebar({
     opacity: progress.value * 0.45,
   }));
 
-  const backgroundColor = hsl("card", colorScheme);
+  const backgroundColor = hsl("background", colorScheme);
   const borderColor = hsl("border", colorScheme);
 
   return (
     <View
       pointerEvents={open ? "box-none" : "none"}
       style={StyleSheet.absoluteFill}
-      className="z-50"
     >
       {showBackdrop ? (
         <Animated.View
@@ -84,6 +82,7 @@ export function Sidebar({
       ) : null}
 
       <Animated.View
+        pointerEvents={open ? "auto" : "none"}
         style={[
           styles.panel,
           side === "right" ? styles.right : styles.left,
@@ -98,7 +97,11 @@ export function Sidebar({
         ]}
         className={cn("border-border", className)}
       >
-        {header ? <View className="shrink-0 px-3 pb-2">{header}</View> : null}
+        {header ? (
+          <View className="shrink-0 px-2 pb-2 border-b border-border">
+            {header}
+          </View>
+        ) : null}
         <View className="flex-1 min-h-0">{children}</View>
       </Animated.View>
     </View>

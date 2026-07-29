@@ -6,6 +6,7 @@ import { CustomTabBar } from "@/components/layout/tabs/customTabBar";
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { FloatingModal } from "@/features/notes/noteCreation/features/floatingButton/views";
 import { NoteCreationProvider } from "@/features/notes/noteCreation/context/noteCreationContext";
+import { FolderTreeSidebar } from "@/features/contentList/components/folderTree/folderTreeSidebar";
 
 export const unstable_settings = {
   initialRouteName: "notes",
@@ -47,6 +48,7 @@ export default function TabLayout() {
 
         <View style={styles.floatingLayer} pointerEvents="box-none">
           <FloatingModal topOffset={topOffset} />
+          <FolderTreeSidebar />
         </View>
       </View>
     </NoteCreationProvider>

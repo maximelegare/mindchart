@@ -13,6 +13,12 @@ import {
   filterFoldersExcludingPath,
 } from "./folderTreeUtils";
 
+export type FolderTreeFile = {
+  id: string;
+  title: string;
+  folderId: string | null;
+};
+
 export type FolderTreeProps = {
   folders: Folder[];
   /** Currently highlighted folder id (`null` = root). */
@@ -24,6 +30,11 @@ export type FolderTreeProps = {
   className?: string;
   /** When false, omit the outer ScrollView (parent scrolls instead). */
   scrollable?: boolean;
+  /** When true, render note/file leaves under each folder. */
+  showFiles?: boolean;
+  files?: FolderTreeFile[];
+  selectedFileId?: string | null;
+  onFileSelect?: (fileId: string) => void;
 };
 
 export function FolderTree({
@@ -34,6 +45,10 @@ export function FolderTree({
   rootLabel = "Root",
   className,
   scrollable = true,
+  showFiles = false,
+  files = [],
+  selectedFileId = null,
+  onFileSelect,
 }: FolderTreeProps) {
   const { colorScheme } = useColorScheme();
   const highlightColor = hsl("border", colorScheme);
@@ -52,6 +67,21 @@ export function FolderTree({
     () => new Map(visibleFolders.map((folder) => [folder.id, folder])),
     [visibleFolders]
   );
+
+  const filesByFolderId = useMemo(() => {
+    const map = new Map<string | null, FolderTreeFile[]>();
+    if (!showFiles) return map;
+    for (const file of files) {
+      const key = file.folderId;
+      const list = map.get(key) ?? [];
+      list.push(file);
+      map.set(key, list);
+    }
+    for (const list of map.values()) {
+      list.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    return map;
+  }, [files, showFiles]);
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
     const initial = new Set<string>([FOLDER_TREE_ROOT_ID]);
@@ -92,33 +122,61 @@ export function FolderTree({
     });
   };
 
+  const rootChildFolders = childrenByParentId.get(null) ?? [];
+  const rootFiles = filesByFolderId.get(null) ?? [];
+  const rootHasChildren =
+    rootChildFolders.length > 0 || (showFiles && rootFiles.length > 0);
+
   const tree = (
     <>
       <FolderTreeRow
         label={rootLabel}
         depth={0}
-        isCurrent={selectedFolderId === null}
-        hasChildren={(childrenByParentId.get(null) ?? []).length > 0}
+        kind="folder"
+        isCurrent={selectedFolderId === null && !selectedFileId}
+        hasChildren={rootHasChildren}
         expanded={expandedIds.has(FOLDER_TREE_ROOT_ID)}
         highlightColor={highlightColor}
         onToggle={() => toggleExpanded(FOLDER_TREE_ROOT_ID)}
         onNavigate={() => onSelect(null)}
       />
-      {expandedIds.has(FOLDER_TREE_ROOT_ID)
-        ? (childrenByParentId.get(null) ?? []).map((folder) => (
+      {expandedIds.has(FOLDER_TREE_ROOT_ID) ? (
+        <>
+          {rootChildFolders.map((folder) => (
             <FolderTreeBranch
               key={folder.id}
               folder={folder}
               depth={1}
               childrenByParentId={childrenByParentId}
+              filesByFolderId={filesByFolderId}
               expandedIds={expandedIds}
               selectedFolderId={selectedFolderId}
+              selectedFileId={selectedFileId}
+              showFiles={showFiles}
               highlightColor={highlightColor}
               onToggle={toggleExpanded}
               onNavigate={onSelect}
+              onFileSelect={onFileSelect}
             />
-          ))
-        : null}
+          ))}
+          {showFiles
+            ? rootFiles.map((file) => (
+                <FolderTreeRow
+                  key={`file-${file.id}`}
+                  label={file.title || "Untitled"}
+                  depth={1}
+                  kind="file"
+                  isCurrent={selectedFileId === file.id}
+                  hasChildren={false}
+                  expanded={false}
+                  highlightColor={highlightColor}
+                  onToggle={() => undefined}
+                  onNavigate={() => onFileSelect?.(file.id)}
+                />
+              ))
+            : null}
+        </>
+      ) : null}
     </>
   );
 
@@ -145,51 +203,85 @@ function FolderTreeBranch({
   folder,
   depth,
   childrenByParentId,
+  filesByFolderId,
   expandedIds,
   selectedFolderId,
+  selectedFileId,
+  showFiles,
   highlightColor,
   onToggle,
   onNavigate,
+  onFileSelect,
 }: {
   folder: Folder;
   depth: number;
   childrenByParentId: Map<string | null, Folder[]>;
+  filesByFolderId: Map<string | null, FolderTreeFile[]>;
   expandedIds: Set<string>;
   selectedFolderId: string | null;
+  selectedFileId: string | null;
+  showFiles: boolean;
   highlightColor: string;
   onToggle: (id: string) => void;
   onNavigate: (id: string | null) => void;
+  onFileSelect?: (fileId: string) => void;
 }) {
   const children = childrenByParentId.get(folder.id) ?? [];
+  const folderFiles = filesByFolderId.get(folder.id) ?? [];
   const expanded = expandedIds.has(folder.id);
+  const hasChildren =
+    children.length > 0 || (showFiles && folderFiles.length > 0);
 
   return (
     <>
       <FolderTreeRow
         label={folder.label}
         depth={depth}
-        isCurrent={selectedFolderId === folder.id}
-        hasChildren={children.length > 0}
+        kind="folder"
+        isCurrent={selectedFolderId === folder.id && !selectedFileId}
+        hasChildren={hasChildren}
         expanded={expanded}
         highlightColor={highlightColor}
         onToggle={() => onToggle(folder.id)}
         onNavigate={() => onNavigate(folder.id)}
       />
-      {expanded
-        ? children.map((child) => (
+      {expanded ? (
+        <>
+          {children.map((child) => (
             <FolderTreeBranch
               key={child.id}
               folder={child}
               depth={depth + 1}
               childrenByParentId={childrenByParentId}
+              filesByFolderId={filesByFolderId}
               expandedIds={expandedIds}
               selectedFolderId={selectedFolderId}
+              selectedFileId={selectedFileId}
+              showFiles={showFiles}
               highlightColor={highlightColor}
               onToggle={onToggle}
               onNavigate={onNavigate}
+              onFileSelect={onFileSelect}
             />
-          ))
-        : null}
+          ))}
+          {showFiles
+            ? folderFiles.map((file) => (
+                <FolderTreeRow
+                  key={`file-${file.id}`}
+                  label={file.title || "Untitled"}
+                  depth={depth + 1}
+                  kind="file"
+                  isCurrent={selectedFileId === file.id}
+                  hasChildren={false}
+                  expanded={false}
+                  highlightColor={highlightColor}
+                  onToggle={() => undefined}
+                  onNavigate={() => onFileSelect?.(file.id)}
+                />
+              ))
+            : null}
+        </>
+      ) : null}
     </>
   );
 }
@@ -197,6 +289,7 @@ function FolderTreeBranch({
 function FolderTreeRow({
   label,
   depth,
+  kind,
   isCurrent,
   hasChildren,
   expanded,
@@ -206,6 +299,7 @@ function FolderTreeRow({
 }: {
   label: string;
   depth: number;
+  kind: "folder" | "file";
   isCurrent: boolean;
   hasChildren: boolean;
   expanded: boolean;
@@ -247,7 +341,7 @@ function FolderTreeRow({
         className="flex-1 flex-row items-center gap-1.5 py-2 pr-2 min-w-0"
       >
         <Icon
-          name="folder"
+          name={kind === "folder" ? "folder" : "notebook-text"}
           color={isCurrent ? "foreground" : "muted-foreground"}
           size={14}
         />
