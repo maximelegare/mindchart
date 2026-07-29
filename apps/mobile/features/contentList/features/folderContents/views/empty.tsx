@@ -13,7 +13,18 @@ export const FolderContentsView = () => {
   const currentFolderId = useOptionsBar((s) => s.currentFolderId);
   const sortBy = useContentListSort();
   const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
+  const { folders } = useControllers();
   const { data } = useFetchNotesAndThoughtsQuery();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery();
+
+  const currentFolder = useMemo(
+    () => allFolders.find((folder) => folder.id === currentFolderId) ?? null,
+    [allFolders, currentFolderId]
+  );
+
+  const { data: childFolders = [] } = folders.useFetchChildFoldersQuery(
+    currentFolder?.path ?? null
+  );
 
   const notes = useMemo(() => {
     const parsed = parseNoteAndThoughts(data);
@@ -27,7 +38,12 @@ export const FolderContentsView = () => {
     });
   }, [currentFolderId, data, sortBy]);
 
+  const hasChildFolders = (childFolders?.length ?? 0) > 0;
+
   if (notes.length === 0) {
+    // Child folders already render above via FolderCardsList — don't call it empty.
+    if (hasChildFolders) return null;
+
     return (
       <View className="items-center justify-center px-6 py-10">
         <Typography variant="p" className="text-center text-muted-foreground">
