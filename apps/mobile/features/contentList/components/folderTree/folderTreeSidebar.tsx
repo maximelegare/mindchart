@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { getFolderIdsFromPath } from "@repo/sqlite";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { Icon } from "@/components/ui/icons/icon";
 import { Sidebar } from "@/components/ui/sidebar/sidebar";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -10,6 +11,7 @@ import { hsl } from "@/utils/hsl";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
 import { FolderTree, FolderTreeFile } from "./folderTree";
 import { FOLDER_TREE_ROOT_ID } from "./folderTreeUtils";
+import { Button } from "@/components/ui";
 
 export function FolderTreeSidebar() {
   const router = useRouter();
@@ -72,25 +74,32 @@ export function FolderTreeSidebar() {
     onSelect(id === FOLDER_TREE_ROOT_ID ? null : id);
   };
 
+  const onClose = () => setFolderTreeSidebarOpen(false);
+
   const onFileSelect = (fileId: string) => {
-    setFolderTreeSidebarOpen(false);
+    onClose();
     router.push({ pathname: "/notes/[id]", params: { id: fileId } });
   };
 
   return (
     <Sidebar
       open={open}
-      onClose={() => setFolderTreeSidebarOpen(false)}
+      onClose={onClose}
       side="right"
       header={
-        <View
-          className="h-10 w-full flex-row items-center overflow-hidden rounded-full"
-          style={{ backgroundColor: hsl("card", colorScheme) }}
-        >
-          <Breadcrumbs
-            items={breadcrumbItems}
-            onNavigate={onNavigateBreadcrumb}
-          />
+        <View className="w-full flex-row items-center gap-2">
+          <Button variant="ghost" size="icon" onPress={onClose}>
+            <Icon name="chevron-right" color="text" size={20} />
+          </Button>
+          <View
+            className="h-10 min-w-0 flex-1 flex-row items-center overflow-hidden rounded-full"
+            style={{ backgroundColor: hsl("card", colorScheme) }}
+          >
+            <Breadcrumbs
+              items={breadcrumbItems}
+              onNavigate={onNavigateBreadcrumb}
+            />
+          </View>
         </View>
       }
     >
