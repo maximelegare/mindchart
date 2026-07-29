@@ -1,7 +1,7 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
-import { Keyboard, View } from "react-native";
+import { Keyboard, View, Alert } from "react-native";
 import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import { useModal } from "@/components/ui/modal/modal";
@@ -69,6 +69,14 @@ export const GenerateNote = ({
 
   const handleGenerateNote = async () => {
     if (isDisabled) return;
+
+    if (!selectedFolder) {
+      Alert.alert(
+        "Folder required",
+        "Please select a folder before generating a note. Root is not allowed."
+      );
+      return;
+    }
 
     Keyboard.dismiss();
 
@@ -148,6 +156,7 @@ export const GenerateNote = ({
           selectedFolder={selectedFolder}
           onSelect={setSelectedFolder}
           maxChars={22}
+          allowRoot={false}
         />
         <Button
           variant="outline"
@@ -194,6 +203,7 @@ export const GenerateNote = ({
           selectedFolder={selectedFolder}
           onSelect={setSelectedFolder}
           maxChars={14}
+          allowRoot={false}
         />
         <Button
           onPress={handleGenerateNote}

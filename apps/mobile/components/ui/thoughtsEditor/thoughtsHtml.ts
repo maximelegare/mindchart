@@ -128,7 +128,14 @@ function extractByClass(html: string, className: string): string | null {
   return null;
 }
 
-function parseTitledLi(liHtml: string): { title: string; summary: string } {
+function parseTitledLi(liHtml: string): {
+  title: string;
+  summary: string;
+  /** True when a `.thought-title` node exists (even if empty). */
+  hasTitleField: boolean;
+  /** True when a `.thought-summary` node exists (even if empty). */
+  hasSummaryField: boolean;
+} {
   const titled = extractByClass(liHtml, TITLE_CLASS);
   const summarized = extractByClass(liHtml, SUMMARY_CLASS);
 
@@ -136,6 +143,8 @@ function parseTitledLi(liHtml: string): { title: string; summary: string } {
     return {
       title: stripHtml(titled ?? ""),
       summary: stripHtml(summarized ?? ""),
+      hasTitleField: titled != null,
+      hasSummaryField: summarized != null,
     };
   }
 
@@ -145,16 +154,28 @@ function parseTitledLi(liHtml: string): { title: string; summary: string } {
     .filter(Boolean);
 
   if (blocks.length === 0) {
-    return { title: "", summary: "" };
+    return {
+      title: "",
+      summary: "",
+      hasTitleField: false,
+      hasSummaryField: false,
+    };
   }
 
   if (blocks.length === 1) {
-    return { title: blocks[0] ?? "", summary: "" };
+    return {
+      title: blocks[0] ?? "",
+      summary: "",
+      hasTitleField: false,
+      hasSummaryField: false,
+    };
   }
 
   return {
     title: blocks[0] ?? "",
     summary: blocks.slice(1).join("\n"),
+    hasTitleField: false,
+    hasSummaryField: false,
   };
 }
 
@@ -315,15 +336,21 @@ export function htmlToThoughts(
     const categoryId = item.categoryId || base.categoryId || "uncategorized";
 
     if (showTitles) {
-      const { title, summary } = parseTitledLi(contentHtml);
-      const label = title || summary || base.semanticLabel;
+      const { title, summary, hasTitleField, hasSummaryField } =
+        parseTitledLi(contentHtml);
+      // Only fall back to previous values when the field node is missing from
+      // the HTML (e.g. mid-init). Present-but-empty fields must clear so
+      // validation can re-run after the user dismisses error placeholders.
+      const nextTitle = hasTitleField ? title : title || base.title;
+      const nextSummary = hasSummaryField ? summary : summary || base.summary;
+      const fieldsPresent = hasTitleField || hasSummaryField;
+      const label = nextTitle || nextSummary;
       return {
         ...base,
-        // Keep existing values when the editor HTML omits a field (e.g. during init sync).
-        title: title || base.title,
-        summary: summary || base.summary,
+        title: nextTitle,
+        summary: nextSummary,
         categoryId,
-        semanticLabel: label || base.semanticLabel,
+        semanticLabel: fieldsPresent ? label : label || base.semanticLabel,
       };
     }
 
@@ -331,11 +358,17 @@ export function htmlToThoughts(
     const summary = stripHtml(
       summaryField != null ? summaryField : contentHtml
     );
+    // Present-but-empty `.thought-summary` must clear, not keep stale text.
+    const nextSummary =
+      summaryField != null ? summary : summary || base.summary;
     return {
       ...base,
-      summary: summary || base.summary,
+      summary: nextSummary,
       categoryId,
-      semanticLabel: base.semanticLabel || summary || base.title,
+      semanticLabel:
+        summaryField != null
+          ? nextSummary
+          : base.semanticLabel || nextSummary || base.title,
     };
   });
 

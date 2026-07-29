@@ -34,6 +34,7 @@ export const NoteDetailsPage = () => {
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [simplified, setSimplified] = useState(false);
   const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
+  const [folderRequiredError, setFolderRequiredError] = useState(false);
   const saveActionRef = useRef<(() => void) | null>(null);
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
@@ -119,13 +120,21 @@ export const NoteDetailsPage = () => {
 
   const handleFolderSelect = useCallback(
     async (folder: FolderSelection) => {
+      if (!folder) {
+        Alert.alert(
+          "Folder required",
+          "Notes must be saved in a folder. Root is not allowed."
+        );
+        return;
+      }
+      setFolderRequiredError(false);
       setHeaderFolder(folder);
       if (!noteId) return;
-      if ((folder?.id ?? null) === (note?.[0]?.folderId ?? null)) return;
+      if (folder.id === (note?.[0]?.folderId ?? null)) return;
       try {
         await updateNoteFolderId({
           noteId,
-          folderId: folder?.id ?? null,
+          folderId: folder.id,
         });
       } catch (error) {
         setHeaderFolder(noteFolder);
@@ -164,6 +173,7 @@ export const NoteDetailsPage = () => {
           onFolderSelect={handleFolderSelect}
           simplified={simplified}
           onSimplifiedChange={setSimplified}
+          folderError={folderRequiredError}
         />
       }
       buttons={
@@ -200,7 +210,8 @@ export const NoteDetailsPage = () => {
         saveActionRef={saveActionRef}
         onSavingChange={setIsSaving}
         simplified={simplified}
-        editorMode={editorMode}
+        folderId={headerFolder?.id ?? null}
+        onFolderErrorChange={setFolderRequiredError}
       />
     </PageContainer>
   );

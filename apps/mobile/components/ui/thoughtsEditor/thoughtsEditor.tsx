@@ -32,8 +32,10 @@ import {
   CATEGORY_COLLAPSE_SCRIPT,
   GRAPH_BUTTON_CLICK_SCRIPT,
   REFRESH_CATEGORY_TIMERS_SCRIPT,
+  clearThoughtValidationErrorsScript,
   setShowTitlesScript,
   setSimplifiedModeScript,
+  setThoughtValidationErrorsScript,
 } from "./bulletEditorScript";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
@@ -172,15 +174,24 @@ type ThoughtsEditorProps = {
   simplified?: boolean;
 };
 
-export function ThoughtsEditor({
-  noteId,
-  categories,
-  defaultShowTitles = false,
-  readOnly = false,
-  showGraphButtons = false,
-  plain = false,
-  simplified = false,
-}: ThoughtsEditorProps) {
+export type ThoughtsEditorHandle = {
+  /** Returns true when thoughts are valid to save. Applies red placeholders when not. */
+  validateRequiredContent: () => boolean;
+  clearValidationErrors: () => void;
+};
+
+function ThoughtsEditorInner(
+  {
+    noteId,
+    categories,
+    defaultShowTitles = false,
+    readOnly = false,
+    showGraphButtons = false,
+    plain = false,
+    simplified = false,
+  }: ThoughtsEditorProps,
+  ref: React.ForwardedRef<ThoughtsEditorHandle>
+) {
   const { colorScheme } = useColorScheme();
   const { push } = useRouter();
   const { getValues, setValue, watch } =
@@ -489,12 +500,81 @@ export function ThoughtsEditor({
   const backgroundColor = plain ? "transparent" : hsl("card", colorScheme);
   const textColor = hsl("text", colorScheme);
   const placeholderColor = hsl("muted-foreground", colorScheme);
+  const errorPlaceholderColor = hsl("destructive-foreground", colorScheme);
   const caretColor = hsl("primary", colorScheme);
   const headerBg = hsl("muted", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
   const graphButtonColor = mutedFg;
   const showToolbar = !readOnly;
   const showEditBorder = !readOnly;
+
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      validateRequiredContent: () => {
+        const thoughts = getValues("thoughts") ?? [];
+        const showTitles = showTitlesRef.current;
+
+        const isEmptyThought = (thought: {
+          title: string;
+          summary: string;
+          semanticLabel: string;
+        }) =>
+          !thought.title.trim() &&
+          !thought.summary.trim() &&
+          !thought.semanticLabel.trim();
+
+        // Fully empty bullets are dropped on save — ignore them for "has content".
+        const contentful = thoughts.filter(
+          (thought) => !isEmptyThought(thought)
+        );
+
+        if (contentful.length === 0) {
+          richRef.current?.injectJavascript(
+            setThoughtValidationErrorsScript({
+              emptyContent: true,
+              incomplete: [],
+            })
+          );
+          return false;
+        }
+
+        if (showTitles) {
+          // Partial bullets (title XOR summary) must be completed.
+          const incomplete = thoughts.flatMap((thought, index) => {
+            if (isEmptyThought(thought)) return [];
+            const hasTitle = Boolean(thought.title.trim());
+            const hasSummary = Boolean(thought.summary.trim());
+            if (hasTitle && hasSummary) return [];
+            return [
+              {
+                index,
+                missingTitle: !hasTitle,
+                missingSummary: !hasSummary,
+              },
+            ];
+          });
+
+          if (incomplete.length > 0) {
+            richRef.current?.injectJavascript(
+              setThoughtValidationErrorsScript({
+                emptyContent: false,
+                incomplete,
+              })
+            );
+            return false;
+          }
+        }
+
+        richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
+        return true;
+      },
+      clearValidationErrors: () => {
+        richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
+      },
+    }),
+    [getValues]
+  );
 
   return (
     <BottomSheet className="flex-1 min-h-0">
@@ -739,6 +819,17 @@ export function ThoughtsEditor({
                     font-family: inherit;
                     font-weight: inherit;
                   }
+                  .thought-title.is-error-placeholder::before,
+                  .thought-summary.is-error-placeholder::before {
+                    content: attr(data-placeholder);
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    color: ${errorPlaceholderColor};
+                    pointer-events: none;
+                    font-family: inherit;
+                    font-weight: inherit;
+                  }
                   ${categoryColorsCssRef.current}
                 `,
                 }}
@@ -794,3 +885,10 @@ export function ThoughtsEditor({
     </BottomSheet>
   );
 }
+
+export const ThoughtsEditor = React.forwardRef(
+  ThoughtsEditorInner
+) as React.ForwardRefExoticComponent<
+  ThoughtsEditorProps & React.RefAttributes<ThoughtsEditorHandle>
+>;
+ThoughtsEditor.displayName = "ThoughtsEditor";

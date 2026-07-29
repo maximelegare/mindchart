@@ -1,7 +1,7 @@
 import { Category, Note, Thought } from "@repo/zod-schemas";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import React from "react";
-import { Keyboard, ScrollView, TextInput, View } from "react-native";
+import { Alert, Keyboard, ScrollView, TextInput, View } from "react-native";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "@/components/ui";
@@ -139,6 +139,18 @@ export const ManualNoteForm = ({
   };
 
   const handleFormSubmit = (data: ManualNoteFormData) => {
+    const title = data.title.trim();
+    const missing: string[] = [];
+    if (!title) missing.push("a title");
+    if (!data.folder) missing.push("a folder");
+    if (missing.length > 0) {
+      Alert.alert(
+        "Can't save yet",
+        `Please add ${missing.join(" and ")} before saving.`
+      );
+      return;
+    }
+
     const thoughts: Thought[] = data.thoughts
       .filter(
         (thought) =>
@@ -157,14 +169,17 @@ export const ManualNoteForm = ({
         createdAt: thought.createdAt,
       }));
 
-    if (thoughts.length === 0) return;
+    if (thoughts.length === 0) {
+      Alert.alert("Can't save yet", "Add at least one thought before saving.");
+      return;
+    }
 
     const note: Note = {
       id: noteId,
-      title: data.title.trim(),
+      title,
       summary: data.summary.trim(),
       rawText: "",
-      folderId: data.folder?.id ?? null,
+      folderId: data.folder!.id,
       createdAt: new Date().toISOString(),
     };
 
@@ -241,6 +256,7 @@ export const ManualNoteForm = ({
                     selectedFolder={value}
                     onSelect={onChange}
                     maxChars={18}
+                    allowRoot={false}
                   />
                 )}
               />

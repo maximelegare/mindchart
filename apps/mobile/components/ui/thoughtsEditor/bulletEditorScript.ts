@@ -331,22 +331,37 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       el.innerHTML = "<br>";
       el.setAttribute("data-placeholder", placeholder);
       el.classList.add("is-placeholder");
+      el.classList.remove("is-error-placeholder");
     }
 
     function repairEmptyField(el, placeholder) {
       if (!el) return;
-      el.setAttribute("data-placeholder", placeholder);
       if (isEmptyField(el)) {
+        // Keep validation error copy until the user types.
+        if (!el.classList.contains("is-error-placeholder")) {
+          el.setAttribute("data-placeholder", placeholder);
+        }
         el.classList.add("is-placeholder");
         var onlyBr =
           el.childNodes.length === 1 &&
           el.firstChild &&
           el.firstChild.nodeName === "BR";
         if (!onlyBr) {
-          clearField(el, placeholder);
+          if (el.classList.contains("is-error-placeholder")) {
+            var errPlaceholder =
+              el.getAttribute("data-placeholder") || placeholder;
+            el.innerHTML = "<br>";
+            el.setAttribute("data-placeholder", errPlaceholder);
+            el.classList.add("is-placeholder");
+            el.classList.add("is-error-placeholder");
+          } else {
+            clearField(el, placeholder);
+          }
         }
       } else {
         el.classList.remove("is-placeholder");
+        el.classList.remove("is-error-placeholder");
+        el.setAttribute("data-placeholder", placeholder);
       }
     }
 
@@ -704,6 +719,143 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
 export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;
+}
+
+const EMPTY_BULLET_ERROR = "Add at least one bullet point";
+const TITLE_REQUIRED_ERROR = "Title is required";
+const SUMMARY_REQUIRED_ERROR = "Summary is required";
+
+export type ThoughtValidationIncomplete = {
+  index: number;
+  missingTitle: boolean;
+  missingSummary: boolean;
+};
+
+/** Highlight empty / incomplete thought fields with red required placeholders. */
+export function setThoughtValidationErrorsScript(options: {
+  emptyContent: boolean;
+  incomplete: ThoughtValidationIncomplete[];
+}): string {
+  return `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return false;
+
+  function clearErrors() {
+    var errored = content.querySelectorAll(".is-error-placeholder");
+    for (var i = 0; i < errored.length; i++) {
+      errored[i].classList.remove("is-error-placeholder");
+    }
+  }
+
+  function markError(el, placeholder) {
+    if (!el) return;
+    el.classList.remove("is-error-placeholder");
+    el.classList.remove("is-placeholder");
+    el.removeAttribute("data-placeholder");
+    el.innerHTML = "<br>";
+    // Force a style recalc so ::before placeholders reappear after clear.
+    void el.offsetWidth;
+    el.setAttribute("data-placeholder", placeholder);
+    el.classList.add("is-placeholder");
+    el.classList.add("is-error-placeholder");
+  }
+
+  clearErrors();
+
+  var lis = content.querySelectorAll("ul > li.thought-item, ul > li");
+  var emptyContent = ${options.emptyContent ? "true" : "false"};
+  var incomplete = ${JSON.stringify(options.incomplete)};
+  var titleMsg = ${JSON.stringify(TITLE_REQUIRED_ERROR)};
+  var summaryMsg = ${JSON.stringify(SUMMARY_REQUIRED_ERROR)};
+  var emptyMsg = ${JSON.stringify(EMPTY_BULLET_ERROR)};
+  var _nonce = ${Date.now()};
+  void _nonce;
+
+  if (emptyContent) {
+    if (lis.length === 0) {
+      var emptyFields = window.__mcShowTitles
+        ? '<div class="thought-title is-placeholder is-error-placeholder" data-placeholder="' +
+          titleMsg +
+          '"><br></div>' +
+          '<div class="thought-summary is-placeholder is-error-placeholder" data-placeholder="' +
+          summaryMsg +
+          '"><br></div>'
+        : '<div class="thought-summary is-placeholder is-error-placeholder" data-placeholder="' +
+          emptyMsg +
+          '"><br></div>';
+      content.innerHTML =
+        '<ul><li class="thought-item" data-category-id="uncategorized">' +
+        '<div class="thought-fields">' +
+        emptyFields +
+        "</div></li></ul>";
+      return true;
+    }
+
+    for (var i = 0; i < lis.length; i++) {
+      var li = lis[i];
+      if (window.__mcShowTitles) {
+        markError(li.querySelector(".thought-title"), titleMsg);
+        markError(li.querySelector(".thought-summary"), summaryMsg);
+      } else {
+        var summary = li.querySelector(".thought-summary");
+        if (summary) {
+          markError(summary, emptyMsg);
+        } else {
+          var fields = li.querySelector(".thought-fields") || li;
+          var errorEl = document.createElement("div");
+          errorEl.className =
+            "thought-summary is-placeholder is-error-placeholder";
+          errorEl.setAttribute("data-placeholder", emptyMsg);
+          errorEl.innerHTML = "<br>";
+          fields.appendChild(errorEl);
+        }
+      }
+    }
+    return true;
+  }
+
+  for (var j = 0; j < incomplete.length; j++) {
+    var item = incomplete[j];
+    var row = lis[item.index];
+    if (!row) continue;
+    if (item.missingTitle) {
+      markError(row.querySelector(".thought-title"), titleMsg);
+    }
+    if (item.missingSummary) {
+      markError(row.querySelector(".thought-summary"), summaryMsg);
+    }
+  }
+
+  return true;
+})();
+true;
+`;
+}
+
+export function clearThoughtValidationErrorsScript(): string {
+  return `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return false;
+  var errored = content.querySelectorAll(".is-error-placeholder");
+  for (var i = 0; i < errored.length; i++) {
+    var el = errored[i];
+    el.classList.remove("is-error-placeholder");
+    if (el.classList.contains("thought-title")) {
+      el.setAttribute("data-placeholder", "Title");
+    } else if (window.__mcShowTitles) {
+      el.setAttribute("data-placeholder", "Summary");
+    } else {
+      el.setAttribute("data-placeholder", "Enter a bullet point");
+    }
+  }
+  return true;
+})();
+true;
+`;
 }
 
 /** Toggle simplified (plain bullets) chrome inside the editor WebView. */
