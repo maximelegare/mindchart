@@ -30,7 +30,6 @@ import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
-import { GraphFolderChips } from "./graphFolderChips";
 import { GRAPH_CANVAS_SIZE } from "../constants";
 
 const parseHslChannels = (hslColor: string) => {
@@ -644,7 +643,6 @@ function CirclePackSkiaRenderer({
           },
         ]}
       >
-        <GraphFolderChips />
         <View style={styles.canvasContainer}>
           <GestureDetector gesture={tap}>
             <Canvas style={styles.canvas}>

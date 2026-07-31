@@ -3,7 +3,6 @@ import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { View, StyleSheet } from "react-native";
 import { GRAPH_CANVAS_SIZE } from "../constants";
-import { GraphFolderChips } from "./graphFolderChips";
 
 export const GraphLoadingPlaceholder = () => {
   const { colorScheme } = useColorScheme();
@@ -18,7 +17,6 @@ export const GraphLoadingPlaceholder = () => {
         },
       ]}
     >
-      <GraphFolderChips />
       <View style={styles.canvasArea}>
         <LoadingState title="Loading graph" size="large" />
       </View>
