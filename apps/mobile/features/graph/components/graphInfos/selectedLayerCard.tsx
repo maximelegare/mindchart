@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
+import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { cn } from "@/lib/cn";
 import { hsl } from "@/utils/hsl";
@@ -18,12 +19,13 @@ import type { GraphMode, NodeDatum } from "../../types/types";
 
 const MAX_TITLE_LENGTH = 40;
 const ICON_SLOT = 14;
+const CHEVRON_SLOT = 22;
 const BULLET_SIZE = 6;
 const ROW_GAP = 6;
 /** Horizontal inset shared by the layer header and its child tree rail. */
 const HEADER_INSET = 6;
-/** Horizontal run from the parent-icon rail into the child row. */
-const ELBOW_WIDTH = 12;
+/** Short horizontal run from the rail into the row — keep tight to free content width. */
+const ELBOW_WIDTH = 4;
 const LINE_WIDTH = Math.max(StyleSheet.hairlineWidth * 2, 1);
 const HAIRLINE = StyleSheet.hairlineWidth;
 /** Space between separate thoughts (not between a title and its summary). */
@@ -73,15 +75,17 @@ const RailSegment = ({
   lineColor,
   top,
   bottom,
+  guideWidth,
 }: {
   lineColor: string;
   top: number | `${number}%`;
   bottom: number | `${number}%`;
+  guideWidth: number;
 }) => (
   <View
     style={{
       position: "absolute",
-      left: ICON_SLOT / 2 - LINE_WIDTH / 2,
+      left: guideWidth / 2 - LINE_WIDTH / 2,
       top,
       bottom,
       width: LINE_WIDTH,
@@ -90,83 +94,291 @@ const RailSegment = ({
   />
 );
 
-const Elbow = ({ lineColor }: { lineColor: string }) => (
+const Elbow = ({
+  lineColor,
+  guideWidth,
+}: {
+  lineColor: string;
+  guideWidth: number;
+}) => (
   <View
     style={{
       position: "absolute",
-      left: ICON_SLOT / 2 - LINE_WIDTH / 2,
+      left: guideWidth / 2 - LINE_WIDTH / 2,
       top: "50%",
       marginTop: -LINE_WIDTH / 2,
-      width: ICON_SLOT / 2 + ELBOW_WIDTH,
+      width: guideWidth / 2 + ELBOW_WIDTH,
       height: LINE_WIDTH,
       backgroundColor: lineColor,
     }}
   />
 );
 
-type NodeParts = {
-  header: React.ReactNode;
-  nested?: React.ReactNode;
+const containsNode = (node: NodeDatum, targetId: string): boolean => {
+  if (node.id === targetId || node.thoughtId === targetId) return true;
+  return (node.children ?? []).some((child) => containsNode(child, targetId));
+};
+
+type TreeCtx = {
+  currentNodeId: string;
+  focusedThoughtId?: string;
+  highlightColor: string;
+  lineColor: string;
+  graphMode: GraphMode;
+  onNavigate: (nodeId: string) => void;
+  onOpenNote: (noteId?: string) => void;
 };
 
 /**
  * Children list under a parent row.
- * Guide column width === parent IconColumn, so the rail is centered on the parent icon.
- * Elbows are measured against the header row only (not the full subtree).
+ * `guideWidth` is the rail column — use CHEVRON_SLOT under folders so the
+ * line centers on the chevron, ICON_SLOT under the layer root icon.
  */
 const NestedChildren = ({
-  lineColor,
   nodes,
-  renderNode,
+  ctx,
+  guideWidth,
 }: {
-  lineColor: string;
   nodes: NodeDatum[];
-  renderNode: (node: NodeDatum) => NodeParts;
+  ctx: TreeCtx;
+  guideWidth: number;
 }) => (
   <View>
-    {nodes.map((node, index) => {
-      const isLast = index === nodes.length - 1;
-      const { header, nested } = renderNode(node);
-
-      return (
-        <View key={node.id}>
-          <View className="flex-row items-center">
-            <View style={{ width: ICON_SLOT, alignSelf: "stretch" }}>
-              <RailSegment
-                lineColor={lineColor}
-                top={0}
-                bottom={isLast ? "50%" : 0}
-              />
-              <Elbow lineColor={lineColor} />
-            </View>
-            <View
-              className="flex-1 min-w-0"
-              style={{ marginLeft: ELBOW_WIDTH }}
-            >
-              {header}
-            </View>
-          </View>
-
-          {nested ? (
-            <View className="flex-row">
-              <View style={{ width: ICON_SLOT, alignSelf: "stretch" }}>
-                {!isLast ? (
-                  <RailSegment lineColor={lineColor} top={0} bottom={0} />
-                ) : null}
-              </View>
-              <View
-                className="flex-1 min-w-0"
-                style={{ marginLeft: ELBOW_WIDTH }}
-              >
-                {nested}
-              </View>
-            </View>
-          ) : null}
-        </View>
-      );
-    })}
+    {nodes.map((node, index) => (
+      <TreeBranch
+        key={node.id}
+        node={node}
+        isLast={index === nodes.length - 1}
+        ctx={ctx}
+        guideWidth={guideWidth}
+      />
+    ))}
   </View>
 );
+
+const TreeBranch = ({
+  node,
+  isLast,
+  ctx,
+  guideWidth,
+}: {
+  node: NodeDatum;
+  isLast: boolean;
+  ctx: TreeCtx;
+  guideWidth: number;
+}) => {
+  if (isThoughtLeaf(node)) {
+    const isCurrent = node.id === ctx.currentNodeId;
+    const isFocused = ctx.focusedThoughtId === node.thoughtId;
+    const hasSummary = !!node.summary;
+
+    return (
+      <View>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ width: guideWidth, alignSelf: "stretch" }}>
+            <RailSegment
+              lineColor={ctx.lineColor}
+              top={0}
+              bottom={isLast ? "50%" : 0}
+              guideWidth={guideWidth}
+            />
+            <Elbow lineColor={ctx.lineColor} guideWidth={guideWidth} />
+          </View>
+          <View className="flex-1 min-w-0" style={{ marginLeft: ELBOW_WIDTH }}>
+            <ThoughtTitleRow
+              node={node}
+              isCurrent={isCurrent}
+              isFocused={isFocused}
+              highlightColor={ctx.highlightColor}
+              onOpenNote={ctx.onOpenNote}
+              compactBottom={hasSummary}
+            />
+          </View>
+        </View>
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ width: guideWidth, alignSelf: "stretch" }}>
+            {!isLast ? (
+              <RailSegment
+                lineColor={ctx.lineColor}
+                top={0}
+                bottom={0}
+                guideWidth={guideWidth}
+              />
+            ) : null}
+          </View>
+          <View
+            className="flex-1 min-w-0"
+            style={{
+              marginLeft: ELBOW_WIDTH,
+              paddingBottom: THOUGHT_BLOCK_GAP,
+            }}
+          >
+            {hasSummary ? <ThoughtSummary summary={node.summary!} /> : null}
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <FolderBranch
+      node={node}
+      isLast={isLast}
+      ctx={ctx}
+      guideWidth={guideWidth}
+    />
+  );
+};
+
+const FolderBranch = ({
+  node,
+  isLast,
+  ctx,
+  guideWidth,
+}: {
+  node: NodeDatum;
+  isLast: boolean;
+  ctx: TreeCtx;
+  guideWidth: number;
+}) => {
+  const children = node.children ?? [];
+  const isCurrent = node.id === ctx.currentNodeId;
+  const containsCurrent = useMemo(
+    () =>
+      containsNode(node, ctx.currentNodeId) ||
+      (!!ctx.focusedThoughtId && containsNode(node, ctx.focusedThoughtId)),
+    [node, ctx.currentNodeId, ctx.focusedThoughtId]
+  );
+
+  const [expanded, setExpanded] = useState(true);
+
+  useEffect(() => {
+    if (containsCurrent) setExpanded(true);
+  }, [containsCurrent, ctx.currentNodeId, ctx.focusedThoughtId]);
+
+  const canCollapse = children.length > 0;
+
+  return (
+    <View>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ width: guideWidth, alignSelf: "stretch" }}>
+          <RailSegment
+            lineColor={ctx.lineColor}
+            top={0}
+            bottom={isLast ? "50%" : 0}
+            guideWidth={guideWidth}
+          />
+          <Elbow lineColor={ctx.lineColor} guideWidth={guideWidth} />
+        </View>
+        <View className="flex-1 min-w-0" style={{ marginLeft: ELBOW_WIDTH }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: ROW_GAP,
+              paddingVertical: 6,
+              paddingRight: 4,
+              borderRadius: 8,
+              borderWidth: HAIRLINE,
+              borderColor: isCurrent ? ctx.highlightColor : "transparent",
+              backgroundColor: isCurrent ? ctx.highlightColor : "transparent",
+            }}
+          >
+            {canCollapse ? (
+              <Pressable
+                onPress={() => setExpanded((prev) => !prev)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  expanded ? "Collapse folder" : "Expand folder"
+                }
+                style={{
+                  width: CHEVRON_SLOT,
+                  height: CHEVRON_SLOT,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon
+                  name={expanded ? "chevron-down" : "chevron-right"}
+                  color="muted-foreground"
+                  size={14}
+                />
+              </Pressable>
+            ) : null}
+            <Pressable
+              onPress={() => ctx.onNavigate(node.id)}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: ROW_GAP,
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`Zoom to ${node.name || "group"}`}
+            >
+              <IconColumn>
+                <NodeKindIcon node={node} graphMode={ctx.graphMode} />
+              </IconColumn>
+              <Typography
+                variant="small"
+                className={cn("flex-1", isCurrent && "font-semibold")}
+                numberOfLines={1}
+              >
+                {formatTitle(node.name || node.title || "", 35)}
+              </Typography>
+              {children.length > 0 ? (
+                <Typography variant="p" className="text-xs opacity-60">
+                  {children.length}
+                </Typography>
+              ) : null}
+              {isCurrent ? (
+                <View style={{ opacity: 0.45 }}>
+                  <Icon
+                    name="map-pin-simple"
+                    color="muted-foreground"
+                    size={12}
+                  />
+                </View>
+              ) : null}
+            </Pressable>
+          </View>
+        </View>
+      </View>
+
+      {canCollapse ? (
+        <View style={{ flexDirection: "row" }}>
+          <View style={{ width: guideWidth, alignSelf: "stretch" }}>
+            {!isLast ? (
+              <RailSegment
+                lineColor={ctx.lineColor}
+                top={0}
+                bottom={0}
+                guideWidth={guideWidth}
+              />
+            ) : null}
+          </View>
+          <View
+            className="flex-1 min-w-0"
+            style={{
+              // Align child rails with this folder's chevron column.
+              marginLeft: ELBOW_WIDTH + HAIRLINE,
+            }}
+          >
+            <CollapsibleContainer expanded={expanded}>
+              <NestedChildren
+                nodes={children}
+                ctx={ctx}
+                guideWidth={CHEVRON_SLOT}
+              />
+            </CollapsibleContainer>
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
+};
 
 type SelectedLayerCardProps = {
   layerRoot: NodeDatum;
@@ -307,20 +519,17 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               }}
             >
               <NestedChildren
-                lineColor={lineColor}
                 nodes={children}
-                renderNode={(child) =>
-                  renderTreeNodeParts({
-                    node: child,
-                    currentNodeId,
-                    focusedThoughtId,
-                    highlightColor,
-                    lineColor,
-                    graphMode,
-                    onNavigate: navigateToNode,
-                    onOpenNote: navigateToNote,
-                  })
-                }
+                guideWidth={ICON_SLOT}
+                ctx={{
+                  currentNodeId,
+                  focusedThoughtId,
+                  highlightColor,
+                  lineColor,
+                  graphMode,
+                  onNavigate: navigateToNode,
+                  onOpenNote: navigateToNote,
+                }}
               />
             </View>
           ) : layerRoot.summary || isThoughtLeaf(layerRoot) ? (
@@ -364,115 +573,6 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
     </Card>
   );
 };
-
-type RenderPartsArgs = {
-  node: NodeDatum;
-  currentNodeId: string;
-  focusedThoughtId?: string;
-  highlightColor: string;
-  lineColor: string;
-  graphMode: GraphMode;
-  onNavigate: (nodeId: string) => void;
-  onOpenNote: (noteId?: string) => void;
-};
-
-function renderTreeNodeParts({
-  node,
-  currentNodeId,
-  focusedThoughtId,
-  highlightColor,
-  lineColor,
-  graphMode,
-  onNavigate,
-  onOpenNote,
-}: RenderPartsArgs): NodeParts {
-  if (isThoughtLeaf(node)) {
-    const isCurrent = node.id === currentNodeId;
-    const isFocused = focusedThoughtId === node.thoughtId;
-    const hasSummary = !!node.summary;
-    return {
-      header: (
-        <ThoughtTitleRow
-          node={node}
-          isCurrent={isCurrent}
-          isFocused={isFocused}
-          highlightColor={highlightColor}
-          onOpenNote={onOpenNote}
-          compactBottom={hasSummary}
-        />
-      ),
-      nested: (
-        <View style={{ paddingBottom: THOUGHT_BLOCK_GAP }}>
-          {hasSummary ? <ThoughtSummary summary={node.summary!} /> : null}
-        </View>
-      ),
-    };
-  }
-
-  const isCurrent = node.id === currentNodeId;
-  const children = node.children ?? [];
-
-  return {
-    header: (
-      <Pressable
-        onPress={() => onNavigate(node.id)}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: ROW_GAP,
-          paddingVertical: 6,
-          paddingRight: 8,
-          borderRadius: 8,
-          borderWidth: HAIRLINE,
-          borderColor: isCurrent ? highlightColor : "transparent",
-          backgroundColor: isCurrent ? highlightColor : "transparent",
-        }}
-        accessibilityRole="button"
-        accessibilityLabel={`Zoom to ${node.name || "group"}`}
-      >
-        <IconColumn>
-          <NodeKindIcon node={node} graphMode={graphMode} />
-        </IconColumn>
-        <Typography
-          variant="small"
-          className={cn("flex-1", isCurrent && "font-semibold")}
-          numberOfLines={1}
-        >
-          {formatTitle(node.name || node.title || "", 35)}
-        </Typography>
-        {children.length > 0 ? (
-          <Typography variant="p" className="text-xs opacity-60">
-            {children.length}
-          </Typography>
-        ) : null}
-        {isCurrent ? (
-          <View style={{ opacity: 0.45 }}>
-            <Icon name="map-pin-simple" color="muted-foreground" size={12} />
-          </View>
-        ) : null}
-      </Pressable>
-    ),
-    nested:
-      children.length > 0 ? (
-        <NestedChildren
-          lineColor={lineColor}
-          nodes={children}
-          renderNode={(child) =>
-            renderTreeNodeParts({
-              node: child,
-              currentNodeId,
-              focusedThoughtId,
-              highlightColor,
-              lineColor,
-              graphMode,
-              onNavigate,
-              onOpenNote,
-            })
-          }
-        />
-      ) : undefined,
-  };
-}
 
 type ThoughtTitleRowProps = {
   node: NodeDatum;
