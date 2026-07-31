@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Card } from "@/components/ui/card";
@@ -31,6 +37,16 @@ const HAIRLINE = StyleSheet.hairlineWidth;
 /** Space between separate thoughts (not between a title and its summary). */
 const THOUGHT_BLOCK_GAP = 14;
 const TITLE_SUMMARY_GAP = 0;
+
+/** Fixed row metrics for precomputing collapsible heights (avoid onLayout thrash). */
+const EST_FOLDER_ROW = 36;
+const EST_NOTE_LEAF = 46;
+const EST_THOUGHT_TITLE = 30;
+const EST_THOUGHT_TITLE_COMPACT = 26;
+const EST_SUMMARY_LINE = 18;
+const EST_SUMMARY_CHARS_PER_LINE = 42;
+/** Prefetch children under a collapsed folder only when the list is small. */
+const PREFETCH_MAX_CHILDREN = 48;
 
 const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
   const title = capitalize(value || "");
@@ -122,22 +138,91 @@ const Elbow = ({
   />
 );
 
-const containsNode = (node: NodeDatum, targetId: string): boolean => {
-  if (
-    node.id === targetId ||
-    node.thoughtId === targetId ||
-    node.noteId === targetId ||
-    node.id === `note-${targetId}` ||
-    node.relatedThoughtIds?.includes(targetId)
-  ) {
-    return true;
+const nodeMatchesTarget = (node: NodeDatum, targetId: string): boolean =>
+  node.id === targetId ||
+  node.thoughtId === targetId ||
+  node.noteId === targetId ||
+  node.id === `note-${targetId}` ||
+  !!node.relatedThoughtIds?.includes(targetId);
+
+/** Ancestor ids from `root` down to `targetId` (inclusive). Null if not found. */
+const collectAncestorIds = (
+  root: NodeDatum,
+  targetId: string
+): Set<string> | null => {
+  if (nodeMatchesTarget(root, targetId)) return new Set([root.id]);
+  for (const child of root.children ?? []) {
+    const found = collectAncestorIds(child, targetId);
+    if (found) {
+      found.add(root.id);
+      return found;
+    }
   }
-  return (node.children ?? []).some((child) => containsNode(child, targetId));
+  return null;
 };
+
+const buildActivePathIds = (
+  root: NodeDatum,
+  currentNodeId: string,
+  focusedThoughtId?: string
+): ReadonlySet<string> => {
+  const ids = new Set<string>();
+  collectAncestorIds(root, currentNodeId)?.forEach((id) => ids.add(id));
+  if (focusedThoughtId) {
+    collectAncestorIds(root, focusedThoughtId)?.forEach((id) => ids.add(id));
+  }
+  return ids;
+};
+
+function estimateSummaryHeight(summary: string) {
+  const lines = Math.max(
+    1,
+    Math.ceil(summary.length / EST_SUMMARY_CHARS_PER_LINE)
+  );
+  return lines * EST_SUMMARY_LINE + TITLE_SUMMARY_GAP;
+}
+
+/** Full on-screen height of a branch, respecting which folders are expanded. */
+function estimateBranchHeight(
+  node: NodeDatum,
+  expandedIds: ReadonlySet<string>
+): number {
+  if (isNoteLeaf(node)) return EST_NOTE_LEAF;
+
+  if (isThoughtLeaf(node)) {
+    const hasSummary = !!node.summary?.trim();
+    let height = hasSummary ? EST_THOUGHT_TITLE_COMPACT : EST_THOUGHT_TITLE;
+    if (hasSummary) height += estimateSummaryHeight(node.summary!);
+    return height + THOUGHT_BLOCK_GAP;
+  }
+
+  let height = EST_FOLDER_ROW;
+  if (expandedIds.has(node.id) && node.children?.length) {
+    height += estimateNodesHeight(node.children, expandedIds);
+  }
+  return height;
+}
+
+/** Height of a NestedChildren list (collapsible content). */
+function estimateNodesHeight(
+  nodes: NodeDatum[],
+  expandedIds: ReadonlySet<string>
+): number {
+  let height = 0;
+  for (const node of nodes) {
+    height += estimateBranchHeight(node, expandedIds);
+  }
+  return height;
+}
 
 type TreeCtx = {
   currentNodeId: string;
   focusedThoughtId?: string;
+  /** Ids on the path to the current/focused node — O(1) highlight checks. */
+  activePathIds: ReadonlySet<string>;
+  /** User + path-driven folder expand state. */
+  expandedIds: ReadonlySet<string>;
+  toggleExpanded: (nodeId: string) => void;
   highlightColor: string;
   lineColor: string;
   graphMode: GraphMode;
@@ -302,42 +387,15 @@ function ThoughtSummary({ summary }: { summary: string }) {
   );
 }
 
-/**
- * Children list under a parent row.
- * `guideWidth` is the rail column — use CHEVRON_SLOT under folders so the
- * line centers on the chevron, ICON_SLOT under the layer root icon.
- */
-const NestedChildren = ({
-  nodes,
-  ctx,
-  guideWidth,
-}: {
-  nodes: NodeDatum[];
-  ctx: TreeCtx;
-  guideWidth: number;
-}) => (
-  <View>
-    {nodes.map((node, index) => (
-      <TreeBranch
-        key={node.id}
-        node={node}
-        isLast={index === nodes.length - 1}
-        ctx={ctx}
-        guideWidth={guideWidth}
-      />
-    ))}
-  </View>
-);
-
 const LeafBranch = ({
   isLast,
-  ctx,
+  lineColor,
   guideWidth,
   header,
   nested,
 }: {
   isLast: boolean;
-  ctx: TreeCtx;
+  lineColor: string;
   guideWidth: number;
   header: React.ReactNode;
   nested?: React.ReactNode;
@@ -346,12 +404,12 @@ const LeafBranch = ({
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       <View style={{ width: guideWidth, alignSelf: "stretch" }}>
         <RailSegment
-          lineColor={ctx.lineColor}
+          lineColor={lineColor}
           top={0}
           bottom={isLast ? "50%" : 0}
           guideWidth={guideWidth}
         />
-        <Elbow lineColor={ctx.lineColor} guideWidth={guideWidth} />
+        <Elbow lineColor={lineColor} guideWidth={guideWidth} />
       </View>
       <View className="flex-1 min-w-0" style={{ marginLeft: ELBOW_WIDTH }}>
         {header}
@@ -361,7 +419,7 @@ const LeafBranch = ({
       <View style={{ width: guideWidth, alignSelf: "stretch" }}>
         {!isLast ? (
           <RailSegment
-            lineColor={ctx.lineColor}
+            lineColor={lineColor}
             top={0}
             bottom={0}
             guideWidth={guideWidth}
@@ -381,17 +439,51 @@ const LeafBranch = ({
   </View>
 );
 
-const TreeBranch = ({
+/**
+ * Children under a parent row.
+ * `prefetchOnly` — mounted under a collapsed parent: render rows, but do not
+ * mount *their* children (one-layer prefetch beyond the open frontier).
+ */
+function NestedChildren({
+  nodes,
+  ctx,
+  guideWidth,
+  prefetchOnly = false,
+}: {
+  nodes: NodeDatum[];
+  ctx: TreeCtx;
+  guideWidth: number;
+  prefetchOnly?: boolean;
+}) {
+  return (
+    <View>
+      {nodes.map((node, index) => (
+        <TreeBranch
+          key={node.id}
+          node={node}
+          isLast={index === nodes.length - 1}
+          ctx={ctx}
+          guideWidth={guideWidth}
+          prefetchOnly={prefetchOnly}
+        />
+      ))}
+    </View>
+  );
+}
+
+const TreeBranch = React.memo(function TreeBranch({
   node,
   isLast,
   ctx,
   guideWidth,
+  prefetchOnly = false,
 }: {
   node: NodeDatum;
   isLast: boolean;
   ctx: TreeCtx;
   guideWidth: number;
-}) => {
+  prefetchOnly?: boolean;
+}) {
   if (isNoteLeaf(node)) {
     const isCurrent =
       node.id === ctx.currentNodeId ||
@@ -407,7 +499,7 @@ const TreeBranch = ({
     return (
       <LeafBranch
         isLast={isLast}
-        ctx={ctx}
+        lineColor={ctx.lineColor}
         guideWidth={guideWidth}
         header={
           <NoteTitleRow
@@ -430,7 +522,7 @@ const TreeBranch = ({
     return (
       <LeafBranch
         isLast={isLast}
-        ctx={ctx}
+        lineColor={ctx.lineColor}
         guideWidth={guideWidth}
         header={
           <ThoughtTitleRow
@@ -455,37 +547,39 @@ const TreeBranch = ({
       isLast={isLast}
       ctx={ctx}
       guideWidth={guideWidth}
+      prefetchOnly={prefetchOnly}
     />
   );
-};
+});
 
-const FolderBranch = ({
+const FolderBranch = React.memo(function FolderBranch({
   node,
   isLast,
   ctx,
   guideWidth,
+  prefetchOnly = false,
 }: {
   node: NodeDatum;
   isLast: boolean;
   ctx: TreeCtx;
   guideWidth: number;
-}) => {
+  prefetchOnly?: boolean;
+}) {
   const children = node.children ?? [];
   const isCurrent = node.id === ctx.currentNodeId;
-  const containsCurrent = useMemo(
-    () =>
-      containsNode(node, ctx.currentNodeId) ||
-      (!!ctx.focusedThoughtId && containsNode(node, ctx.focusedThoughtId)),
-    [node, ctx.currentNodeId, ctx.focusedThoughtId]
-  );
-
-  const [expanded, setExpanded] = useState(true);
-
-  useEffect(() => {
-    if (containsCurrent) setExpanded(true);
-  }, [containsCurrent, ctx.currentNodeId, ctx.focusedThoughtId]);
-
+  const expanded = ctx.expandedIds.has(node.id);
   const canCollapse = children.length > 0;
+  // Open parent: render the collapsible shell. Prefetch one closed layer when small.
+  // Prefetch-only rows (under a collapsed parent): folder header only — no deeper mount.
+  const showCollapsible = canCollapse && !prefetchOnly;
+  const mountChildRows =
+    showCollapsible && (expanded || children.length <= PREFETCH_MAX_CHILDREN);
+
+  const contentHeight = useMemo(
+    () =>
+      showCollapsible ? estimateNodesHeight(children, ctx.expandedIds) : 0,
+    [children, ctx.expandedIds, showCollapsible]
+  );
 
   return (
     <View>
@@ -515,7 +609,7 @@ const FolderBranch = ({
           >
             {canCollapse ? (
               <Pressable
-                onPress={() => setExpanded((prev) => !prev)}
+                onPress={() => ctx.toggleExpanded(node.id)}
                 hitSlop={8}
                 accessibilityRole="button"
                 accessibilityLabel={
@@ -576,7 +670,7 @@ const FolderBranch = ({
         </View>
       </View>
 
-      {canCollapse ? (
+      {showCollapsible ? (
         <View style={{ flexDirection: "row" }}>
           <View style={{ width: guideWidth, alignSelf: "stretch" }}>
             {!isLast ? (
@@ -595,19 +689,25 @@ const FolderBranch = ({
               marginLeft: ELBOW_WIDTH + HAIRLINE,
             }}
           >
-            <CollapsibleContainer expanded={expanded}>
-              <NestedChildren
-                nodes={children}
-                ctx={ctx}
-                guideWidth={CHEVRON_SLOT}
-              />
+            <CollapsibleContainer
+              expanded={expanded}
+              contentHeight={contentHeight}
+            >
+              {mountChildRows ? (
+                <NestedChildren
+                  nodes={children}
+                  ctx={ctx}
+                  guideWidth={CHEVRON_SLOT}
+                  prefetchOnly={!expanded}
+                />
+              ) : null}
             </CollapsibleContainer>
           </View>
         </View>
       ) : null}
     </View>
   );
-};
+});
 
 type SelectedLayerCardProps = {
   layerRoot: NodeDatum;
@@ -637,20 +737,92 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
       )
     : hsl("border", colorScheme);
 
-  const navigateToNode = (nodeId: string) => {
-    setParams({
-      id: nodeId,
-      _t: Date.now().toString(),
-    });
-  };
+  const activePathIds = useMemo(
+    () => buildActivePathIds(layerRoot, currentNodeId, focusedThoughtId),
+    [layerRoot, currentNodeId, focusedThoughtId]
+  );
 
-  const navigateToNote = (noteId?: string) => {
-    if (!noteId) return;
-    push({
-      pathname: "/notes/[id]",
-      params: { id: noteId },
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(
+    () => new Set(activePathIds)
+  );
+  const layerIdRef = useRef(layerRoot.id);
+
+  // New layer resets expands; same layer keeps manual opens and merges the path.
+  useEffect(() => {
+    if (layerIdRef.current !== layerRoot.id) {
+      layerIdRef.current = layerRoot.id;
+      setExpandedIds(new Set(activePathIds));
+      return;
+    }
+    setExpandedIds((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const id of activePathIds) {
+        if (!next.has(id)) {
+          next.add(id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
     });
-  };
+  }, [activePathIds, layerRoot.id]);
+
+  const toggleExpanded = useCallback((nodeId: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) next.delete(nodeId);
+      else next.add(nodeId);
+      return next;
+    });
+  }, []);
+
+  const navigateToNode = useCallback(
+    (nodeId: string) => {
+      setParams({
+        id: nodeId,
+        _t: Date.now().toString(),
+      });
+    },
+    [setParams]
+  );
+
+  const navigateToNote = useCallback(
+    (noteId?: string) => {
+      if (!noteId) return;
+      push({
+        pathname: "/notes/[id]",
+        params: { id: noteId },
+      });
+    },
+    [push]
+  );
+
+  const treeCtx = useMemo<TreeCtx>(
+    () => ({
+      currentNodeId,
+      focusedThoughtId,
+      activePathIds,
+      expandedIds,
+      toggleExpanded,
+      highlightColor,
+      lineColor,
+      graphMode,
+      onNavigate: navigateToNode,
+      onOpenNote: navigateToNote,
+    }),
+    [
+      activePathIds,
+      currentNodeId,
+      expandedIds,
+      focusedThoughtId,
+      graphMode,
+      highlightColor,
+      lineColor,
+      navigateToNode,
+      navigateToNote,
+      toggleExpanded,
+    ]
+  );
 
   const isLayerCurrent = layerRoot.id === currentNodeId;
   const children = layerRoot.children ?? [];
@@ -750,15 +922,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               <NestedChildren
                 nodes={children}
                 guideWidth={ICON_SLOT}
-                ctx={{
-                  currentNodeId,
-                  focusedThoughtId,
-                  highlightColor,
-                  lineColor,
-                  graphMode,
-                  onNavigate: navigateToNode,
-                  onOpenNote: navigateToNote,
-                }}
+                ctx={treeCtx}
               />
             </View>
           ) : isNoteLeaf(layerRoot) ? (

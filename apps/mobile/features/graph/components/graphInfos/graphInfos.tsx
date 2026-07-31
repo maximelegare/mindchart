@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
@@ -30,7 +30,11 @@ function findLayerRoot(hierarchy: NodeDatum, activeNode: NodeDatum): NodeDatum {
   return activeNode;
 }
 
-const GraphInfos = ({ hierarchy, activeNode, focusedThoughtId }: Props) => {
+const GraphInfos = memo(function GraphInfos({
+  hierarchy,
+  activeNode,
+  focusedThoughtId,
+}: Props) {
   const isRootLayer = useMemo(() => {
     if (!activeNode) return true;
     if (!hierarchy) return activeNode.id === "root";
@@ -76,6 +80,6 @@ const GraphInfos = ({ hierarchy, activeNode, focusedThoughtId }: Props) => {
       </ScrollView>
     </View>
   );
-};
+});
 
 export default GraphInfos;
