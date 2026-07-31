@@ -4,9 +4,11 @@ import {
   getParentFolderPath,
 } from "@repo/sqlite";
 import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Note } from "@repo/zod-schemas";
 import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
 import { NodeDatum } from "../types/types";
 import { mapThoughtToLeaf } from "./mapThoughtToLeaf";
+import { isNoteLeafId, mapNoteToLeaf } from "./mapNoteToLeaf";
 
 /** Folder pack ids stay `folder-…` so UI helpers can detect them. */
 export const folderNodeId = (folderId: string, scope?: string) =>
@@ -15,18 +17,24 @@ export const folderNodeId = (folderId: string, scope?: string) =>
 type MutableFolderNode = NodeDatum & { children: NodeDatum[] };
 
 export type BuildGraphByFolderOptions = {
-  /** When 1, only root folders appear; nested thoughts attach to their root ancestor. */
+  /** When 1, only root folders appear; nested leaves attach to their root ancestor. */
   maxFolderDepth?: number;
   /**
    * Scopes folder node ids (e.g. category id) so the same folder can appear under
    * multiple parents without colliding in graph navigation.
    */
   folderIdScope?: string;
+  /** Optional thought ids per note for focus resolution on note leaves. */
+  thoughtIdsByNoteId?: Map<string, string[]>;
 };
 
-export function buildGraphByFolder(
+const isContentLeaf = (node: NodeDatum) =>
+  !!node.thoughtId || isNoteLeafId(node.id);
+
+/** Shared folder nesting + leaf attach + prune. */
+function buildFolderHierarchy(
   folders: Folder[],
-  thoughts: ThoughtWithEmbedding[],
+  leaves: NodeDatum[],
   options?: BuildGraphByFolderOptions
 ): NodeDatum {
   const maxFolderDepth = options?.maxFolderDepth;
@@ -87,10 +95,9 @@ export function buildGraphByFolder(
 
   const unfiled: NodeDatum[] = [];
 
-  for (const thought of thoughts) {
-    const leaf = mapThoughtToLeaf(thought);
-    const attachId = thought.folderId
-      ? resolveAttachFolderId(thought.folderId)
+  for (const leaf of leaves) {
+    const attachId = leaf.folderId
+      ? resolveAttachFolderId(leaf.folderId)
       : undefined;
     if (attachId) {
       folderNodes.get(attachId)!.children.push(leaf);
@@ -108,9 +115,8 @@ export function buildGraphByFolder(
     });
   }
 
-  // Drop empty folder branches (no thoughts in subtree).
   const pruneEmpty = (node: NodeDatum): NodeDatum | null => {
-    if (node.thoughtId) return node;
+    if (isContentLeaf(node)) return node;
     const kids = (node.children ?? [])
       .map(pruneEmpty)
       .filter((child): child is NodeDatum => child != null);
@@ -127,4 +133,34 @@ export function buildGraphByFolder(
     name: "root",
     children,
   };
+}
+
+/** Folder mode: folder tree → note leaves (deduped by note id). */
+export function buildGraphByFolder(
+  folders: Folder[],
+  notes: Note[],
+  options?: BuildGraphByFolderOptions
+): NodeDatum {
+  const thoughtIdsByNoteId = options?.thoughtIdsByNoteId;
+  const uniqueNotes = new Map<string, Note>();
+  for (const note of notes) {
+    if (!note.id || uniqueNotes.has(note.id)) continue;
+    uniqueNotes.set(note.id, note);
+  }
+  return buildFolderHierarchy(
+    folders,
+    Array.from(uniqueNotes.values()).map((note) =>
+      mapNoteToLeaf(note, thoughtIdsByNoteId?.get(note.id))
+    ),
+    options
+  );
+}
+
+/** Category mode helper: folder tree → thought leaves. */
+export function buildGraphByFolderWithThoughts(
+  folders: Folder[],
+  thoughts: ThoughtWithEmbedding[],
+  options?: BuildGraphByFolderOptions
+): NodeDatum {
+  return buildFolderHierarchy(folders, thoughts.map(mapThoughtToLeaf), options);
 }

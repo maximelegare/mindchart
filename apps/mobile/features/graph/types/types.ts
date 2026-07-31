@@ -10,8 +10,14 @@ export type NodeDatum = {
   folderId?: string;
   folderPath?: string | null;
   folderLabel?: string | null;
-  // Thought fields (optional, only present on leaf nodes)
+  /**
+   * Content leaves are either:
+   * - thoughts (`thoughtId` set) — category mode
+   * - notes (`id` like `note-…`, `noteId` set, no `thoughtId`) — folder mode
+   */
   thoughtId?: string;
+  /** On note leaves: thought ids under this note (focus / deep-link resolution). */
+  relatedThoughtIds?: string[];
   title?: string | null;
   summary?: string | null;
   noteId?: string;
@@ -20,7 +26,10 @@ export type NodeDatum = {
   embedding?: Float32Array | null;
 };
 
-export type GraphDataCache = Record<GraphMode, NodeDatum>;
+export type GraphDataCache = Record<GraphMode, NodeDatum> & {
+  /** Bumped when leaf shape changes (e.g. folder mode → notes). */
+  version?: number;
+};
 
 export const parseGraphMode = (
   value: string | string[] | undefined

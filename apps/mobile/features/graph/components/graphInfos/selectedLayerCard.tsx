@@ -40,8 +40,11 @@ const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
 
 const isThoughtLeaf = (node: NodeDatum) => !!node.thoughtId;
 
+/** Folder-mode leaves: note id without thoughtId. */
+const isNoteLeaf = (node: NodeDatum) => !!node.noteId && !node.thoughtId;
+
 const isFolderNode = (node: NodeDatum) =>
-  !!node.folderId || node.id.startsWith("folder-");
+  !isNoteLeaf(node) && (!!node.folderId || node.id.startsWith("folder-"));
 
 const isCategoryNode = (node: NodeDatum) => node.id.startsWith("category-");
 
@@ -52,6 +55,11 @@ const NodeKindIcon = ({
   node: NodeDatum;
   graphMode: GraphMode;
 }) => {
+  if (isNoteLeaf(node)) {
+    return (
+      <Icon name="notebook-text" color="muted-foreground" size={ICON_SLOT} />
+    );
+  }
   if (isCategoryNode(node)) {
     return <Icon name="shapes" color="muted-foreground" size={ICON_SLOT} />;
   }
@@ -115,7 +123,15 @@ const Elbow = ({
 );
 
 const containsNode = (node: NodeDatum, targetId: string): boolean => {
-  if (node.id === targetId || node.thoughtId === targetId) return true;
+  if (
+    node.id === targetId ||
+    node.thoughtId === targetId ||
+    node.noteId === targetId ||
+    node.id === `note-${targetId}` ||
+    node.relatedThoughtIds?.includes(targetId)
+  ) {
+    return true;
+  }
   return (node.children ?? []).some((child) => containsNode(child, targetId));
 };
 
@@ -128,6 +144,163 @@ type TreeCtx = {
   onNavigate: (nodeId: string) => void;
   onOpenNote: (noteId?: string) => void;
 };
+
+type NoteTitleRowProps = {
+  node: NodeDatum;
+  isCurrent: boolean;
+  isFocused: boolean;
+  highlightColor: string;
+  onOpenNote: (noteId?: string) => void;
+};
+
+/** Hoisted function — Hermes TDZ breaks const components used above their binding. */
+function NoteTitleRow({
+  node,
+  isCurrent,
+  isFocused,
+  highlightColor,
+  onOpenNote,
+}: NoteTitleRowProps) {
+  const emphasized = isCurrent || isFocused;
+
+  return (
+    <Pressable
+      onPress={() => onOpenNote(node.noteId)}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: ROW_GAP,
+        paddingTop: 4,
+        paddingBottom: 4,
+        paddingRight: 4,
+        borderRadius: 8,
+        borderWidth: HAIRLINE,
+        borderColor: emphasized ? highlightColor : "transparent",
+        backgroundColor: emphasized ? highlightColor : "transparent",
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={`Open note ${node.title || node.name || ""}`}
+    >
+      <IconColumn>
+        <Icon name="notebook-text" color="muted-foreground" size={ICON_SLOT} />
+      </IconColumn>
+      <Typography
+        variant="h5"
+        className={cn(
+          "flex-1 pb-0 leading-tight",
+          emphasized && "font-semibold"
+        )}
+        style={{ includeFontPadding: false }}
+        numberOfLines={2}
+      >
+        {formatTitle(node.title || node.name || "")}
+      </Typography>
+      {emphasized ? (
+        <View style={{ opacity: 0.45 }}>
+          <Icon name="map-pin-simple" color="muted-foreground" size={12} />
+        </View>
+      ) : null}
+    </Pressable>
+  );
+}
+
+type ThoughtTitleRowProps = {
+  node: NodeDatum;
+  isCurrent: boolean;
+  isFocused: boolean;
+  highlightColor: string;
+  onOpenNote: (noteId?: string) => void;
+  /** When true, drop bottom padding so the summary sits tight under the title. */
+  compactBottom?: boolean;
+};
+
+function ThoughtTitleRow({
+  node,
+  isCurrent,
+  isFocused,
+  highlightColor,
+  onOpenNote,
+  compactBottom = false,
+}: ThoughtTitleRowProps) {
+  const { colorScheme } = useColorScheme();
+  const bulletColor = hsl("muted-foreground", colorScheme);
+  const emphasized = isCurrent || isFocused;
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: ROW_GAP,
+        paddingTop: 4,
+        paddingBottom: compactBottom ? 0 : 4,
+        paddingRight: 4,
+        borderRadius: 8,
+        borderWidth: HAIRLINE,
+        borderColor: emphasized ? highlightColor : "transparent",
+        backgroundColor: emphasized ? highlightColor : "transparent",
+      }}
+    >
+      <IconColumn>
+        <View
+          className="rounded-full"
+          style={{
+            width: BULLET_SIZE,
+            height: BULLET_SIZE,
+            backgroundColor: bulletColor,
+          }}
+        />
+      </IconColumn>
+      <Typography
+        variant="h5"
+        className={cn(
+          "flex-1 pb-0 leading-tight",
+          emphasized && "font-semibold"
+        )}
+        style={{ includeFontPadding: false }}
+        numberOfLines={2}
+      >
+        {formatTitle(node.title || node.name || "")}
+      </Typography>
+      {emphasized ? (
+        <View style={{ opacity: 0.45 }}>
+          <Icon name="map-pin-simple" color="muted-foreground" size={12} />
+        </View>
+      ) : null}
+      {node.noteId ? (
+        <Button
+          className="h-8 w-8 p-0"
+          variant="ghost"
+          size="icon"
+          onPress={() => onOpenNote(node.noteId)}
+        >
+          <Icon
+            size={18}
+            color="text"
+            name="notebook-text"
+            style={{ opacity: 0.8 }}
+          />
+        </Button>
+      ) : null}
+    </View>
+  );
+}
+
+function ThoughtSummary({ summary }: { summary: string }) {
+  return (
+    <Typography
+      variant="p"
+      className="pb-0 leading-snug pr-1"
+      style={{
+        includeFontPadding: false,
+        marginTop: TITLE_SUMMARY_GAP,
+        paddingLeft: ICON_SLOT + ROW_GAP,
+      }}
+    >
+      {summary}
+    </Typography>
+  );
+}
 
 /**
  * Children list under a parent row.
@@ -156,6 +329,58 @@ const NestedChildren = ({
   </View>
 );
 
+const LeafBranch = ({
+  isLast,
+  ctx,
+  guideWidth,
+  header,
+  nested,
+}: {
+  isLast: boolean;
+  ctx: TreeCtx;
+  guideWidth: number;
+  header: React.ReactNode;
+  nested?: React.ReactNode;
+}) => (
+  <View>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View style={{ width: guideWidth, alignSelf: "stretch" }}>
+        <RailSegment
+          lineColor={ctx.lineColor}
+          top={0}
+          bottom={isLast ? "50%" : 0}
+          guideWidth={guideWidth}
+        />
+        <Elbow lineColor={ctx.lineColor} guideWidth={guideWidth} />
+      </View>
+      <View className="flex-1 min-w-0" style={{ marginLeft: ELBOW_WIDTH }}>
+        {header}
+      </View>
+    </View>
+    <View style={{ flexDirection: "row" }}>
+      <View style={{ width: guideWidth, alignSelf: "stretch" }}>
+        {!isLast ? (
+          <RailSegment
+            lineColor={ctx.lineColor}
+            top={0}
+            bottom={0}
+            guideWidth={guideWidth}
+          />
+        ) : null}
+      </View>
+      <View
+        className="flex-1 min-w-0"
+        style={{
+          marginLeft: ELBOW_WIDTH,
+          paddingBottom: THOUGHT_BLOCK_GAP,
+        }}
+      >
+        {nested}
+      </View>
+    </View>
+  </View>
+);
+
 const TreeBranch = ({
   node,
   isLast,
@@ -167,56 +392,60 @@ const TreeBranch = ({
   ctx: TreeCtx;
   guideWidth: number;
 }) => {
+  if (isNoteLeaf(node)) {
+    const isCurrent =
+      node.id === ctx.currentNodeId ||
+      (!!node.noteId &&
+        (ctx.currentNodeId === node.noteId ||
+          ctx.currentNodeId === `note-${node.noteId}`));
+    const isFocused =
+      !!ctx.focusedThoughtId &&
+      (ctx.focusedThoughtId === node.noteId ||
+        ctx.focusedThoughtId === node.id ||
+        ctx.focusedThoughtId === `note-${node.noteId}`);
+
+    return (
+      <LeafBranch
+        isLast={isLast}
+        ctx={ctx}
+        guideWidth={guideWidth}
+        header={
+          <NoteTitleRow
+            node={node}
+            isCurrent={isCurrent}
+            isFocused={isFocused}
+            highlightColor={ctx.highlightColor}
+            onOpenNote={ctx.onOpenNote}
+          />
+        }
+      />
+    );
+  }
+
   if (isThoughtLeaf(node)) {
     const isCurrent = node.id === ctx.currentNodeId;
     const isFocused = ctx.focusedThoughtId === node.thoughtId;
     const hasSummary = !!node.summary;
 
     return (
-      <View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View style={{ width: guideWidth, alignSelf: "stretch" }}>
-            <RailSegment
-              lineColor={ctx.lineColor}
-              top={0}
-              bottom={isLast ? "50%" : 0}
-              guideWidth={guideWidth}
-            />
-            <Elbow lineColor={ctx.lineColor} guideWidth={guideWidth} />
-          </View>
-          <View className="flex-1 min-w-0" style={{ marginLeft: ELBOW_WIDTH }}>
-            <ThoughtTitleRow
-              node={node}
-              isCurrent={isCurrent}
-              isFocused={isFocused}
-              highlightColor={ctx.highlightColor}
-              onOpenNote={ctx.onOpenNote}
-              compactBottom={hasSummary}
-            />
-          </View>
-        </View>
-        <View style={{ flexDirection: "row" }}>
-          <View style={{ width: guideWidth, alignSelf: "stretch" }}>
-            {!isLast ? (
-              <RailSegment
-                lineColor={ctx.lineColor}
-                top={0}
-                bottom={0}
-                guideWidth={guideWidth}
-              />
-            ) : null}
-          </View>
-          <View
-            className="flex-1 min-w-0"
-            style={{
-              marginLeft: ELBOW_WIDTH,
-              paddingBottom: THOUGHT_BLOCK_GAP,
-            }}
-          >
-            {hasSummary ? <ThoughtSummary summary={node.summary!} /> : null}
-          </View>
-        </View>
-      </View>
+      <LeafBranch
+        isLast={isLast}
+        ctx={ctx}
+        guideWidth={guideWidth}
+        header={
+          <ThoughtTitleRow
+            node={node}
+            isCurrent={isCurrent}
+            isFocused={isFocused}
+            highlightColor={ctx.highlightColor}
+            onOpenNote={ctx.onOpenNote}
+            compactBottom={hasSummary}
+          />
+        }
+        nested={
+          hasSummary ? <ThoughtSummary summary={node.summary!} /> : undefined
+        }
+      />
     );
   }
 
@@ -532,6 +761,24 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
                 }}
               />
             </View>
+          ) : isNoteLeaf(layerRoot) ? (
+            <View
+              style={{
+                marginLeft: HEADER_INSET + HAIRLINE,
+                marginTop: 8,
+              }}
+            >
+              <NoteTitleRow
+                node={layerRoot}
+                isCurrent={false}
+                isFocused={
+                  focusedThoughtId === layerRoot.noteId ||
+                  focusedThoughtId === layerRoot.id
+                }
+                highlightColor={highlightColor}
+                onOpenNote={navigateToNote}
+              />
+            </View>
           ) : layerRoot.summary || isThoughtLeaf(layerRoot) ? (
             <View
               style={{
@@ -573,99 +820,3 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
     </Card>
   );
 };
-
-type ThoughtTitleRowProps = {
-  node: NodeDatum;
-  isCurrent: boolean;
-  isFocused: boolean;
-  highlightColor: string;
-  onOpenNote: (noteId?: string) => void;
-  /** When true, drop bottom padding so the summary sits tight under the title. */
-  compactBottom?: boolean;
-};
-
-const ThoughtTitleRow: React.FC<ThoughtTitleRowProps> = ({
-  node,
-  isCurrent,
-  isFocused,
-  highlightColor,
-  onOpenNote,
-  compactBottom = false,
-}) => {
-  const { colorScheme } = useColorScheme();
-  const bulletColor = hsl("muted-foreground", colorScheme);
-  const emphasized = isCurrent || isFocused;
-
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: ROW_GAP,
-        paddingTop: 4,
-        paddingBottom: compactBottom ? 0 : 4,
-        paddingRight: 4,
-        borderRadius: 8,
-        borderWidth: HAIRLINE,
-        borderColor: emphasized ? highlightColor : "transparent",
-        backgroundColor: emphasized ? highlightColor : "transparent",
-      }}
-    >
-      <IconColumn>
-        <View
-          className="rounded-full"
-          style={{
-            width: BULLET_SIZE,
-            height: BULLET_SIZE,
-            backgroundColor: bulletColor,
-          }}
-        />
-      </IconColumn>
-      <Typography
-        variant="h5"
-        className={cn(
-          "flex-1 pb-0 leading-tight",
-          emphasized && "font-semibold"
-        )}
-        style={{ includeFontPadding: false }}
-        numberOfLines={2}
-      >
-        {formatTitle(node.title || node.name || "")}
-      </Typography>
-      {emphasized ? (
-        <View style={{ opacity: 0.45 }}>
-          <Icon name="map-pin-simple" color="muted-foreground" size={12} />
-        </View>
-      ) : null}
-      {node.noteId ? (
-        <Button
-          className="h-8 w-8 p-0"
-          variant="ghost"
-          size="icon"
-          onPress={() => onOpenNote(node.noteId)}
-        >
-          <Icon
-            size={18}
-            color="text"
-            name="notebook-text"
-            style={{ opacity: 0.8 }}
-          />
-        </Button>
-      ) : null}
-    </View>
-  );
-};
-
-const ThoughtSummary = ({ summary }: { summary: string }) => (
-  <Typography
-    variant="p"
-    className="pb-0 leading-snug pr-1"
-    style={{
-      includeFontPadding: false,
-      marginTop: TITLE_SUMMARY_GAP,
-      paddingLeft: ICON_SLOT + ROW_GAP,
-    }}
-  >
-    {summary}
-  </Typography>
-);

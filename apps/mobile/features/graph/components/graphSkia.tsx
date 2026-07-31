@@ -455,6 +455,17 @@ function CirclePackSkiaRenderer({
       const focusId = String(focusedThoughtId);
       const found =
         allNodes.find((n) => n.dbId === focusId) ??
+        // Folder-mode note leaf by note id or note-… graph id
+        allNodes.find((n) => n.dbId === `note-${focusId}`) ??
+        allNodes.find(
+          (n) =>
+            !n.rawData.thoughtId &&
+            n.rawData.noteId != null &&
+            (n.rawData.noteId === focusId || n.dbId === `note-${focusId}`)
+        ) ??
+        // Thought deep-link in folder mode → parent note leaf
+        allNodes.find((n) => n.rawData.relatedThoughtIds?.includes(focusId)) ??
+        allNodes.find((n) => n.rawData.thoughtId === focusId) ??
         allNodes.find((n) => n.rawData.folderId === focusId) ??
         allNodes.find(
           (n) =>
@@ -649,7 +660,10 @@ function CirclePackSkiaRenderer({
                     hatchHighlightActive &&
                     !!focusedDbId &&
                     !node.hasChildren &&
-                    node.dbId === focusedDbId
+                    (node.dbId === focusedDbId ||
+                      node.dbId === `note-${focusedDbId}` ||
+                      node.rawData.noteId === focusedDbId ||
+                      !!node.rawData.relatedThoughtIds?.includes(focusedDbId))
                   }
                   hatchLineColor={hsl("border", colorScheme, 10)}
                 />
