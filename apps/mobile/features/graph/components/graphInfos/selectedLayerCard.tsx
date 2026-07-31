@@ -20,9 +20,15 @@ const MAX_TITLE_LENGTH = 40;
 const ICON_SLOT = 14;
 const BULLET_SIZE = 6;
 const ROW_GAP = 6;
+/** Horizontal inset shared by the layer header and its child tree rail. */
+const HEADER_INSET = 6;
 /** Horizontal run from the parent-icon rail into the child row. */
 const ELBOW_WIDTH = 12;
 const LINE_WIDTH = Math.max(StyleSheet.hairlineWidth * 2, 1);
+const HAIRLINE = StyleSheet.hairlineWidth;
+/** Space between separate thoughts (not between a title and its summary). */
+const THOUGHT_BLOCK_GAP = 14;
+const TITLE_SUMMARY_GAP = 0;
 
 const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
   const title = capitalize(value || "");
@@ -230,11 +236,11 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               flexDirection: "row",
               alignItems: "center",
               gap: ROW_GAP,
-              paddingHorizontal: 6,
+              paddingHorizontal: HEADER_INSET,
               paddingVertical: 4,
               borderRadius: cardRadius,
               // Keep borderWidth stable — toggling it collapses flex text on RN.
-              borderWidth: StyleSheet.hairlineWidth,
+              borderWidth: HAIRLINE,
               borderColor: isLayerCurrent
                 ? hsl("border", colorScheme)
                 : "transparent",
@@ -293,7 +299,13 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
           </View>
 
           {children.length ? (
-            <View className="mt-1 px-1.5">
+            <View
+              style={{
+                // Match the layer-root icon column (header inset + border).
+                marginLeft: HEADER_INSET + HAIRLINE,
+                marginTop: 4,
+              }}
+            >
               <NestedChildren
                 lineColor={lineColor}
                 nodes={children}
@@ -312,7 +324,12 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               />
             </View>
           ) : layerRoot.summary || isThoughtLeaf(layerRoot) ? (
-            <View className="mt-2 px-1.5">
+            <View
+              style={{
+                marginLeft: HEADER_INSET + HAIRLINE,
+                marginTop: 8,
+              }}
+            >
               {isThoughtLeaf(layerRoot) ? (
                 <View>
                   <ThoughtTitleRow
@@ -331,7 +348,14 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               )}
             </View>
           ) : (
-            <Typography className="opacity-50 mt-2 px-1.5" variant="p">
+            <Typography
+              className="opacity-50"
+              variant="p"
+              style={{
+                marginLeft: HEADER_INSET + HAIRLINE,
+                marginTop: 8,
+              }}
+            >
               No content
             </Typography>
           )}
@@ -365,6 +389,7 @@ function renderTreeNodeParts({
   if (isThoughtLeaf(node)) {
     const isCurrent = node.id === currentNodeId;
     const isFocused = focusedThoughtId === node.thoughtId;
+    const hasSummary = !!node.summary;
     return {
       header: (
         <ThoughtTitleRow
@@ -373,11 +398,14 @@ function renderTreeNodeParts({
           isFocused={isFocused}
           highlightColor={highlightColor}
           onOpenNote={onOpenNote}
+          compactBottom={hasSummary}
         />
       ),
-      nested: node.summary ? (
-        <ThoughtSummary summary={node.summary} />
-      ) : undefined,
+      nested: (
+        <View style={{ paddingBottom: THOUGHT_BLOCK_GAP }}>
+          {hasSummary ? <ThoughtSummary summary={node.summary!} /> : null}
+        </View>
+      ),
     };
   }
 
@@ -395,7 +423,7 @@ function renderTreeNodeParts({
           paddingVertical: 6,
           paddingRight: 8,
           borderRadius: 8,
-          borderWidth: StyleSheet.hairlineWidth,
+          borderWidth: HAIRLINE,
           borderColor: isCurrent ? highlightColor : "transparent",
           backgroundColor: isCurrent ? highlightColor : "transparent",
         }}
@@ -452,6 +480,8 @@ type ThoughtTitleRowProps = {
   isFocused: boolean;
   highlightColor: string;
   onOpenNote: (noteId?: string) => void;
+  /** When true, drop bottom padding so the summary sits tight under the title. */
+  compactBottom?: boolean;
 };
 
 const ThoughtTitleRow: React.FC<ThoughtTitleRowProps> = ({
@@ -460,6 +490,7 @@ const ThoughtTitleRow: React.FC<ThoughtTitleRowProps> = ({
   isFocused,
   highlightColor,
   onOpenNote,
+  compactBottom = false,
 }) => {
   const { colorScheme } = useColorScheme();
   const bulletColor = hsl("muted-foreground", colorScheme);
@@ -471,10 +502,11 @@ const ThoughtTitleRow: React.FC<ThoughtTitleRowProps> = ({
         flexDirection: "row",
         alignItems: "center",
         gap: ROW_GAP,
-        paddingVertical: 6,
+        paddingTop: 4,
+        paddingBottom: compactBottom ? 0 : 4,
         paddingRight: 4,
         borderRadius: 8,
-        borderWidth: StyleSheet.hairlineWidth,
+        borderWidth: HAIRLINE,
         borderColor: emphasized ? highlightColor : "transparent",
         backgroundColor: emphasized ? highlightColor : "transparent",
       }}
@@ -530,6 +562,7 @@ const ThoughtSummary = ({ summary }: { summary: string }) => (
     className="pb-0 leading-snug pr-1"
     style={{
       includeFontPadding: false,
+      marginTop: TITLE_SUMMARY_GAP,
       paddingLeft: ICON_SLOT + ROW_GAP,
     }}
   >
