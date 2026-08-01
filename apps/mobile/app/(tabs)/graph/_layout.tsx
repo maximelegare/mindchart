@@ -18,8 +18,16 @@ export default function GraphLayout() {
         options={{
           headerShown: false,
           animation: "none",
-          title: "Note",
+          title: "Graph",
           header: () => null,
+        }}
+      />
+      <Stack.Screen
+        name="note/[id]"
+        options={{
+          headerShown: false,
+          header: () => null,
+          title: "Note",
         }}
       />
     </Stack>
