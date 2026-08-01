@@ -16,6 +16,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { cn } from "@/lib/cn";
 import { hsl } from "@/utils/hsl";
 import capitalize from "@/utils/stringManipulations/capitalize";
+import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import {
   resolveListItemCategoryShade,
@@ -782,6 +783,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
         id: nodeId,
         _t: Date.now().toString(),
       });
+      onGraphBreadcrumbNavigate(nodeId);
     },
     [setParams]
   );
@@ -795,6 +797,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
       id: "root",
       _t: Date.now().toString(),
     });
+    onGraphBreadcrumbNavigate("root");
   }, [setParams]);
 
   const navigateToNote = useCallback(

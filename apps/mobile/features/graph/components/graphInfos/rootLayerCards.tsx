@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import capitalize from "@/utils/stringManipulations/capitalize";
+import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { resolveNodeCategoryKey } from "../../utils/resolveNodeCategoryKey";
 import type { NodeDatum } from "../../types/types";
@@ -54,12 +55,13 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
         return (
           <Pressable
             key={node.id}
-            onPress={() =>
+            onPress={() => {
               setParams({
                 id: node.id,
                 _t: Date.now().toString(),
-              })
-            }
+              });
+              onGraphBreadcrumbNavigate(node.id);
+            }}
             accessibilityRole="button"
             accessibilityLabel={`Open ${node.name || "item"}`}
             className="bg-card border-border border rounded-lg overflow-hidden self-start"
