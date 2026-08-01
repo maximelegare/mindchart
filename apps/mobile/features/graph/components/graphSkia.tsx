@@ -45,45 +45,35 @@ const parseHslChannels = (hslColor: string) => {
   };
 };
 
-/**
- * Opaque blend of `base` toward `mixWith` — `strength` 1 = full base color.
- * Values above 1 extrapolate past the base (richer / deeper).
- */
-const mixHslToward = (base: string, mixWith: string, strength: number) => {
-  const from = parseHslChannels(base);
-  const to = parseHslChannels(mixWith);
-  if (!from || !to) return base;
-  const t = Math.max(0, strength);
-  const s = Math.min(100, Math.max(0, to.s + (from.s - to.s) * t));
-  const l = Math.min(100, Math.max(0, to.l + (from.l - to.l) * t));
-  return `hsl(${from.h}, ${s}%, ${l}%)`;
-};
-
-/** First pack layer tint; deepest pack layer tint; leaves stay white. */
-const PACK_STRENGTH_FIRST = 0.3;
-const PACK_STRENGTH_LAST = 1.5;
-
-/**
- * Evenly divide tint from first→last across `layerCount` pack layers.
- * 1 layer → last (150%); 2 → 30%/150%; 3 → 30%/90%/150%; …
- */
-const packLayerStrength = (layerIndex: number, layerCount: number) => {
-  if (layerCount <= 1) return PACK_STRENGTH_LAST;
-  const t =
-    Math.min(Math.max(layerIndex, 0), layerCount - 1) / (layerCount - 1);
-  return PACK_STRENGTH_FIRST + (PACK_STRENGTH_LAST - PACK_STRENGTH_FIRST) * t;
-};
-
 /** Neutral mix target (no theme-green card tint in S/L). */
 const neutralMixTarget = (
   colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
 ) => (colorScheme === "dark" ? "hsl(0, 0%, 12%)" : "hsl(0, 0%, 100%)");
 
-const tintWithStrength = (
+/**
+ * Category packs: first layer (the category itself) is a light shade;
+ * deeper nested packs step toward a darker shade of the same hue.
+ */
+const shadeCategoryLayer = (
   base: string,
-  strength: number,
-  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
-) => mixHslToward(base, neutralMixTarget(colorScheme), strength);
+  layerIndex: number,
+  layerCount: number
+): string => {
+  const channels = parseHslChannels(base);
+  if (!channels) return base;
+
+  const t =
+    layerCount <= 1
+      ? 0
+      : Math.min(Math.max(layerIndex, 0), layerCount - 1) / (layerCount - 1);
+
+  const lightL = Math.min(94, channels.l + (100 - channels.l) * 0.55);
+  const darkL = Math.max(36, channels.l * 0.52);
+  const l = lightL + (darkL - lightL) * t;
+  const s = Math.min(100, channels.s + t * 14);
+
+  return `hsl(${channels.h}, ${s}%, ${l}%)`;
+};
 
 const SIZE = GRAPH_CANVAS_SIZE;
 const PACK_PADDING = 8;
@@ -131,9 +121,9 @@ const findCategoryPackAncestor = (
 };
 
 /**
- * Pack-layer counts for the shared 30%→150% ladder.
+ * Pack-layer counts for category shade ladders (and unused folder bookkeeping).
  * Category mode: keyed by category internalId.
- * Folder mode: keyed by root internalId (synthetic graph root is excluded from tint).
+ * Folder mode: keyed by root internalId.
  */
 const computePackLayerCounts = (
   allNodes: NodeInfo[],
@@ -580,10 +570,10 @@ function CirclePackSkiaRenderer({
       ? (packLayerCounts.get(category.internalId) ?? 1)
       : 1;
 
-    return tintWithStrength(
+    return shadeCategoryLayer(
       hsl(cat, colorScheme, undefined, "categories"),
-      packLayerStrength(layerIndex, layerCount),
-      colorScheme
+      layerIndex,
+      layerCount
     );
   };
 
