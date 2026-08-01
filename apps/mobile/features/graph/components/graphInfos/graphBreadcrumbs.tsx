@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { BreadcrumbCrumb, Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
 
@@ -46,6 +47,7 @@ export const GraphBreadcrumbs = () => {
       id: targetId,
       _t: Date.now().toString(),
     });
+    onGraphBreadcrumbNavigate(targetId, hierarchy);
   };
 
   return (
