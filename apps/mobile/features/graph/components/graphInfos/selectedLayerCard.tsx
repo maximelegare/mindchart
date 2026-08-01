@@ -786,6 +786,17 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
     [setParams]
   );
 
+  const navigateHome = useCallback(() => {
+    useGraphStore.setState({
+      selectedFolderId: null,
+      selectedCategoryId: null,
+    });
+    setParams({
+      id: "root",
+      _t: Date.now().toString(),
+    });
+  }, [setParams]);
+
   const navigateToNote = useCallback(
     (noteId?: string) => {
       if (!noteId) return;
@@ -843,7 +854,27 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
             }}
           />
         ) : null}
+
         <View className="flex-1 min-w-0 p-2">
+          <View style={{ alignSelf: "flex-start" }} className="mb-2">
+            <Button
+              onPress={navigateHome}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel="Back to home"
+              variant="ghost"
+              size="sm"
+              className="flex-row items-center gap-2 p-0"
+            >
+              <Icon name="arrow-left" color="muted-foreground" size={16} />
+              <View className="flex-row items-center gap-1">
+                <Icon name="house" color="muted-foreground" size={16} />
+                <Typography variant="p" className="opacity-70 pb-0">
+                  Home
+                </Typography>
+              </View>
+            </Button>
+          </View>
           <View
             style={{
               flexDirection: "row",
