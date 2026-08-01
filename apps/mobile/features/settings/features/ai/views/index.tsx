@@ -53,7 +53,7 @@ export const AISettingsFeature = () => {
         expanded={expandedCardId === "whisper"}
         label={
           !whisperReady
-            ? { text: "Setup Required", color: "destructive-foreground" }
+            ? { text: "Setup", color: "destructive-foreground" }
             : { text: "Loaded", color: "primary" }
         }
         onPress={handleExpandableCardPress}
@@ -66,7 +66,7 @@ export const AISettingsFeature = () => {
         title="Llama Chat Engine"
         label={
           !llamaChatReady
-            ? { text: "Setup Required", color: "destructive-foreground" }
+            ? { text: "Setup", color: "destructive-foreground" }
             : { text: "Loaded", color: "primary" }
         }
         expanded={expandedCardId === "llamaChat"}
@@ -80,7 +80,10 @@ export const AISettingsFeature = () => {
         title="Embeddings Engine"
         label={
           !llamaEmbeddingsReady
-            ? { text: "Setup Required", color: "destructive-foreground" }
+            ? {
+                text: "*** Setup Required ***",
+                color: "destructive-foreground",
+              }
             : { text: "Loaded", color: "primary" }
         }
         expanded={expandedCardId === "llamaEmbeddings"}

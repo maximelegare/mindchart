@@ -8,34 +8,30 @@ export const useAiAutoConnect = () => {
   const { whisper, llamaChat, llamaEmbeddings, autoConnect } =
     useAISettingsPreferences();
 
-  const {
-    initializeModel,
-    modelFiles,
-
-    // isLoaded: whisperLoaded,
-  } = useWhisper();
+  const { initializeModel, modelFiles, hasCheckedDownloadedModels } =
+    useWhisper();
 
   const {
     initializeChatModel,
     downloadedModels: llamaChatModelFiles,
-    // isLoaded: chatLoaded,
+    hasCheckedLocalModels: hasCheckedLlamaChatModels,
   } = useLlamaChat();
 
   const {
     initializeEmbeddingModel,
     downloadedModels: llamaEmbeddingsModelFiles,
-    // isLoaded: embedLoaded,
+    hasCheckedLocalModels: hasCheckedLlamaEmbeddingsModels,
   } = useLlamaEmbeddings();
 
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasAttempted, setHasAttempted] = useState(false);
   const [setupRequired, setSetupRequired] = useState(false);
 
-  // ✅ True only when ALL sources are loaded
+  // Wait until disk scans finish — empty {} is not "ready"
   const isReady =
-    modelFiles !== undefined &&
-    llamaChatModelFiles !== undefined &&
-    llamaEmbeddingsModelFiles !== undefined;
+    !!hasCheckedDownloadedModels &&
+    !!hasCheckedLlamaChatModels &&
+    !!hasCheckedLlamaEmbeddingsModels;
 
   const initializeAi = async () => {
     if (isInitializing) return;
@@ -45,6 +41,12 @@ export const useAiAutoConnect = () => {
 
       const tasks = [];
 
+      // Embeddings always auto-connect when downloaded
+      if (llamaEmbeddingsModelFiles[llamaEmbeddings]) {
+        tasks.push(initializeEmbeddingModel(llamaEmbeddings));
+      }
+
+      // Whisper and Llama Chat only when Auto Connect is enabled
       if (autoConnect) {
         if (modelFiles[whisper]) {
           tasks.push(initializeModel(whisper));
@@ -52,10 +54,6 @@ export const useAiAutoConnect = () => {
 
         if (llamaChatModelFiles[llamaChat]) {
           tasks.push(initializeChatModel(llamaChat));
-        }
-
-        if (llamaEmbeddingsModelFiles[llamaEmbeddings]) {
-          tasks.push(initializeEmbeddingModel(llamaEmbeddings));
         }
       }
 
@@ -72,23 +70,15 @@ export const useAiAutoConnect = () => {
   };
 
   useEffect(() => {
-    if (!isReady) return; // 🚨 CRITICAL: prevents flicker
+    if (!isReady) return;
 
-    const hasSelectedWhisper = !!modelFiles[whisper];
-    const hasSelectedChat = !!llamaChatModelFiles[llamaChat];
     const hasSelectedEmbedding = !!llamaEmbeddingsModelFiles[llamaEmbeddings];
 
-    const aiSetupRequired =
-      !hasSelectedWhisper || !hasSelectedChat || !hasSelectedEmbedding;
+    // Setup modal is embeddings-only; missing whisper/llama should not trigger it
+    setSetupRequired(!hasSelectedEmbedding);
 
-    const canAttempt = autoConnect && !hasAttempted && !aiSetupRequired;
-
-    if (aiSetupRequired) {
-      setSetupRequired(true);
-    } else if (canAttempt) {
+    if (!hasAttempted) {
       initializeAi();
-    } else {
-      setSetupRequired(false);
     }
   }, [
     autoConnect,
@@ -103,6 +93,6 @@ export const useAiAutoConnect = () => {
     initializeAi,
     isInitializing,
     setupRequired,
-    isReady, // 👈 exposed to UI layer
+    isReady,
   };
 };

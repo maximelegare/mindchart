@@ -8,7 +8,7 @@ export const AutoConnectSettings = () => {
   return (
     <SwitchSetting
       title="Auto Connect"
-      description="Automatically connect to the AI engines when the app is launched."
+      description="Automatically connect Whisper and Llama Chat when the app is launched. Embeddings always connect automatically."
       checked={autoConnect}
       onCheckedChange={setAutoConnect}
       accessibilityLabel="Auto Connect"

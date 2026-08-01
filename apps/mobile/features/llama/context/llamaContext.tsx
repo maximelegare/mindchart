@@ -26,6 +26,7 @@ interface LlamaState {
 
   downloadProgress: Record<string, number>;
   downloadedModels: Record<string, boolean>;
+  hasCheckedLocalModels: boolean;
 }
 
 interface LlamaActions {
@@ -63,6 +64,7 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
 
     downloadProgress: {},
     downloadedModels: {},
+    hasCheckedLocalModels: false,
   });
 
   const downloader = useMemo(() => new ModelDownloader(), []);
@@ -87,7 +89,11 @@ export const LlamaProvider: React.FC<{ children: React.ReactNode }> = ({
       results[key] = mainExists;
     }
 
-    setState((prev) => ({ ...prev, downloadedModels: results }));
+    setState((prev) => ({
+      ...prev,
+      downloadedModels: results,
+      hasCheckedLocalModels: true,
+    }));
   }, []);
 
   useEffect(() => {

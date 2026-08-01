@@ -21,6 +21,7 @@ interface WhisperState {
   isInitializing: boolean;
   downloadProgress: Record<string, number>;
   modelFiles: Record<string, boolean>;
+  hasCheckedDownloadedModels: boolean;
 }
 
 interface WhisperActions {
@@ -44,6 +45,7 @@ export const WhisperProvider: React.FC<{ children: React.ReactNode }> = ({
     isInitializing: false,
     downloadProgress: {},
     modelFiles: {},
+    hasCheckedDownloadedModels: false,
   });
 
   const checkDownloadedModels = useCallback(async () => {
@@ -77,7 +79,11 @@ export const WhisperProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     // This will now have all keys, even if they are all 'false'
-    setState((prev) => ({ ...prev, modelFiles: results }));
+    setState((prev) => ({
+      ...prev,
+      modelFiles: results,
+      hasCheckedDownloadedModels: true,
+    }));
   }, []);
 
   useEffect(() => {

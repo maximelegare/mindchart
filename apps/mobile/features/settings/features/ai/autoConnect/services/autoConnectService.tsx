@@ -1,40 +1,27 @@
-import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { useModal } from "@/components/ui/modal/modal";
 import { useAiAutoConnect } from "@/features/settings/features/ai/autoConnect/hooks/useAutoConnect";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
-
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export const AutoConnectService = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const { isInitializing, setupRequired, isReady } = useAiAutoConnect();
+  const { setupRequired, isReady } = useAiAutoConnect();
   const { openModal, closeModal } = useModal();
   const router = useRouter();
 
-  const hasMounted = useRef(false);
+  const hasShownSetupModal = useRef(false);
 
   useEffect(() => {
-    if (!isReady) return; // 🚨 prevents flicker entirely
+    if (!isReady) return;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
 
-    if (isInitializing) {
-      timer = setTimeout(() => {
-        openModal({
-          dismissOnBackgroundPress: false,
-          customContent: () => (
-            <LoadingState title="Initializing AI Models" size="large" />
-          ),
-        });
-        hasMounted.current = true;
-      }, 300); // slight delay avoids micro flicker
-    } else if (setupRequired) {
-      // Prevent modal from appearing multiple times after the first render
-      if (!hasMounted.current) {
+    if (setupRequired) {
+      // Silent connect otherwise — only surface the embeddings setup modal
+      if (!hasShownSetupModal.current) {
         timer = setTimeout(() => {
           openModal({
             modalName: "AI_SETUP_REQUIRED",
@@ -44,17 +31,15 @@ export const AutoConnectService = ({
               closeModal();
             },
           });
-          hasMounted.current = true;
+          hasShownSetupModal.current = true;
         }, 300);
       }
-    } else {
-      closeModal();
     }
 
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isInitializing, setupRequired, isReady, openModal, closeModal]);
+  }, [setupRequired, isReady, openModal, closeModal, router]);
 
   return <>{children}</>;
 };

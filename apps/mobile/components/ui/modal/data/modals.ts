@@ -97,7 +97,7 @@ export const MODALS_CONTENT: Record<
   AI_SETUP_REQUIRED: {
     title: "AI Setup Required",
     description:
-      "You will need to download the models to use the local AI engines.",
+      "You will need to download an embeddings model to use local AI features. Go to Settings to set it up.",
     confirmButton: { text: "Go to Settings" },
     cancelButton: { text: "Cancel" },
   },
