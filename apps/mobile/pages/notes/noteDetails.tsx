@@ -9,7 +9,7 @@ import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDe
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
 import type { FolderSelection } from "@/features/notes/notePreview/folderSelector";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useSegments } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
 
@@ -28,6 +28,8 @@ export const NoteDetailsPage = () => {
     id: string;
     mode?: string;
   }>();
+  const segments = useSegments();
+  const openedFromGraph = segments.includes("graph");
   const [open, setOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<NoteEditorMode>(() =>
     parseEditorMode(modeParam)
@@ -52,6 +54,18 @@ export const NoteDetailsPage = () => {
 
   const isPreviewMode = editorMode === "preview";
 
+  const leaveAfterDelete = useCallback(() => {
+    if (openedFromGraph) {
+      if (router.canGoBack()) {
+        router.back();
+        return;
+      }
+      router.replace("/graph");
+      return;
+    }
+    router.replace("/notes");
+  }, [openedFromGraph]);
+
   const noteFolder = useMemo((): FolderSelection => {
     const folderId = note?.[0]?.folderId;
     if (!folderId || !allFolders) return null;
@@ -75,11 +89,11 @@ export const NoteDetailsPage = () => {
     setIsDiscarding(true);
     try {
       await deleteNoteAction(noteId);
-      router.replace("/notes");
+      leaveAfterDelete();
     } finally {
       setIsDiscarding(false);
     }
-  }, [deleteNoteAction, noteId]);
+  }, [deleteNoteAction, leaveAfterDelete, noteId]);
 
   const handleDeleteNote = () => {
     openModal({

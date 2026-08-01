@@ -3,9 +3,12 @@ import { GraphModeToggle } from "@/features/graph/components/graphModeToggle";
 import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import { GraphFeature } from "@/features/graph/views";
 import { parseGraphMode } from "@/features/graph/types/types";
+import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
+import { areBreadcrumbsLinked } from "@/features/navigation/breadcrumbLinkStore";
+import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { SearchFeature } from "@/features/search/views";
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 
 export const GraphThoughIdPage = () => {
   const { id, _t, graph } = useLocalSearchParams<{
@@ -13,6 +16,7 @@ export const GraphThoughIdPage = () => {
     _t?: string;
     graph?: string;
   }>();
+  const { setParams } = useRouter();
 
   const [open, setOpen] = useState(false);
 
@@ -21,6 +25,21 @@ export const GraphThoughIdPage = () => {
       setGraphModeImmediate(parseGraphMode(graph));
     }
   }, [graph]);
+
+  // When breadcrumbs are linked, zoom graph to the notes folder on focus.
+  useFocusEffect(
+    useCallback(() => {
+      if (!areBreadcrumbsLinked()) return;
+      const folderId = useOptionsBar.getState().currentFolderId;
+      const desiredId = graphIdFromFolderId(folderId);
+      const currentId = typeof id === "string" ? id : id?.[0];
+      if (!currentId || currentId === desiredId) return;
+      setParams({
+        id: desiredId,
+        _t: Date.now().toString(),
+      });
+    }, [id, setParams])
+  );
 
   return (
     <PageContainer

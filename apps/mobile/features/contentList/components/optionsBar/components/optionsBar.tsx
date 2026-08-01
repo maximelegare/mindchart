@@ -34,6 +34,7 @@ import { FolderBreadcrumbCrumb } from "./folders/folderActionsMenu";
 import { TriggerFilterChip } from "./triggerFilterChip";
 import { OptionChip } from "./options/optionChip";
 import { Gutter } from "@/components/ui/gutter";
+import { BreadcrumbLinkToggle } from "@/features/navigation/breadcrumbLinkToggle";
 
 type OptionItem<T extends string> = {
   value: T;
@@ -315,6 +316,7 @@ export const OptionsBar = () => {
                   )
                 }
               />
+
               <OptionsDropdown
                 title="Sort by:"
                 value={sortBy}
@@ -335,6 +337,7 @@ export const OptionsBar = () => {
                   onValueChange={onGroupByChange}
                 />
               ) : null}
+              <BreadcrumbLinkToggle />
             </ScrollView>
           </Gutter>
         </CollapsibleContainer>

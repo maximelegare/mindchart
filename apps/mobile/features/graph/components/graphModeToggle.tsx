@@ -17,6 +17,7 @@ import { View } from "react-native";
 import { useGraphStore } from "../context/graphContext";
 import { GraphMode } from "../types/types";
 import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
+import { BreadcrumbLinkToggle } from "@/features/navigation/breadcrumbLinkToggle";
 import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
 import { Gutter } from "@/components/ui/gutter";
 
@@ -113,6 +114,7 @@ export const GraphModeToggle = memo(function GraphModeToggle() {
                   useGraphStore.getState().setGraphMode(next);
                 }}
               />
+              <BreadcrumbLinkToggle />
             </View>
           </Gutter>
         </CollapsibleContainer>

@@ -801,7 +801,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
     (noteId?: string) => {
       if (!noteId) return;
       push({
-        pathname: "/notes/[id]",
+        pathname: "/graph/note/[id]",
         params: { id: noteId },
       });
     },
