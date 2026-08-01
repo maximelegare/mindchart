@@ -649,6 +649,8 @@ function CirclePackSkiaRenderer({
                   viewY={viewY}
                   viewR={viewR}
                   color={getNodeColor(node)}
+                  showBorder={node.internalId === rootNode.internalId}
+                  borderColor={hsl("border", colorScheme)}
                   isFocusedThought={
                     hatchHighlightActive &&
                     !!focusedDbId &&
@@ -789,6 +791,8 @@ type SkCircleProps = {
   viewY: { value: number };
   viewR: { value: number };
   color: string;
+  showBorder?: boolean;
+  borderColor?: string;
   isFocusedThought: boolean;
   hatchLineColor: string;
 };
@@ -799,6 +803,8 @@ const SkCircle = ({
   viewY,
   viewR,
   color,
+  showBorder = false,
+  borderColor = "rgba(0,0,0,0.1)",
   isFocusedThought,
   hatchLineColor,
 }: SkCircleProps) => {
@@ -809,6 +815,12 @@ const SkCircle = ({
       { translateY: SIZE / 2 + (node.y - viewY.value) * k },
       { scale: k },
     ];
+  });
+
+  // Keep the root ring ~1 screen px as the camera zooms.
+  const borderStrokeWidth = useDerivedValue(() => {
+    const k = SIZE / (viewR.value * 2);
+    return k > 0 ? 1 / k : 1;
   });
 
   const clipPath = useMemo(() => {
@@ -832,6 +844,16 @@ const SkCircle = ({
       ) : (
         <Circle cx={0} cy={0} r={node.r} color={color} />
       )}
+      {showBorder ? (
+        <Circle
+          cx={0}
+          cy={0}
+          r={node.r}
+          style="stroke"
+          strokeWidth={borderStrokeWidth}
+          color={borderColor}
+        />
+      ) : null}
     </Group>
   );
 };
