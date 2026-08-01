@@ -30,7 +30,7 @@ import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
-import { GRAPH_CANVAS_SIZE } from "../constants";
+import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
 
 const parseHslChannels = (hslColor: string) => {
   const inside = hslColor.replace(/^hsla?\(|\)$/g, "").trim();
@@ -564,13 +564,8 @@ function CirclePackSkiaRenderer({
     }
 
     if (graphMode === "folder") {
-      const layerCount = packLayerCounts.get(rootNode.internalId) ?? 1;
       const layerIndex = isSyntheticRoot(data) ? node.depth - 1 : node.depth;
-      return tintWithStrength(
-        hsl("primary", colorScheme),
-        packLayerStrength(Math.max(0, layerIndex), layerCount),
-        colorScheme
-      );
+      return folderLayerColor(Math.max(0, layerIndex));
     }
 
     const category = findCategoryPackAncestor(node, nodeMap, rootNode);
@@ -837,14 +832,6 @@ const SkCircle = ({
       ) : (
         <Circle cx={0} cy={0} r={node.r} color={color} />
       )}
-      <Circle
-        cx={0}
-        cy={0}
-        r={node.r}
-        style="stroke"
-        strokeWidth={0.5}
-        color="rgba(0,0,0,0.1)"
-      />
     </Group>
   );
 };
