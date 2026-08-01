@@ -1,8 +1,7 @@
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Typography } from "@/components/ui/typography";
-import { Button } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { cn } from "@/lib/cn";
 
@@ -22,6 +21,52 @@ type BreadcrumbsProps = {
     isLast: boolean;
   }) => React.ReactNode;
 };
+
+const isRootItem = (item: BreadcrumbItem) =>
+  item.id === "root" ||
+  item.id === "Root" ||
+  item.name.toLowerCase() === "root";
+
+/** Default crumb — matches notes `FolderBreadcrumbCrumb` visuals. */
+export function BreadcrumbCrumb({
+  item,
+  isLast,
+  onNavigate,
+}: {
+  item: BreadcrumbItem;
+  isLast: boolean;
+  onNavigate: (id: string) => void;
+}) {
+  return (
+    <View className="flex-row items-center shrink-0" collapsable={false}>
+      <Pressable onPress={() => onNavigate(item.id)} hitSlop={8}>
+        <View
+          className={cn(
+            "h-10 justify-center opacity-50 px-1",
+            isLast ? "opacity-100" : ""
+          )}
+        >
+          {isRootItem(item) ? (
+            <Icon name="house" color="text" size={18} />
+          ) : (
+            <Typography variant="h5" numberOfLines={1}>
+              {item.name}
+            </Typography>
+          )}
+        </View>
+      </Pressable>
+      {!isLast && (
+        <Typography
+          variant="p"
+          className="opacity-50"
+          style={{ marginHorizontal: 2 }}
+        >
+          /
+        </Typography>
+      )}
+    </View>
+  );
+}
 
 export const Breadcrumbs = ({
   items,
@@ -76,34 +121,12 @@ export const Breadcrumbs = ({
           }
 
           return (
-            <View key={item.id} className="flex-row items-center shrink-0">
-              <Button
-                variant="ghost"
-                size="xs"
-                className={cn(
-                  "opacity-50 shrink-0 px-0",
-                  isLast ? "opacity-100" : ""
-                )}
-                onPress={() => onNavigate(item.id)}
-              >
-                {item.id === "root" || item.name.toLowerCase() === "root" ? (
-                  <Icon name="house" color="text" size={18} />
-                ) : (
-                  <Typography variant="h5" numberOfLines={1}>
-                    {item.name}
-                  </Typography>
-                )}
-              </Button>
-              {!isLast && (
-                <Typography
-                  variant="p"
-                  className="opacity-50"
-                  style={{ marginHorizontal: 2 }}
-                >
-                  /
-                </Typography>
-              )}
-            </View>
+            <BreadcrumbCrumb
+              key={item.id}
+              item={item}
+              isLast={isLast}
+              onNavigate={onNavigate}
+            />
           );
         })}
       </ScrollView>

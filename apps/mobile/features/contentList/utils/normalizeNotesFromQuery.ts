@@ -26,9 +26,13 @@ export const normalizeNotesFromQuery = (data: unknown): Note[] | null => {
     topicName: row.topic_name ?? undefined,
     folderId: row.folder_id ?? undefined,
     folderLabel: row.folder_label ?? undefined,
-    createdAt: row.createdAt,
+    createdAt: row.createdAt ?? undefined,
   }));
 
   const result = z.array(NoteSchema).safeParse(normalized);
-  return result.success ? result.data : null;
+  if (result.success) return result.data;
+
+  // Soft fallback: keep rows that at least have an id (don't blank the graph).
+  const soft = normalized.filter((row) => typeof row.id === "string" && row.id);
+  return soft.length ? (soft as Note[]) : null;
 };

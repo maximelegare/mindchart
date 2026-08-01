@@ -58,6 +58,14 @@ export const GraphFeature = ({
     setSelection({ active: null, parent: null });
   }, [renderMode, selectedFolderId, selectedCategoryId]);
 
+  const activeNode = selection.active ?? hierarchy;
+
+  useEffect(() => {
+    useGraphStore
+      .getState()
+      .setBreadcrumbNav(hierarchy, activeNode?.id ?? null);
+  }, [activeNode?.id, hierarchy]);
+
   if (isLoading || !hierarchy) {
     return (
       <View className="flex-col gap-4 items-center flex-1">
@@ -68,8 +76,6 @@ export const GraphFeature = ({
       </View>
     );
   }
-
-  const activeNode = selection.active ?? hierarchy;
 
   return (
     <View className="flex-col gap-4 items-center flex-1">
@@ -83,6 +89,7 @@ export const GraphFeature = ({
 
       <View className="w-full flex-1">
         <GraphInfos
+          hierarchy={hierarchy}
           activeNode={activeNode}
           focusedThoughtId={focusedThoughtId}
         />

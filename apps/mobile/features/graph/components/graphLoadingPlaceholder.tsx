@@ -17,7 +17,9 @@ export const GraphLoadingPlaceholder = () => {
         },
       ]}
     >
-      <LoadingState title="Loading graph" size="large" />
+      <View style={styles.canvasArea}>
+        <LoadingState title="Loading graph" size="large" />
+      </View>
     </View>
   );
 };
@@ -25,11 +27,15 @@ export const GraphLoadingPlaceholder = () => {
 const styles = StyleSheet.create({
   wrapper: {
     width: GRAPH_CANVAS_SIZE,
-    height: GRAPH_CANVAS_SIZE,
     borderWidth: 1,
     borderRadius: 12,
+    overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,
+  },
+  canvasArea: {
+    width: GRAPH_CANVAS_SIZE,
+    height: GRAPH_CANVAS_SIZE,
     alignItems: "center",
     justifyContent: "center",
   },

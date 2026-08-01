@@ -1,7 +1,8 @@
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
 import { NodeDatum } from "../types/types";
-import { buildGraphByFolder } from "./buildGraphByFolder";
+import { buildGraphByFolderWithThoughts } from "./buildGraphByFolder";
+import { isNoteLeafId } from "./mapNoteToLeaf";
 
 const stampCategoryId = (node: NodeDatum, categoryId: string): NodeDatum => ({
   ...node,
@@ -29,12 +30,16 @@ export function buildGraphByCategoryFolders(
     name: "root",
     children: Array.from(byCategory.entries()).map(
       ([categoryId, categoryThoughts]) => {
-        const folderTree = buildGraphByFolder(folders, categoryThoughts, {
-          maxFolderDepth: 1,
-          // Same folder under two categories must not share a graph node id,
-          // or zoom/focus lands on the first match (often wrong after moves).
-          folderIdScope: categoryId,
-        });
+        const folderTree = buildGraphByFolderWithThoughts(
+          folders,
+          categoryThoughts,
+          {
+            maxFolderDepth: 1,
+            // Same folder under two categories must not share a graph node id,
+            // or zoom/focus lands on the first match (often wrong after moves).
+            folderIdScope: categoryId,
+          }
+        );
         return {
           id: `category-${categoryId}`,
           name: categoryId,
@@ -56,7 +61,7 @@ export const categoryGraphNeedsRebuild = (root: NodeDatum): boolean => {
       category.categoryId ?? category.id.slice("category-".length);
 
     for (const child of category.children ?? []) {
-      if (child.thoughtId) continue;
+      if (child.thoughtId || isNoteLeafId(child.id)) continue;
 
       const isFolderChild =
         child.folderId != null || child.id.startsWith("folder-");
@@ -70,6 +75,7 @@ export const categoryGraphNeedsRebuild = (root: NodeDatum): boolean => {
       const hasNestedFolder = (child.children ?? []).some(
         (nested) =>
           !nested.thoughtId &&
+          !isNoteLeafId(nested.id) &&
           (nested.folderId != null || nested.id.startsWith("folder-"))
       );
       if (hasNestedFolder) return true;

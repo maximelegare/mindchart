@@ -29,9 +29,8 @@ import { Icon } from "@/components/ui/icons/icon";
 import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
-import { GraphBreadcrumbs } from "./graphInfos/graphBreadcrumbs";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
-import { GRAPH_CANVAS_SIZE } from "../constants";
+import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
 
 const parseHslChannels = (hslColor: string) => {
   const inside = hslColor.replace(/^hsla?\(|\)$/g, "").trim();
@@ -46,45 +45,35 @@ const parseHslChannels = (hslColor: string) => {
   };
 };
 
-/**
- * Opaque blend of `base` toward `mixWith` — `strength` 1 = full base color.
- * Values above 1 extrapolate past the base (richer / deeper).
- */
-const mixHslToward = (base: string, mixWith: string, strength: number) => {
-  const from = parseHslChannels(base);
-  const to = parseHslChannels(mixWith);
-  if (!from || !to) return base;
-  const t = Math.max(0, strength);
-  const s = Math.min(100, Math.max(0, to.s + (from.s - to.s) * t));
-  const l = Math.min(100, Math.max(0, to.l + (from.l - to.l) * t));
-  return `hsl(${from.h}, ${s}%, ${l}%)`;
-};
-
-/** First pack layer tint; deepest pack layer tint; leaves stay white. */
-const PACK_STRENGTH_FIRST = 0.3;
-const PACK_STRENGTH_LAST = 1.5;
-
-/**
- * Evenly divide tint from first→last across `layerCount` pack layers.
- * 1 layer → last (150%); 2 → 30%/150%; 3 → 30%/90%/150%; …
- */
-const packLayerStrength = (layerIndex: number, layerCount: number) => {
-  if (layerCount <= 1) return PACK_STRENGTH_LAST;
-  const t =
-    Math.min(Math.max(layerIndex, 0), layerCount - 1) / (layerCount - 1);
-  return PACK_STRENGTH_FIRST + (PACK_STRENGTH_LAST - PACK_STRENGTH_FIRST) * t;
-};
-
 /** Neutral mix target (no theme-green card tint in S/L). */
 const neutralMixTarget = (
   colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
 ) => (colorScheme === "dark" ? "hsl(0, 0%, 12%)" : "hsl(0, 0%, 100%)");
 
-const tintWithStrength = (
+/**
+ * Category packs: first layer (the category itself) is a light shade;
+ * deeper nested packs step toward a darker shade of the same hue.
+ */
+const shadeCategoryLayer = (
   base: string,
-  strength: number,
-  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
-) => mixHslToward(base, neutralMixTarget(colorScheme), strength);
+  layerIndex: number,
+  layerCount: number
+): string => {
+  const channels = parseHslChannels(base);
+  if (!channels) return base;
+
+  const t =
+    layerCount <= 1
+      ? 0
+      : Math.min(Math.max(layerIndex, 0), layerCount - 1) / (layerCount - 1);
+
+  const lightL = Math.min(94, channels.l + (100 - channels.l) * 0.55);
+  const darkL = Math.max(36, channels.l * 0.52);
+  const l = lightL + (darkL - lightL) * t;
+  const s = Math.min(100, channels.s + t * 14);
+
+  return `hsl(${channels.h}, ${s}%, ${l}%)`;
+};
 
 const SIZE = GRAPH_CANVAS_SIZE;
 const PACK_PADDING = 8;
@@ -132,9 +121,9 @@ const findCategoryPackAncestor = (
 };
 
 /**
- * Pack-layer counts for the shared 30%→150% ladder.
+ * Pack-layer counts for category shade ladders (and unused folder bookkeeping).
  * Category mode: keyed by category internalId.
- * Folder mode: keyed by root internalId (synthetic graph root is excluded from tint).
+ * Folder mode: keyed by root internalId.
  */
 const computePackLayerCounts = (
   allNodes: NodeInfo[],
@@ -452,7 +441,28 @@ function CirclePackSkiaRenderer({
 
     let target = rootNode;
     if (focusedThoughtId) {
-      const found = allNodes.find((n) => n.dbId === String(focusedThoughtId));
+      const focusId = String(focusedThoughtId);
+      const found =
+        allNodes.find((n) => n.dbId === focusId) ??
+        // Folder-mode note leaf by note id or note-… graph id
+        allNodes.find((n) => n.dbId === `note-${focusId}`) ??
+        allNodes.find(
+          (n) =>
+            !n.rawData.thoughtId &&
+            n.rawData.noteId != null &&
+            (n.rawData.noteId === focusId || n.dbId === `note-${focusId}`)
+        ) ??
+        // Thought deep-link in folder mode → parent note leaf
+        allNodes.find((n) => n.rawData.relatedThoughtIds?.includes(focusId)) ??
+        allNodes.find((n) => n.rawData.thoughtId === focusId) ??
+        allNodes.find((n) => n.rawData.folderId === focusId) ??
+        allNodes.find(
+          (n) =>
+            n.rawData.folderId != null &&
+            (n.dbId === `folder-${n.rawData.folderId}` ||
+              n.dbId.endsWith(`-${n.rawData.folderId}`)) &&
+            focusId.endsWith(n.rawData.folderId)
+        );
       if (found) target = found;
     }
 
@@ -544,13 +554,8 @@ function CirclePackSkiaRenderer({
     }
 
     if (graphMode === "folder") {
-      const layerCount = packLayerCounts.get(rootNode.internalId) ?? 1;
       const layerIndex = isSyntheticRoot(data) ? node.depth - 1 : node.depth;
-      return tintWithStrength(
-        hsl("primary", colorScheme),
-        packLayerStrength(Math.max(0, layerIndex), layerCount),
-        colorScheme
-      );
+      return folderLayerColor(Math.max(0, layerIndex));
     }
 
     const category = findCategoryPackAncestor(node, nodeMap, rootNode);
@@ -565,10 +570,10 @@ function CirclePackSkiaRenderer({
       ? (packLayerCounts.get(category.internalId) ?? 1)
       : 1;
 
-    return tintWithStrength(
+    return shadeCategoryLayer(
       hsl(cat, colorScheme, undefined, "categories"),
-      packLayerStrength(layerIndex, layerCount),
-      colorScheme
+      layerIndex,
+      layerCount
     );
   };
 
@@ -634,11 +639,16 @@ function CirclePackSkiaRenderer({
                   viewY={viewY}
                   viewR={viewR}
                   color={getNodeColor(node)}
+                  showBorder={node.internalId === rootNode.internalId}
+                  borderColor={hsl("border", colorScheme)}
                   isFocusedThought={
                     hatchHighlightActive &&
                     !!focusedDbId &&
                     !node.hasChildren &&
-                    node.dbId === focusedDbId
+                    (node.dbId === focusedDbId ||
+                      node.dbId === `note-${focusedDbId}` ||
+                      node.rawData.noteId === focusedDbId ||
+                      !!node.rawData.relatedThoughtIds?.includes(focusedDbId))
                   }
                   hatchLineColor={hsl("border", colorScheme, 10)}
                 />
@@ -690,11 +700,6 @@ function CirclePackSkiaRenderer({
             </TouchableOpacity>
           </View>
         </View>
-
-        <GraphBreadcrumbs
-          hierarchy={data}
-          activeNode={activeViewNode.rawData}
-        />
       </View>
     </GestureHandlerRootView>
   );
@@ -776,6 +781,8 @@ type SkCircleProps = {
   viewY: { value: number };
   viewR: { value: number };
   color: string;
+  showBorder?: boolean;
+  borderColor?: string;
   isFocusedThought: boolean;
   hatchLineColor: string;
 };
@@ -786,6 +793,8 @@ const SkCircle = ({
   viewY,
   viewR,
   color,
+  showBorder = false,
+  borderColor = "rgba(0,0,0,0.1)",
   isFocusedThought,
   hatchLineColor,
 }: SkCircleProps) => {
@@ -796,6 +805,12 @@ const SkCircle = ({
       { translateY: SIZE / 2 + (node.y - viewY.value) * k },
       { scale: k },
     ];
+  });
+
+  // Keep the root ring ~1 screen px as the camera zooms.
+  const borderStrokeWidth = useDerivedValue(() => {
+    const k = SIZE / (viewR.value * 2);
+    return k > 0 ? 1 / k : 1;
   });
 
   const clipPath = useMemo(() => {
@@ -819,14 +834,16 @@ const SkCircle = ({
       ) : (
         <Circle cx={0} cy={0} r={node.r} color={color} />
       )}
-      <Circle
-        cx={0}
-        cy={0}
-        r={node.r}
-        style="stroke"
-        strokeWidth={0.5}
-        color="rgba(0,0,0,0.1)"
-      />
+      {showBorder ? (
+        <Circle
+          cx={0}
+          cy={0}
+          r={node.r}
+          style="stroke"
+          strokeWidth={borderStrokeWidth}
+          color={borderColor}
+        />
+      ) : null}
     </Group>
   );
 };
