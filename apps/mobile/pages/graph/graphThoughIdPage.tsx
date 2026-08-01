@@ -8,7 +8,7 @@ import { areBreadcrumbsLinked } from "@/features/navigation/breadcrumbLinkStore"
 import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { SearchFeature } from "@/features/search/views";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const GraphThoughIdPage = () => {
   const { id, _t, graph } = useLocalSearchParams<{
@@ -17,6 +17,8 @@ export const GraphThoughIdPage = () => {
     graph?: string;
   }>();
   const { setParams } = useRouter();
+  const idRef = useRef(id);
+  idRef.current = id;
 
   const [open, setOpen] = useState(false);
 
@@ -26,19 +28,21 @@ export const GraphThoughIdPage = () => {
     }
   }, [graph]);
 
-  // When breadcrumbs are linked, zoom graph to the notes folder on focus.
+  // When breadcrumbs are linked, apply the notes folder once on tab focus.
+  // Do not depend on `id` — otherwise card/home navigations get snapped back.
   useFocusEffect(
     useCallback(() => {
       if (!areBreadcrumbsLinked()) return;
       const folderId = useOptionsBar.getState().currentFolderId;
       const desiredId = graphIdFromFolderId(folderId);
-      const currentId = typeof id === "string" ? id : id?.[0];
-      if (!currentId || currentId === desiredId) return;
+      const currentId =
+        typeof idRef.current === "string" ? idRef.current : idRef.current?.[0];
+      if (currentId === desiredId) return;
       setParams({
         id: desiredId,
         _t: Date.now().toString(),
       });
-    }, [id, setParams])
+    }, [setParams])
   );
 
   return (
