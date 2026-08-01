@@ -1,7 +1,6 @@
 import { useControllers } from "@/api/controllers/useControllers";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
-import { Keyboard, View, Alert } from "react-native";
+import { Keyboard, TouchableOpacity, View } from "react-native";
 import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { Typography } from "@/components/ui/typography";
 import { useModal } from "@/components/ui/modal/modal";
@@ -11,37 +10,27 @@ import React from "react";
 import { Gradient } from "@/components/ui/gradient";
 import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
-import {
-  KEYBOARD_ACTION_FOOTER_PADDING_Y,
-  KeyboardActionFooter,
-} from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
 import { useSaveGeneratedNote } from "@/features/notes/noteCreation/features/generateNote/hooks/useSaveGeneratedNote";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { router } from "expo-router";
-import {
-  FolderSelector,
-  type FolderSelection,
-} from "@/features/notes/notePreview/folderSelector";
 
-const BUTTON_HEIGHT = 48;
-
-export const GENERATE_NOTE_BUTTON_HEIGHT = BUTTON_HEIGHT;
-export const GENERATE_NOTE_BUTTON_MARGIN = KEYBOARD_ACTION_FOOTER_PADDING_Y;
-
-type GenerateNoteVariant = "floating" | "centered";
+const SIZE_STYLES = {
+  sm: { height: 36, paddingHorizontal: 12, icon: 14, gap: 6 },
+  md: { height: 48, paddingHorizontal: 20, icon: 18, gap: 8 },
+} as const;
 
 export const GenerateNote = ({
   fileURI,
   inputText,
   currentView,
   onSuccess,
-  variant = "floating",
+  size = "sm",
 }: {
   fileURI: string | null;
   inputText: string;
   currentView: "audio" | "input";
   onSuccess?: () => void;
-  variant?: GenerateNoteVariant;
+  size?: "sm" | "md";
 }) => {
   const { notesAndThoughts, categories } = useControllers();
   const { colorScheme } = useColorScheme();
@@ -60,23 +49,12 @@ export const GenerateNote = ({
     enabled: !!fileURI || !!inputText,
   });
 
-  const [selectedFolder, setSelectedFolder] =
-    React.useState<FolderSelection>(null);
-
   const isInputValid =
     currentView === "audio" ? !!fileURI : inputText.trim().length > 0;
   const isDisabled = !isInputValid;
 
   const handleGenerateNote = async () => {
     if (isDisabled) return;
-
-    if (!selectedFolder) {
-      Alert.alert(
-        "Folder required",
-        "Please select a folder before generating a note. Root is not allowed."
-      );
-      return;
-    }
 
     Keyboard.dismiss();
 
@@ -129,11 +107,12 @@ export const GenerateNote = ({
         ),
       });
 
+      // Folder is chosen later on the note preview screen.
       const noteId = await saveGeneratedNote({
         note,
         thoughts,
         topic,
-        folderId: selectedFolder?.id ?? null,
+        folderId: null,
       });
 
       closeModal();
@@ -149,74 +128,53 @@ export const GenerateNote = ({
     }
   };
 
-  if (variant === "centered") {
-    return (
-      <View className="items-center gap-3 px-4 pb-4 pt-2">
-        <FolderSelector
-          selectedFolder={selectedFolder}
-          onSelect={setSelectedFolder}
-          maxChars={22}
-          allowRoot={false}
-        />
-        <Button
-          variant="outline"
-          size="lg"
-          onPress={handleGenerateNote}
-          disabled={isDisabled}
-          className="relative overflow-hidden rounded-full border-border"
-          style={{ width: 250 }}
-        >
-          <Gradient
-            theme={colorScheme}
-            variant={isDisabled ? "none" : "primary"}
-            className="absolute"
-            style={{ width: 400 }}
-          />
-
-          <View className="flex-row justify-between items-center gap-2">
-            <Icon
-              name="sparkles"
-              color={isDisabled ? "border" : "background"}
-            />
-            <Typography
-              className={cn(
-                isDisabled ? "text-border" : "text-background",
-                "font-bold text-center"
-              )}
-            >
-              Generate Note
-            </Typography>
-            <Icon
-              name="sparkles"
-              color={isDisabled ? "border" : "background"}
-            />
-          </View>
-        </Button>
-      </View>
-    );
-  }
+  const dimensions = SIZE_STYLES[size];
 
   return (
-    <KeyboardActionFooter>
-      <View className="flex-row items-center gap-3">
-        <FolderSelector
-          selectedFolder={selectedFolder}
-          onSelect={setSelectedFolder}
-          maxChars={14}
-          allowRoot={false}
+    <TouchableOpacity
+      onPress={handleGenerateNote}
+      disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel="Generate note"
+      activeOpacity={0.85}
+      className={cn(
+        "overflow-hidden rounded-full border border-border",
+        isDisabled && "opacity-50"
+      )}
+      style={{
+        height: dimensions.height,
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+      }}
+    >
+      {!isDisabled && (
+        <Gradient theme={colorScheme} variant="primary" className="absolute" />
+      )}
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: dimensions.gap,
+          paddingHorizontal: dimensions.paddingHorizontal,
+        }}
+      >
+        <Icon
+          name="sparkles"
+          size={dimensions.icon}
+          color={isDisabled ? "border" : "background"}
         />
-        <Button
-          onPress={handleGenerateNote}
-          disabled={isDisabled}
-          variant="secondary"
-          size="default"
-          cornerRadius="full"
-          className="flex-row items-center gap-2 px-6"
+        <Typography
+          className={cn(
+            isDisabled ? "text-border" : "text-background",
+            "font-bold text-center",
+            size === "md" ? "text-base" : "text-sm"
+          )}
         >
-          <Icon name="sparkles" color="card" />
-          <Typography variant="h4">Generate Note</Typography>
-        </Button>
+          Generate Note
+        </Typography>
       </View>
-    </KeyboardActionFooter>
+    </TouchableOpacity>
   );
 };

@@ -5,6 +5,9 @@ import { useNoteCreationStore } from "@/features/notes/noteCreation/context/note
 import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
 import { useFileSystem } from "@/hooks/useFileSystem";
 
+/** Button height (h-11) + bottom padding inside the white card. */
+const GENERATE_OVERLAY_INSET = 60;
+
 export const KeyboardView = () => {
   const inputValue = useNoteCreationStore((state) => state.inputValue);
   const setInputValue = useNoteCreationStore((state) => state.setInputValue);
@@ -35,21 +38,22 @@ export const KeyboardView = () => {
   };
 
   return (
-    <View className="flex-1 min-h-0">
-      <View className="min-h-0 flex-1 px-4" style={{ paddingTop: 16 }}>
-        <TextInputFeature
-          onChange={setInputValue}
-          value={inputValue}
-          keyboardHeight={keyboardHeight}
-        />
-      </View>
-
-      <GenerateNote
-        fileURI={fileURI}
-        inputText={inputValue}
-        currentView="input"
-        variant="floating"
-        onSuccess={handleGenerateSuccess}
+    <View className="flex-1 min-h-0 px-3 py-3">
+      <TextInputFeature
+        onChange={setInputValue}
+        value={inputValue}
+        keyboardHeight={keyboardHeight}
+        compact
+        overlayInset={GENERATE_OVERLAY_INSET}
+        overlay={
+          <GenerateNote
+            fileURI={fileURI}
+            inputText={inputValue}
+            currentView="input"
+            onSuccess={handleGenerateSuccess}
+            size="md"
+          />
+        }
       />
     </View>
   );

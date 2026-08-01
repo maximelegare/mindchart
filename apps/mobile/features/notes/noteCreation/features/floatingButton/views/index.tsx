@@ -5,16 +5,27 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   Extrapolation,
   interpolate,
   runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import {
+  useKeyboardHandler,
+  useKeyboardState,
+} from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCornerRadiusSync } from "expo-screen-corner-radius";
 import { Icon } from "@/components/ui/icons/icon";
@@ -40,15 +51,24 @@ const BORDER_RADIUS = BUTTON_SIZE / 2;
 const EXPANDED_TOP_BORDER_RADIUS = 20;
 const EXPANDED_TOP_PADDING = 0;
 const FAB_BOTTOM_GAP = 16;
-const EXPANDED_BOTTOM_GAP = 4;
 const FAB_HORIZONTAL_GUTTER = 8;
 const EXPANDED_HORIZONTAL_GUTTER = 4;
 const FAB_BORDER_WIDTH = 2;
 const EXPANDED_BORDER_WIDTH = 1;
+/** Compact AI sheet docks under the page header and covers pageOptions. */
+const EXPANDED_SHEET_HEIGHT = 200;
+/** Ignore in-progress IME frames; real keyboards are taller than this. */
+const MIN_KEYBOARD_HEIGHT = 200;
+const SHEET_SIZE_MS = 280;
 const SPEED_DIAL_ACTION_COUNT = 3;
 const SPEED_DIAL_HEIGHT = getFabSpeedDialHeight(SPEED_DIAL_ACTION_COUNT);
 /** Wide enough for action labels to the left of the FAB. */
 const SPEED_DIAL_WIDTH = 220;
+
+const sheetSizeTiming = {
+  duration: SHEET_SIZE_MS,
+  easing: Easing.out(Easing.cubic),
+};
 
 function getExpandedBottomRadius() {
   try {
@@ -95,16 +115,38 @@ export const FloatingModal = ({
   const iconOpacity = useSharedValue(1);
   const chromeOpacity = useSharedValue(1);
   const menuIconProgress = useSharedValue(0);
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isKeyboardVisible = useKeyboardState((state) => state.isVisible);
+  const { width: screenWidth, height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const { TAB_BAR_HEIGHT } = LAYOUT_SIZES;
   const chromeHidden = useTabChromeStore((state) => state.hidden);
   const fabCloseNonce = useNoteCreationStore((state) => state.fabCloseNonce);
+  const inputView = useNoteCreationStore((state) => state.inputView);
+  /** 1 = text-input tab (keyboard-sized); 0 = recorder (fixed 200). */
+  const followKeyboardSV = useSharedValue(inputView === "input" ? 1 : 0);
+  /** 0 = not measured yet; otherwise last settled keyboard height. */
+  const lastKeyboardHeightSV = useSharedValue(0);
+  const animatedSheetHeightSV = useSharedValue(EXPANDED_SHEET_HEIGHT);
+  /** Full window height while keyboard is closed (stable during adjustResize). */
+  const layoutHeightSV = useSharedValue(
+    Dimensions.get("window").height || windowHeight
+  );
   const lastFabCloseNonceRef = useRef(fabCloseNonce);
   const setCreationMode = useNoteCreationStore(
     (state) => state.setCreationMode
   );
+
+  useEffect(() => {
+    followKeyboardSV.value = inputView === "input" ? 1 : 0;
+  }, [followKeyboardSV, inputView]);
+
+  // Keep a keyboard-closed window height so sheet math is not skewed by resize.
+  useEffect(() => {
+    if (!isKeyboardVisible && windowHeight > 0) {
+      layoutHeightSV.value = windowHeight;
+    }
+  }, [isKeyboardVisible, layoutHeightSV, windowHeight]);
 
   const { createBlankNote } = useCreateBlankNote();
   const { openCreateFolderModal } = useFolderActions();
@@ -119,16 +161,62 @@ export const FloatingModal = ({
 
   const tabBarTop = insets.bottom + TAB_BAR_HEIGHT;
   const fabBottomOffset = bottomOffsetProp ?? tabBarTop + FAB_BOTTOM_GAP;
-  const expandedBottomOffset = EXPANDED_BOTTOM_GAP;
   const topOffset =
     (topOffsetProp ?? fabBottomOffset - tabBarTop) + EXPANDED_TOP_PADDING;
 
-  const expandedHeight = Math.max(
-    BUTTON_SIZE,
-    screenHeight - expandedBottomOffset - topOffset
-  );
   const expandedWidth = screenWidth - EXPANDED_HORIZONTAL_GUTTER * 2;
   const expandedBottomRadius = useMemo(() => getExpandedBottomRadius(), []);
+
+  const applySheetHeightForTab = (followKeyboard: number, animate: boolean) => {
+    "worklet";
+    const keyboardHeight = lastKeyboardHeightSV.value;
+    const openHeight =
+      followKeyboard === 1 && keyboardHeight >= MIN_KEYBOARD_HEIGHT
+        ? Math.max(
+            EXPANDED_SHEET_HEIGHT,
+            layoutHeightSV.value - topOffset - keyboardHeight
+          )
+        : EXPANDED_SHEET_HEIGHT;
+
+    if (animate) {
+      animatedSheetHeightSV.value = withTiming(openHeight, sheetSizeTiming);
+    } else {
+      animatedSheetHeightSV.value = openHeight;
+    }
+  };
+
+  // Capture only the settled keyboard height (not in-between IME frames).
+  useKeyboardHandler(
+    {
+      onEnd: (event) => {
+        "worklet";
+        const keyboardHeight = Math.abs(event.height);
+        if (event.progress !== 1 || keyboardHeight < MIN_KEYBOARD_HEIGHT) {
+          return;
+        }
+
+        const hadSettledHeight =
+          lastKeyboardHeightSV.value >= MIN_KEYBOARD_HEIGHT;
+        lastKeyboardHeightSV.value = keyboardHeight;
+
+        // First settled measurement on the text-input tab → animate 200 → slot.
+        if (followKeyboardSV.value === 1 && !hadSettledHeight) {
+          applySheetHeightForTab(1, true);
+        }
+      },
+    },
+    [topOffset]
+  );
+
+  // Animate only when switching recorder ↔ text-input.
+  useAnimatedReaction(
+    () => followKeyboardSV.value,
+    (followKeyboard, previousFollow) => {
+      if (previousFollow != null && followKeyboard === previousFollow) return;
+      applySheetHeightForTab(followKeyboard, previousFollow != null);
+    },
+    [topOffset]
+  );
 
   const popoverColor = hsl("popover", colorScheme);
   const borderColor = hsl("background", colorScheme);
@@ -155,9 +243,11 @@ export const FloatingModal = ({
   }, [iconOpacity]);
 
   const onCollapseComplete = useCallback(() => {
+    // Ensure shared values are fully reset before swapping back to the FAB.
+    progress.value = 0;
     setSheetOpen(false);
     animateIconIn();
-  }, [animateIconIn]);
+  }, [animateIconIn, progress]);
 
   const expandSheet = useCallback(() => {
     clearTabContentTimer();
@@ -289,20 +379,30 @@ export const FloatingModal = ({
     progress,
   ]);
 
-  const anchorStyle = useAnimatedStyle(() => ({
-    right: interpolate(
-      progress.value,
-      [0, 1],
-      [FAB_HORIZONTAL_GUTTER, EXPANDED_HORIZONTAL_GUTTER],
-      Extrapolation.CLAMP
-    ),
-    bottom: interpolate(
-      progress.value,
-      [0, 1],
-      [fabBottomOffset, expandedBottomOffset],
-      Extrapolation.CLAMP
-    ),
-  }));
+  const anchorStyle = useAnimatedStyle(() => {
+    // Always position with `bottom` (never `top`) so collapsing cannot leave a
+    // stale top offset that hides the FAB after the sheet closes.
+    const openHeight = animatedSheetHeightSV.value;
+    const openBottom = Math.max(
+      0,
+      layoutHeightSV.value - topOffset - openHeight
+    );
+
+    return {
+      right: interpolate(
+        progress.value,
+        [0, 1],
+        [FAB_HORIZONTAL_GUTTER, EXPANDED_HORIZONTAL_GUTTER],
+        Extrapolation.CLAMP
+      ),
+      bottom: interpolate(
+        progress.value,
+        [0, 1],
+        [fabBottomOffset, openBottom],
+        Extrapolation.CLAMP
+      ),
+    };
+  });
 
   const shellStyle = useAnimatedStyle(() => ({
     width: interpolate(
@@ -314,7 +414,7 @@ export const FloatingModal = ({
     height: interpolate(
       progress.value,
       [0, 1],
-      [BUTTON_SIZE, expandedHeight],
+      [BUTTON_SIZE, animatedSheetHeightSV.value],
       Extrapolation.CLAMP
     ),
     borderWidth: interpolate(
@@ -408,17 +508,19 @@ export const FloatingModal = ({
       ) : null}
 
       <Animated.View
+        // Remount on mode change so a previous `top` position cannot stick
+        // around after collapsing the sheet (which hid the FAB).
+        key={sheetOpen ? "sheet" : "fab"}
         pointerEvents="box-none"
         style={[
           styles.anchor,
-          sheetOpen
-            ? anchorStyle
-            : {
-                right: FAB_HORIZONTAL_GUTTER,
-                bottom: fabBottomOffset,
+          anchorStyle,
+          !sheetOpen
+            ? {
                 width: SPEED_DIAL_WIDTH,
                 height: BUTTON_SIZE + SPEED_DIAL_HEIGHT,
-              },
+              }
+            : null,
         ]}
       >
         {!sheetOpen && (
