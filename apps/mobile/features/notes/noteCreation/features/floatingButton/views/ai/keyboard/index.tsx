@@ -4,6 +4,8 @@ import { TextInputFeature } from "@/features/notes/noteCreation/features/textInp
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
 import { useFileSystem } from "@/hooks/useFileSystem";
+import { useLlamaChat } from "@/features/llama/hooks/useLlamaChat";
+import { AiModelRequired } from "@/features/notes/noteCreation/features/floatingButton/components/aiModelRequired";
 
 /** Button height (h-11) + bottom padding inside the white card. */
 const GENERATE_OVERLAY_INSET = 60;
@@ -14,6 +16,7 @@ export const KeyboardView = () => {
   const fileURI = useNoteCreationStore((state) => state.fileURI);
   const resetInputs = useNoteCreationStore((state) => state.resetInputs);
   const { deleteFile } = useFileSystem();
+  const { isReady: isLlamaReady } = useLlamaChat();
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
   React.useEffect(() => {
@@ -36,6 +39,12 @@ export const KeyboardView = () => {
     }
     resetInputs();
   };
+
+  if (!isLlamaReady) {
+    return (
+      <AiModelRequired message="Initialize Llama Chat in Settings to use text input." />
+    );
+  }
 
   return (
     <View className="flex-1 min-h-0 px-3 py-3">
