@@ -1,9 +1,10 @@
 import * as React from "react";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { cn } from "@/lib/cn";
 import { Icon } from "@/components/ui/icons/icon";
 import { Gradient } from "@/components/ui/gradient";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 type ButtonProps = React.ComponentPropsWithoutRef<typeof TouchableOpacity> & {
   fileURI: string | null;
@@ -43,11 +44,16 @@ export const RecorderButton = React.forwardRef<
         className
       )}
     >
-      <Gradient
-        theme={colorScheme}
-        variant={!isRecording ? "primary" : "destructive"}
-        className="absolute"
-      />
+      {isRecording || !fileURI ? (
+        <View
+          className="absolute inset-0"
+          style={{
+            backgroundColor: hsl("destructive", "theme", colorScheme),
+          }}
+        />
+      ) : (
+        <Gradient theme={colorScheme} variant="primary" className="absolute" />
+      )}
       <Icon
         name={!isRecording ? (!fileURI ? "mic" : "rotate-cw") : "square"}
         color="background"

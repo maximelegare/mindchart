@@ -10,8 +10,7 @@ import { Timer } from "@/features/notes/noteCreation/features/audio/timer/compon
 import { RecordingLabel } from "@/features/notes/noteCreation/features/audio/timer/components/isRecordingLabel";
 import { normalizePath } from "@/utils/path";
 import { useWhisper } from "@/features/whisper/hooks/useWhisperModels";
-import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
-import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
+import { RecordGenerateButton } from "@/features/notes/noteCreation/features/audio/components/recordGenerateButton";
 
 export function AudioFeature({
   onFileURIChange,
@@ -25,12 +24,11 @@ export function AudioFeature({
   onGenerateSuccess?: () => void;
 }) {
   const { currentModelId } = useWhisper();
-  const inputValue = useNoteCreationStore((state) => state.inputValue);
   const { startRecording, stopRecording, isRecording, isRecorderBusy } =
     useExpoAudioRecorder();
 
-  const handleFileURIChange = (fileURI: string | null) => {
-    onFileURIChange(fileURI);
+  const handleFileURIChange = (nextFileURI: string | null) => {
+    onFileURIChange(nextFileURI);
   };
 
   const {
@@ -46,9 +44,12 @@ export function AudioFeature({
 
   if (compact) {
     return (
-      <View className="h-full w-full flex-col justify-center gap-8">
-        <View className="flex-row items-center pr-2">
-          <View className="pl-4">
+      <View
+        className="h-full w-full flex-col justify-center gap-0"
+        style={{ paddingTop: 4 }}
+      >
+        <View className="flex-row items-center gap-2 px-3">
+          <View className="pl-1">
             <Timer
               isRecording={isRecording}
               positionSeconds={positionSeconds}
@@ -56,7 +57,6 @@ export function AudioFeature({
               className="min-w-[56px]"
             />
           </View>
-          {isRecording ? <RecordingLabel /> : null}
           <View className="min-w-0 flex-1">
             <AudioProgressBar
               isPlaying={isPlaying}
@@ -68,22 +68,7 @@ export function AudioFeature({
               padded={false}
             />
           </View>
-          <Recorder
-            disabled={!currentModelId}
-            fileURI={fileURI}
-            onStartRecording={startRecording}
-            onStopRecording={async () => {
-              const uri = await stopRecording();
-              handleFileURIChange(normalizePath(uri));
-            }}
-            isRecording={isRecording}
-            isTransitioning={isRecorderBusy}
-            size="compact"
-          />
-        </View>
-
-        <View className="flex-row items-center justify-between px-4">
-          <View className="flex-row items-center gap-3">
+          <View className="flex-row items-center gap-2">
             <Player
               fileURI={fileURI}
               onPlay={startPlaying}
@@ -95,11 +80,20 @@ export function AudioFeature({
               onDelete={() => onFileURIChange(null)}
             />
           </View>
-          <GenerateNote
+        </View>
+
+        <View className="items-center justify-center">
+          <RecordGenerateButton
+            disabled={!currentModelId}
             fileURI={fileURI}
-            inputText={inputValue}
-            currentView="audio"
-            onSuccess={onGenerateSuccess}
+            isRecording={isRecording}
+            isTransitioning={isRecorderBusy}
+            onStartRecording={startRecording}
+            onStopRecording={async () => {
+              const uri = await stopRecording();
+              handleFileURIChange(normalizePath(uri));
+            }}
+            onGenerateSuccess={onGenerateSuccess}
           />
         </View>
       </View>

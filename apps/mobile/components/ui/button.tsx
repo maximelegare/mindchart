@@ -93,8 +93,9 @@ const Button = React.forwardRef<
     >
       <TouchableOpacity
         className={cn(
+          buttonVariants({ variant, size, cornerRadius, className }),
           props.disabled && "opacity-50 web:pointer-events-none",
-          buttonVariants({ variant, size, cornerRadius, className })
+          props.disabled && variant === "outline" && "bg-muted/50"
         )}
         ref={ref}
         role="button"
