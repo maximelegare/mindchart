@@ -19,10 +19,9 @@ import {
 } from "@/features/notes/notePreview/folderSelector";
 import { Icon } from "@/components/ui/icons/icon";
 import {
-  GENERATE_NOTE_BUTTON_HEIGHT,
-  GENERATE_NOTE_BUTTON_MARGIN,
-} from "@/features/notes/noteCreation/features/generateNote/components/index";
-import { KeyboardActionFooter } from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
+  KEYBOARD_ACTION_FOOTER_PADDING_Y,
+  KeyboardActionFooter,
+} from "@/features/notes/noteCreation/features/floatingButton/components/footer/keyboardActionFooter";
 
 type ManualNoteFormData = {
   title: string;
@@ -82,8 +81,9 @@ const FIELD_CHIP_HEIGHT = 40;
 const FOOTER_BORDER_WIDTH = 1;
 /** Extra gap between the editor card and the floating Save footer. */
 const EDITOR_FOOTER_GAP = 12;
+const FALLBACK_FOOTER_BUTTON_HEIGHT = 48;
 const FALLBACK_FOOTER_CONTENT_HEIGHT =
-  GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN * 2;
+  FALLBACK_FOOTER_BUTTON_HEIGHT + KEYBOARD_ACTION_FOOTER_PADDING_Y * 2;
 
 export const ManualNoteForm = ({
   noteId,

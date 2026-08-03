@@ -10,6 +10,8 @@ type AudioProgressBarProps = {
   isRecording: boolean;
   isPlaying: boolean;
   seekTo: (value: number) => void;
+  /** When false, parent is expected to provide the outer padding. */
+  padded?: boolean;
 };
 
 export const AudioProgressBar: React.FC<AudioProgressBarProps> = ({
@@ -18,13 +20,17 @@ export const AudioProgressBar: React.FC<AudioProgressBarProps> = ({
   durationMillis,
   isRecording,
   seekTo,
+  padded = true,
 }) => {
   const { colorScheme } = useColorScheme();
 
   return (
     <View
       className="w-full justify-center"
-      style={{ overflow: "visible", paddingHorizontal: 10 }}
+      style={{
+        overflow: "visible",
+        paddingHorizontal: padded ? 10 : 0,
+      }}
     >
       <Slider
         disabled={!fileURI}

@@ -3,20 +3,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import React, { useEffect, useRef } from "react";
-import { View, TextInput } from "react-native";
-import {
-  GENERATE_NOTE_BUTTON_HEIGHT,
-  GENERATE_NOTE_BUTTON_MARGIN,
-} from "@/features/notes/noteCreation/features/generateNote/components/index";
+import { StyleSheet, View, TextInput } from "react-native";
 
 export const TextInputFeature = ({
   onChange,
   value,
   keyboardHeight = 0,
+  compact = false,
+  overlay,
+  overlayInset = 0,
 }: {
   onChange: (text: string) => void;
   value: string;
   keyboardHeight?: number;
+  compact?: boolean;
+  /** Renders over the white input surface (e.g. Generate button). */
+  overlay?: React.ReactNode;
+  /** Extra bottom padding so text is never covered by the overlay. */
+  overlayInset?: number;
 }) => {
   const { colorScheme } = useColorScheme();
   const textareaRef = useRef<TextInput>(null);
@@ -30,18 +34,24 @@ export const TextInputFeature = ({
   }, []);
 
   return (
-    <View className="relative min-h-0 w-full flex-1 flex-col gap-2">
-      <Label className="mb-0 shrink-0 text-popover-foreground" nativeID="topic">
-        Content
-      </Label>
+    <View
+      className="relative min-h-0 w-full flex-1 flex-col"
+      style={{ gap: compact ? 4 : 8 }}
+    >
+      {!compact ? (
+        <Label
+          className="mb-0 shrink-0 text-popover-foreground"
+          nativeID="topic"
+        >
+          Content
+        </Label>
+      ) : null}
 
       <View
-        className="min-h-0 flex-1"
+        className="min-h-0 flex-1 overflow-hidden"
         style={{
-          paddingBottom:
-            keyboardHeight > 0
-              ? 0
-              : GENERATE_NOTE_BUTTON_HEIGHT + GENERATE_NOTE_BUTTON_MARGIN * 2,
+          position: "relative",
+          paddingBottom: keyboardHeight > 0 || compact ? 0 : 8,
         }}
       >
         <Textarea
@@ -51,12 +61,28 @@ export const TextInputFeature = ({
           style={{
             flex: 1,
             backgroundColor: hsl("card", colorScheme),
+            paddingBottom: overlayInset > 0 ? overlayInset : undefined,
           }}
           onChangeText={onChange}
           value={value}
           multiline={true}
+          textAlignVertical="top"
         />
+
+        {overlay ? (
+          <View pointerEvents="box-none" style={styles.overlay}>
+            {overlay}
+          </View>
+        ) : null}
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    right: 12,
+    bottom: 12,
+  },
+});

@@ -1,5 +1,4 @@
 import { RecorderButton } from "./recorderButton";
-// import Icon from '@/ui/Icon';
 
 type RecorderProps = {
   onStartRecording: () => Promise<void>;
@@ -8,6 +7,7 @@ type RecorderProps = {
   fileURI: string | null;
   disabled?: boolean;
   isTransitioning?: boolean;
+  size?: "default" | "compact";
 };
 
 export const Recorder = ({
@@ -17,6 +17,7 @@ export const Recorder = ({
   fileURI,
   disabled,
   isTransitioning,
+  size = "default",
 }: RecorderProps) => {
   const handlePress = async () => {
     if (disabled || isTransitioning) return;
@@ -30,6 +31,7 @@ export const Recorder = ({
       fileURI={fileURI}
       isRecording={isRecording}
       onPress={handlePress}
-    ></RecorderButton>
+      size={size}
+    />
   );
 };

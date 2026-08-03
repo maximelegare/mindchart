@@ -4,6 +4,11 @@ import { TextInputFeature } from "@/features/notes/noteCreation/features/textInp
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { GenerateNote } from "@/features/notes/noteCreation/features/generateNote/components/index";
 import { useFileSystem } from "@/hooks/useFileSystem";
+import { useLlamaChat } from "@/features/llama/hooks/useLlamaChat";
+import { AiModelRequired } from "@/features/notes/noteCreation/features/floatingButton/components/aiModelRequired";
+
+/** Button height (h-11) + bottom padding inside the white card. */
+const GENERATE_OVERLAY_INSET = 60;
 
 export const KeyboardView = () => {
   const inputValue = useNoteCreationStore((state) => state.inputValue);
@@ -11,6 +16,7 @@ export const KeyboardView = () => {
   const fileURI = useNoteCreationStore((state) => state.fileURI);
   const resetInputs = useNoteCreationStore((state) => state.resetInputs);
   const { deleteFile } = useFileSystem();
+  const { isReady: isLlamaReady } = useLlamaChat();
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
   React.useEffect(() => {
@@ -34,22 +40,29 @@ export const KeyboardView = () => {
     resetInputs();
   };
 
-  return (
-    <View className="flex-1 min-h-0">
-      <View className="min-h-0 flex-1 px-4" style={{ paddingTop: 16 }}>
-        <TextInputFeature
-          onChange={setInputValue}
-          value={inputValue}
-          keyboardHeight={keyboardHeight}
-        />
-      </View>
+  if (!isLlamaReady) {
+    return (
+      <AiModelRequired message="Initialize Llama Chat in Settings to use text input." />
+    );
+  }
 
-      <GenerateNote
-        fileURI={fileURI}
-        inputText={inputValue}
-        currentView="input"
-        variant="floating"
-        onSuccess={handleGenerateSuccess}
+  return (
+    <View className="flex-1 min-h-0 px-3 py-3">
+      <TextInputFeature
+        onChange={setInputValue}
+        value={inputValue}
+        keyboardHeight={keyboardHeight}
+        compact
+        overlayInset={GENERATE_OVERLAY_INSET}
+        overlay={
+          <GenerateNote
+            fileURI={fileURI}
+            inputText={inputValue}
+            currentView="input"
+            onSuccess={handleGenerateSuccess}
+            size="md"
+          />
+        }
       />
     </View>
   );
