@@ -8753,6 +8753,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-contacts@npm:~15.0.11":
+  version: 15.0.11
+  resolution: "expo-contacts@npm:15.0.11"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/1353623e41d6bd09bfb7a7272ce96b0d160ce4d3b31bc97aff92b2558dd1ad4f4ad5e2b41b21c7829db737f48d7eb0ce38b306743b10b4be565a33420c936dde
+  languageName: node
+  linkType: hard
+
 "expo-crypto@npm:~15.0.9":
   version: 15.0.9
   resolution: "expo-crypto@npm:15.0.9"
@@ -12579,6 +12590,7 @@ __metadata:
     expo: "npm:^54.0.0"
     expo-audio: "npm:^1.1.0"
     expo-constants: "npm:~18.0.9"
+    expo-contacts: "npm:~15.0.11"
     expo-crypto: "npm:~15.0.9"
     expo-dev-client: "npm:~6.0.13"
     expo-document-picker: "npm:^14.0.8"

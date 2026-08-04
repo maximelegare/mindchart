@@ -1,4 +1,4 @@
-import { Category, Note, Thought } from "@repo/zod-schemas";
+import { Category, Note, Person, Thought } from "@repo/zod-schemas";
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { useForm, Controller } from "react-hook-form";
@@ -13,6 +13,7 @@ import { CategorySelector } from "./categoriesSelector";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { Topic } from "@repo/zod-schemas/src/schemas";
 import { TopicSelector } from "./topicSelector";
+import { PersonSelector } from "./personSelector";
 import { generateID } from "@/utils/genrateID";
 
 type GenerateNotePreviewProps = {
@@ -35,6 +36,7 @@ export const GenerateNotePreview = ({
   type FormData = {
     title: string;
     summary: string;
+    persons: Person[];
     thoughts: Array<{
       title: string;
       summary: string;
@@ -59,6 +61,7 @@ export const GenerateNotePreview = ({
     defaultValues: {
       title: note.title,
       summary: note.summary,
+      persons: note.persons ?? [],
       topic: {
         id: topic.id,
         name: topic?.name,
@@ -90,7 +93,7 @@ export const GenerateNotePreview = ({
   });
 
   const onSubmit = async (data: FormData) => {
-    const { title, summary } = data;
+    const { title, summary, persons } = data;
     try {
       setModalContent({
         title: "Saving your Note",
@@ -103,6 +106,7 @@ export const GenerateNotePreview = ({
         summary: summary,
         rawText: note.rawText,
         topicId: topic.id,
+        persons,
         createdAt: note.createdAt ?? new Date().toISOString(),
       };
 
@@ -154,6 +158,16 @@ export const GenerateNotePreview = ({
                 />
               );
             }}
+          />
+        </View>
+        <View className="flex-col gap-2">
+          <Label nativeID="persons">People</Label>
+          <Controller
+            control={control}
+            name="persons"
+            render={({ field: { onChange, value } }) => (
+              <PersonSelector selectedPersons={value} onChange={onChange} />
+            )}
           />
         </View>
       </View>

@@ -5,7 +5,6 @@ export const CATEGORIES_COLORS: Record<CategoryKey, string> = {
   feelings: "hsl(155, 67.9%, 79.2%)", // turquoise
   tasks: "hsl(53.8, 82.9%, 79.4%)", // Orange
   events: "hsl(205.7, 55.3%, 85.1%)",
-  people: "hsl(29.3, 28.7%, 72%)",
   places: "hsl(23.8, 59.2%, 80.8%)", // Bourgogne
   goals: "hsl(293.9, 95.2%, 83.7%)", // violet
   problems: "hsl(0, 100%, 89%)", // rose, rouge

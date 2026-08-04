@@ -39,6 +39,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: true,
     bundleIdentifier: isDev ? "com.mindchart.dev.app" : "com.mindchart.app",
     buildNumber: version,
+    infoPlist: {
+      NSContactsUsageDescription:
+        "MindChart uses your contacts to help you tag people in notes.",
+    },
   },
   android: {
     newArchEnabled: true,
@@ -50,7 +54,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     versionCode: versionCode(version),
     package: isDev ? "com.mindchart.dev.app" : "com.mindchart.app",
-    permissions: ["RECORD_AUDIO"],
+    permissions: ["RECORD_AUDIO", "READ_CONTACTS"],
     softwareKeyboardLayoutMode: "resize",
   },
   web: {
@@ -62,6 +66,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-router",
     "expo-font",
     "expo-web-browser",
+    [
+      "expo-contacts",
+      {
+        contactsPermission:
+          "Allow MindChart to access your contacts to tag people in notes.",
+      },
+    ],
     [
       "expo-secure-store",
       {

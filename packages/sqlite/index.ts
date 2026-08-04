@@ -22,7 +22,15 @@ import {
   NoteTable,
   EmbeddingTable,
   FolderTable,
+  PersonTable,
+  PersonToNoteTable,
 } from "./src/schemas/app";
+import { getAllPersonsQuery } from "./src/queries/persons/getAllPersons";
+import { getPersonsByNoteIdQuery } from "./src/queries/persons/getPersonsByNoteId";
+import { getPersonsByNoteIdsQuery } from "./src/queries/persons/getPersonsByNoteIds";
+import { insertPersonQuery } from "./src/queries/persons/insertPerson";
+import { upsertPersonsFromContactsQuery } from "./src/queries/persons/upsertPersonsFromContacts";
+import { setNotePersonsQuery } from "./src/queries/persons/setNotePersons";
 import { getGraphDataQuery } from "./src/queries/graph/getGraphData";
 import { updateGraphDataQuery } from "./src/queries/graph/updateGraphData";
 import { getSyncGraphDataQuery } from "./src/queries/graph/getSyncGraphData";
@@ -148,4 +156,12 @@ export {
   getFolderContentsQuery,
   updateNoteFolderIdQuery,
   FolderTable,
+  PersonTable,
+  PersonToNoteTable,
+  getAllPersonsQuery,
+  getPersonsByNoteIdQuery,
+  getPersonsByNoteIdsQuery,
+  insertPersonQuery,
+  upsertPersonsFromContactsQuery,
+  setNotePersonsQuery,
 };

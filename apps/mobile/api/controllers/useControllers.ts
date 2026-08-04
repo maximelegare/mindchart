@@ -8,6 +8,7 @@ import { useNotesAndThoughtsController } from "./useNotesAndThoughtsController";
 import { useSearchController } from "./useSearch";
 import { useSettingsController } from "./useSettingsController";
 import { useTopicsController } from "./useTopicsController";
+import { usePersonsController } from "./usePersonsController";
 
 // useEmbeddingsController is not imported here because of a client error related to useQuery
 
@@ -21,5 +22,6 @@ export const useControllers = () => ({
   databaseInspector: useDatabaseInspectorController(),
   settings: useSettingsController(),
   topics: useTopicsController(),
+  persons: usePersonsController(),
   search: useSearchController(),
 });

@@ -205,6 +205,7 @@ function NoteDetailsContent({
           rawText: note.rawText ?? "",
           topicId: note.topicId,
           folderId: folderId ?? note.folderId ?? null,
+          persons: note.persons ?? [],
           createdAt: note.createdAt,
         },
         nextThoughts,

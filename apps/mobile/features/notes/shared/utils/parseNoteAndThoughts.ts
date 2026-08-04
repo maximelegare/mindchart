@@ -40,6 +40,17 @@ export const parseNoteAndThoughts = (
     topicName: row.topic_name ?? undefined,
     folderId: row.folder_id ?? undefined,
     folderLabel: row.folder_label ?? undefined,
+    persons: (() => {
+      const raw = row.persons_json;
+      if (typeof raw === "string") {
+        try {
+          return JSON.parse(raw);
+        } catch {
+          return [];
+        }
+      }
+      return Array.isArray(raw) ? raw : [];
+    })(),
     thoughts: (typeof row.thoughts_json === "string"
       ? JSON.parse(row.thoughts_json)
       : Array.isArray(row.thoughts_json)

@@ -3,6 +3,7 @@ import {
   deleteNoteByIdQuery,
   getAllNotesQuery,
   insertNoteQuery,
+  setNotePersonsQuery,
   updateNoteFolderIdQuery,
   updateNoteQuery,
   updateThoughtsQuery,
@@ -22,7 +23,7 @@ export const insertNoteAndThoughts = async ({
     const db = getOPDatabase();
     await insertNoteQuery(db, note);
     await insertThoughtsQuery(db, thoughts);
-    // await insertPendingEmbeddingsQuery(db, thoughts);
+    await setNotePersonsQuery(db, note.id, note.persons ?? []);
   } catch (error) {
     console.error(error);
   }
@@ -38,6 +39,7 @@ export const updateNoteAndThoughts = async ({
   const db = getOPDatabase();
   await updateNoteQuery(db, note);
   await updateThoughtsQuery(db, thoughts);
+  await setNotePersonsQuery(db, note.id, note.persons ?? []);
 };
 
 export const deleteNoteById = async ({ noteId }: { noteId: string }) => {
@@ -51,6 +53,14 @@ export const updateNoteFolderId = async (data: {
 }) => {
   const db = getOPDatabase();
   return await updateNoteFolderIdQuery(db, data);
+};
+
+export const updateNotePersons = async (data: {
+  noteId: string;
+  persons: Note["persons"];
+}) => {
+  const db = getOPDatabase();
+  return await setNotePersonsQuery(db, data.noteId, data.persons ?? []);
 };
 
 export const generateNote = async (body: FormData) => {
