@@ -23,8 +23,6 @@ export const PersonSchema = z.object({
   id: z.string(),
   name: z.string(),
   contactId: z.string().nullable().optional(),
-  phone: z.string().nullable().optional(),
-  email: z.string().nullable().optional(),
   createdAt: z.string().optional(),
 });
 

@@ -8,8 +8,6 @@ export const getPersonsByNoteIdQuery = async (db: DB, noteId: string) => {
       id: PersonTable.id,
       name: PersonTable.name,
       contactId: PersonTable.contactId,
-      phone: PersonTable.phone,
-      email: PersonTable.email,
       createdAt: PersonTable.createdAt,
     })
     .from(PersonToNoteTable)

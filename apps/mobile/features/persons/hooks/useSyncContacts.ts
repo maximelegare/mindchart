@@ -15,8 +15,6 @@ const mapContactToPerson = (contact: Contacts.Contact): Person | null => {
     id: generateID(),
     name,
     contactId: contact.id,
-    phone: contact.phoneNumbers?.[0]?.number ?? null,
-    email: contact.emails?.[0]?.email ?? null,
     createdAt: new Date().toISOString(),
   };
 };
@@ -44,8 +42,6 @@ export const useSyncContacts = () => {
           Contacts.Fields.Name,
           Contacts.Fields.FirstName,
           Contacts.Fields.LastName,
-          Contacts.Fields.PhoneNumbers,
-          Contacts.Fields.Emails,
         ],
       });
 

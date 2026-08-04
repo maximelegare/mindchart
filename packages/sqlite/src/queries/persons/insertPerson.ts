@@ -7,8 +7,8 @@ export const insertPersonQuery = async (db: DB, data: Person) => {
     id: data.id,
     name: data.name,
     contactId: data.contactId ?? null,
-    phone: data.phone ?? null,
-    email: data.email ?? null,
+    phone: null,
+    email: null,
     createdAt: data.createdAt ?? new Date().toISOString(),
   });
 };

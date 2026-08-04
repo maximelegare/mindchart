@@ -28,8 +28,8 @@ export const setNotePersonsQuery = async (
           id: person.id,
           name: person.name,
           contactId: person.contactId ?? null,
-          phone: person.phone ?? null,
-          email: person.email ?? null,
+          phone: null,
+          email: null,
           createdAt: person.createdAt ?? new Date().toISOString(),
         });
       }

@@ -16,6 +16,7 @@ import {
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { Check } from "@/lib/icons/Check";
+import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Person } from "@repo/zod-schemas";
 import { hsl } from "@/utils/hsl";
@@ -41,7 +42,6 @@ export const PersonSelector = ({
   const { colorScheme } = useColorScheme();
 
   const [search, setSearch] = useState("");
-  const [manualName, setManualName] = useState("");
   const [contactsGranted, setContactsGranted] = useState<boolean | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [hasSyncedThisOpen, setHasSyncedThisOpen] = useState(false);
@@ -93,22 +93,9 @@ export const PersonSelector = ({
     onChange([...selectedPersons, person]);
   };
 
-  const handleAddManual = async () => {
-    const name = manualName.trim();
-    if (!name) return;
-
-    const person: Person = {
-      id: generateID(),
-      name,
-      contactId: null,
-      phone: null,
-      email: null,
-      createdAt: new Date().toISOString(),
-    };
-
+  const handlePersonCreated = async (person: Person) => {
     await insertPerson({ data: person });
     onChange([...selectedPersons, person]);
-    setManualName("");
     await refetch();
   };
 
@@ -134,36 +121,36 @@ export const PersonSelector = ({
       </BottomSheetOpenTrigger>
       <BottomSheetContent
         style={{ zIndex: 100 }}
-        enablePanDownToClose={true}
+        enablePanDownToClose
         enableContentPanningGesture={false}
         enableDynamicSizing={false}
-        snapPoints={["55%"]}
+        snapPoints={["100%"]}
       >
-        <BottomSheetView
-          className="gap-4 bg-background pt-6"
-          style={{ left: 19 }}
-        >
+        <BottomSheetView className="h-full flex-1 gap-4 bg-background px-4 pb-6 pt-4">
           <BottomSheetHeader className="bg-background">
-            <Typography className="pb-1 text-xl font-bold text-foreground">
-              People
+            <Typography variant="h3" className="pb-1 text-foreground">
+              Add People
             </Typography>
           </BottomSheetHeader>
 
           {contactsGranted === false ? (
             <Typography className="text-sm text-muted-foreground">
-              Contacts access was denied. Add people manually below.
+              Contacts access was denied. Add people with +.
             </Typography>
           ) : null}
 
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search people"
-            placeholderTextColor={hsl("muted-foreground", colorScheme)}
-            className="rounded-lg border border-input bg-card px-3 py-2 text-foreground"
-          />
+          <View className="flex-row items-center gap-2">
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search people"
+              placeholderTextColor={hsl("muted-foreground", colorScheme)}
+              className="min-w-0 flex-1 rounded-lg border border-input bg-card px-3 py-2 text-foreground"
+            />
+            <AddPersonSheet onPersonCreated={handlePersonCreated} />
+          </View>
 
-          <ScrollView style={{ maxHeight: 260 }}>
+          <ScrollView className="min-h-0 flex-1">
             <View className="w-full flex-col gap-2">
               {filteredPersons.map((person) => (
                 <PersonItem
@@ -175,36 +162,95 @@ export const PersonSelector = ({
               ))}
               {!syncing && filteredPersons.length === 0 ? (
                 <Typography className="py-4 text-center text-muted-foreground">
-                  No people yet. Add someone below.
+                  No people yet. Tap + to add someone.
                 </Typography>
               ) : null}
             </View>
           </ScrollView>
-
-          <View className="flex-row items-center gap-2">
-            <TextInput
-              value={manualName}
-              onChangeText={setManualName}
-              placeholder="Add person manually"
-              placeholderTextColor={hsl("muted-foreground", colorScheme)}
-              className="min-w-0 flex-1 rounded-lg border border-input bg-card px-3 py-2 text-foreground"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={handleAddManual}
-              disabled={!manualName.trim()}
-            >
-              <Typography className="font-semibold text-foreground">
-                Add
-              </Typography>
-            </Button>
-          </View>
         </BottomSheetView>
       </BottomSheetContent>
     </BottomSheet>
   );
 };
+
+function AddPersonSheet({
+  onPersonCreated,
+}: {
+  onPersonCreated: (person: Person) => Promise<void>;
+}) {
+  const { colorScheme } = useColorScheme();
+  const { dismiss } = useBottomSheetModal();
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleAdd = async () => {
+    const trimmed = name.trim();
+    if (!trimmed || saving) return;
+
+    setSaving(true);
+    try {
+      await onPersonCreated({
+        id: generateID(),
+        name: trimmed,
+        contactId: null,
+        createdAt: new Date().toISOString(),
+      });
+      setName("");
+      dismiss();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <BottomSheet>
+      <BottomSheetOpenTrigger asChild>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Add person"
+          className="h-10 w-10 items-center justify-center rounded-lg border border-input bg-card"
+        >
+          <Icon name="plus" color="foreground" size={20} />
+        </TouchableOpacity>
+      </BottomSheetOpenTrigger>
+      <BottomSheetContent
+        style={{ zIndex: 110 }}
+        enablePanDownToClose
+        enableContentPanningGesture={false}
+        enableDynamicSizing={false}
+        snapPoints={["40%"]}
+      >
+        <BottomSheetView className="gap-4 bg-background px-4 pb-6 pt-4">
+          <BottomSheetHeader className="bg-background">
+            <Typography variant="h3" className="pb-1 text-foreground">
+              Add person
+            </Typography>
+          </BottomSheetHeader>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Name"
+            autoFocus
+            placeholderTextColor={hsl("muted-foreground", colorScheme)}
+            className="rounded-lg border border-input bg-card px-3 py-2 text-foreground"
+            onSubmitEditing={() => {
+              void handleAdd();
+            }}
+          />
+          <Button
+            variant="default"
+            onPress={handleAdd}
+            disabled={!name.trim() || saving}
+          >
+            <Typography className="font-semibold text-primary-foreground">
+              Add
+            </Typography>
+          </Button>
+        </BottomSheetView>
+      </BottomSheetContent>
+    </BottomSheet>
+  );
+}
 
 function PersonItem({
   item,
@@ -227,11 +273,6 @@ function PersonItem({
       <View className="flex-row items-center justify-between gap-2">
         <View className="min-w-0 flex-1">
           <Typography>{item.name}</Typography>
-          {item.phone || item.email ? (
-            <Typography className="text-sm text-muted-foreground">
-              {[item.phone, item.email].filter(Boolean).join(" · ")}
-            </Typography>
-          ) : null}
         </View>
         {selected ? <Check className="text-accent-foreground" /> : null}
       </View>

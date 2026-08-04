@@ -24,8 +24,8 @@ export const upsertPersonsFromContactsQuery = async (
           .update(PersonTable)
           .set({
             name: contact.name,
-            phone: contact.phone ?? null,
-            email: contact.email ?? null,
+            phone: null,
+            email: null,
           })
           .where(eq(PersonTable.id, existing[0].id));
       } else {
@@ -33,8 +33,8 @@ export const upsertPersonsFromContactsQuery = async (
           id: contact.id,
           name: contact.name,
           contactId: contact.contactId,
-          phone: contact.phone ?? null,
-          email: contact.email ?? null,
+          phone: null,
+          email: null,
           createdAt: contact.createdAt ?? new Date().toISOString(),
         });
       }
