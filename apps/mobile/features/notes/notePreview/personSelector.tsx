@@ -20,8 +20,10 @@ import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { Person } from "@repo/zod-schemas";
 import { hsl } from "@/utils/hsl";
+import { cn } from "@/lib/cn";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Icon } from "@/components/ui/icons/icon";
+import { X } from "@/lib/icons/Times";
 import { useSyncContacts } from "@/features/persons/hooks/useSyncContacts";
 import { generateID } from "@/utils/genrateID";
 
@@ -53,11 +55,12 @@ export const PersonSelector = ({
 
   const filteredPersons = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return persons;
-    return persons.filter((person) =>
-      person.name.toLowerCase().includes(query)
-    );
-  }, [persons, search]);
+    return persons.filter((person) => {
+      if (selectedIds.has(person.id)) return false;
+      if (!query) return true;
+      return person.name.toLowerCase().includes(query);
+    });
+  }, [persons, search, selectedIds]);
 
   const label = useMemo(() => {
     if (selectedPersons.length === 0) return "People";
@@ -145,10 +148,46 @@ export const PersonSelector = ({
               onChangeText={setSearch}
               placeholder="Search people"
               placeholderTextColor={hsl("muted-foreground", colorScheme)}
-              className="min-w-0 flex-1 rounded-lg border border-input bg-card px-3 py-2 text-foreground"
+              className="min-w-0 flex-1 rounded-full border border-input bg-card px-4 py-2 text-foreground"
             />
             <AddPersonSheet onPersonCreated={handlePersonCreated} />
           </View>
+
+          {selectedPersons.length > 0 ? (
+            <View className="gap-1">
+              <Typography variant="small" className="text-muted-foreground">
+                Selected ({selectedPersons.length})
+              </Typography>
+              <ScrollView
+                nestedScrollEnabled
+                showsVerticalScrollIndicator
+                style={{ maxHeight: 192 }}
+              >
+                <View className="w-full flex-col gap-1 pb-2">
+                  {selectedPersons.map((person) => (
+                    <PersonItem
+                      key={`selected-${person.id}`}
+                      item={person}
+                      selected
+                      onPress={() => togglePerson(person)}
+                      trailing={
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remove ${person.name}`}
+                          onPress={() => togglePerson(person)}
+                        >
+                          <X className="text-muted-foreground" size={20} />
+                        </Button>
+                      }
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+              <View className="my-2 h-px w-full bg-border" />
+            </View>
+          ) : null}
 
           <ScrollView className="min-h-0 flex-1">
             <View className="w-full flex-col gap-2">
@@ -156,13 +195,15 @@ export const PersonSelector = ({
                 <PersonItem
                   key={person.id}
                   item={person}
-                  selected={selectedIds.has(person.id)}
+                  selected={false}
                   onPress={() => togglePerson(person)}
                 />
               ))}
               {!syncing && filteredPersons.length === 0 ? (
                 <Typography className="py-4 text-center text-muted-foreground">
-                  No people yet. Tap + to add someone.
+                  {persons.length === 0
+                    ? "No people yet. Tap + to add someone."
+                    : "No more people to add."}
                 </Typography>
               ) : null}
             </View>
@@ -205,13 +246,14 @@ function AddPersonSheet({
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild>
-        <TouchableOpacity
+        <Button
+          variant="ghost"
+          size="icon"
           accessibilityRole="button"
           accessibilityLabel="Add person"
-          className="h-10 w-10 items-center justify-center rounded-lg border border-input bg-card"
         >
           <Icon name="plus" color="foreground" size={20} />
-        </TouchableOpacity>
+        </Button>
       </BottomSheetOpenTrigger>
       <BottomSheetContent
         style={{ zIndex: 110 }}
@@ -256,25 +298,24 @@ function PersonItem({
   item,
   onPress,
   selected,
+  trailing,
 }: {
   item: Person;
   onPress: () => void;
   selected: boolean;
+  trailing?: React.ReactNode;
 }) {
-  const { colorScheme } = useColorScheme();
   return (
     <Pressable
-      className="w-full rounded-lg border border-solid px-2 py-4"
-      style={{
-        borderColor: selected ? hsl("border", colorScheme) : "transparent",
-      }}
+      className={cn("w-full rounded-lg px-2 py-4", selected && "bg-border")}
       onPress={onPress}
     >
       <View className="flex-row items-center justify-between gap-2">
         <View className="min-w-0 flex-1">
           <Typography>{item.name}</Typography>
         </View>
-        {selected ? <Check className="text-accent-foreground" /> : null}
+        {trailing ??
+          (selected ? <Check className="text-accent-foreground" /> : null)}
       </View>
     </Pressable>
   );
