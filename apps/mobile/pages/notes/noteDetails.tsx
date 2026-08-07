@@ -9,6 +9,7 @@ import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDe
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
 import type { FolderSelection } from "@/features/notes/notePreview/folderSelector";
+import { Person } from "@repo/zod-schemas";
 import { router, useLocalSearchParams, useSegments } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
@@ -41,6 +42,7 @@ export const NoteDetailsPage = () => {
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [simplified, setSimplified] = useState(false);
   const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
+  const [headerPersons, setHeaderPersons] = useState<Person[]>([]);
   const [folderRequiredError, setFolderRequiredError] = useState(false);
   const saveActionRef = useRef<(() => void) | null>(null);
   const { deleteNoteAction } = useDeleteNote();
@@ -51,6 +53,8 @@ export const NoteDetailsPage = () => {
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
   const { mutateAsync: updateNoteFolderId } =
     notesAndThoughts.useUpdateNoteFolderIdMutation();
+  const { mutateAsync: updateNotePersons } =
+    notesAndThoughts.useUpdateNotePersonsMutation();
 
   const isPreviewMode = editorMode === "preview";
 
@@ -75,6 +79,21 @@ export const NoteDetailsPage = () => {
   useEffect(() => {
     setHeaderFolder(noteFolder);
   }, [noteFolder]);
+
+  useEffect(() => {
+    const nextPersons = note?.[0]?.persons ?? [];
+    setHeaderPersons((current) => {
+      const currentKey = current
+        .map((person) => person.id)
+        .sort()
+        .join("|");
+      const nextKey = nextPersons
+        .map((person) => person.id)
+        .sort()
+        .join("|");
+      return currentKey === nextKey ? current : nextPersons;
+    });
+  }, [note]);
 
   useEffect(() => {
     const nextMode = parseEditorMode(modeParam);
@@ -163,6 +182,20 @@ export const NoteDetailsPage = () => {
     [note, noteFolder, noteId, updateNoteFolderId]
   );
 
+  const handlePersonsChange = useCallback(
+    async (persons: Person[]) => {
+      setHeaderPersons(persons);
+      if (!noteId) return;
+      try {
+        await updateNotePersons({ noteId, persons });
+      } catch (error) {
+        setHeaderPersons(note?.[0]?.persons ?? []);
+        Alert.alert("Update failed", String(error));
+      }
+    },
+    [note, noteId, updateNotePersons]
+  );
+
   return (
     <PageContainer
       headerVariant="tab"
@@ -190,6 +223,8 @@ export const NoteDetailsPage = () => {
         <NoteDetailsOptionsHeader
           folder={headerFolder}
           onFolderSelect={handleFolderSelect}
+          persons={headerPersons}
+          onPersonsChange={handlePersonsChange}
           simplified={simplified}
           onSimplifiedChange={setSimplified}
           folderError={folderRequiredError}

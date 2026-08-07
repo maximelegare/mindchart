@@ -33,6 +33,10 @@ export const CategorySelector = ({
     dismiss();
   };
 
+  const selectableCategories = categories.filter(
+    (category) => category.id !== "people"
+  );
+
   return (
     <>
       <BottomSheet>
@@ -83,7 +87,7 @@ export const CategorySelector = ({
             </BottomSheetHeader>
             <ScrollView style={{ maxHeight: 300 }}>
               <View className="flex flex-col w-full flex-wrap gap-2">
-                {categories.map((category) => (
+                {selectableCategories.map((category) => (
                   <CategoryItem
                     key={category.id}
                     item={category}

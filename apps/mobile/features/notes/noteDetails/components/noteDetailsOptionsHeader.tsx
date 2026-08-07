@@ -7,12 +7,16 @@ import {
   FolderSelector,
   type FolderSelection,
 } from "@/features/notes/notePreview/folderSelector";
+import { PersonSelector } from "@/features/notes/notePreview/personSelector";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { Icon } from "@/components/ui/icons/icon";
+import { Person } from "@repo/zod-schemas";
 
 type NoteDetailsOptionsHeaderProps = {
   folder: FolderSelection;
   onFolderSelect: (folder: FolderSelection) => void;
+  persons: Person[];
+  onPersonsChange: (persons: Person[]) => void;
   simplified: boolean;
   onSimplifiedChange: (simplified: boolean) => void;
   folderError?: boolean;
@@ -21,6 +25,8 @@ type NoteDetailsOptionsHeaderProps = {
 export function NoteDetailsOptionsHeader({
   folder,
   onFolderSelect,
+  persons,
+  onPersonsChange,
   simplified,
   onSimplifiedChange,
   folderError = false,
@@ -50,7 +56,7 @@ export function NoteDetailsOptionsHeader({
         </CollapsibleContainer>
       }
     >
-      <View className="flex-row items-center gap-3">
+      <View className="flex-row flex-wrap items-center gap-3">
         <TriggerFilterChip
           icon="settings-2"
           selected={expanded}
@@ -60,9 +66,14 @@ export function NoteDetailsOptionsHeader({
         <FolderSelector
           selectedFolder={folder}
           onSelect={onFolderSelect}
-          maxChars={22}
+          maxChars={18}
           allowRoot={false}
           error={folderError}
+        />
+        <PersonSelector
+          selectedPersons={persons}
+          onChange={onPersonsChange}
+          maxChars={18}
         />
       </View>
     </PageOptionsHeaderContainer>

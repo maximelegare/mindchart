@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { NoteSchema, ThoughtSchema, TopicSchema } from "./schemas";
+import {
+  NoteSchema,
+  PersonSchema,
+  ThoughtSchema,
+  TopicSchema,
+} from "./schemas";
 
 // Client-side API response schemas (what clients receive)
 export const GenerateNoteResponseSchema = z.object({
@@ -50,6 +55,7 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   topicName: z.string().nullable().optional(),
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
+  persons: z.array(PersonSchema).optional().default([]),
   thoughts: z.array(ThoughtSchema),
 });
 
@@ -150,6 +156,7 @@ export {
   ThoughtSchema,
   CategorySchema,
   FolderSchema,
+  PersonSchema,
 } from "./schemas";
 
 export type {
@@ -158,6 +165,7 @@ export type {
   ThoughtWithEmbedding,
   Category,
   Topic,
+  Person,
   Embedding,
   Folder,
 } from "./schemas";

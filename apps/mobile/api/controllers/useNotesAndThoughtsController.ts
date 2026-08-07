@@ -5,6 +5,7 @@ import {
   insertNoteAndThoughts,
   updateNoteAndThoughts,
   updateNoteFolderId,
+  updateNotePersons,
 } from "@/api/endpoints/notes";
 import {
   InferMutationOptions,
@@ -226,6 +227,29 @@ export const useNotesAndThoughtsController = () => {
     });
   };
 
+  const useUpdateNotePersonsMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation<
+      Awaited<ReturnType<typeof updateNotePersons>>,
+      Error,
+      {
+        noteId: string;
+        persons: NonNullable<
+          Parameters<typeof updateNotePersons>[0]["persons"]
+        >;
+      }
+    >({
+      mutationKey: [REACT_QUERY_KEYS.updateNotePersons],
+      mutationFn: updateNotePersons,
+      onSuccess: async (_data, variables) => {
+        // Avoid broad list invalidation — it remounts the note page header.
+        await queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails, variables.noteId],
+        });
+      },
+    });
+  };
+
   return {
     useGenerateNoteMutation,
     useInsertNoteAndThoughtsMutation,
@@ -237,6 +261,7 @@ export const useNotesAndThoughtsController = () => {
     useDeleteThoughtsByIdsMutation,
     useDeleteNoteByIdMutation,
     useUpdateNoteFolderIdMutation,
+    useUpdateNotePersonsMutation,
     useFetchAllNotesQuery,
     useFetchNoteByTopic,
   };

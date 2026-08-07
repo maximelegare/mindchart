@@ -14,8 +14,17 @@ export type Category = z.infer<typeof CategorySchema>;
 
 export type Topic = z.infer<typeof TopicSchema>;
 
+export type Person = z.infer<typeof PersonSchema>;
+
 export type Embedding = z.infer<typeof EmbeddingSchema>;
 export type ThoughtWithEmbedding = z.infer<typeof ThoughtWithEmbeddingSchema>;
+
+export const PersonSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  contactId: z.string().nullable().optional(),
+  createdAt: z.string().optional(),
+});
 
 export const TopicSchema = z.object({
   id: z.string(),
@@ -77,6 +86,7 @@ export const NoteSchema = z.object({
   topicName: z.string().nullable().optional(),
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
+  persons: z.array(PersonSchema).optional().default([]),
   createdAt: z.string().optional(),
 });
 

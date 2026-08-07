@@ -5,6 +5,7 @@ import {
   foreignKey,
   blob,
   integer,
+  primaryKey,
 } from "drizzle-orm/sqlite-core";
 import { float32ArrayBlob } from "./fields/embeddingTable";
 
@@ -121,3 +122,38 @@ export const SettingTable = sqliteTable("setting", {
   name: text("name").notNull(),
   data: text("data").notNull(),
 });
+
+export const PersonTable = sqliteTable("person", {
+  id: text("id").notNull().primaryKey(),
+  name: text("name").notNull(),
+  contactId: text("contact_id").unique(),
+  phone: text("phone"),
+  email: text("email"),
+  createdAt: text("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
+export const PersonToNoteTable = sqliteTable(
+  "person_to_note",
+  {
+    personId: text("person_id").notNull(),
+    noteId: text("note_id").notNull(),
+    createdAt: text("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.personId, table.noteId] }),
+    foreignKey({
+      name: "person_to_note_person_id_fk",
+      columns: [table.personId],
+      foreignColumns: [PersonTable.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "person_to_note_note_id_fk",
+      columns: [table.noteId],
+      foreignColumns: [NoteTable.id],
+    }).onDelete("cascade"),
+  ]
+);
