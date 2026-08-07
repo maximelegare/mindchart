@@ -207,7 +207,7 @@ const BottomSheetCloseTrigger = React.forwardRef<
   return <Trigger ref={ref} onPress={handleOnPress} {...props} />;
 });
 
-const BOTTOM_SHEET_HEADER_HEIGHT = 60; // BottomSheetHeader height
+const BOTTOM_SHEET_HEADER_HEIGHT = 40; // BottomSheetHeader height
 
 type BottomSheetViewProps = Omit<
   React.ComponentPropsWithoutRef<typeof GBottomSheetView>,

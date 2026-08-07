@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import {
   BottomSheet,
+  BottomSheetCloseTrigger,
   BottomSheetContent,
   BottomSheetHeader,
   BottomSheetOpenTrigger,
@@ -63,7 +64,7 @@ export const PersonSelector = ({
   }, [persons, search, selectedIds]);
 
   const label = useMemo(() => {
-    if (selectedPersons.length === 0) return "People";
+    if (selectedPersons.length === 0) return "Add People";
     if (selectedPersons.length === 1) {
       const name = selectedPersons[0].name;
       return maxChars && name.length > maxChars
@@ -120,6 +121,9 @@ export const PersonSelector = ({
           >
             {label}
           </Typography>
+          {selectedPersons.length === 0 ? (
+            <Icon name="plus" color="foreground" size={16} />
+          ) : null}
         </TouchableOpacity>
       </BottomSheetOpenTrigger>
       <BottomSheetContent
@@ -185,10 +189,9 @@ export const PersonSelector = ({
                   ))}
                 </View>
               </ScrollView>
-              <View className="my-2 h-px w-full bg-border" />
             </View>
           ) : null}
-
+          <View className="my-2 h-px w-full bg-border" />
           <ScrollView className="min-h-0 flex-1">
             <View className="w-full flex-col gap-2">
               {filteredPersons.map((person) => (
@@ -208,6 +211,14 @@ export const PersonSelector = ({
               ) : null}
             </View>
           </ScrollView>
+          <View className="mb-2 h-px w-full bg-border" />
+          <View className="items-center justify-center">
+            <BottomSheetCloseTrigger asChild>
+              <Button variant="ghost" className="bg-popover">
+                <Typography className="text-background">Close</Typography>
+              </Button>
+            </BottomSheetCloseTrigger>
+          </View>
         </BottomSheetView>
       </BottomSheetContent>
     </BottomSheet>
@@ -260,12 +271,12 @@ function AddPersonSheet({
         enablePanDownToClose
         enableContentPanningGesture={false}
         enableDynamicSizing={false}
-        snapPoints={["40%"]}
+        snapPoints={["100%"]}
       >
-        <BottomSheetView className="gap-4 bg-background px-4 pb-6 pt-4">
+        <BottomSheetView className="gap-4 h-full bg-background">
           <BottomSheetHeader className="bg-background">
             <Typography variant="h3" className="pb-1 text-foreground">
-              Add person
+              Create Contact
             </Typography>
           </BottomSheetHeader>
           <TextInput
