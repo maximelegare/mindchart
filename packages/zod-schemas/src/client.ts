@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  FeelingValueSchema,
   NoteSchema,
   PersonSchema,
   ThoughtSchema,
@@ -55,7 +56,8 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   topicName: z.string().nullable().optional(),
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
-  persons: z.array(PersonSchema).optional().default([]),
+  feeling: FeelingValueSchema.nullable().optional(),
+  persons: z.array(PersonSchema).optional(),
   thoughts: z.array(ThoughtSchema),
 });
 
@@ -157,6 +159,8 @@ export {
   CategorySchema,
   FolderSchema,
   PersonSchema,
+  FeelingSchema,
+  FeelingValueSchema,
 } from "./schemas";
 
 export type {
@@ -166,6 +170,8 @@ export type {
   Category,
   Topic,
   Person,
+  Feeling,
+  FeelingValue,
   Embedding,
   Folder,
 } from "./schemas";

@@ -8,8 +8,9 @@ import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/component
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
-import type { FolderSelection } from "@/features/notes/notePreview/folderSelector";
+import type { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 import { Person } from "@repo/zod-schemas";
+import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 import { router, useLocalSearchParams, useSegments } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
@@ -30,7 +31,7 @@ export const NoteDetailsPage = () => {
     mode?: string;
   }>();
   const segments = useSegments();
-  const openedFromGraph = segments.includes("graph");
+  const openedFromGraph = (segments as string[]).includes("graph");
   const [open, setOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<NoteEditorMode>(() =>
     parseEditorMode(modeParam)
@@ -43,6 +44,7 @@ export const NoteDetailsPage = () => {
   const [simplified, setSimplified] = useState(false);
   const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
   const [headerPersons, setHeaderPersons] = useState<Person[]>([]);
+  const [headerFeeling, setHeaderFeeling] = useState<FeelingValue | null>(null);
   const [folderRequiredError, setFolderRequiredError] = useState(false);
   const saveActionRef = useRef<(() => void) | null>(null);
   const { deleteNoteAction } = useDeleteNote();
@@ -55,6 +57,8 @@ export const NoteDetailsPage = () => {
     notesAndThoughts.useUpdateNoteFolderIdMutation();
   const { mutateAsync: updateNotePersons } =
     notesAndThoughts.useUpdateNotePersonsMutation();
+  const { mutateAsync: updateNoteFeeling } =
+    notesAndThoughts.useUpdateNoteFeelingMutation();
 
   const isPreviewMode = editorMode === "preview";
 
@@ -93,6 +97,10 @@ export const NoteDetailsPage = () => {
         .join("|");
       return currentKey === nextKey ? current : nextPersons;
     });
+  }, [note]);
+
+  useEffect(() => {
+    setHeaderFeeling(note?.[0]?.feeling ?? null);
   }, [note]);
 
   useEffect(() => {
@@ -196,6 +204,20 @@ export const NoteDetailsPage = () => {
     [note, noteId, updateNotePersons]
   );
 
+  const handleFeelingChange = useCallback(
+    async (feeling: FeelingValue | null) => {
+      setHeaderFeeling(feeling);
+      if (!noteId) return;
+      try {
+        await updateNoteFeeling({ noteId, feeling });
+      } catch (error) {
+        setHeaderFeeling(note?.[0]?.feeling ?? null);
+        Alert.alert("Update failed", String(error));
+      }
+    },
+    [note, noteId, updateNoteFeeling]
+  );
+
   return (
     <PageContainer
       headerVariant="tab"
@@ -225,6 +247,8 @@ export const NoteDetailsPage = () => {
           onFolderSelect={handleFolderSelect}
           persons={headerPersons}
           onPersonsChange={handlePersonsChange}
+          feeling={headerFeeling}
+          onFeelingChange={handleFeelingChange}
           simplified={simplified}
           onSimplifiedChange={setSimplified}
           folderError={folderRequiredError}

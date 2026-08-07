@@ -206,6 +206,7 @@ function NoteDetailsContent({
           topicId: note.topicId,
           folderId: folderId ?? note.folderId ?? null,
           persons: note.persons ?? [],
+          feeling: note.feeling ?? null,
           createdAt: note.createdAt,
         },
         nextThoughts,

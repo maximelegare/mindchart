@@ -1,6 +1,5 @@
 export const DEFAULT_CATEGORIES_COLORS: Record<CategoryKey, string> = {
   ideas: "#000000",
-  feelings: "#000000",
   tasks: "#000000",
   events: "#000000",
   places: "#000000",
@@ -18,6 +17,16 @@ export const DEFAULT_CATEGORIES_COLORS: Record<CategoryKey, string> = {
   other: "#000000",
 } as const;
 
+export const FEELINGS_DEFINITIONS = [
+  { value: 2, label: "Great", emoji: "😁" },
+  { value: 1, label: "Good", emoji: "🙂" },
+  { value: 0, label: "Neutral", emoji: "😐" },
+  { value: -1, label: "Bad", emoji: "😞" },
+  { value: -2, label: "Awful", emoji: "😠" },
+] as const;
+
+export type FeelingValue = (typeof FEELINGS_DEFINITIONS)[number]["value"];
+
 export const SETTINGS_DEFINITIONS = [
   { id: "theme", name: "Theme", data: "system" },
   {
@@ -29,7 +38,6 @@ export const SETTINGS_DEFINITIONS = [
 
 export const CATEGORIES_DEFINITIONS = [
   { id: "ideas", name: "Ideas" },
-  { id: "feelings", name: "Feelings" },
   { id: "tasks", name: "Tasks" },
   { id: "events", name: "Events" },
   { id: "places", name: "Places" },

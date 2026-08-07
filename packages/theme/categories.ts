@@ -2,7 +2,6 @@ import { CategoryKey } from "../sqlite";
 
 export const CATEGORIES_COLORS: Record<CategoryKey, string> = {
   ideas: "hsl(35.2, 89.7%, 81%)", //Orange
-  feelings: "hsl(155, 67.9%, 79.2%)", // turquoise
   tasks: "hsl(53.8, 82.9%, 79.4%)", // Orange
   events: "hsl(205.7, 55.3%, 85.1%)",
   places: "hsl(23.8, 59.2%, 80.8%)", // Bourgogne

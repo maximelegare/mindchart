@@ -1,22 +1,26 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Button, Typography } from "@/components/ui";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 import {
   FolderSelector,
   type FolderSelection,
-} from "@/features/notes/notePreview/folderSelector";
-import { PersonSelector } from "@/features/notes/notePreview/personSelector";
+} from "@/features/notes/shared/ui/folderSelector";
+import { PersonSelector } from "@/features/notes/shared/ui/personSelector";
+import { FeelingSelector } from "@/features/notes/shared/ui/feelingSelector";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { Icon } from "@/components/ui/icons/icon";
 import { Person } from "@repo/zod-schemas";
+import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 
 type NoteDetailsOptionsHeaderProps = {
   folder: FolderSelection;
   onFolderSelect: (folder: FolderSelection) => void;
   persons: Person[];
   onPersonsChange: (persons: Person[]) => void;
+  feeling: FeelingValue | null;
+  onFeelingChange: (feeling: FeelingValue | null) => void;
   simplified: boolean;
   onSimplifiedChange: (simplified: boolean) => void;
   folderError?: boolean;
@@ -27,6 +31,8 @@ export function NoteDetailsOptionsHeader({
   onFolderSelect,
   persons,
   onPersonsChange,
+  feeling,
+  onFeelingChange,
   simplified,
   onSimplifiedChange,
   folderError = false,
@@ -56,25 +62,43 @@ export function NoteDetailsOptionsHeader({
         </CollapsibleContainer>
       }
     >
-      <View className="flex-row flex-wrap items-center gap-3">
-        <TriggerFilterChip
-          icon="settings-2"
-          selected={expanded}
-          showDot={simplified}
-          onPress={() => setExpanded((prev) => !prev)}
-        />
-        <FolderSelector
-          selectedFolder={folder}
-          onSelect={onFolderSelect}
-          maxChars={18}
-          allowRoot={false}
-          error={folderError}
-        />
-        <PersonSelector
-          selectedPersons={persons}
-          onChange={onPersonsChange}
-          maxChars={18}
-        />
+      <View className="w-full flex-row items-center gap-3">
+        <View className="shrink-0">
+          <TriggerFilterChip
+            icon="settings-2"
+            selected={expanded}
+            showDot={simplified}
+            onPress={() => setExpanded((prev) => !prev)}
+          />
+        </View>
+        <ScrollView
+          horizontal
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <FolderSelector
+            selectedFolder={folder}
+            onSelect={onFolderSelect}
+            maxChars={18}
+            allowRoot={false}
+            error={folderError}
+          />
+          <PersonSelector
+            selectedPersons={persons}
+            onChange={onPersonsChange}
+            maxChars={12}
+          />
+          <FeelingSelector
+            selectedFeeling={feeling}
+            onChange={onFeelingChange}
+          />
+        </ScrollView>
       </View>
     </PageOptionsHeaderContainer>
   );

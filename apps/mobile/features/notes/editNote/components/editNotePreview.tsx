@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { EditableField } from "@/components/ui/editableField";
 import { Icon } from "@/components/ui/icons/icon";
-import { CategorySelector } from "../../notePreview/categoriesSelector";
+import { CategorySelector } from "../../shared/ui/categoriesSelector";
 import { Topic } from "@repo/zod-schemas/src/schemas";
-import { TopicSelector } from "../../notePreview/topicSelector";
+import { TopicSelector } from "../../shared/ui/topicSelector";
 import { generateID } from "@/utils/genrateID";
 
 type EditNotePreviewProps = {

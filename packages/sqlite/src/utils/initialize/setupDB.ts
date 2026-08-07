@@ -1,8 +1,14 @@
-import { AppDataTable, CategoryTable, SettingTable } from "../../schema.root";
+import {
+  AppDataTable,
+  CategoryTable,
+  FeelingTable,
+  SettingTable,
+} from "../../schema.root";
 import {
   SETTINGS_DEFINITIONS,
   CATEGORIES_DEFINITIONS,
   APP_DATA_DEFINITIONS,
+  FEELINGS_DEFINITIONS,
 } from "../../data/settings";
 import { getOPDatabase } from "./getOPDatabase";
 import { sql } from "drizzle-orm";
@@ -48,6 +54,11 @@ export const setupDB = async (retries = 10, delay = 200) => {
     name: c.name,
   }));
 
+  const feelings = FEELINGS_DEFINITIONS.map((feeling) => ({
+    value: feeling.value,
+    label: feeling.label,
+  }));
+
   const appData = APP_DATA_DEFINITIONS.map((a) => ({
     id: a.id,
     name: a.name,
@@ -60,6 +71,7 @@ export const setupDB = async (retries = 10, delay = 200) => {
       await db.transaction(async (tx) => {
         await tx.insert(SettingTable).values(settings);
         await tx.insert(CategoryTable).values(categories);
+        await tx.insert(FeelingTable).values(feelings).onConflictDoNothing();
         await tx.insert(AppDataTable).values(appData);
       });
       // Success! Break out of retry loop

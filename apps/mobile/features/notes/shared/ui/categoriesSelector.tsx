@@ -34,7 +34,7 @@ export const CategorySelector = ({
   };
 
   const selectableCategories = categories.filter(
-    (category) => category.id !== "people"
+    (category) => category.id !== "people" && category.id !== "feelings"
   );
 
   return (

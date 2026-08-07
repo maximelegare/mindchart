@@ -16,7 +16,7 @@ import {
 import {
   FolderSelector,
   type FolderSelection,
-} from "@/features/notes/notePreview/folderSelector";
+} from "@/features/notes/shared/ui/folderSelector";
 import { Icon } from "@/components/ui/icons/icon";
 import {
   KEYBOARD_ACTION_FOOTER_PADDING_Y,
