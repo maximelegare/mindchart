@@ -8,7 +8,14 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
-import { View, StyleSheet, Animated, Dimensions, Keyboard } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Keyboard,
+  Modal as RNModal,
+} from "react-native";
 import { Modal, Portal } from "react-native-paper";
 import { Typography } from "../typography";
 import { Button } from "../button";
@@ -27,6 +34,11 @@ type ModalOptions = {
   onConfirm?: () => void | Promise<void>;
   dismissOnBackgroundPress?: boolean;
   customContent?: (() => ReactNode | ReactElement) | null;
+  /**
+   * When true, render above open bottom sheets via a native modal layer.
+   * When false/omitted, use the paper Portal (can sit under bottom sheets).
+   */
+  aboveBottomSheet?: boolean;
 };
 
 type ModalContextType = {
@@ -47,14 +59,12 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
-  // Open modal
   const openModal = useCallback((options: ModalOptions) => {
     setContentKey((k) => k + 1);
     setModalOptions(options);
     setIsVisible(true);
   }, []);
 
-  // Close modal
   const closeModal = useCallback(() => {
     Animated.parallel([
       Animated.timing(slideAnim, {
@@ -70,7 +80,6 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     ]).start(() => setIsVisible(false));
   }, [slideAnim, backdropOpacity]);
 
-  // Update modal content (pass customContent: null to clear a prior custom body)
   const setModalContent = useCallback((newOptions: Partial<ModalOptions>) => {
     setContentKey((k) => k + 1);
     setModalOptions((prev) => {
@@ -82,15 +91,14 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
-  // Animate when modal opens
   useEffect(() => {
     if (isVisible) {
-      slideAnim.setValue(SCREEN_HEIGHT / 2 + 200); // start below center
+      slideAnim.setValue(SCREEN_HEIGHT / 2 + 200);
       backdropOpacity.setValue(0);
 
       Animated.parallel([
         Animated.spring(slideAnim, {
-          toValue: 0, // center
+          toValue: 0,
           velocity: 15,
           bounciness: 8,
           speed: 10,
@@ -105,7 +113,6 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isVisible, slideAnim, backdropOpacity]);
 
-  // Keyboard handling
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) =>
       setKeyboardHeight(e.endCoordinates.height)
@@ -119,7 +126,6 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // Update module-level ref
   useEffect(() => {
     modalFunctionsRef.current = { openModal, closeModal, setModalContent };
     return () => {
@@ -137,6 +143,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     confirmButton: confirmButtonOption,
     cancelButton: cancelButtonOption,
     dismissOnBackgroundPress = true,
+    aboveBottomSheet = false,
   } = modalOptions;
 
   const modalPreset = modalName ? MODALS_CONTENT[modalName] : undefined;
@@ -159,99 +166,134 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
 
   const hasTitle = title || (modalName && MODALS_CONTENT[modalName]?.title);
 
+  const handleBackgroundDismiss = () => {
+    if (!dismissOnBackgroundPress) return;
+    onCancel?.();
+    closeModal();
+  };
+
+  const card = (
+    <Animated.View
+      style={{
+        transform: [{ translateY: slideAnim }],
+        maxHeight: SCREEN_HEIGHT - 80,
+      }}
+    >
+      <View
+        className={cn(
+          "flex-col gap-4 bg-background p-3 rounded-lg overflow-hidden",
+          customContent && "min-h-0"
+        )}
+      >
+        {hasTitle && (
+          <View className="relative">
+            <View className="mb-2">
+              <Typography className="relative z-10" variant="h3">
+                {title || (modalName && MODALS_CONTENT[modalName]?.title)}
+              </Typography>
+            </View>
+            <View className="absolute -top-3 -right-3 -left-3 bg-border h-12" />
+          </View>
+        )}
+
+        {customContent ? (
+          <View key={contentKey}>{customContent()}</View>
+        ) : (
+          <View>
+            <Typography variant="p">
+              {description ||
+                (modalName && MODALS_CONTENT[modalName]?.description)}
+            </Typography>
+          </View>
+        )}
+
+        {!customContent && (
+          <View className="mt-4 flex-row justify-end gap-2">
+            <Button
+              variant={cancelButton.variant}
+              onPress={() => {
+                onCancel?.();
+                closeModal();
+              }}
+            >
+              <Typography>{cancelButton.text}</Typography>
+            </Button>
+            {onConfirm && (
+              <Button
+                variant={confirmButton.variant}
+                onPress={() => void onConfirm()}
+              >
+                <Typography>{confirmButton.text}</Typography>
+              </Button>
+            )}
+          </View>
+        )}
+      </View>
+    </Animated.View>
+  );
+
+  const backdrop = (
+    <Animated.View
+      pointerEvents={isVisible ? "auto" : "none"}
+      style={[
+        StyleSheet.absoluteFill,
+        { backgroundColor: "rgba(0,0,0,0.6)", opacity: backdropOpacity },
+      ]}
+      onStartShouldSetResponder={() => dismissOnBackgroundPress}
+      onResponderRelease={handleBackgroundDismiss}
+    />
+  );
+
   return (
-    // <LlamaProvider>
     <ModalContext.Provider value={{ openModal, closeModal, setModalContent }}>
       {children}
-      <Portal>
-        {/* BACKDROP */}
-        <Animated.View
-          pointerEvents={isVisible ? "auto" : "none"}
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: "rgba(0,0,0,0.6)", opacity: backdropOpacity },
-          ]}
-          onStartShouldSetResponder={() => dismissOnBackgroundPress}
-          onResponderRelease={() => {
-            if (dismissOnBackgroundPress) {
-              onCancel?.();
-              closeModal();
-            }
-          }}
-        />
-        {/* MODAL */}
-        <Modal
+      {aboveBottomSheet ? (
+        <RNModal
           visible={isVisible}
-          onDismiss={
+          transparent
+          animationType="none"
+          statusBarTranslucent
+          onRequestClose={
             dismissOnBackgroundPress ? onCancel || closeModal : undefined
           }
-          style={{ backgroundColor: "transparent", flex: 1 }}
-          contentContainerStyle={{
-            flex: 1,
-            justifyContent: "center",
-            paddingHorizontal: 16,
-            paddingBottom: keyboardHeight,
-          }}
         >
-          <Animated.View
-            style={{
-              transform: [{ translateY: slideAnim }],
-              maxHeight: SCREEN_HEIGHT - 80, // prevent overflow
+          <View style={StyleSheet.absoluteFill}>
+            {backdrop}
+            <View
+              pointerEvents="box-none"
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  justifyContent: "center",
+                  paddingHorizontal: 16,
+                  paddingBottom: keyboardHeight,
+                },
+              ]}
+            >
+              {card}
+            </View>
+          </View>
+        </RNModal>
+      ) : (
+        <Portal>
+          {backdrop}
+          <Modal
+            visible={isVisible}
+            onDismiss={
+              dismissOnBackgroundPress ? onCancel || closeModal : undefined
+            }
+            style={{ backgroundColor: "transparent", flex: 1 }}
+            contentContainerStyle={{
+              flex: 1,
+              justifyContent: "center",
+              paddingHorizontal: 16,
+              paddingBottom: keyboardHeight,
             }}
           >
-            <View
-              className={cn(
-                "flex-col gap-4 bg-background p-3 rounded-lg overflow-hidden",
-                customContent && "min-h-0"
-              )}
-            >
-              {hasTitle && (
-                <View className="relative">
-                  <View className="mb-2">
-                    <Typography className="relative z-10" variant="h3">
-                      {title || (modalName && MODALS_CONTENT[modalName]?.title)}
-                    </Typography>
-                  </View>
-                  <View className="absolute -top-3 -right-3 -left-3 bg-border h-12"></View>
-                </View>
-              )}
-
-              {customContent ? (
-                <View key={contentKey}>{customContent()}</View>
-              ) : (
-                <View>
-                  <Typography variant="p">
-                    {description ||
-                      (modalName && MODALS_CONTENT[modalName]?.description)}
-                  </Typography>
-                </View>
-              )}
-
-              {!customContent && (
-                <View className="flex-row justify-end gap-2 mt-4">
-                  <Button
-                    variant={cancelButton.variant}
-                    onPress={() => {
-                      onCancel?.();
-                      closeModal();
-                    }}
-                  >
-                    <Typography>{cancelButton.text}</Typography>
-                  </Button>
-                  {onConfirm && (
-                    <Button
-                      variant={confirmButton.variant}
-                      onPress={() => void onConfirm()}
-                    >
-                      <Typography>{confirmButton.text}</Typography>
-                    </Button>
-                  )}
-                </View>
-              )}
-            </View>
-          </Animated.View>
-        </Modal>
-      </Portal>
+            {card}
+          </Modal>
+        </Portal>
+      )}
     </ModalContext.Provider>
   );
 };

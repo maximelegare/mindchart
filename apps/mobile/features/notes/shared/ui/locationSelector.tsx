@@ -104,6 +104,7 @@ export const LocationSelector = ({
     openModal({
       modalName: "DELETE_LOCATION_CONFIRMATION",
       description: `Remove "${location.name}" from all notes that use it?`,
+      aboveBottomSheet: true,
       onConfirm: async () => {
         await deleteLocation({ locationId: location.id });
         await refetch();
