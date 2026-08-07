@@ -18,11 +18,11 @@ export const DEFAULT_CATEGORIES_COLORS: Record<CategoryKey, string> = {
 } as const;
 
 export const FEELINGS_DEFINITIONS = [
-  { value: 2, label: "Great" },
-  { value: 1, label: "Good" },
-  { value: 0, label: "Neutral" },
-  { value: -1, label: "Bad" },
-  { value: -2, label: "Awful" },
+  { value: 2, label: "Great", emoji: "😁" },
+  { value: 1, label: "Good", emoji: "🙂" },
+  { value: 0, label: "Neutral", emoji: "😐" },
+  { value: -1, label: "Bad", emoji: "😞" },
+  { value: -2, label: "Awful", emoji: "😠" },
 ] as const;
 
 export type FeelingValue = (typeof FEELINGS_DEFINITIONS)[number]["value"];

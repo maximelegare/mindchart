@@ -2,14 +2,12 @@ import React, { useMemo } from "react";
 import { Pressable, TouchableOpacity, View } from "react-native";
 import {
   BottomSheet,
-  BottomSheetCloseTrigger,
   BottomSheetContent,
   BottomSheetHeader,
   BottomSheetOpenTrigger,
   BottomSheetView,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui";
-import { Button } from "@/components/ui/button";
 import { Check } from "@/lib/icons/Check";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { Icon } from "@/components/ui/icons/icon";
@@ -24,29 +22,31 @@ export const FeelingSelector = ({
   selectedFeeling: FeelingValue | null | undefined;
   onChange: (feeling: FeelingValue | null) => void;
 }) => {
-  const label = useMemo(() => {
-    if (selectedFeeling == null) return "";
-    return (
+  const selectedEmoji = useMemo(
+    () =>
       FEELINGS_DEFINITIONS.find((feeling) => feeling.value === selectedFeeling)
-        ?.label ?? "Feeling"
-    );
-  }, [selectedFeeling]);
+        ?.emoji,
+    [selectedFeeling]
+  );
 
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild className="self-start">
         <TouchableOpacity className="flex-row items-center gap-1.5 self-start rounded-full bg-card px-2.5 py-1.5">
-          <Icon name="heart" color="foreground" size={16} />
-          <Typography
-            variant="p"
-            className="shrink text-foreground"
-            numberOfLines={1}
-          >
-            {label}
-          </Typography>
           {selectedFeeling == null ? (
-            <Icon name="plus" color="foreground" size={16} />
-          ) : null}
+            <>
+              <Icon name="heart" color="foreground" size={16} />
+              <Icon name="plus" color="foreground" size={16} />
+            </>
+          ) : (
+            <Typography
+              variant="p"
+              className="shrink text-foreground"
+              numberOfLines={1}
+            >
+              {selectedEmoji}
+            </Typography>
+          )}
         </TouchableOpacity>
       </BottomSheetOpenTrigger>
       <BottomSheetContent
@@ -59,7 +59,7 @@ export const FeelingSelector = ({
         <BottomSheetView className="h-full flex-1 gap-4 bg-background px-4 pb-6 pt-4">
           <BottomSheetHeader className="bg-background">
             <Typography variant="h3" className="pb-1 text-foreground">
-              Feeling
+              How are you feeling?
             </Typography>
           </BottomSheetHeader>
 
@@ -67,26 +67,12 @@ export const FeelingSelector = ({
             {FEELINGS_DEFINITIONS.map((feeling) => (
               <FeelingItem
                 key={feeling.value}
+                emoji={feeling.emoji}
                 label={feeling.label}
                 selected={selectedFeeling === feeling.value}
                 onPress={() => onChange(feeling.value)}
               />
             ))}
-            {selectedFeeling != null ? (
-              <FeelingItem
-                label="Clear"
-                selected={false}
-                onPress={() => onChange(null)}
-              />
-            ) : null}
-          </View>
-
-          <View className="items-center justify-center pt-2">
-            <BottomSheetCloseTrigger asChild>
-              <Button variant="ghost" className="bg-popover px-6">
-                <Typography className="text-foreground">Close</Typography>
-              </Button>
-            </BottomSheetCloseTrigger>
           </View>
         </BottomSheetView>
       </BottomSheetContent>
@@ -97,10 +83,12 @@ export const FeelingSelector = ({
 function FeelingItem({
   label,
   selected,
+  emoji,
   onPress,
 }: {
   label: string;
   selected: boolean;
+  emoji: string;
   onPress: () => void;
 }) {
   const { dismiss } = useBottomSheetModal();
@@ -114,7 +102,10 @@ function FeelingItem({
       }}
     >
       <View className="flex-row items-center justify-between gap-2">
-        <Typography>{label}</Typography>
+        <View className="flex-row items-center gap-2">
+          <Typography>{emoji}</Typography>
+          <Typography>{label}</Typography>
+        </View>
         {selected ? <Check className="text-accent-foreground" /> : null}
       </View>
     </Pressable>
