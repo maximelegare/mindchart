@@ -5,6 +5,7 @@ import {
   NoteTable,
   TopicTable,
   FolderTable,
+  LocationTable,
 } from "../../schema.root";
 import { eq } from "drizzle-orm";
 
@@ -18,6 +19,8 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
         note_raw_text: NoteTable.rawText,
         note_created_at: NoteTable.createdAt,
         note_feeling: NoteTable.feeling,
+        location_id: NoteTable.locationId,
+        location_name: LocationTable.name,
         topic_id: NoteTable.topicId,
         topic_name: TopicTable.name,
         folder_id: NoteTable.folderId,
@@ -41,6 +44,7 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
       .leftJoin(ThoughtTable, eq(NoteTable.id, ThoughtTable.noteId))
       .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id))
       .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id))
+      .leftJoin(LocationTable, eq(NoteTable.locationId, LocationTable.id))
       .groupBy(NoteTable.id);
   } catch (error) {
     console.error("Database fetch error:", error);

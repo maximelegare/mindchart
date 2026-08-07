@@ -66,7 +66,11 @@ export const REACT_QUERY_KEYS = {
   updateNoteFolderId: "update_note_folder_id",
   updateNotePersons: "update_note_persons",
   updateNoteFeeling: "update_note_feeling",
+  updateNoteLocation: "update_note_location",
   fetchAllPersons: "fetch_all_persons",
   insertPerson: "insert_person",
   upsertPersonsFromContacts: "upsert_persons_from_contacts",
+  fetchAllLocations: "fetch_all_locations",
+  insertLocation: "insert_location",
+  deleteLocation: "delete_location",
 } as const;

@@ -57,6 +57,8 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
   feeling: FeelingValueSchema.nullable().optional(),
+  locationId: z.string().nullable().optional(),
+  locationName: z.string().nullable().optional(),
   persons: z.array(PersonSchema).optional(),
   thoughts: z.array(ThoughtSchema),
 });
@@ -161,6 +163,7 @@ export {
   PersonSchema,
   FeelingSchema,
   FeelingValueSchema,
+  LocationSchema,
 } from "./schemas";
 
 export type {
@@ -172,6 +175,7 @@ export type {
   Person,
   Feeling,
   FeelingValue,
+  Location,
   Embedding,
   Folder,
 } from "./schemas";

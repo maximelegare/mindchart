@@ -25,8 +25,13 @@ import {
   PersonTable,
   PersonToNoteTable,
   FeelingTable,
+  LocationTable,
 } from "./src/schemas/app";
 import { updateNoteFeelingQuery } from "./src/queries/notes/updateNoteFeeling";
+import { updateNoteLocationQuery } from "./src/queries/notes/updateNoteLocation";
+import { getAllLocationsQuery } from "./src/queries/locations/getAllLocations";
+import { insertLocationQuery } from "./src/queries/locations/insertLocation";
+import { deleteLocationByIdQuery } from "./src/queries/locations/deleteLocationById";
 import { getAllPersonsQuery } from "./src/queries/persons/getAllPersons";
 import { getPersonsByNoteIdQuery } from "./src/queries/persons/getPersonsByNoteId";
 import { getPersonsByNoteIdsQuery } from "./src/queries/persons/getPersonsByNoteIds";
@@ -161,6 +166,7 @@ export {
   PersonTable,
   PersonToNoteTable,
   FeelingTable,
+  LocationTable,
   getAllPersonsQuery,
   getPersonsByNoteIdQuery,
   getPersonsByNoteIdsQuery,
@@ -168,4 +174,8 @@ export {
   upsertPersonsFromContactsQuery,
   setNotePersonsQuery,
   updateNoteFeelingQuery,
+  updateNoteLocationQuery,
+  getAllLocationsQuery,
+  insertLocationQuery,
+  deleteLocationByIdQuery,
 };

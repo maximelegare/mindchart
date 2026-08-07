@@ -26,9 +26,16 @@ export const MODALS_CONTENT: Record<
   | "DISABLE_RECOVERY_PASSWORD"
   | "BIOMETRICS_UNAVAILABLE"
   | "DELETE_TOPIC_CONFIRMATION"
-  | "DELETE_FOLDER_CONFIRMATION",
+  | "DELETE_FOLDER_CONFIRMATION"
+  | "DELETE_LOCATION_CONFIRMATION",
   ModalPreset
 > = {
+  DELETE_LOCATION_CONFIRMATION: {
+    title: "Remove Location?",
+    description: "This will remove this location from all notes that use it.",
+    confirmButton: { text: "Remove", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
   DELETE_FOLDER_CONFIRMATION: {
     title: "Delete Folder?",
     description:
