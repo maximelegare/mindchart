@@ -65,6 +65,7 @@ export const REACT_QUERY_KEYS = {
   deleteFolderByPath: "delete_folder_by_path",
   updateNoteFolderId: "update_note_folder_id",
   updateNotePersons: "update_note_persons",
+  updateNoteFeeling: "update_note_feeling",
   fetchAllPersons: "fetch_all_persons",
   insertPerson: "insert_person",
   upsertPersonsFromContacts: "upsert_persons_from_contacts",

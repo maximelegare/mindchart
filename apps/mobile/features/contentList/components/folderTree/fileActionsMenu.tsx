@@ -18,7 +18,7 @@ import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
 import {
   FolderPickerSheet,
   type FolderSelection,
-} from "@/features/notes/notePreview/folderSelector";
+} from "@/features/notes/shared/ui/folderSelector";
 import type { FolderTreeFile } from "./folderTreeUtils";
 
 type FileActionsMenuProps = {

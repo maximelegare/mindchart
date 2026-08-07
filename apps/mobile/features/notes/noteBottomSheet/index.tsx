@@ -16,7 +16,7 @@ import { useControllers } from "@/api/controllers/useControllers";
 import {
   FolderPickerSheet,
   FolderSelection,
-} from "@/features/notes/notePreview/folderSelector";
+} from "@/features/notes/shared/ui/folderSelector";
 import { EditNote } from "./components/editNote";
 import { DeleteNote } from "./components/deleteNote";
 import { MoveNote } from "./components/moveNote";

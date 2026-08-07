@@ -47,6 +47,7 @@ export const useSaveGeneratedNote = () => {
         topicId: topic.id || note.topicId,
         folderId: folderId ?? note.folderId ?? null,
         persons: note.persons ?? [],
+        feeling: note.feeling ?? null,
         createdAt: note.createdAt ?? new Date().toISOString(),
       };
 

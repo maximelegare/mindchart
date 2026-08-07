@@ -64,14 +64,12 @@ export const PersonSelector = ({
   }, [persons, search, selectedIds]);
 
   const label = useMemo(() => {
-    if (selectedPersons.length === 0) return "Add People";
-    if (selectedPersons.length === 1) {
-      const name = selectedPersons[0].name;
-      return maxChars && name.length > maxChars
-        ? `${name.slice(0, maxChars)}…`
-        : name;
+    if (selectedPersons.length === 0) return "";
+    const names = selectedPersons.map((person) => person.name).join(", ");
+    if (maxChars != null && maxChars > 0 && names.length > maxChars) {
+      return `${names.slice(0, maxChars)}…`;
     }
-    return `${selectedPersons.length} people`;
+    return names;
   }, [maxChars, selectedPersons]);
 
   const syncOnOpen = useCallback(async () => {

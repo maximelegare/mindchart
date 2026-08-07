@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { EditableField } from "@/components/ui/editableField";
 import { useModal } from "@/components/ui/modal/modal";
 import { Icon } from "@/components/ui/icons/icon";
-import { CategorySelector } from "./categoriesSelector";
+import { CategorySelector } from "../shared/ui/categoriesSelector";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import { Topic } from "@repo/zod-schemas/src/schemas";
-import { TopicSelector } from "./topicSelector";
-import { PersonSelector } from "./personSelector";
+import { FeelingValue, Topic } from "@repo/zod-schemas/src/schemas";
+import { TopicSelector } from "../shared/ui/topicSelector";
+import { PersonSelector } from "../shared/ui/personSelector";
+import { FeelingSelector } from "../shared/ui/feelingSelector";
 import { generateID } from "@/utils/genrateID";
 
 type GenerateNotePreviewProps = {
@@ -37,6 +38,7 @@ export const GenerateNotePreview = ({
     title: string;
     summary: string;
     persons: Person[];
+    feeling: FeelingValue | null;
     thoughts: Array<{
       title: string;
       summary: string;
@@ -62,6 +64,7 @@ export const GenerateNotePreview = ({
       title: note.title,
       summary: note.summary,
       persons: note.persons ?? [],
+      feeling: note.feeling ?? null,
       topic: {
         id: topic.id,
         name: topic?.name,
@@ -93,7 +96,7 @@ export const GenerateNotePreview = ({
   });
 
   const onSubmit = async (data: FormData) => {
-    const { title, summary, persons } = data;
+    const { title, summary, persons, feeling } = data;
     try {
       setModalContent({
         title: "Saving your Note",
@@ -107,6 +110,7 @@ export const GenerateNotePreview = ({
         rawText: note.rawText,
         topicId: topic.id,
         persons,
+        feeling,
         createdAt: note.createdAt ?? new Date().toISOString(),
       };
 
@@ -167,6 +171,16 @@ export const GenerateNotePreview = ({
             name="persons"
             render={({ field: { onChange, value } }) => (
               <PersonSelector selectedPersons={value} onChange={onChange} />
+            )}
+          />
+        </View>
+        <View className="flex-col gap-2">
+          <Label nativeID="feeling">Feeling</Label>
+          <Controller
+            control={control}
+            name="feeling"
+            render={({ field: { onChange, value } }) => (
+              <FeelingSelector selectedFeeling={value} onChange={onChange} />
             )}
           />
         </View>

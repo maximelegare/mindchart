@@ -5,7 +5,9 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { generateID } from "@/utils/genrateID";
 import { useContactsPermission } from "./useContactsPermission";
 
-const mapContactToPerson = (contact: Contacts.Contact): Person | null => {
+const mapContactToPerson = (
+  contact: Contacts.ExistingContact
+): Person | null => {
   const name =
     contact.name?.trim() ||
     [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim();

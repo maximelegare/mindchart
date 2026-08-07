@@ -13,7 +13,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";
 import { useOptionsBar } from "../context/optionBarContext";
 import { FolderFormModalContent } from "../components/folders/folderFormModalContent";
-import { FolderSelection } from "@/features/notes/notePreview/folderSelector";
+import { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 
 type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
 

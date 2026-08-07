@@ -24,7 +24,9 @@ import {
   FolderTable,
   PersonTable,
   PersonToNoteTable,
+  FeelingTable,
 } from "./src/schemas/app";
+import { updateNoteFeelingQuery } from "./src/queries/notes/updateNoteFeeling";
 import { getAllPersonsQuery } from "./src/queries/persons/getAllPersons";
 import { getPersonsByNoteIdQuery } from "./src/queries/persons/getPersonsByNoteId";
 import { getPersonsByNoteIdsQuery } from "./src/queries/persons/getPersonsByNoteIds";
@@ -158,10 +160,12 @@ export {
   FolderTable,
   PersonTable,
   PersonToNoteTable,
+  FeelingTable,
   getAllPersonsQuery,
   getPersonsByNoteIdQuery,
   getPersonsByNoteIdsQuery,
   insertPersonQuery,
   upsertPersonsFromContactsQuery,
   setNotePersonsQuery,
+  updateNoteFeelingQuery,
 };

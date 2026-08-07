@@ -21,6 +21,7 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
         note_summary: NoteTable.summary,
         note_raw_text: NoteTable.rawText,
         note_created_at: NoteTable.createdAt,
+        note_feeling: NoteTable.feeling,
         topic_id: NoteTable.topicId,
         topic_name: TopicTable.name,
         folder_id: NoteTable.folderId,

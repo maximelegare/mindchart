@@ -4,6 +4,7 @@ import {
   getAllNotesQuery,
   insertNoteQuery,
   setNotePersonsQuery,
+  updateNoteFeelingQuery,
   updateNoteFolderIdQuery,
   updateNoteQuery,
   updateThoughtsQuery,
@@ -11,6 +12,7 @@ import {
 import { getOPDatabase } from "@repo/sqlite";
 import { insertThoughtsQuery } from "@repo/sqlite";
 import { Note, Thought } from "@repo/zod-schemas/client";
+import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 
 export const insertNoteAndThoughts = async ({
   note,
@@ -61,6 +63,14 @@ export const updateNotePersons = async (data: {
 }) => {
   const db = getOPDatabase();
   return await setNotePersonsQuery(db, data.noteId, data.persons ?? []);
+};
+
+export const updateNoteFeeling = async (data: {
+  noteId: string;
+  feeling: FeelingValue | null;
+}) => {
+  const db = getOPDatabase();
+  return await updateNoteFeelingQuery(db, data);
 };
 
 export const generateNote = async (body: FormData) => {

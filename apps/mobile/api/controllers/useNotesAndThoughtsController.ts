@@ -4,6 +4,7 @@ import {
   fetchAllNotes,
   insertNoteAndThoughts,
   updateNoteAndThoughts,
+  updateNoteFeeling,
   updateNoteFolderId,
   updateNotePersons,
 } from "@/api/endpoints/notes";
@@ -250,6 +251,26 @@ export const useNotesAndThoughtsController = () => {
     });
   };
 
+  const useUpdateNoteFeelingMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation<
+      Awaited<ReturnType<typeof updateNoteFeeling>>,
+      Error,
+      {
+        noteId: string;
+        feeling: Parameters<typeof updateNoteFeeling>[0]["feeling"];
+      }
+    >({
+      mutationKey: [REACT_QUERY_KEYS.updateNoteFeeling],
+      mutationFn: updateNoteFeeling,
+      onSuccess: async (_data, variables) => {
+        await queryClient.invalidateQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails, variables.noteId],
+        });
+      },
+    });
+  };
+
   return {
     useGenerateNoteMutation,
     useInsertNoteAndThoughtsMutation,
@@ -262,6 +283,7 @@ export const useNotesAndThoughtsController = () => {
     useDeleteNoteByIdMutation,
     useUpdateNoteFolderIdMutation,
     useUpdateNotePersonsMutation,
+    useUpdateNoteFeelingMutation,
     useFetchAllNotesQuery,
     useFetchNoteByTopic,
   };

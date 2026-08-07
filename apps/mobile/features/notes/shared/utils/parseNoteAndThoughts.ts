@@ -40,6 +40,7 @@ export const parseNoteAndThoughts = (
     topicName: row.topic_name ?? undefined,
     folderId: row.folder_id ?? undefined,
     folderLabel: row.folder_label ?? undefined,
+    feeling: typeof row.note_feeling === "number" ? row.note_feeling : null,
     persons: (() => {
       const raw = row.persons_json;
       if (typeof raw === "string") {

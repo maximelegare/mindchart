@@ -45,6 +45,11 @@ export const ThoughtTable = sqliteTable(
   ]
 );
 
+export const FeelingTable = sqliteTable("feeling", {
+  value: integer("value").notNull().primaryKey(),
+  label: text("label").notNull(),
+});
+
 export const NoteTable = sqliteTable(
   "note",
   {
@@ -54,6 +59,7 @@ export const NoteTable = sqliteTable(
     rawText: text("raw_text"),
     topicId: text("topic_id"),
     folderId: text("folder_id"),
+    feeling: integer("feeling"),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -66,6 +72,10 @@ export const NoteTable = sqliteTable(
     foreignKey({
       columns: [note.folderId],
       foreignColumns: [FolderTable.id],
+    }).onDelete("set null"),
+    foreignKey({
+      columns: [note.feeling],
+      foreignColumns: [FeelingTable.value],
     }).onDelete("set null"),
   ]
 );

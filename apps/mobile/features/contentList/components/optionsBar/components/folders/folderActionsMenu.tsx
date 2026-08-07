@@ -16,7 +16,7 @@ import {
 import {
   FolderPickerSheet,
   FolderSelection,
-} from "@/features/notes/notePreview/folderSelector";
+} from "@/features/notes/shared/ui/folderSelector";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useFolderActions } from "../../hooks/useFolderActions";
 
