@@ -37,7 +37,6 @@ import {
   useOptionsBar,
 } from "../context/optionBarContext";
 import { useFolderActions } from "../hooks/useFolderActions";
-import { ContentListFilterChips } from "./filters/filterChips";
 import { FolderBreadcrumbCrumb } from "./folders/folderActionsMenu";
 import { TriggerFilterChip } from "./triggerFilterChip";
 import { OptionChip } from "./options/optionChip";
@@ -62,7 +61,7 @@ const SORT_OPTIONS: OptionItem<OptionsBarType["sortBy"]>[] = [
 const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
   { icon: "folder", value: "folders", label: "By folder" },
   { icon: "shapes", value: "categories", label: "By category" },
-  { icon: "circle-off", value: "none", label: "None" },
+  { icon: "circle-off", value: "none", label: "Not grouping" },
 ];
 
 const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
@@ -72,6 +71,8 @@ const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
 
 type OptionsPickerProps<T extends string> = {
   title: string;
+  /** Prefix shown on the chip, e.g. "Display:" → "Display: Notes". */
+  chipLabelPrefix?: string;
   value: T;
   options: OptionItem<T>[];
   onValueChange: (value: T) => void;
@@ -79,6 +80,7 @@ type OptionsPickerProps<T extends string> = {
 
 function OptionsSheet<T extends string>({
   title,
+  chipLabelPrefix,
   value,
   options,
   onValueChange,
@@ -86,13 +88,16 @@ function OptionsSheet<T extends string>({
   const sheet = useBottomSheet();
   const selected = options.find((option) => option.value === value);
   const selectedLabel = selected?.label ?? value;
+  const chipLabel = chipLabelPrefix
+    ? `${chipLabelPrefix} ${selectedLabel}`
+    : selectedLabel;
   const selectedIcon = selected?.icon;
 
   return (
     <View className="shrink-0">
       <OptionChip
         icon={selectedIcon}
-        label={selectedLabel}
+        label={chipLabel}
         onPress={() => sheet.open()}
       />
 
@@ -157,6 +162,7 @@ function OptionsSheet<T extends string>({
 
 function OptionsDropdown<T extends string>({
   title,
+  chipLabelPrefix,
   value,
   options,
   onValueChange,
@@ -164,12 +170,15 @@ function OptionsDropdown<T extends string>({
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
   const selectedLabel = selected?.label ?? value;
+  const chipLabel = chipLabelPrefix
+    ? `${chipLabelPrefix} ${selectedLabel}`
+    : selectedLabel;
   const selectedIcon = selected?.icon;
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <OptionChip icon={selectedIcon} label={selectedLabel} selected={open} />
+        <OptionChip icon={selectedIcon} label={chipLabel} selected={open} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -420,22 +429,6 @@ export const OptionsBar = () => {
                 onValueChange={onSortByChange}
               />
               <NotesFilterSheet />
-              {localFoldersMode === "without" ? (
-                <OptionsDropdown
-                  title="Display:"
-                  value={displayMode}
-                  options={DISPLAY_OPTIONS}
-                  onValueChange={onDisplayModeChange}
-                />
-              ) : null}
-              {localFoldersMode === "without" ? (
-                <OptionsDropdown
-                  title="Group by:"
-                  value={groupBy}
-                  options={GROUP_OPTIONS}
-                  onValueChange={onGroupByChange}
-                />
-              ) : null}
               {localFoldersMode === "with" ? <BreadcrumbLinkToggle /> : null}
             </View>
           </Gutter>
@@ -470,7 +463,25 @@ export const OptionsBar = () => {
           <View className="shrink-0">{folderTreeToggle}</View>
         </View>
       ) : (
-        <ContentListFilterChips leading={settingsToggle} />
+        <View className="h-full w-full flex-row items-center gap-2">
+          <View className="shrink-0">{settingsToggle}</View>
+          <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-2">
+            <OptionsDropdown
+              title="Group by"
+              chipLabelPrefix={groupBy === "none" ? undefined : "Group"}
+              value={groupBy}
+              options={GROUP_OPTIONS}
+              onValueChange={onGroupByChange}
+            />
+            <OptionsDropdown
+              title="Display"
+              chipLabelPrefix="Display"
+              value={displayMode}
+              options={DISPLAY_OPTIONS}
+              onValueChange={onDisplayModeChange}
+            />
+          </View>
+        </View>
       )}
     </PageOptionsHeaderContainer>
   );
