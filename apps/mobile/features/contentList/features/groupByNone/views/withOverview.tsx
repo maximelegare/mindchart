@@ -2,14 +2,19 @@ import { View } from "react-native";
 import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { useMemo } from "react";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
-import { useSelectedFolderId } from "@/features/contentList/hooks/useContentListFilter";
+import {
+  useNotesAttributeFilters,
+  useSelectedFolderId,
+} from "@/features/contentList/hooks/useContentListFilter";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
+import { filterNotesByAttributes } from "@/features/contentList/utils/filterNotesByAttributes";
 import { sortContentList } from "@/features/contentList/utils/sortContentList";
 import { useControllers } from "@/api/controllers/useControllers";
 
 export const NotesListWithOverviewFeature = () => {
   const sortBy = useContentListSort();
   const selectedFolderId = useSelectedFolderId();
+  const attributeFilters = useNotesAttributeFilters();
   const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
   const { data } = useFetchNotesAndThoughtsQuery();
 
@@ -17,15 +22,16 @@ export const NotesListWithOverviewFeature = () => {
     const notes = parseNoteAndThoughts(data);
     if (!notes) return null;
 
-    const filtered = selectedFolderId
+    const byFolder = selectedFolderId
       ? notes.filter((note) => note.folderId === selectedFolderId)
       : notes;
+    const filtered = filterNotesByAttributes(byFolder, attributeFilters);
 
     return sortContentList(filtered, sortBy, {
       getName: (note) => note.title,
       getDate: (note) => note.createdAt,
     });
-  }, [data, selectedFolderId, sortBy]);
+  }, [attributeFilters, data, selectedFolderId, sortBy]);
 
   return (
     <View className="gap-2" style={{ paddingTop: 20 }}>

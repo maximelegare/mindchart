@@ -1,7 +1,11 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
-import { useSelectedFolderId } from "@/features/contentList/hooks/useContentListFilter";
+import {
+  useNotesAttributeFilters,
+  useSelectedFolderId,
+} from "@/features/contentList/hooks/useContentListFilter";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
+import { filterNotesByAttributes } from "@/features/contentList/utils/filterNotesByAttributes";
 import {
   latestDate,
   sortContentList,
@@ -31,6 +35,7 @@ const sortFolderGroups = <
 export const useGroupByFoldersNotesWithOverviewData = () => {
   const sortBy = useContentListSort();
   const selectedFolderId = useSelectedFolderId();
+  const attributeFilters = useNotesAttributeFilters();
   const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
   const { data, refetch } = useFetchNotesAndThoughtsQuery();
 
@@ -42,11 +47,12 @@ export const useGroupByFoldersNotesWithOverviewData = () => {
 
   return useMemo(() => {
     const notes = parseNoteAndThoughts(data);
-    const filtered = selectedFolderId
+    const byFolder = selectedFolderId
       ? (notes ?? []).filter((note) => note.folderId === selectedFolderId)
       : (notes ?? []);
+    const filtered = filterNotesByAttributes(byFolder, attributeFilters);
     return sortFolderGroups(groupNotesByFolder(filtered), sortBy);
-  }, [data, selectedFolderId, sortBy]);
+  }, [attributeFilters, data, selectedFolderId, sortBy]);
 };
 
 export const useGroupByFoldersNotesWithoutOverviewData = () => {
