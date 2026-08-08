@@ -6,6 +6,13 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 import {
+  BottomSheet,
+  BottomSheetContent,
+  BottomSheetHeader,
+  BottomSheetView,
+  useBottomSheet,
+} from "@/components/primitives/bottomSheet/bottom-sheet.native";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -16,6 +23,8 @@ import {
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import { useControllers } from "@/api/controllers/useControllers";
+import { Check } from "@/lib/icons/Check";
+import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import {
@@ -61,19 +70,97 @@ const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
   { icon: "layers", value: "categories", label: "Categories" },
 ];
 
-type OptionsDropdownProps<T extends string> = {
+type OptionsPickerProps<T extends string> = {
   title: string;
   value: T;
   options: OptionItem<T>[];
   onValueChange: (value: T) => void;
 };
 
+function OptionsSheet<T extends string>({
+  title,
+  value,
+  options,
+  onValueChange,
+}: OptionsPickerProps<T>) {
+  const sheet = useBottomSheet();
+  const selected = options.find((option) => option.value === value);
+  const selectedLabel = selected?.label ?? value;
+  const selectedIcon = selected?.icon;
+
+  return (
+    <View className="shrink-0">
+      <OptionChip
+        icon={selectedIcon}
+        label={selectedLabel}
+        onPress={() => sheet.open()}
+      />
+
+      <BottomSheet
+        style={{
+          position: "absolute",
+          width: 0,
+          height: 0,
+          overflow: "hidden",
+        }}
+      >
+        <BottomSheetContent
+          ref={sheet.ref}
+          style={{ zIndex: 200 }}
+          enablePanDownToClose
+          enableContentPanningGesture={false}
+        >
+          <BottomSheetView className="gap-2 bg-background pt-4">
+            <BottomSheetHeader
+              className="bg-background"
+              onDismiss={() => sheet.close()}
+            >
+              <Typography variant="h3">{title}</Typography>
+            </BottomSheetHeader>
+
+            <View className="gap-1 pb-2">
+              {options.map((option) => {
+                const isSelected = option.value === value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    className={cn(
+                      "w-full flex-row items-center justify-between gap-2 rounded-lg px-2 py-3",
+                      isSelected && "bg-border"
+                    )}
+                    onPress={() => {
+                      onValueChange(option.value);
+                      sheet.close();
+                    }}
+                  >
+                    <View className="min-w-0 flex-1 flex-row items-center gap-2">
+                      {option.icon ? (
+                        <Icon name={option.icon} color="foreground" size={18} />
+                      ) : null}
+                      <Typography variant="p" className="text-foreground">
+                        {option.label}
+                      </Typography>
+                    </View>
+                    {isSelected ? (
+                      <Check className="text-accent-foreground" />
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </BottomSheetView>
+        </BottomSheetContent>
+      </BottomSheet>
+    </View>
+  );
+}
+
 function OptionsDropdown<T extends string>({
   title,
   value,
   options,
   onValueChange,
-}: OptionsDropdownProps<T>) {
+}: OptionsPickerProps<T>) {
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
   const selectedLabel = selected?.label ?? value;
@@ -324,8 +411,8 @@ export const OptionsBar = () => {
                 }
               />
 
-              <OptionsDropdown
-                title="Sort by:"
+              <OptionsSheet
+                title="Sort by"
                 value={sortBy}
                 options={SORT_OPTIONS}
                 onValueChange={onSortByChange}
