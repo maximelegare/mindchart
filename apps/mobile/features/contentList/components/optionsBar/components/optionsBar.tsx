@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
 import { canCreateChildFolder, getFolderIdsFromPath } from "@repo/sqlite";
 import { Typography } from "@/components/ui";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
@@ -190,7 +189,7 @@ export const OptionsBar = () => {
   const [displayMode, setDisplayMode] = useState(
     () => useOptionsBar.getState().displayMode
   );
-  const [localFoldersMode, setLocalFoldersMode] = useState(
+  const [localFoldersMode, setLocalFoldersMode] = useState<FoldersMode>(
     () => useOptionsBar.getState().foldersMode
   );
 
@@ -273,13 +272,16 @@ export const OptionsBar = () => {
     locationIds: filterLocationIds,
   });
 
+  const hasNonDefaultWithoutFolderOptions =
+    localFoldersMode === "without" &&
+    (groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
+      displayMode !== OPTIONS_BAR_DEFAULTS.displayMode);
+
   const hasNonDefaultOptions =
     sortBy !== OPTIONS_BAR_DEFAULTS.sortBy ||
     localFoldersMode !== OPTIONS_BAR_DEFAULTS.foldersMode ||
     hasAttributeFilters ||
-    (localFoldersMode === "without" &&
-      (groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
-        displayMode !== OPTIONS_BAR_DEFAULTS.displayMode));
+    hasNonDefaultWithoutFolderOptions;
 
   const settingsToggle = (
     <TriggerFilterChip
@@ -303,17 +305,9 @@ export const OptionsBar = () => {
       footer={
         <CollapsibleContainer expanded={expanded}>
           <Gutter size="md" className="mb-2">
-            <ScrollView
-              horizontal
-              nestedScrollEnabled
-              keyboardShouldPersistTaps="handled"
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-                paddingVertical: 6,
-              }}
+            <View
+              className="flex-row flex-wrap items-center py-3"
+              style={{ rowGap: 12, columnGap: 8 }}
             >
               <OptionChip
                 icon="folder"
@@ -336,25 +330,25 @@ export const OptionsBar = () => {
                 options={SORT_OPTIONS}
                 onValueChange={onSortByChange}
               />
-              {localFoldersMode === "without" ? (
-                <>
-                  <OptionsDropdown
-                    title="Display:"
-                    value={displayMode}
-                    options={DISPLAY_OPTIONS}
-                    onValueChange={onDisplayModeChange}
-                  />
-                  <OptionsDropdown
-                    title="Group by:"
-                    value={groupBy}
-                    options={GROUP_OPTIONS}
-                    onValueChange={onGroupByChange}
-                  />
-                </>
-              ) : null}
               <NotesFilterSheet />
-              <BreadcrumbLinkToggle />
-            </ScrollView>
+              {localFoldersMode === "without" ? (
+                <OptionsDropdown
+                  title="Display:"
+                  value={displayMode}
+                  options={DISPLAY_OPTIONS}
+                  onValueChange={onDisplayModeChange}
+                />
+              ) : null}
+              {localFoldersMode === "without" ? (
+                <OptionsDropdown
+                  title="Group by:"
+                  value={groupBy}
+                  options={GROUP_OPTIONS}
+                  onValueChange={onGroupByChange}
+                />
+              ) : null}
+              {localFoldersMode === "with" ? <BreadcrumbLinkToggle /> : null}
+            </View>
           </Gutter>
         </CollapsibleContainer>
       }

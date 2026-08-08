@@ -99,7 +99,7 @@ export const NotesFilterSheet = () => {
       : `${filterLocationIds.length} selected`;
 
   return (
-    <>
+    <View className="shrink-0">
       <OptionChip
         icon="funnel"
         label={hasFilters ? `Filters (${activeCount})` : "Filters"}
@@ -107,7 +107,15 @@ export const NotesFilterSheet = () => {
         onPress={() => sheet.open()}
       />
 
-      <BottomSheet>
+      {/* Keep sheet out of the options-row flex flow so gap stays even. */}
+      <BottomSheet
+        style={{
+          position: "absolute",
+          width: 0,
+          height: 0,
+          overflow: "hidden",
+        }}
+      >
         <BottomSheetContent
           ref={sheet.ref}
           style={{ zIndex: 200 }}
@@ -156,7 +164,7 @@ export const NotesFilterSheet = () => {
           </BottomSheetView>
         </BottomSheetContent>
       </BottomSheet>
-    </>
+    </View>
   );
 };
 
