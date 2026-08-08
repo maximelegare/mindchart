@@ -11,10 +11,11 @@ import { useModal } from "@/components/ui/modal/modal";
 import { Icon } from "@/components/ui/icons/icon";
 import { CategorySelector } from "../shared/ui/categoriesSelector";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import { FeelingValue, Topic } from "@repo/zod-schemas/src/schemas";
+import { FeelingValue, Location, Topic } from "@repo/zod-schemas/src/schemas";
 import { TopicSelector } from "../shared/ui/topicSelector";
 import { PersonSelector } from "../shared/ui/personSelector";
 import { FeelingSelector } from "../shared/ui/feelingSelector";
+import { LocationSelector } from "../shared/ui/locationSelector";
 import { generateID } from "@/utils/genrateID";
 
 type GenerateNotePreviewProps = {
@@ -39,6 +40,7 @@ export const GenerateNotePreview = ({
     summary: string;
     persons: Person[];
     feeling: FeelingValue | null;
+    location: Location | null;
     thoughts: Array<{
       title: string;
       summary: string;
@@ -65,6 +67,10 @@ export const GenerateNotePreview = ({
       summary: note.summary,
       persons: note.persons ?? [],
       feeling: note.feeling ?? null,
+      location:
+        note.locationId && note.locationName
+          ? { id: note.locationId, name: note.locationName }
+          : null,
       topic: {
         id: topic.id,
         name: topic?.name,
@@ -96,7 +102,7 @@ export const GenerateNotePreview = ({
   });
 
   const onSubmit = async (data: FormData) => {
-    const { title, summary, persons, feeling } = data;
+    const { title, summary, persons, feeling, location } = data;
     try {
       setModalContent({
         title: "Saving your Note",
@@ -111,6 +117,8 @@ export const GenerateNotePreview = ({
         topicId: topic.id,
         persons,
         feeling,
+        locationId: location?.id ?? null,
+        locationName: location?.name ?? null,
         createdAt: note.createdAt ?? new Date().toISOString(),
       };
 
@@ -181,6 +189,20 @@ export const GenerateNotePreview = ({
             name="feeling"
             render={({ field: { onChange, value } }) => (
               <FeelingSelector selectedFeeling={value} onChange={onChange} />
+            )}
+          />
+        </View>
+        <View className="flex-col gap-2">
+          <Label nativeID="location">Location</Label>
+          <Controller
+            control={control}
+            name="location"
+            render={({ field: { onChange, value } }) => (
+              <LocationSelector
+                selectedLocationId={value?.id ?? null}
+                selectedLocationName={value?.name ?? null}
+                onChange={onChange}
+              />
             )}
           />
         </View>

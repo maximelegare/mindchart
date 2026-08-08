@@ -20,6 +20,8 @@ export type FeelingValue = z.infer<typeof FeelingValueSchema>;
 
 export type Feeling = z.infer<typeof FeelingSchema>;
 
+export type Location = z.infer<typeof LocationSchema>;
+
 export type Embedding = z.infer<typeof EmbeddingSchema>;
 export type ThoughtWithEmbedding = z.infer<typeof ThoughtWithEmbeddingSchema>;
 
@@ -34,6 +36,12 @@ export const FeelingValueSchema = z.union([
 export const FeelingSchema = z.object({
   value: FeelingValueSchema,
   label: z.string(),
+});
+
+export const LocationSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.string().optional(),
 });
 
 export const PersonSchema = z.object({
@@ -104,6 +112,8 @@ export const NoteSchema = z.object({
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
   feeling: FeelingValueSchema.nullable().optional(),
+  locationId: z.string().nullable().optional(),
+  locationName: z.string().nullable().optional(),
   persons: z.array(PersonSchema).optional(),
   createdAt: z.string().optional(),
 });

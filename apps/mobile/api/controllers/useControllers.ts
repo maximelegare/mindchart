@@ -9,6 +9,7 @@ import { useSearchController } from "./useSearch";
 import { useSettingsController } from "./useSettingsController";
 import { useTopicsController } from "./useTopicsController";
 import { usePersonsController } from "./usePersonsController";
+import { useLocationsController } from "./useLocationsController";
 
 // useEmbeddingsController is not imported here because of a client error related to useQuery
 
@@ -23,5 +24,6 @@ export const useControllers = () => ({
   settings: useSettingsController(),
   topics: useTopicsController(),
   persons: usePersonsController(),
+  locations: useLocationsController(),
   search: useSearchController(),
 });

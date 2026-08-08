@@ -9,10 +9,11 @@ import {
 } from "@/features/notes/shared/ui/folderSelector";
 import { PersonSelector } from "@/features/notes/shared/ui/personSelector";
 import { FeelingSelector } from "@/features/notes/shared/ui/feelingSelector";
+import { LocationSelector } from "@/features/notes/shared/ui/locationSelector";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { Icon } from "@/components/ui/icons/icon";
 import { Person } from "@repo/zod-schemas";
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
 
 type NoteDetailsOptionsHeaderProps = {
   folder: FolderSelection;
@@ -21,6 +22,9 @@ type NoteDetailsOptionsHeaderProps = {
   onPersonsChange: (persons: Person[]) => void;
   feeling: FeelingValue | null;
   onFeelingChange: (feeling: FeelingValue | null) => void;
+  locationId: string | null;
+  locationName: string | null;
+  onLocationChange: (location: Location | null) => void;
   simplified: boolean;
   onSimplifiedChange: (simplified: boolean) => void;
   folderError?: boolean;
@@ -33,6 +37,9 @@ export function NoteDetailsOptionsHeader({
   onPersonsChange,
   feeling,
   onFeelingChange,
+  locationId,
+  locationName,
+  onLocationChange,
   simplified,
   onSimplifiedChange,
   folderError = false,
@@ -97,6 +104,12 @@ export function NoteDetailsOptionsHeader({
           <FeelingSelector
             selectedFeeling={feeling}
             onChange={onFeelingChange}
+          />
+          <LocationSelector
+            selectedLocationId={locationId}
+            selectedLocationName={locationName}
+            onChange={onLocationChange}
+            maxChars={16}
           />
         </ScrollView>
       </View>

@@ -50,6 +50,14 @@ export const FeelingTable = sqliteTable("feeling", {
   label: text("label").notNull(),
 });
 
+export const LocationTable = sqliteTable("location", {
+  id: text("id").notNull().primaryKey(),
+  name: text("name").notNull().unique(),
+  createdAt: text("created_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
 export const NoteTable = sqliteTable(
   "note",
   {
@@ -60,6 +68,7 @@ export const NoteTable = sqliteTable(
     topicId: text("topic_id"),
     folderId: text("folder_id"),
     feeling: integer("feeling"),
+    locationId: text("location_id"),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -76,6 +85,10 @@ export const NoteTable = sqliteTable(
     foreignKey({
       columns: [note.feeling],
       foreignColumns: [FeelingTable.value],
+    }).onDelete("set null"),
+    foreignKey({
+      columns: [note.locationId],
+      foreignColumns: [LocationTable.id],
     }).onDelete("set null"),
   ]
 );

@@ -10,7 +10,7 @@ import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
 import type { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 import { Person } from "@repo/zod-schemas";
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
 import { router, useLocalSearchParams, useSegments } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
@@ -45,6 +45,10 @@ export const NoteDetailsPage = () => {
   const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
   const [headerPersons, setHeaderPersons] = useState<Person[]>([]);
   const [headerFeeling, setHeaderFeeling] = useState<FeelingValue | null>(null);
+  const [headerLocationId, setHeaderLocationId] = useState<string | null>(null);
+  const [headerLocationName, setHeaderLocationName] = useState<string | null>(
+    null
+  );
   const [folderRequiredError, setFolderRequiredError] = useState(false);
   const saveActionRef = useRef<(() => void) | null>(null);
   const { deleteNoteAction } = useDeleteNote();
@@ -59,6 +63,8 @@ export const NoteDetailsPage = () => {
     notesAndThoughts.useUpdateNotePersonsMutation();
   const { mutateAsync: updateNoteFeeling } =
     notesAndThoughts.useUpdateNoteFeelingMutation();
+  const { mutateAsync: updateNoteLocation } =
+    notesAndThoughts.useUpdateNoteLocationMutation();
 
   const isPreviewMode = editorMode === "preview";
 
@@ -101,6 +107,11 @@ export const NoteDetailsPage = () => {
 
   useEffect(() => {
     setHeaderFeeling(note?.[0]?.feeling ?? null);
+  }, [note]);
+
+  useEffect(() => {
+    setHeaderLocationId(note?.[0]?.locationId ?? null);
+    setHeaderLocationName(note?.[0]?.locationName ?? null);
   }, [note]);
 
   useEffect(() => {
@@ -218,6 +229,25 @@ export const NoteDetailsPage = () => {
     [note, noteId, updateNoteFeeling]
   );
 
+  const handleLocationChange = useCallback(
+    async (location: Location | null) => {
+      setHeaderLocationId(location?.id ?? null);
+      setHeaderLocationName(location?.name ?? null);
+      if (!noteId) return;
+      try {
+        await updateNoteLocation({
+          noteId,
+          locationId: location?.id ?? null,
+        });
+      } catch (error) {
+        setHeaderLocationId(note?.[0]?.locationId ?? null);
+        setHeaderLocationName(note?.[0]?.locationName ?? null);
+        Alert.alert("Update failed", String(error));
+      }
+    },
+    [note, noteId, updateNoteLocation]
+  );
+
   return (
     <PageContainer
       headerVariant="tab"
@@ -249,6 +279,9 @@ export const NoteDetailsPage = () => {
           onPersonsChange={handlePersonsChange}
           feeling={headerFeeling}
           onFeelingChange={handleFeelingChange}
+          locationId={headerLocationId}
+          locationName={headerLocationName}
+          onLocationChange={handleLocationChange}
           simplified={simplified}
           onSimplifiedChange={setSimplified}
           folderError={folderRequiredError}

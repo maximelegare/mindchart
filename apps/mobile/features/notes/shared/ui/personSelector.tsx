@@ -112,6 +112,9 @@ export const PersonSelector = ({
       >
         <TouchableOpacity className="flex-row items-center gap-1.5 self-start rounded-full bg-card px-2.5 py-1.5">
           <Icon name="user-round" color="foreground" size={16} />
+          {selectedPersons.length === 0 ? (
+            <Icon name="plus" color="foreground" size={16} />
+          ) : null}
           <Typography
             variant="p"
             className="shrink text-foreground"
@@ -119,9 +122,6 @@ export const PersonSelector = ({
           >
             {label}
           </Typography>
-          {selectedPersons.length === 0 ? (
-            <Icon name="plus" color="foreground" size={16} />
-          ) : null}
         </TouchableOpacity>
       </BottomSheetOpenTrigger>
       <BottomSheetContent

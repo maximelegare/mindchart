@@ -5,6 +5,7 @@ import {
   NoteTable,
   TopicTable,
   FolderTable,
+  LocationTable,
 } from "../../schema.root";
 
 import { eq } from "drizzle-orm";
@@ -22,6 +23,8 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
         note_raw_text: NoteTable.rawText,
         note_created_at: NoteTable.createdAt,
         note_feeling: NoteTable.feeling,
+        location_id: NoteTable.locationId,
+        location_name: LocationTable.name,
         topic_id: NoteTable.topicId,
         topic_name: TopicTable.name,
         folder_id: NoteTable.folderId,
@@ -45,6 +48,7 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
       .leftJoin(ThoughtTable, eq(ThoughtTable.noteId, NoteTable.id))
       .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id))
       .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id))
+      .leftJoin(LocationTable, eq(NoteTable.locationId, LocationTable.id))
       .where(eq(NoteTable.id, id))
       .groupBy(NoteTable.id);
   } catch (error) {

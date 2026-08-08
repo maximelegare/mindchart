@@ -18,6 +18,7 @@ export const insertNoteQuery = async (db: DB, data: Note) => {
       topicId: data.topicId,
       folderId: data.folderId ?? null,
       feeling: data.feeling ?? null,
+      locationId: data.locationId ?? null,
       createdAt: data.createdAt ?? new Date().toISOString(),
     });
   } catch (error) {

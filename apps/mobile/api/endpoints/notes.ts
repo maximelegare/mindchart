@@ -6,6 +6,7 @@ import {
   setNotePersonsQuery,
   updateNoteFeelingQuery,
   updateNoteFolderIdQuery,
+  updateNoteLocationQuery,
   updateNoteQuery,
   updateThoughtsQuery,
 } from "@repo/sqlite";
@@ -71,6 +72,14 @@ export const updateNoteFeeling = async (data: {
 }) => {
   const db = getOPDatabase();
   return await updateNoteFeelingQuery(db, data);
+};
+
+export const updateNoteLocation = async (data: {
+  noteId: string;
+  locationId: string | null;
+}) => {
+  const db = getOPDatabase();
+  return await updateNoteLocationQuery(db, data);
 };
 
 export const generateNote = async (body: FormData) => {

@@ -11,6 +11,7 @@ import m0006 from "./0006_fresh_red_ghost.sql";
 import m0007 from "./0007_same_captain_cross.sql";
 import m0008 from "./0008_previous_lester.sql";
 import m0009 from "./0009_worthless_la_nuit.sql";
+import m0010 from "./0010_robust_gabe_jones.sql";
 
 export default {
   journal,
@@ -25,5 +26,6 @@ export default {
     m0007,
     m0008,
     m0009,
+    m0010,
   },
 };
