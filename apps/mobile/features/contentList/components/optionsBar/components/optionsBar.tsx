@@ -275,10 +275,11 @@ export const OptionsBar = () => {
 
   const hasNonDefaultOptions =
     sortBy !== OPTIONS_BAR_DEFAULTS.sortBy ||
-    groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
-    displayMode !== OPTIONS_BAR_DEFAULTS.displayMode ||
     localFoldersMode !== OPTIONS_BAR_DEFAULTS.foldersMode ||
-    hasAttributeFilters;
+    hasAttributeFilters ||
+    (localFoldersMode === "without" &&
+      (groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
+        displayMode !== OPTIONS_BAR_DEFAULTS.displayMode));
 
   const settingsToggle = (
     <TriggerFilterChip
@@ -335,19 +336,21 @@ export const OptionsBar = () => {
                 options={SORT_OPTIONS}
                 onValueChange={onSortByChange}
               />
-              <OptionsDropdown
-                title="Display:"
-                value={displayMode}
-                options={DISPLAY_OPTIONS}
-                onValueChange={onDisplayModeChange}
-              />
               {localFoldersMode === "without" ? (
-                <OptionsDropdown
-                  title="Group by:"
-                  value={groupBy}
-                  options={GROUP_OPTIONS}
-                  onValueChange={onGroupByChange}
-                />
+                <>
+                  <OptionsDropdown
+                    title="Display:"
+                    value={displayMode}
+                    options={DISPLAY_OPTIONS}
+                    onValueChange={onDisplayModeChange}
+                  />
+                  <OptionsDropdown
+                    title="Group by:"
+                    value={groupBy}
+                    options={GROUP_OPTIONS}
+                    onValueChange={onGroupByChange}
+                  />
+                </>
               ) : null}
               <NotesFilterSheet />
               <BreadcrumbLinkToggle />
