@@ -268,6 +268,7 @@ export const OptionsBar = () => {
   const filterPersonIds = useOptionsBar((state) => state.filterPersonIds);
   const filterFeelings = useOptionsBar((state) => state.filterFeelings);
   const filterLocationIds = useOptionsBar((state) => state.filterLocationIds);
+  const selectedFolderId = useOptionsBar((state) => state.selectedFolderId);
 
   const [sortBy, setSortBy] = useState(() => useOptionsBar.getState().sortBy);
   const [groupBy, setGroupBy] = useState(
@@ -353,11 +354,12 @@ export const OptionsBar = () => {
     handleFoldersModeChange(value);
   };
 
-  const hasAttributeFilters = hasActiveAttributeFilters({
-    personIds: filterPersonIds,
-    feelings: filterFeelings,
-    locationIds: filterLocationIds,
-  });
+  const hasAttributeFilters =
+    hasActiveAttributeFilters({
+      personIds: filterPersonIds,
+      feelings: filterFeelings,
+      locationIds: filterLocationIds,
+    }) || selectedFolderId != null;
 
   const hasNonDefaultWithoutFolderOptions =
     localFoldersMode === "without" &&

@@ -70,5 +70,6 @@ export const useOptionsBar = create<OptionsBarStore>((set) => ({
       filterPersonIds: [],
       filterFeelings: [],
       filterLocationIds: [],
+      selectedFolderId: null,
     }),
 }));

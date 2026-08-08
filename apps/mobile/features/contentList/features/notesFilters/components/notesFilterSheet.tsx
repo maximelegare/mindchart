@@ -30,23 +30,45 @@ export const NotesFilterSheet = () => {
   const filterPersonIds = useOptionsBar((state) => state.filterPersonIds);
   const filterFeelings = useOptionsBar((state) => state.filterFeelings);
   const filterLocationIds = useOptionsBar((state) => state.filterLocationIds);
+  const selectedFolderId = useOptionsBar((state) => state.selectedFolderId);
   const setFilterPersonIds = useOptionsBar((state) => state.setFilterPersonIds);
   const setFilterFeelings = useOptionsBar((state) => state.setFilterFeelings);
   const setFilterLocationIds = useOptionsBar(
     (state) => state.setFilterLocationIds
   );
+  const handleSelectedFolderChange = useOptionsBar(
+    (state) => state.handleSelectedFolderChange
+  );
   const clearAttributeFilters = useOptionsBar(
     (state) => state.clearAttributeFilters
   );
 
-  const hasFilters = hasActiveAttributeFilters({
-    personIds: filterPersonIds,
-    feelings: filterFeelings,
-    locationIds: filterLocationIds,
-  });
+  const { data: allFolders = [] } =
+    useControllers().folders.useFetchAllFoldersQuery();
+
+  const hasFilters =
+    hasActiveAttributeFilters({
+      personIds: filterPersonIds,
+      feelings: filterFeelings,
+      locationIds: filterLocationIds,
+    }) || selectedFolderId != null;
 
   const activeCount =
-    filterPersonIds.length + filterFeelings.length + filterLocationIds.length;
+    filterPersonIds.length +
+    filterFeelings.length +
+    filterLocationIds.length +
+    (selectedFolderId != null ? 1 : 0);
+
+  const openFolderPicker = useCallback(() => {
+    openModal({
+      title: "Folder",
+      aboveBottomSheet: true,
+      dismissOnBackgroundPress: true,
+      customContent: () => (
+        <FolderFilterModalContent onChange={handleSelectedFolderChange} />
+      ),
+    });
+  }, [handleSelectedFolderChange, openModal]);
 
   const openPeoplePicker = useCallback(() => {
     openModal({
@@ -80,6 +102,14 @@ export const NotesFilterSheet = () => {
       ),
     });
   }, [openModal, setFilterLocationIds]);
+
+  const folderSummary = useMemo(() => {
+    if (!selectedFolderId) return "Any";
+    return (
+      allFolders.find((folder) => folder.id === selectedFolderId)?.label ??
+      "1 selected"
+    );
+  }, [allFolders, selectedFolderId]);
 
   const peopleSummary =
     filterPersonIds.length === 0 ? "Any" : `${filterPersonIds.length} selected`;
@@ -133,6 +163,12 @@ export const NotesFilterSheet = () => {
               </View>
             </BottomSheetHeader>
 
+            <FilterRow
+              icon="folder"
+              label="Folder"
+              summary={folderSummary}
+              onPress={openFolderPicker}
+            />
             <FilterRow
               icon="user-round"
               label="People"
@@ -191,6 +227,38 @@ function FilterRow({
         </Typography>
       </View>
     </Button>
+  );
+}
+
+function FolderFilterModalContent({
+  onChange,
+}: {
+  onChange: (folderId: string | null) => void;
+}) {
+  const selectedFolderId = useOptionsBar((state) => state.selectedFolderId);
+  const { data: folders = [] } =
+    useControllers().folders.useFetchAllFoldersWithNotesInfosQuery();
+  const options = useMemo<FilterAttributeOption[]>(
+    () =>
+      (folders ?? [])
+        .filter((folder) => (folder.noteCount ?? 0) > 0)
+        .map((folder) => ({
+          id: folder.id,
+          label: folder.label,
+        })),
+    [folders]
+  );
+
+  return (
+    <FilterAttributePicker
+      options={options}
+      selectedIds={selectedFolderId ? [selectedFolderId] : []}
+      onChange={(ids) => onChange(ids[0] ?? null)}
+      selectionMode="single"
+      searchable
+      searchPlaceholder="Search folders…"
+      emptyLabel="No folders with notes yet."
+    />
   );
 }
 

@@ -18,6 +18,8 @@ type FilterAttributePickerProps = {
   options: FilterAttributeOption[];
   selectedIds: string[];
   onChange: (ids: string[]) => void;
+  /** `single` replaces the selection; `multiple` toggles ids in the list. */
+  selectionMode?: "single" | "multiple";
   searchable?: boolean;
   searchPlaceholder?: string;
   emptyLabel?: string;
@@ -27,6 +29,7 @@ export const FilterAttributePicker = ({
   options,
   selectedIds,
   onChange,
+  selectionMode = "multiple",
   searchable = false,
   searchPlaceholder = "Search…",
   emptyLabel = "Nothing to filter by yet.",
@@ -47,6 +50,10 @@ export const FilterAttributePicker = ({
   }, [options, search]);
 
   const toggle = (id: string) => {
+    if (selectionMode === "single") {
+      onChange(selectedSet.has(id) ? [] : [id]);
+      return;
+    }
     if (selectedSet.has(id)) {
       onChange(selectedIds.filter((selectedId) => selectedId !== id));
       return;
