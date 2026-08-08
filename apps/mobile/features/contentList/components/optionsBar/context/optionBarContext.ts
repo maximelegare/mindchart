@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 import { OptionsBar } from "../../../types";
 
 export const OPTIONS_BAR_DEFAULTS = {
@@ -10,6 +11,9 @@ export const OPTIONS_BAR_DEFAULTS = {
   selectedCategoryId: null,
   currentFolderId: null,
   folderTreeSidebarOpen: false,
+  filterPersonIds: [] as string[],
+  filterFeelings: [] as FeelingValue[],
+  filterLocationIds: [] as string[],
 } as const satisfies OptionsBar;
 
 export type OptionsBarStore = OptionsBar & {
@@ -22,6 +26,10 @@ export type OptionsBarStore = OptionsBar & {
   handleCurrentFolderChange: (folderId: string | null) => void;
   setFolderTreeSidebarOpen: (open: boolean) => void;
   toggleFolderTreeSidebar: () => void;
+  setFilterPersonIds: (personIds: string[]) => void;
+  setFilterFeelings: (feelings: FeelingValue[]) => void;
+  setFilterLocationIds: (locationIds: string[]) => void;
+  clearAttributeFilters: () => void;
 };
 
 export const useOptionsBar = create<OptionsBarStore>((set) => ({
@@ -54,4 +62,13 @@ export const useOptionsBar = create<OptionsBarStore>((set) => ({
     set({ folderTreeSidebarOpen }),
   toggleFolderTreeSidebar: () =>
     set((state) => ({ folderTreeSidebarOpen: !state.folderTreeSidebarOpen })),
+  setFilterPersonIds: (filterPersonIds) => set({ filterPersonIds }),
+  setFilterFeelings: (filterFeelings) => set({ filterFeelings }),
+  setFilterLocationIds: (filterLocationIds) => set({ filterLocationIds }),
+  clearAttributeFilters: () =>
+    set({
+      filterPersonIds: [],
+      filterFeelings: [],
+      filterLocationIds: [],
+    }),
 }));

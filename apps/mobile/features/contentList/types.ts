@@ -1,3 +1,5 @@
+import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+
 export type DisplayMode = "notes" | "categories";
 
 export type DisplayKey = "notes" | "notes-overview" | "categories";
@@ -18,6 +20,12 @@ export type OptionsBar = {
   currentFolderId: string | null;
   /** Right folder-tree sidebar visibility on the notes list */
   folderTreeSidebarOpen: boolean;
+  /** Empty = no people filter */
+  filterPersonIds: string[];
+  /** Empty = no feeling filter */
+  filterFeelings: FeelingValue[];
+  /** Empty = no location filter */
+  filterLocationIds: string[];
 };
 
 export type UiKey = `groupBy=${OptionsBar["groupBy"]}&display=${DisplayKey}`;

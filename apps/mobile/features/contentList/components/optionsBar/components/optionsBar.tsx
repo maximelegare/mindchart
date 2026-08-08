@@ -35,6 +35,8 @@ import { TriggerFilterChip } from "./triggerFilterChip";
 import { OptionChip } from "./options/optionChip";
 import { Gutter } from "@/components/ui/gutter";
 import { BreadcrumbLinkToggle } from "@/features/navigation/breadcrumbLinkToggle";
+import { NotesFilterSheet } from "@/features/contentList/features/notesFilters/components/notesFilterSheet";
+import { hasActiveAttributeFilters } from "@/features/contentList/utils/filterNotesByAttributes";
 
 type OptionItem<T extends string> = {
   value: T;
@@ -177,6 +179,9 @@ export const OptionsBar = () => {
   );
   const foldersMode = useOptionsBar((state) => state.foldersMode);
   const showFolders = foldersMode === "with";
+  const filterPersonIds = useOptionsBar((state) => state.filterPersonIds);
+  const filterFeelings = useOptionsBar((state) => state.filterFeelings);
+  const filterLocationIds = useOptionsBar((state) => state.filterLocationIds);
 
   const [sortBy, setSortBy] = useState(() => useOptionsBar.getState().sortBy);
   const [groupBy, setGroupBy] = useState(
@@ -262,11 +267,18 @@ export const OptionsBar = () => {
     handleFoldersModeChange(value);
   };
 
+  const hasAttributeFilters = hasActiveAttributeFilters({
+    personIds: filterPersonIds,
+    feelings: filterFeelings,
+    locationIds: filterLocationIds,
+  });
+
   const hasNonDefaultOptions =
     sortBy !== OPTIONS_BAR_DEFAULTS.sortBy ||
     groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
     displayMode !== OPTIONS_BAR_DEFAULTS.displayMode ||
-    localFoldersMode !== OPTIONS_BAR_DEFAULTS.foldersMode;
+    localFoldersMode !== OPTIONS_BAR_DEFAULTS.foldersMode ||
+    hasAttributeFilters;
 
   const settingsToggle = (
     <TriggerFilterChip
@@ -337,6 +349,7 @@ export const OptionsBar = () => {
                   onValueChange={onGroupByChange}
                 />
               ) : null}
+              <NotesFilterSheet />
               <BreadcrumbLinkToggle />
             </ScrollView>
           </Gutter>
