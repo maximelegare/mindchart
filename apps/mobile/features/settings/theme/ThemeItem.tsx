@@ -35,7 +35,7 @@ type ItemProps = {
 function ThemeItem({ item, onPress, selected }: ItemProps) {
   return (
     <Pressable className="py-4" onPress={onPress}>
-      <View className="flex bg-pink flex-row justify-between">
+      <View className="flex flex-row justify-between">
         <View className="pr-4 pt-1">{item.icon}</View>
         <View className="flex-1">
           <H4>{item.title}</H4>
@@ -43,7 +43,7 @@ function ThemeItem({ item, onPress, selected }: ItemProps) {
             {item.subtitle}
           </Typography>
         </View>
-        <View>{selected && <Check className="text-accent-foreground" />}</View>
+        <View>{selected && <Check className="text-primary" />}</View>
       </View>
     </Pressable>
   );

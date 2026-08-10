@@ -146,7 +146,7 @@ export function MoreOptionsMenu({
           {showWorkspaceTrigger ? (
             <WorkspaceAvatar />
           ) : (
-            <Icon name={trigger} size={26} color="background" />
+            <Icon name={trigger} size={26} color="popover-foreground" />
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -177,7 +177,11 @@ export function MoreOptionsMenu({
                         }, 150);
                       }}
                     >
-                      <Icon name={link.icon} size={18} color="background" />
+                      <Icon
+                        name={link.icon}
+                        size={18}
+                        color="popover-foreground"
+                      />
                       <Typography
                         variant="h4"
                         className="text-popover-foreground"
@@ -190,7 +194,11 @@ export function MoreOptionsMenu({
                       className="px-3 w-full"
                       onPress={link.action}
                     >
-                      <Icon name={link.icon} size={18} color="background" />
+                      <Icon
+                        name={link.icon}
+                        size={18}
+                        color="popover-foreground"
+                      />
                       <Typography
                         variant="h4"
                         className="text-popover-foreground"
@@ -213,7 +221,11 @@ export function MoreOptionsMenu({
                             });
                           }}
                         >
-                          <Icon size={17} name={link.icon} color="background" />
+                          <Icon
+                            size={17}
+                            name={link.icon}
+                            color="popover-foreground"
+                          />
                           <Typography
                             variant="h4"
                             className="text-popover-foreground"

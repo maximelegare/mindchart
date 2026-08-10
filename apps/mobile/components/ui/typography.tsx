@@ -112,7 +112,7 @@ const Typography = React.forwardRef<TextRef, TypographyProps>(
     return (
       <Component
         className={cn(
-          "web:select-text",
+          "web:select-text text-foreground",
           textClass,
           variant && variantClasses[variant],
           padding && variant && paddingClasses[variant],

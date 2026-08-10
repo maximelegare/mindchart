@@ -11,6 +11,10 @@ export const THEME_CONFIG = {
     popover: "150, 45%, 14%", // matches logo dark
     "popover-foreground": "145, 35%, 92%",
 
+    // Tab bar / chrome — darker than page background
+    footer: "150, 45%, 14%",
+    "footer-foreground": "145, 35%, 92%",
+
     primary: "145, 45%, 42%", // main logo green
     "primary-foreground": "145, 35%, 95%",
 
@@ -29,30 +33,34 @@ export const THEME_CONFIG = {
   },
 
   dark: {
-    background: "155 35% 8%",
-    foreground: "140 25% 92%",
+    background: "0, 0%, 12%", // dark grey
+    foreground: "0, 0%, 94%",
 
-    card: "155 30% 10%",
-    "card-foreground": "140 25% 92%",
+    card: "0, 0%, 18%", // lighter grey than background
+    "card-foreground": "0, 0%, 94%",
 
-    popover: "155 30% 10%",
-    "popover-foreground": "140 25% 92%",
+    popover: "0, 0%, 18%", // same as cards
+    "popover-foreground": "0, 0%, 94%",
 
-    primary: "145 45% 55%",
-    "primary-foreground": "155 35% 10%",
+    // Tab bar — darker than background
+    footer: "0, 0%, 7%",
+    "footer-foreground": "0, 0%, 94%",
 
-    secondary: "155 25% 18%",
-    "secondary-foreground": "140 25% 92%",
+    primary: "145, 45%, 55%",
+    "primary-foreground": "0, 0%, 10%",
 
-    muted: "155 20% 16%",
-    "muted-foreground": "145 15% 65%",
+    secondary: "0, 0%, 22%",
+    "secondary-foreground": "0, 0%, 94%",
 
-    destructive: "0 72% 51%",
-    "destructive-foreground": "0 0% 98%",
+    muted: "0, 0%, 16%",
+    "muted-foreground": "0, 0%, 60%",
 
-    border: "155 20% 18%",
-    input: "155 20% 18%",
-    ring: "145 50% 50%",
+    destructive: "0, 72%, 51%",
+    "destructive-foreground": "0, 0%, 98%",
+
+    border: "0, 0%, 24%",
+    input: "0, 0%, 24%",
+    ring: "145, 50%, 50%",
   },
 } as const;
 

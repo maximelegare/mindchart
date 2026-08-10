@@ -8,7 +8,7 @@ import "@/lib/hideScrollIndicators";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Appearance, View } from "react-native";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -27,6 +27,7 @@ import { LlamaProvider } from "@/features/llama/context/llamaContext";
 
 import { DARK_THEME, LIGHT_THEME } from "@repo/theme/global";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { themeVars } from "@/lib/themeVars";
 import { getItem, setItem } from "@/lib/storage";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { useFrameworkReady } from "@/hooks/useFrameworkReady";
@@ -121,14 +122,26 @@ export default function RootLayout() {
   useEffect(() => {
     async function initializeApp() {
       // Theme Logic
-      const storedTheme = getItem("theme");
-      if (storedTheme) {
-        const normalized = storedTheme === "dark" ? "dark" : "light";
-        if (normalized !== colorScheme) setColorScheme(normalized);
-        setAndroidNavigationBar(normalized);
+      const storedTheme = getItem<"light" | "dark" | "system">("theme");
+      if (
+        storedTheme === "dark" ||
+        storedTheme === "light" ||
+        storedTheme === "system"
+      ) {
+        setColorScheme(storedTheme);
+        const resolved =
+          storedTheme === "system"
+            ? Appearance.getColorScheme() === "dark"
+              ? "dark"
+              : "light"
+            : storedTheme;
+        setAndroidNavigationBar(resolved);
       } else {
-        setItem("theme", colorScheme);
-        setAndroidNavigationBar(colorScheme);
+        setItem("theme", "system");
+        setColorScheme("system");
+        setAndroidNavigationBar(
+          Appearance.getColorScheme() === "dark" ? "dark" : "light"
+        );
       }
 
       // Workspace + DB Logic
@@ -190,12 +203,15 @@ export default function RootLayout() {
 
   /**
    * 4. Sync Theme Changes
+   * Don't overwrite an explicit "system" preference with the resolved scheme.
    */
   useEffect(() => {
-    if (colorScheme) {
+    if (!colorScheme) return;
+    const stored = getItem<"light" | "dark" | "system">("theme");
+    if (stored !== "system") {
       setItem("theme", colorScheme);
-      setAndroidNavigationBar(colorScheme);
     }
+    setAndroidNavigationBar(colorScheme);
   }, [colorScheme]);
 
   // Handle Font Errors
@@ -221,6 +237,7 @@ export default function RootLayout() {
               <PaperProvider>
                 <ModalProvider>
                   <View
+                    style={themeVars(colorScheme === "dark" ? "dark" : "light")}
                     className={cn(
                       "flex-1",
                       colorScheme === "dark" ? "dark" : ""

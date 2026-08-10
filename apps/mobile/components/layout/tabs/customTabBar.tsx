@@ -55,7 +55,7 @@ export function CustomTabBar({
     <Animated.View
       pointerEvents={hidden ? "none" : "auto"}
       style={animatedStyle}
-      className="bg-popover z-30 rounded-t-3xl overflow-hidden"
+      className="bg-footer z-30 rounded-t-3xl overflow-hidden"
     >
       <View className="flex-row items-start">
         {state.routes.map((route) => {
