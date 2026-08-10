@@ -28,9 +28,10 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
 import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
-import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
+import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 
 const parseHslChannels = (hslColor: string) => {
   const inside = hslColor.replace(/^hsla?\(|\)$/g, "").trim();
@@ -400,7 +401,9 @@ function CirclePackSkiaRenderer({
   const navigateToNode = (
     node: NodeInfo,
     isToggleBack = false,
-    dismissFocusHighlight = false
+    dismissFocusHighlight = false,
+    /** When true, mirror this navigation into notes (linked breadcrumbs). */
+    syncNotesFolder = false
   ) => {
     if (dismissFocusHighlight && hatchHighlightActive) {
       setHatchHighlightActive(false);
@@ -421,6 +424,11 @@ function CirclePackSkiaRenderer({
     if (onNodeSelected) {
       const parent = node.parentId ? nodeMap.get(node.parentId) : undefined;
       onNodeSelected(node.rawData, parent?.rawData);
+    }
+
+    if (syncNotesFolder) {
+      const targetId = isSyntheticRoot(node.rawData) ? "root" : node.rawData.id;
+      onGraphBreadcrumbNavigate(targetId);
     }
   };
 
@@ -510,11 +518,11 @@ function CirclePackSkiaRenderer({
           targetToProcess.rawData.name?.toLowerCase() !== "root" &&
           canToggleBack
         ) {
-          runOnJS(navigateToNode)(prev, true, true);
+          runOnJS(navigateToNode)(prev, true, true, true);
         } else if (!isSameTarget) {
-          runOnJS(navigateToNode)(targetToProcess, false, true);
+          runOnJS(navigateToNode)(targetToProcess, false, true, true);
         } else {
-          runOnJS(navigateToNode)(rootNode, false, true);
+          runOnJS(navigateToNode)(rootNode, false, true, true);
         }
         break;
       }
@@ -527,16 +535,16 @@ function CirclePackSkiaRenderer({
     const current = nodeMap.get(activeInternalId.value);
     if (current?.parentId) {
       const parent = nodeMap.get(current.parentId);
-      if (parent) navigateToNode(parent, false, true);
+      if (parent) navigateToNode(parent, false, true, true);
     } else if (current && current.internalId !== rootNode.internalId) {
-      navigateToNode(rootNode, false, true);
+      navigateToNode(rootNode, false, true, true);
     }
   };
 
   const handleZoomOut = () => {
     const current = nodeMap.get(activeInternalId.value);
     if (current?.rawData.name === "Root") return;
-    else navigateToNode(rootNode, false, true);
+    else navigateToNode(rootNode, false, true, true);
   };
 
   const packLayerCounts = useMemo(
