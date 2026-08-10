@@ -51,10 +51,60 @@ const parseHslChannels = (hslColor: string) => {
   };
 };
 
+const hslToRgb = (h: number, s: number, l: number) => {
+  const sat = s / 100;
+  const light = l / 100;
+  const a = sat * Math.min(light, 1 - light);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    return light - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+  };
+  return {
+    r: Math.round(f(0) * 255),
+    g: Math.round(f(8) * 255),
+    b: Math.round(f(4) * 255),
+  };
+};
+
+const parseColorToRgb = (color: string) => {
+  if (color.startsWith("#")) {
+    const hex = color.slice(1);
+    const full =
+      hex.length === 3
+        ? hex
+            .split("")
+            .map((c) => c + c)
+            .join("")
+        : hex;
+    if (full.length !== 6) return null;
+    const n = parseInt(full, 16);
+    if (Number.isNaN(n)) return null;
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  const channels = parseHslChannels(color);
+  if (!channels) return null;
+  return hslToRgb(parseFloat(channels.h), channels.s, channels.l);
+};
+
+/** Blend `from` toward `toward` by `amount` (0 = from, 1 = toward). */
+const mixColors = (from: string, toward: string, amount: number) => {
+  const a = parseColorToRgb(from);
+  const b = parseColorToRgb(toward);
+  if (!a || !b) return from;
+  const t = Math.min(1, Math.max(0, amount));
+  const r = Math.round(a.r + (b.r - a.r) * t);
+  const g = Math.round(a.g + (b.g - a.g) * t);
+  const bl = Math.round(a.b + (b.b - a.b) * t);
+  return `rgb(${r}, ${g}, ${bl})`;
+};
+
 /** Neutral mix target (no theme-green card tint in S/L). */
 const neutralMixTarget = (
   colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
 ) => (colorScheme === "dark" ? "hsl(0, 0%, 12%)" : "hsl(0, 0%, 100%)");
+
+/** How much pack fills blend into the dark canvas (reads as transparency). */
+const DARK_PACK_SOFTEN = 0.45;
 
 /**
  * Category packs: first layer (the category itself) is a light shade;
@@ -577,16 +627,25 @@ function CirclePackSkiaRenderer({
   );
 
   // ---------- 6. Dynamic Color Logic ----------
+  const softenPackForTheme = (packColor: string) => {
+    if (colorScheme !== "dark") return packColor;
+    return mixColors(packColor, neutralMixTarget("dark"), DARK_PACK_SOFTEN);
+  };
+
   const getNodeColor = (node: NodeInfo) => {
     if (isEmptyFolderNode(node.rawData)) {
       return emptyFolderFill(colorScheme);
     }
 
     if (graphMode === "folder" && isFolderModeNoteLeaf(node)) {
-      return NOTE_LEAF_FILL;
+      return colorScheme === "dark"
+        ? softenPackForTheme(NOTE_LEAF_FILL)
+        : NOTE_LEAF_FILL;
     }
 
-    if (!node.hasChildren) return "white";
+    if (!node.hasChildren) {
+      return colorScheme === "dark" ? softenPackForTheme("#FFFFFF") : "white";
+    }
 
     // Synthetic graph root stays neutral — not the same tint as first real nodes.
     if (node.depth === 0 && isSyntheticRoot(data)) {
@@ -595,7 +654,7 @@ function CirclePackSkiaRenderer({
 
     if (graphMode === "folder") {
       const layerIndex = isSyntheticRoot(data) ? node.depth - 1 : node.depth;
-      return folderLayerColor(Math.max(0, layerIndex));
+      return softenPackForTheme(folderLayerColor(Math.max(0, layerIndex)));
     }
 
     const category = findCategoryPackAncestor(node, nodeMap, rootNode);
@@ -610,10 +669,12 @@ function CirclePackSkiaRenderer({
       ? (packLayerCounts.get(category.internalId) ?? 1)
       : 1;
 
-    return shadeCategoryLayer(
-      hsl(cat, colorScheme, undefined, "categories"),
-      layerIndex,
-      layerCount
+    return softenPackForTheme(
+      shadeCategoryLayer(
+        hsl(cat, colorScheme, undefined, "categories"),
+        layerIndex,
+        layerCount
+      )
     );
   };
 
