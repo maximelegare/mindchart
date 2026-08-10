@@ -87,13 +87,11 @@ export const GraphFeature = ({
         onNodeSelected={handleNodeSelected}
       />
 
-      <View className="w-full flex-1">
-        <GraphInfos
-          hierarchy={hierarchy}
-          activeNode={activeNode}
-          focusedThoughtId={focusedThoughtId}
-        />
-      </View>
+      <GraphInfos
+        hierarchy={hierarchy}
+        activeNode={activeNode}
+        focusedThoughtId={focusedThoughtId}
+      />
       <SpaceFiller
         sizes={{ paddingBottom: ["TAB_BAR_HEIGHT", "HEADER_OVERLAP"] }}
       />

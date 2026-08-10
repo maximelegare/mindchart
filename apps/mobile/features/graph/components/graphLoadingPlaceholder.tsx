@@ -6,14 +6,14 @@ import { GRAPH_CANVAS_SIZE } from "../constants";
 
 export const GraphLoadingPlaceholder = () => {
   const { colorScheme } = useColorScheme();
+  const scheme = colorScheme === "dark" ? "dark" : "light";
 
   return (
     <View
       style={[
         styles.wrapper,
         {
-          backgroundColor: hsl("card", colorScheme),
-          borderColor: hsl("border", colorScheme),
+          backgroundColor: hsl("card", "theme", scheme),
         },
       ]}
     >
@@ -27,8 +27,7 @@ export const GraphLoadingPlaceholder = () => {
 const styles = StyleSheet.create({
   wrapper: {
     width: GRAPH_CANVAS_SIZE,
-    borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 18,
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,

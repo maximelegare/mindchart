@@ -98,10 +98,10 @@ const mixColors = (from: string, toward: string, amount: number) => {
   return `rgb(${r}, ${g}, ${bl})`;
 };
 
-/** Neutral mix target (no theme-green card tint in S/L). */
+/** Canvas / root fill — matches card background. */
 const neutralMixTarget = (
   colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
-) => (colorScheme === "dark" ? "hsl(0, 0%, 12%)" : "hsl(0, 0%, 100%)");
+) => hsl("card", "theme", colorScheme === "dark" ? "dark" : "light");
 
 /** How much pack fills blend into the dark canvas (reads as transparency). */
 const DARK_PACK_SOFTEN = 0.45;
@@ -729,7 +729,6 @@ function CirclePackSkiaRenderer({
           styles.wrapper,
           {
             backgroundColor: neutralMixTarget(colorScheme),
-            borderColor: hsl("border", colorScheme),
           },
         ]}
       >
@@ -747,12 +746,8 @@ function CirclePackSkiaRenderer({
                     viewY={viewY}
                     viewR={viewR}
                     color={getNodeColor(node)}
-                    showBorder={
-                      node.internalId === rootNode.internalId || isNoteLeaf
-                    }
-                    borderColor={
-                      isNoteLeaf ? "#FFFFFF" : hsl("border", colorScheme)
-                    }
+                    showBorder={isNoteLeaf}
+                    borderColor="#FFFFFF"
                     isFocusedThought={
                       hatchHighlightActive &&
                       !!focusedDbId &&
@@ -964,8 +959,7 @@ const SkCircle = ({
 const styles = StyleSheet.create({
   wrapper: {
     width: SIZE,
-    borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 18,
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,

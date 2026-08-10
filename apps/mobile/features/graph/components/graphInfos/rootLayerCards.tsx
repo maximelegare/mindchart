@@ -12,7 +12,7 @@ import { resolveNodeCategoryKey } from "../../utils/resolveNodeCategoryKey";
 import type { NodeDatum } from "../../types/types";
 
 const MAX_LABEL_LENGTH = 22;
-const CARD_RADIUS = 8;
+const CARD_RADIUS = 18;
 
 const formatLabel = (value: string) => {
   const title = capitalize(value || "");
@@ -64,7 +64,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
             }}
             accessibilityRole="button"
             accessibilityLabel={`Open ${node.name || "item"}`}
-            className="bg-card border-border border rounded-lg overflow-hidden self-start"
+            className="bg-card rounded-2xl overflow-hidden self-start"
             style={{ borderRadius: CARD_RADIUS, overflow: "hidden" }}
           >
             <View
@@ -82,7 +82,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
                   }}
                 />
               ) : null}
-              <View className="flex-row items-center gap-2 px-2.5 py-2">
+              <View className="flex-row items-center gap-2 px-3.5 py-2.5">
                 <Icon name={iconName} color="muted-foreground" size={16} />
                 <Typography variant="h4" numberOfLines={1} className="max-w-40">
                   {formatLabel(node.name || node.title || "")}
