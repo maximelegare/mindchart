@@ -1,16 +1,5 @@
-import * as React from "react";
-import { PageContainer } from "@/components/layout/page/pageContainer";
-
-import { AISettingsFeature } from "@/features/settings/features/ai/views";
+import { Redirect } from "expo-router";
 
 export const AiSettingsPage = () => {
-  return (
-    <PageContainer
-      headerVariant="tab"
-      title="AI Options"
-      subtitle={{ text: "Settings", icon: "settings" }}
-    >
-      <AISettingsFeature />
-    </PageContainer>
-  );
+  return <Redirect href="/settings" />;
 };

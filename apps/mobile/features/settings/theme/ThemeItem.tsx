@@ -19,6 +19,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import type { ThemePreference } from "@/lib/themePreference";
 import { resolveThemePreference } from "@/lib/themePreference";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
+import { hsl } from "@/utils/hsl";
 
 type ItemData = {
   title: string;
@@ -33,7 +34,13 @@ type ItemProps = {
   selected: boolean;
 };
 
-function ThemeItem({ item, onPress, selected }: ItemProps) {
+const THEME_LABELS: Record<ThemePreference, string> = {
+  system: "System",
+  dark: "Dark",
+  light: "Light",
+};
+
+function ThemeOption({ item, onPress, selected }: ItemProps) {
   return (
     <Pressable className="py-4" onPress={onPress}>
       <View className="flex flex-row justify-between">
@@ -50,9 +57,36 @@ function ThemeItem({ item, onPress, selected }: ItemProps) {
   );
 }
 
-export const ThemeSettingItem = () => {
-  const { themePreference, setColorScheme } = useColorScheme();
+function ThemePickerBody({
+  themes,
+  selected,
+  onSelect,
+}: {
+  themes: ItemData[];
+  selected: ThemePreference;
+  onSelect: (value: ThemePreference) => void;
+}) {
   const { dismiss } = useBottomSheetModal();
+
+  return (
+    <BottomSheetView className="gap-5 pt-6 bg-background px-4 pb-6">
+      {themes.map((theme) => (
+        <ThemeOption
+          key={theme.title}
+          item={theme}
+          onPress={() => {
+            onSelect(theme.value);
+            dismiss();
+          }}
+          selected={theme.value === selected}
+        />
+      ))}
+    </BottomSheetView>
+  );
+}
+
+export const ThemeSettingItem = ({ className }: { className?: string }) => {
+  const { themePreference, setColorScheme, colorScheme } = useColorScheme();
 
   const themes: ItemData[] = useMemo(
     () => [
@@ -82,36 +116,45 @@ export const ThemeSettingItem = () => {
     (value: ThemePreference) => {
       setColorScheme(value);
       setAndroidNavigationBar(resolveThemePreference(value));
-      dismiss();
     },
-    [dismiss, setColorScheme]
+    [setColorScheme]
   );
 
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild>
         <ListItem
-          className="bg-background"
+          className={className}
           itemLeft={(props) => <Palette {...props} />}
           label="Theme"
+          borderBottom={false}
+          itemRight={() => (
+            <Typography
+              variant="p"
+              style={{
+                fontSize: 14,
+                color: hsl("muted-foreground", colorScheme),
+                marginRight: 4,
+              }}
+            >
+              {THEME_LABELS[themePreference]}
+            </Typography>
+          )}
         />
       </BottomSheetOpenTrigger>
-      <BottomSheetContent>
+      <BottomSheetContent
+        backgroundStyle={{ backgroundColor: hsl("background", colorScheme) }}
+      >
         <BottomSheetHeader className="bg-background">
-          <Typography className="text-foreground text-xl font-bold  pb-1">
+          <Typography className="text-foreground text-xl font-bold pb-1">
             Select Theme
           </Typography>
         </BottomSheetHeader>
-        <BottomSheetView className="gap-5 pt-6 bg-background">
-          {themes.map((theme) => (
-            <ThemeItem
-              key={theme.title}
-              item={theme}
-              onPress={() => onSelect(theme.value)}
-              selected={theme.value === themePreference}
-            />
-          ))}
-        </BottomSheetView>
+        <ThemePickerBody
+          themes={themes}
+          selected={themePreference}
+          onSelect={onSelect}
+        />
       </BottomSheetContent>
     </BottomSheet>
   );

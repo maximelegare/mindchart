@@ -18,7 +18,7 @@ export const CurrentWorkspace = () => {
         className="flex-row items-center rounded-2xl"
         onPress={() => {
           setTimeout(() => {
-            push("/settings/workspaces");
+            push("/settings");
           }, 150);
         }}
       >
