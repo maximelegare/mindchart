@@ -27,14 +27,19 @@ export function Gradient({
   theme,
   custom,
 }: GradientProps) {
-  // Keep the green page-top chrome in dark mode (text tokens go light there).
-  const gradientTheme = theme === "dark" ? "light" : theme;
+  const isDark = theme === "dark";
 
   const gradientColors: Record<Exclude<Variant, "none">, [string, string]> = {
-    primary: [
-      hsl("foreground", "theme", gradientTheme),
-      hsl("primary", "theme", gradientTheme, 45),
-    ],
+    primary: isDark
+      ? [
+          // Footer (tab bar) → darker green
+          hsl("footer", "theme", "dark"),
+          "hsl(150, 45%, 11%)",
+        ]
+      : [
+          hsl("foreground", "theme", "light"),
+          hsl("primary", "theme", "light", 45),
+        ],
     destructive: ["#ed333b", "#a51d2d"],
   };
 

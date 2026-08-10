@@ -22,7 +22,7 @@ export const SearchFeature = () => {
     <BottomSheet>
       <BottomSheetOpenTrigger asChild>
         <Button variant="ghost" size="icon">
-          <Icon name="search" size={24} color="background" />
+          <Icon name="search" size={24} color="popover-foreground" />
         </Button>
       </BottomSheetOpenTrigger>
       <BottomSheetContent

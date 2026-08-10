@@ -21,7 +21,11 @@ export const EditNoteButton = ({
       onPress={onPress}
       disabled={disabled}
     >
-      <Icon name={isEditing ? "save" : "pencil"} size={22} color="background" />
+      <Icon
+        name={isEditing ? "save" : "pencil"}
+        size={22}
+        color="popover-foreground"
+      />
     </Button>
   );
 };
