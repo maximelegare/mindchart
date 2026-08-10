@@ -31,6 +31,7 @@ import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCatego
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { isEmptyFolderNode } from "@/features/graph/utils/buildGraphByFolder";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 
 const parseHslChannels = (hslColor: string) => {
@@ -280,11 +281,21 @@ const computeLayout = (data: NodeDatum, padding: number): Layout => {
 const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
   allNodes.filter((n) => n.parentId === parent.internalId).length;
 
+/** Packs you can zoom into — includes empty folders (no content children). */
+const isNavigablePack = (node: NodeInfo) =>
+  node.hasChildren || isEmptyFolderNode(node.rawData);
+
 const isFirstLevelGroup = (node: NodeInfo) =>
-  node.depth === 1 && node.hasChildren;
+  node.depth === 1 && isNavigablePack(node);
 
 const isSecondLevelGroup = (node: NodeInfo, parentInternalId: string) =>
-  node.depth === 2 && node.hasChildren && node.parentId === parentInternalId;
+  node.depth === 2 &&
+  isNavigablePack(node) &&
+  node.parentId === parentInternalId;
+
+const emptyFolderFill = (
+  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
+) => (colorScheme === "dark" ? "hsl(0, 0%, 22%)" : "hsl(0, 0%, 88%)");
 
 const formatLabel = (name: string) => {
   if (!name) return "";
@@ -474,7 +485,12 @@ function CirclePackSkiaRenderer({
       if (found) target = found;
     }
 
-    if (!target.hasChildren && target.parentId) {
+    // Content leaves zoom to their parent; empty folders stay focusable.
+    if (
+      !target.hasChildren &&
+      !isEmptyFolderNode(target.rawData) &&
+      target.parentId
+    ) {
       const parent = nodeMap.get(target.parentId);
       if (parent) target = parent;
     }
@@ -498,7 +514,8 @@ function CirclePackSkiaRenderer({
         isTransitioningInternal.current = true; // Block the next useEffect
         let targetToProcess = n;
 
-        if (!n.hasChildren && n.parentId) {
+        // Use the flag directly — worklets can't call imported JS helpers.
+        if (!n.hasChildren && !n.rawData.isEmptyFolder && n.parentId) {
           const parent = nodeMap.get(n.parentId);
           if (parent) targetToProcess = parent;
         }
@@ -554,6 +571,10 @@ function CirclePackSkiaRenderer({
 
   // ---------- 6. Dynamic Color Logic ----------
   const getNodeColor = (node: NodeInfo) => {
+    if (isEmptyFolderNode(node.rawData)) {
+      return emptyFolderFill(colorScheme);
+    }
+
     if (!node.hasChildren) return "white";
 
     // Synthetic graph root stays neutral — not the same tint as first real nodes.
@@ -594,7 +615,11 @@ function CirclePackSkiaRenderer({
     if (atRoot) {
       for (const node of allNodes) {
         if (!isFirstLevelGroup(node)) continue;
-        if (countDirectChildren(node, allNodes) >= 2) {
+        // Empty folders always get a label; other packs need enough children.
+        if (
+          isEmptyFolderNode(node.rawData) ||
+          countDirectChildren(node, allNodes) >= 2
+        ) {
           labels.set(node.internalId, formatLabel(node.rawData.name));
         }
       }

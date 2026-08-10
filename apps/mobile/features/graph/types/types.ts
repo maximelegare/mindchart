@@ -10,6 +10,8 @@ export type NodeDatum = {
   folderId?: string;
   folderPath?: string | null;
   folderLabel?: string | null;
+  /** Folder pack with no notes/thoughts — kept for navigation, rendered muted. */
+  isEmptyFolder?: boolean;
   /**
    * Content leaves are either:
    * - thoughts (`thoughtId` set) — category mode

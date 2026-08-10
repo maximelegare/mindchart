@@ -31,6 +31,17 @@ export type BuildGraphByFolderOptions = {
 const isContentLeaf = (node: NodeDatum) =>
   !!node.thoughtId || isNoteLeafId(node.id);
 
+/** Real folder pack (not the synthetic "unfiled" bucket). */
+const isRealFolderNode = (node: NodeDatum) =>
+  !!node.folderId && node.folderId !== "unfiled";
+
+/** True when a graph node is an empty folder pack. */
+export const isEmptyFolderNode = (node: NodeDatum) =>
+  !!node.isEmptyFolder ||
+  (isRealFolderNode(node) &&
+    !(node.children && node.children.length > 0) &&
+    !isContentLeaf(node));
+
 /** Shared folder nesting + leaf attach + prune. */
 function buildFolderHierarchy(
   folders: Folder[],
@@ -115,13 +126,26 @@ function buildFolderHierarchy(
     });
   }
 
+  /**
+   * Drop empty non-folder packs, but keep empty folders so they stay
+   * navigable (muted) in the graph and linked breadcrumbs.
+   */
   const pruneEmpty = (node: NodeDatum): NodeDatum | null => {
     if (isContentLeaf(node)) return node;
     const kids = (node.children ?? [])
       .map(pruneEmpty)
       .filter((child): child is NodeDatum => child != null);
-    if (!kids.length) return null;
-    return { ...node, children: kids };
+    if (!kids.length) {
+      if (!isRealFolderNode(node)) return null;
+      // Leaf-sized pack so d3 can lay it out; flag for muted styling / nav.
+      return {
+        ...node,
+        children: undefined,
+        value: node.value ?? 1,
+        isEmptyFolder: true,
+      };
+    }
+    return { ...node, children: kids, isEmptyFolder: false };
   };
 
   const children = rootChildren
