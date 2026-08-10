@@ -9,6 +9,7 @@ import "@/lib/hideScrollIndicators";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { hsl } from "@/utils/hsl";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -211,10 +212,18 @@ export default function RootLayout() {
         }
       >
         <KeyboardProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
+          <GestureHandlerRootView
+            style={{
+              flex: 1,
+              backgroundColor: hsl("background", colorScheme),
+            }}
+          >
             <View
               style={[
-                { flex: 1 },
+                {
+                  flex: 1,
+                  backgroundColor: hsl("background", colorScheme),
+                },
                 themeVars(colorScheme === "dark" ? "dark" : "light"),
               ]}
               className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}
@@ -229,7 +238,14 @@ export default function RootLayout() {
 
                       <WhisperProvider>
                         <AutoConnectService>
-                          <Stack screenOptions={{ headerShown: false }}>
+                          <Stack
+                            screenOptions={{
+                              headerShown: false,
+                              contentStyle: {
+                                backgroundColor: hsl("background", colorScheme),
+                              },
+                            }}
+                          >
                             <Stack.Screen name="(tabs)" />
                             <Stack.Screen name="(stack)" />
                           </Stack>

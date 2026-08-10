@@ -1,5 +1,19 @@
 import { Stack } from "expo-router";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 export default function StackGroupLayout() {
-  return <Stack screenOptions={{ headerShown: false, header: () => null }} />;
+  const { colorScheme } = useColorScheme();
+
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        header: () => null,
+        contentStyle: {
+          backgroundColor: hsl("background", colorScheme),
+        },
+      }}
+    />
+  );
 }

@@ -26,7 +26,7 @@
     --ring: 145, 45%, 45%;
   }
 
-  .dark:root {
+  .dark {
     --background: 0, 0%, 12%;
     --foreground: 0, 0%, 94%;
     --card: 0, 0%, 18%;

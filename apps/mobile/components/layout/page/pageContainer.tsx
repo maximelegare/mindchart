@@ -24,6 +24,7 @@ import { HeaderContent } from "@/components/layout/shared/headerContent";
 
 import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 import { MoreOptionsMenuProps } from "../header/moreOptions/moreOptionsMenu";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import { useTabChromeStore } from "../tabs/tabChromeStore";
@@ -104,6 +105,13 @@ export const PageContainer = ({
   );
 
   const { colorScheme } = useColorScheme();
+  // Side gutters intentionally reveal the root behind the page sheet; match the
+  // header chrome so RN/nav default white never shows through (incl. dark mode).
+  const chromeBackdrop = hsl(
+    colorScheme === "dark" ? "footer" : "foreground",
+    colorScheme
+  );
+  const pageBackground = hsl("background", colorScheme);
   const canGoBack = navigation.canGoBack();
   const resolvedTitle = title ?? "";
   const displayTitle =
@@ -239,7 +247,7 @@ export const PageContainer = ({
     const pagePaddingTop = optionsHeader ? optionsHeaderHeight : 0;
 
     return (
-      <View style={styles.root}>
+      <View style={[styles.root, { backgroundColor: chromeBackdrop }]}>
         {fixedGradient}
         {showHeader && (
           <View style={styles.chrome} collapsable={false}>
@@ -257,10 +265,11 @@ export const PageContainer = ({
           </View>
         )}
         <View
-          className="flex-1 bg-background"
+          className="flex-1"
           style={[
             styles.pageContainer,
             gutter(),
+            { backgroundColor: pageBackground },
             showHeader && { marginTop: pageMarginTop },
             pagePaddingTop > 0 && { paddingTop: pagePaddingTop },
             pageNeedsTopRadius && {
@@ -301,12 +310,16 @@ export const PageContainer = ({
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: chromeBackdrop }]}>
       {fixedGradient}
 
       <View
-        className="flex-1 bg-background"
-        style={[styles.pageContainer, gutter()]}
+        className="flex-1"
+        style={[
+          styles.pageContainer,
+          gutter(),
+          { backgroundColor: pageBackground },
+        ]}
       >
         <Animated.ScrollView
           className="flex-1"

@@ -80,7 +80,7 @@ export default {
 
       addBase({
         ":root": vars(THEME_CONFIG.light),
-        ".dark:root": vars(THEME_CONFIG.dark),
+        ".dark": vars(THEME_CONFIG.dark),
       });
     }),
   ],
