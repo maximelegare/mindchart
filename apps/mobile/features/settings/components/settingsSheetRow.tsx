@@ -12,22 +12,24 @@ import {
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { Icon } from "@/components/ui/icons/icon";
-import type { IconName } from "@/components/ui/icons/icon-registry";
 
 type SettingsSheetRowProps = {
   label: string;
   /** Trailing value (e.g. "Local") when not using subtitle/status stack. */
   value?: string;
-  /** Small model name under the label (AI engine rows). */
+  /** Small line under the label (model / workspace name). */
   subtitle?: string;
-  /** Status line under the subtitle. */
+  /** Status line under the subtitle (Loaded / Setup / Enabled). */
   status?: string;
-  icon?: IconName;
+  /** Force red chevron (e.g. Recovery Password). */
+  dangerChevron?: boolean;
   sheetTitle: string;
   borderBottom?: boolean;
   children: React.ReactNode;
   /** Injected by `List` for first/last row rounding. */
   className?: string;
+  /** Injected by plain `List`. */
+  surface?: "card" | "none";
 };
 
 /** List row that opens a bottom sheet. Pass sheet body as children (already wired with props). */
@@ -36,30 +38,35 @@ export function SettingsSheetRow({
   value,
   subtitle,
   status,
-  icon,
+  dangerChevron = false,
   sheetTitle,
   borderBottom = true,
   children,
   className,
+  surface,
 }: SettingsSheetRowProps) {
   const { colorScheme } = useColorScheme();
-  const showEngineMeta = subtitle != null || status != null;
+  const showMeta = subtitle != null || status != null;
   const needsSetup = !!status && status !== "Loaded" && /setup/i.test(status);
-  const setupRed = hsl(
+  const isDisabledStatus = status === "Disabled";
+  const attention = needsSetup || isDisabledStatus;
+  const dangerColor = hsl(
     colorScheme === "dark" ? "destructive" : "destructive-foreground",
     colorScheme
   );
+  const redChevron = dangerChevron || attention;
 
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild>
         <ListItem
           className={className}
+          surface={surface}
           label={label}
           borderBottom={borderBottom}
           noChevron
           description={
-            showEngineMeta ? (
+            showMeta ? (
               <View className="gap-0.5 mt-0.5">
                 {subtitle ? (
                   <Typography
@@ -73,8 +80,8 @@ export function SettingsSheetRow({
                   <Typography
                     variant="small"
                     style={{
-                      color: needsSetup
-                        ? setupRed
+                      color: attention
+                        ? dangerColor
                         : status === "Loaded"
                           ? hsl("primary", colorScheme)
                           : hsl("muted-foreground", colorScheme),
@@ -86,14 +93,9 @@ export function SettingsSheetRow({
               </View>
             ) : undefined
           }
-          itemLeft={
-            icon
-              ? () => <Icon name={icon} color="foreground" size={20} />
-              : undefined
-          }
           itemRight={() => (
             <View className="flex-row items-center gap-1.5">
-              {!showEngineMeta && value ? (
+              {!showMeta && value ? (
                 <Typography
                   variant="p"
                   style={{
@@ -107,13 +109,13 @@ export function SettingsSheetRow({
               <Icon
                 name="chevron-right"
                 color={
-                  showEngineMeta
-                    ? needsSetup
-                      ? colorScheme === "dark"
-                        ? "destructive"
-                        : "destructive-foreground"
-                      : "primary"
-                    : "muted-foreground"
+                  redChevron
+                    ? colorScheme === "dark"
+                      ? "destructive"
+                      : "destructive-foreground"
+                    : showMeta
+                      ? "primary"
+                      : "muted-foreground"
                 }
                 size={20}
               />

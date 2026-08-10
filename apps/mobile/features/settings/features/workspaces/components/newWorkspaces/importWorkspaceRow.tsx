@@ -18,7 +18,7 @@ export const ImportWorkspaceRow = ({ onImported }: Props) => {
       variant="outline"
       className="w-full"
       style={{
-        backgroundColor: hsl("card", colorScheme),
+        backgroundColor: "transparent",
         borderColor: hsl("border", colorScheme),
       }}
       onPress={async () => {

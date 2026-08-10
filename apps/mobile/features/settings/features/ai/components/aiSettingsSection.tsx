@@ -138,7 +138,7 @@ export function AiSettingsSection() {
   );
 
   return (
-    <SettingsSection title="AI">
+    <SettingsSection title="AI" icon="brain">
       <ListItem
         label="Auto Connect"
         description="Connect Whisper and Llama Chat on launch. Embeddings always connect."

@@ -3,16 +3,19 @@ import { SettingsSheetRow } from "@/features/settings/components/settingsSheetRo
 import { WorkspacesSheetContent } from "./workspacesSheetContent";
 import { RecoveryPasswordFeature } from "@/features/settings/features/recoveryPassword/views/recoveryPassword";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
+import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 
 export function WorkspacesSettingsSection() {
   const { activeWorkspace } = useWorkSpaces();
+  const recoveryPassphraseEnabled = useSecuritySettingsPreferences(
+    (s) => s.recoveryPassphraseEnabled
+  );
 
   return (
-    <SettingsSection title="Workspaces">
+    <SettingsSection title="Workspaces" icon="layers">
       <SettingsSheetRow
         label="Workspaces"
-        value={activeWorkspace?.name}
-        icon="layers"
+        subtitle={activeWorkspace?.name ?? "None"}
         sheetTitle="Workspaces"
       >
         <WorkspacesSheetContent />
@@ -20,7 +23,8 @@ export function WorkspacesSettingsSection() {
 
       <SettingsSheetRow
         label="Recovery Password"
-        icon="key-round"
+        status={recoveryPassphraseEnabled ? "Enabled" : "Disabled"}
+        dangerChevron
         sheetTitle="Recovery Password"
         borderBottom={false}
       >

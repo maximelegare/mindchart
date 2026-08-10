@@ -67,6 +67,8 @@ type PageContainerProps = {
   optionsHeader?: React.ReactNode;
   /** Hide the bottom tab bar while this page is focused. */
   hideTabBar?: boolean;
+  /** Top corner radius of the page sheet under the header. */
+  pageTopRadius?: number;
 };
 
 export const PageContainer = ({
@@ -83,6 +85,7 @@ export const PageContainer = ({
   moreOptionsMenu,
   optionsHeader,
   hideTabBar = false,
+  pageTopRadius = PAGE_TOP_RADIUS,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -122,7 +125,7 @@ export const PageContainer = ({
   const showHeader = headerVariant !== "none";
   // Round heights to avoid sub-pixel layout rounding issues
   const headerHeight = Math.round(HEADER_HEIGHT + insets.top);
-  const optionsOverlap = PAGE_TOP_RADIUS + 1;
+  const optionsOverlap = pageTopRadius + 1;
   // Measure options bar height so expanded filter footers can push content.
   // The page underlaps the options chrome (see static layout below), so when
   // measurement lags the collapse animation the gap is page background — not
@@ -254,7 +257,10 @@ export const PageContainer = ({
             {headerBlock}
             {optionsHeader ? (
               <View
-                style={styles.optionsOverlap}
+                style={[
+                  styles.optionsOverlap,
+                  { marginTop: -(pageTopRadius + 1) },
+                ]}
                 onLayout={(event) => {
                   onOptionsHeaderLayout(event.nativeEvent.layout.height);
                 }}
@@ -273,8 +279,8 @@ export const PageContainer = ({
             showHeader && { marginTop: pageMarginTop },
             pagePaddingTop > 0 && { paddingTop: pagePaddingTop },
             pageNeedsTopRadius && {
-              borderTopLeftRadius: PAGE_TOP_RADIUS,
-              borderTopRightRadius: PAGE_TOP_RADIUS,
+              borderTopLeftRadius: pageTopRadius,
+              borderTopRightRadius: pageTopRadius,
             },
           ]}
         >
@@ -394,7 +400,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   optionsOverlap: {
-    marginTop: -(PAGE_TOP_RADIUS + 1),
     zIndex: 1,
   },
   pageContainer: {

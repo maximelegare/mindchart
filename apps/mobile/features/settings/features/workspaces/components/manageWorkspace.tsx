@@ -9,7 +9,6 @@ import { WorkspacePasswordModal } from "@/features/workspaces/components/modals/
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
-import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspaces/workspaceAvatar";
 import { Icon } from "@/components/ui/icons/icon";
@@ -17,10 +16,6 @@ import { hasKeyForWorkspace } from "@/features/workspaces/services/workspaceKeyS
 import { WorkspaceKeyMissingError } from "@/features/workspaces/services/workspaceKeyErrors";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import {
-  settingsInsetStyle,
-  settingsStatusStyle,
-} from "@/features/settings/components/settingsSurfaces";
 
 export const ManageWorkspaceLayout = () => {
   const {
@@ -169,10 +164,15 @@ export const ManageWorkspaceLayout = () => {
     });
   };
 
+  const divider = {
+    borderBottomWidth: 1,
+    borderBottomColor: hsl("border", colorScheme),
+  };
+
   return (
-    <Card>
-      <Gutter size="md" className="py-4">
-        <View className="flex-col pb-4">
+    <View>
+      <Gutter size="none" className="py-2">
+        <View className="flex-col pb-4" style={divider}>
           <Typography variant="h3" padding>
             Manage Workspaces
           </Typography>
@@ -182,7 +182,7 @@ export const ManageWorkspaceLayout = () => {
           </Typography>
         </View>
 
-        <View className="pb-6">
+        <View className="py-4" style={divider}>
           <Typography
             variant="h4"
             padding
@@ -190,20 +190,17 @@ export const ManageWorkspaceLayout = () => {
           >
             Active Workspace
           </Typography>
-          <Card
-            className="p-3 flex-row items-center"
-            style={settingsStatusStyle(colorScheme)}
-          >
+          <View className="py-2 flex-row items-center">
             <View className="flex-row items-center gap-2">
               <WorkspaceAvatar />
               <Typography variant="h3">
                 {activeWorkspace?.name ?? "None"}
               </Typography>
             </View>
-          </Card>
+          </View>
         </View>
 
-        <View>
+        <View className="pt-4">
           <Typography
             variant="h4"
             padding
@@ -211,15 +208,19 @@ export const ManageWorkspaceLayout = () => {
           >
             Available Workspaces
           </Typography>
-          <View className="flex-col gap-3">
-            {workspaces.map((workspace) => {
+          <View className="flex-col">
+            {workspaces.map((workspace, index) => {
               const isActive = workspace.id === activeWorkspace?.id;
               const hasKey = hasKeyByWorkspaceId[workspace.id] ?? false;
+              const isLast = index === workspaces.length - 1;
               return (
-                <Card
+                <View
                   key={workspace.id}
-                  className="p-3 flex-row items-center"
-                  style={settingsInsetStyle(colorScheme, isActive)}
+                  className="py-3 flex-row items-center"
+                  style={[
+                    !isLast ? divider : null,
+                    { opacity: isActive ? 1 : 0.7 },
+                  ]}
                 >
                   <View className="flex-1 flex-row items-center gap-2">
                     <WorkspaceAvatar workspace={workspace} />
@@ -271,12 +272,12 @@ export const ManageWorkspaceLayout = () => {
                       />
                     </Button>
                   </View>
-                </Card>
+                </View>
               );
             })}
           </View>
         </View>
       </Gutter>
-    </Card>
+    </View>
   );
 };

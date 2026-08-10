@@ -1,15 +1,10 @@
 import React from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Typography } from "@/components/ui/typography";
-import { Card } from "@/components/ui/card";
 import { hsl } from "@/utils/hsl";
 import { Button } from "@/components/ui";
 import { CHAT_MODELS } from "@/features/llama/data/models/chat/chatModels";
 import { useColorScheme } from "@/lib/useColorScheme";
-import {
-  settingsInsetStyle,
-  settingsStatusStyle,
-} from "@/features/settings/components/settingsSurfaces";
 
 export type LlamaChatSettingsContentProps = {
   currentModelId: string | null;
@@ -35,15 +30,23 @@ export function LlamaChatSettingsContent({
   onDelete,
 }: LlamaChatSettingsContentProps) {
   const { colorScheme } = useColorScheme();
+  const divider = {
+    borderBottomWidth: 1,
+    borderBottomColor: hsl("border", colorScheme),
+  };
+  const modelEntries = Object.entries(CHAT_MODELS);
 
   return (
-    <View className="gap-4 py-2">
-      <Typography padding>
-        Local Large Language Model responsible for the summarization of notes.
-        Large models require more VRAM and storage but provide better accuracy.
-      </Typography>
+    <View className="py-2">
+      <View className="pb-4" style={divider}>
+        <Typography padding>
+          Local Large Language Model responsible for the summarization of notes.
+          Large models require more VRAM and storage but provide better
+          accuracy.
+        </Typography>
+      </View>
 
-      <View>
+      <View className="py-4" style={divider}>
         <Typography
           variant="h4"
           padding
@@ -51,10 +54,7 @@ export function LlamaChatSettingsContent({
         >
           Engine Status
         </Typography>
-        <Card
-          className="p-3 flex-row items-center"
-          style={settingsStatusStyle(colorScheme)}
-        >
+        <View className="py-2 flex-row items-center">
           <View className="flex-1">
             <Typography
               variant="h4"
@@ -76,10 +76,10 @@ export function LlamaChatSettingsContent({
               <Typography>Unload from RAM</Typography>
             </Button>
           ) : null}
-        </Card>
+        </View>
       </View>
 
-      <View>
+      <View className="pt-4">
         <Typography
           variant="h4"
           padding
@@ -87,19 +87,23 @@ export function LlamaChatSettingsContent({
         >
           Available Models
         </Typography>
-        <View className="flex-col gap-3">
-          {Object.entries(CHAT_MODELS).map(([key, model]) => {
+        <View className="flex-col">
+          {modelEntries.map(([key, model], index) => {
             const isDownloaded = !!downloadedModels[key];
             const isActive = currentModelId === key;
             const progress = downloadProgress[key] || 0;
             const downloadingThis =
               isDownloading && activeDownloadModelId === key;
+            const isLast = index === modelEntries.length - 1;
 
             return (
-              <Card
+              <View
                 key={key}
-                className="p-3 flex-row items-center"
-                style={settingsInsetStyle(colorScheme, isActive)}
+                className="py-3 flex-row items-center"
+                style={[
+                  !isLast ? divider : null,
+                  { opacity: isActive ? 1 : 0.55 },
+                ]}
               >
                 <View className="flex-1">
                   <Typography variant="h4" padding>
@@ -171,7 +175,7 @@ export function LlamaChatSettingsContent({
                     )}
                   </Button>
                 </View>
-              </Card>
+              </View>
             );
           })}
         </View>

@@ -2,14 +2,9 @@ import React from "react";
 import { View, ActivityIndicator } from "react-native";
 import { WHISPER_MODELS } from "@/features/whisper/data/whisperModels";
 import { Typography } from "@/components/ui/typography";
-import { Card } from "@/components/ui/card";
 import { hsl } from "@/utils/hsl";
 import { Button } from "@/components/ui";
 import { useColorScheme } from "@/lib/useColorScheme";
-import {
-  settingsInsetStyle,
-  settingsStatusStyle,
-} from "@/features/settings/components/settingsSurfaces";
 
 export type WhisperSettingsContentProps = {
   currentModelId: string | null;
@@ -33,15 +28,21 @@ export function WhisperSettingsContent({
   onDelete,
 }: WhisperSettingsContentProps) {
   const { colorScheme } = useColorScheme();
+  const divider = {
+    borderBottomWidth: 1,
+    borderBottomColor: hsl("border", colorScheme),
+  };
 
   return (
-    <View className="gap-4 py-2">
-      <Typography padding>
-        AI Engine responsible for the local transcription of speech. Use Tiny
-        for English and Base for other languages.
-      </Typography>
+    <View className="py-2">
+      <View className="pb-4" style={divider}>
+        <Typography padding>
+          AI Engine responsible for the local transcription of speech. Use Tiny
+          for English and Base for other languages.
+        </Typography>
+      </View>
 
-      <View>
+      <View className="py-4" style={divider}>
         <Typography
           variant="h4"
           padding
@@ -49,10 +50,7 @@ export function WhisperSettingsContent({
         >
           Engine Status
         </Typography>
-        <Card
-          className="p-3 flex-row items-center"
-          style={settingsStatusStyle(colorScheme)}
-        >
+        <View className="py-2 flex-row items-center">
           <View className="flex-1">
             <Typography
               variant="h4"
@@ -74,10 +72,10 @@ export function WhisperSettingsContent({
               <Typography>Unload from RAM</Typography>
             </Button>
           ) : null}
-        </Card>
+        </View>
       </View>
 
-      <View>
+      <View className="pt-4">
         <Typography
           variant="h4"
           padding
@@ -85,19 +83,23 @@ export function WhisperSettingsContent({
         >
           Available Models
         </Typography>
-        <View className="flex-col gap-3">
-          {WHISPER_MODELS.map((model) => {
+        <View className="flex-col">
+          {WHISPER_MODELS.map((model, index) => {
             const isDownloaded = !!modelFiles[model.id];
             const isActive = currentModelId === model.id;
             const progress = downloadProgress[model.id] || 0;
             const downloadingThis =
               isDownloading && progress > 0 && progress < 1;
+            const isLast = index === WHISPER_MODELS.length - 1;
 
             return (
-              <Card
+              <View
                 key={model.id}
-                className="p-3 flex-row items-center"
-                style={settingsInsetStyle(colorScheme, isActive)}
+                className="py-3 flex-row items-center"
+                style={[
+                  !isLast ? divider : null,
+                  { opacity: isActive ? 1 : 0.55 },
+                ]}
               >
                 <View className="flex-1">
                   <Typography variant="h4" padding>
@@ -167,7 +169,7 @@ export function WhisperSettingsContent({
                     )}
                   </Button>
                 </View>
-              </Card>
+              </View>
             );
           })}
         </View>

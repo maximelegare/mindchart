@@ -9,7 +9,7 @@ import {
   BottomSheetView,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui/typography";
-import { Moon, Palette, Smartphone, Sun } from "@/lib/icons";
+import { Moon, Smartphone, Sun } from "@/lib/icons";
 
 import ListItem from "@/components/ui/list-item";
 import { Check } from "@/lib/icons/Check";
@@ -85,7 +85,13 @@ function ThemePickerBody({
   );
 }
 
-export const ThemeSettingItem = ({ className }: { className?: string }) => {
+export const ThemeSettingItem = ({
+  className,
+  surface,
+}: {
+  className?: string;
+  surface?: "card" | "none";
+}) => {
   const { themePreference, setColorScheme, colorScheme } = useColorScheme();
 
   const themes: ItemData[] = useMemo(
@@ -125,7 +131,7 @@ export const ThemeSettingItem = ({ className }: { className?: string }) => {
       <BottomSheetOpenTrigger asChild>
         <ListItem
           className={className}
-          itemLeft={(props) => <Palette {...props} />}
+          surface={surface}
           label="Theme"
           borderBottom={false}
           itemRight={() => (
