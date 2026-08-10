@@ -9,9 +9,14 @@ import { areBreadcrumbsLinked } from "./breadcrumbLinkStore";
 export const graphIdFromFolderId = (folderId: string | null) =>
   folderId ? folderNodeId(folderId) : "root";
 
+const isRootNode = (node: NodeDatum) =>
+  node.id === "root" || node.name?.toLowerCase() === "root";
+
 /**
  * Resolve a graph breadcrumb target to a notes folder id.
- * `null` = root; `undefined` = not a folder target (skip sync).
+ * `null` = notes root; `undefined` = cannot resolve (skip sync).
+ * Walks up from the target to the nearest real folder so category packs
+ * and note leaves still keep notes linked.
  */
 export const folderIdFromGraphTarget = (
   targetId: string,
@@ -19,17 +24,21 @@ export const folderIdFromGraphTarget = (
 ): string | null | undefined => {
   if (targetId === "root") return null;
   if (!hierarchy) return undefined;
-  if (targetId === hierarchy.id) return null;
 
   const path = findNodePath(hierarchy, targetId);
-  const node = path[path.length - 1];
-  if (!node) return undefined;
-  if (node.id === "root" || node.name?.toLowerCase() === "root") return null;
-  if (node.folderId) return node.folderId;
-  return undefined;
+  if (!path.length) return undefined;
+
+  for (let i = path.length - 1; i >= 0; i--) {
+    const node = path[i];
+    if (isRootNode(node)) return null;
+    if (node.folderId && node.folderId !== "unfiled") return node.folderId;
+  }
+
+  // Category / other non-folder with no folder ancestor → notes root
+  return null;
 };
 
-/** Graph breadcrumb navigated — mirror into notes when it's a folder path. */
+/** Graph breadcrumb navigated — mirror into notes when linked. */
 export const onGraphBreadcrumbNavigate = (
   targetId: string,
   hierarchy: NodeDatum | null = useGraphStore.getState().breadcrumbHierarchy
@@ -37,5 +46,11 @@ export const onGraphBreadcrumbNavigate = (
   if (!areBreadcrumbsLinked()) return;
   const folderId = folderIdFromGraphTarget(targetId, hierarchy);
   if (folderId === undefined) return;
-  useOptionsBar.getState().handleCurrentFolderChange(folderId);
+
+  const store = useOptionsBar.getState();
+  // Linked breadcrumbs browse folders — ensure notes is in folder mode.
+  if (store.foldersMode !== "with") {
+    store.handleFoldersModeChange("with");
+  }
+  store.handleCurrentFolderChange(folderId);
 };

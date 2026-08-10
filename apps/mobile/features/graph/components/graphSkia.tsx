@@ -28,9 +28,15 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { Icon } from "@/components/ui/icons/icon";
 import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
-import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
+import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { isEmptyFolderNode } from "@/features/graph/utils/buildGraphByFolder";
+import { isNoteLeafId } from "@/features/graph/utils/mapNoteToLeaf";
+import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
+
+/** Folder-mode note leaf fill. */
+const NOTE_LEAF_FILL = "#E3F0FC";
 
 const parseHslChannels = (hslColor: string) => {
   const inside = hslColor.replace(/^hsla?\(|\)$/g, "").trim();
@@ -279,11 +285,24 @@ const computeLayout = (data: NodeDatum, padding: number): Layout => {
 const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
   allNodes.filter((n) => n.parentId === parent.internalId).length;
 
+/** Packs you can zoom into — includes empty folders (no content children). */
+const isNavigablePack = (node: NodeInfo) =>
+  node.hasChildren || isEmptyFolderNode(node.rawData);
+
 const isFirstLevelGroup = (node: NodeInfo) =>
-  node.depth === 1 && node.hasChildren;
+  node.depth === 1 && isNavigablePack(node);
 
 const isSecondLevelGroup = (node: NodeInfo, parentInternalId: string) =>
-  node.depth === 2 && node.hasChildren && node.parentId === parentInternalId;
+  node.depth === 2 &&
+  isNavigablePack(node) &&
+  node.parentId === parentInternalId;
+
+const emptyFolderFill = (
+  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
+) => (colorScheme === "dark" ? "hsl(0, 0%, 22%)" : "hsl(0, 0%, 88%)");
+
+const isFolderModeNoteLeaf = (node: NodeInfo) =>
+  !node.hasChildren && isNoteLeafId(node.dbId);
 
 const formatLabel = (name: string) => {
   if (!name) return "";
@@ -400,7 +419,9 @@ function CirclePackSkiaRenderer({
   const navigateToNode = (
     node: NodeInfo,
     isToggleBack = false,
-    dismissFocusHighlight = false
+    dismissFocusHighlight = false,
+    /** When true, mirror this navigation into notes (linked breadcrumbs). */
+    syncNotesFolder = false
   ) => {
     if (dismissFocusHighlight && hatchHighlightActive) {
       setHatchHighlightActive(false);
@@ -421,6 +442,11 @@ function CirclePackSkiaRenderer({
     if (onNodeSelected) {
       const parent = node.parentId ? nodeMap.get(node.parentId) : undefined;
       onNodeSelected(node.rawData, parent?.rawData);
+    }
+
+    if (syncNotesFolder) {
+      const targetId = isSyntheticRoot(node.rawData) ? "root" : node.rawData.id;
+      onGraphBreadcrumbNavigate(targetId);
     }
   };
 
@@ -466,7 +492,12 @@ function CirclePackSkiaRenderer({
       if (found) target = found;
     }
 
-    if (!target.hasChildren && target.parentId) {
+    // Content leaves zoom to their parent; empty folders stay focusable.
+    if (
+      !target.hasChildren &&
+      !isEmptyFolderNode(target.rawData) &&
+      target.parentId
+    ) {
       const parent = nodeMap.get(target.parentId);
       if (parent) target = parent;
     }
@@ -490,7 +521,8 @@ function CirclePackSkiaRenderer({
         isTransitioningInternal.current = true; // Block the next useEffect
         let targetToProcess = n;
 
-        if (!n.hasChildren && n.parentId) {
+        // Use the flag directly — worklets can't call imported JS helpers.
+        if (!n.hasChildren && !n.rawData.isEmptyFolder && n.parentId) {
           const parent = nodeMap.get(n.parentId);
           if (parent) targetToProcess = parent;
         }
@@ -510,11 +542,11 @@ function CirclePackSkiaRenderer({
           targetToProcess.rawData.name?.toLowerCase() !== "root" &&
           canToggleBack
         ) {
-          runOnJS(navigateToNode)(prev, true, true);
+          runOnJS(navigateToNode)(prev, true, true, true);
         } else if (!isSameTarget) {
-          runOnJS(navigateToNode)(targetToProcess, false, true);
+          runOnJS(navigateToNode)(targetToProcess, false, true, true);
         } else {
-          runOnJS(navigateToNode)(rootNode, false, true);
+          runOnJS(navigateToNode)(rootNode, false, true, true);
         }
         break;
       }
@@ -527,16 +559,16 @@ function CirclePackSkiaRenderer({
     const current = nodeMap.get(activeInternalId.value);
     if (current?.parentId) {
       const parent = nodeMap.get(current.parentId);
-      if (parent) navigateToNode(parent, false, true);
+      if (parent) navigateToNode(parent, false, true, true);
     } else if (current && current.internalId !== rootNode.internalId) {
-      navigateToNode(rootNode, false, true);
+      navigateToNode(rootNode, false, true, true);
     }
   };
 
   const handleZoomOut = () => {
     const current = nodeMap.get(activeInternalId.value);
     if (current?.rawData.name === "Root") return;
-    else navigateToNode(rootNode, false, true);
+    else navigateToNode(rootNode, false, true, true);
   };
 
   const packLayerCounts = useMemo(
@@ -546,6 +578,14 @@ function CirclePackSkiaRenderer({
 
   // ---------- 6. Dynamic Color Logic ----------
   const getNodeColor = (node: NodeInfo) => {
+    if (isEmptyFolderNode(node.rawData)) {
+      return emptyFolderFill(colorScheme);
+    }
+
+    if (graphMode === "folder" && isFolderModeNoteLeaf(node)) {
+      return NOTE_LEAF_FILL;
+    }
+
     if (!node.hasChildren) return "white";
 
     // Synthetic graph root stays neutral — not the same tint as first real nodes.
@@ -586,7 +626,11 @@ function CirclePackSkiaRenderer({
     if (atRoot) {
       for (const node of allNodes) {
         if (!isFirstLevelGroup(node)) continue;
-        if (countDirectChildren(node, allNodes) >= 2) {
+        // Empty folders always get a label; other packs need enough children.
+        if (
+          isEmptyFolderNode(node.rawData) ||
+          countDirectChildren(node, allNodes) >= 2
+        ) {
           labels.set(node.internalId, formatLabel(node.rawData.name));
         }
       }
@@ -631,28 +675,36 @@ function CirclePackSkiaRenderer({
         <View style={styles.canvasContainer}>
           <GestureDetector gesture={tap}>
             <Canvas style={styles.canvas}>
-              {allNodes.map((node) => (
-                <SkCircle
-                  key={node.internalId}
-                  node={node}
-                  viewX={viewX}
-                  viewY={viewY}
-                  viewR={viewR}
-                  color={getNodeColor(node)}
-                  showBorder={node.internalId === rootNode.internalId}
-                  borderColor={hsl("border", colorScheme)}
-                  isFocusedThought={
-                    hatchHighlightActive &&
-                    !!focusedDbId &&
-                    !node.hasChildren &&
-                    (node.dbId === focusedDbId ||
-                      node.dbId === `note-${focusedDbId}` ||
-                      node.rawData.noteId === focusedDbId ||
-                      !!node.rawData.relatedThoughtIds?.includes(focusedDbId))
-                  }
-                  hatchLineColor={hsl("border", colorScheme, 10)}
-                />
-              ))}
+              {allNodes.map((node) => {
+                const isNoteLeaf =
+                  graphMode === "folder" && isFolderModeNoteLeaf(node);
+                return (
+                  <SkCircle
+                    key={node.internalId}
+                    node={node}
+                    viewX={viewX}
+                    viewY={viewY}
+                    viewR={viewR}
+                    color={getNodeColor(node)}
+                    showBorder={
+                      node.internalId === rootNode.internalId || isNoteLeaf
+                    }
+                    borderColor={
+                      isNoteLeaf ? "#FFFFFF" : hsl("border", colorScheme)
+                    }
+                    isFocusedThought={
+                      hatchHighlightActive &&
+                      !!focusedDbId &&
+                      !node.hasChildren &&
+                      (node.dbId === focusedDbId ||
+                        node.dbId === `note-${focusedDbId}` ||
+                        node.rawData.noteId === focusedDbId ||
+                        !!node.rawData.relatedThoughtIds?.includes(focusedDbId))
+                    }
+                    hatchLineColor={hsl("border", colorScheme, 10)}
+                  />
+                );
+              })}
               {labeledNodes.map(({ node, text }) => (
                 <SkLabel
                   key={`label-${node.internalId}`}
