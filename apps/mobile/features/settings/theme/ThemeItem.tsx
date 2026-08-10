@@ -146,7 +146,7 @@ export const ThemeSettingItem = ({ className }: { className?: string }) => {
         backgroundStyle={{ backgroundColor: hsl("background", colorScheme) }}
       >
         <BottomSheetHeader className="bg-background">
-          <Typography className="text-foreground text-xl font-bold pb-1">
+          <Typography variant="h3" padding={false}>
             Select Theme
           </Typography>
         </BottomSheetHeader>

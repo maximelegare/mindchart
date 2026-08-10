@@ -16,6 +16,7 @@ export const CreateWorkspaceRow = ({ onCreated }: Props) => {
   const open = () => {
     openModal({
       modalName: "CREATE_WORKSPACE",
+      aboveBottomSheet: true,
       customContent: () => (
         <WorkspaceEdit
           confirmLabel="Create"

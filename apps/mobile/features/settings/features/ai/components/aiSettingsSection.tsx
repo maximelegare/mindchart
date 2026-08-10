@@ -14,6 +14,13 @@ import { LlamaChatSettingsContent } from "../llamaChat/llamaChatSettingsContent"
 import { LlamaEmbeddingsSettingsContent } from "../llamaEmbeddingsSettings/llamaEmbeddingsSettingsContent";
 import { AiProvidersSettingsContent } from "../aiProvidersSettings/aiProvidersSettingsContent";
 import { EMBEDDINGS_MODELS } from "@/features/llama/data/models/embeddings/embeddingsModels";
+import { CHAT_MODELS } from "@/features/llama/data/models/chat/chatModels";
+import { WHISPER_MODELS } from "@/features/whisper/data/whisperModels";
+
+function formatModelLabel(modelId: string | null | undefined) {
+  if (!modelId) return "No model";
+  return modelId.replace(/_/g, " ");
+}
 
 export function AiSettingsSection() {
   const { autoConnect, setAutoConnect, aiProviders, setAIProviders } =
@@ -41,6 +48,7 @@ export function AiSettingsSection() {
       } catch {
         openModal({
           modalName: "INITIALIZE_MODEL_ERROR",
+          aboveBottomSheet: true,
           onConfirm: () => closeModal(),
         });
       }
@@ -52,6 +60,7 @@ export function AiSettingsSection() {
     (modelId: string) => {
       openModal({
         modalName: "DELETE_MODEL_ACTION",
+        aboveBottomSheet: true,
         onConfirm: () => {
           whisper.deleteModel(modelId);
           closeModal();
@@ -70,6 +79,7 @@ export function AiSettingsSection() {
       } catch {
         openModal({
           modalName: "DELETE_MODEL_ERROR",
+          aboveBottomSheet: true,
           onConfirm: () => closeModal(),
         });
       }
@@ -81,6 +91,7 @@ export function AiSettingsSection() {
     (modelKey: string) => {
       openModal({
         modalName: "DELETE_MODEL_ACTION",
+        aboveBottomSheet: true,
         onConfirm: () => {
           llamaChat.deleteModel(modelKey);
           closeModal();
@@ -103,6 +114,7 @@ export function AiSettingsSection() {
       } catch {
         openModal({
           modalName: "DELETE_MODEL_ERROR",
+          aboveBottomSheet: true,
           onConfirm: () => closeModal(),
         });
       }
@@ -114,6 +126,7 @@ export function AiSettingsSection() {
     (modelKey: string) => {
       openModal({
         modalName: "DELETE_MODEL_ACTION",
+        aboveBottomSheet: true,
         onConfirm: () => {
           llamaEmbeddings.deleteModel(modelKey);
           closeModal();
@@ -155,7 +168,11 @@ export function AiSettingsSection() {
 
       <SettingsSheetRow
         label="Whisper Engine"
-        value={whisper.isReady ? "Loaded" : "Setup"}
+        subtitle={
+          WHISPER_MODELS.find((m) => m.id === whisper.currentModelId)?.label ??
+          formatModelLabel(whisper.currentModelId)
+        }
+        status={whisper.isReady ? "Loaded" : "Setup"}
         sheetTitle="Whisper Engine"
       >
         <WhisperSettingsContent
@@ -172,7 +189,13 @@ export function AiSettingsSection() {
 
       <SettingsSheetRow
         label="Llama Chat Engine"
-        value={llamaChat.isReady ? "Loaded" : "Setup"}
+        subtitle={
+          (llamaChat.currentModelId &&
+            CHAT_MODELS[llamaChat.currentModelId as keyof typeof CHAT_MODELS]
+              ?.name) ||
+          formatModelLabel(llamaChat.currentModelId)
+        }
+        status={llamaChat.isReady ? "Loaded" : "Setup"}
         sheetTitle="Llama Chat Engine"
       >
         <LlamaChatSettingsContent
@@ -190,7 +213,14 @@ export function AiSettingsSection() {
 
       <SettingsSheetRow
         label="Embeddings Engine"
-        value={llamaEmbeddings.isReady ? "Loaded" : "Setup"}
+        subtitle={
+          (llamaEmbeddings.currentModelId &&
+            EMBEDDINGS_MODELS[
+              llamaEmbeddings.currentModelId as keyof typeof EMBEDDINGS_MODELS
+            ]?.name) ||
+          formatModelLabel(llamaEmbeddings.currentModelId)
+        }
+        status={llamaEmbeddings.isReady ? "Loaded" : "*** Setup Required ***"}
         sheetTitle="Embeddings Engine"
         borderBottom={false}
       >

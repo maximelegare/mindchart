@@ -13,11 +13,15 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
-import { ChevronRight } from "@/components/Icons";
 
 type SettingsSheetRowProps = {
   label: string;
+  /** Trailing value (e.g. "Local") when not using subtitle/status stack. */
   value?: string;
+  /** Small model name under the label (AI engine rows). */
+  subtitle?: string;
+  /** Status line under the subtitle. */
+  status?: string;
   icon?: IconName;
   sheetTitle: string;
   borderBottom?: boolean;
@@ -30,6 +34,8 @@ type SettingsSheetRowProps = {
 export function SettingsSheetRow({
   label,
   value,
+  subtitle,
+  status,
   icon,
   sheetTitle,
   borderBottom = true,
@@ -37,6 +43,12 @@ export function SettingsSheetRow({
   className,
 }: SettingsSheetRowProps) {
   const { colorScheme } = useColorScheme();
+  const showEngineMeta = subtitle != null || status != null;
+  const needsSetup = !!status && status !== "Loaded" && /setup/i.test(status);
+  const setupRed = hsl(
+    colorScheme === "dark" ? "destructive" : "destructive-foreground",
+    colorScheme
+  );
 
   return (
     <BottomSheet>
@@ -46,6 +58,34 @@ export function SettingsSheetRow({
           label={label}
           borderBottom={borderBottom}
           noChevron
+          description={
+            showEngineMeta ? (
+              <View className="gap-0.5 mt-0.5">
+                {subtitle ? (
+                  <Typography
+                    variant="small"
+                    style={{ color: hsl("muted-foreground", colorScheme) }}
+                  >
+                    {subtitle}
+                  </Typography>
+                ) : null}
+                {status ? (
+                  <Typography
+                    variant="small"
+                    style={{
+                      color: needsSetup
+                        ? setupRed
+                        : status === "Loaded"
+                          ? hsl("primary", colorScheme)
+                          : hsl("muted-foreground", colorScheme),
+                    }}
+                  >
+                    {status}
+                  </Typography>
+                ) : null}
+              </View>
+            ) : undefined
+          }
           itemLeft={
             icon
               ? () => <Icon name={icon} color="foreground" size={20} />
@@ -53,7 +93,7 @@ export function SettingsSheetRow({
           }
           itemRight={() => (
             <View className="flex-row items-center gap-1.5">
-              {value ? (
+              {!showEngineMeta && value ? (
                 <Typography
                   variant="p"
                   style={{
@@ -64,7 +104,19 @@ export function SettingsSheetRow({
                   {value}
                 </Typography>
               ) : null}
-              <ChevronRight className="size-5 opacity-70" />
+              <Icon
+                name="chevron-right"
+                color={
+                  showEngineMeta
+                    ? needsSetup
+                      ? colorScheme === "dark"
+                        ? "destructive"
+                        : "destructive-foreground"
+                      : "primary"
+                    : "muted-foreground"
+                }
+                size={20}
+              />
             </View>
           )}
         />
@@ -75,7 +127,7 @@ export function SettingsSheetRow({
         backgroundStyle={{ backgroundColor: hsl("background", colorScheme) }}
       >
         <BottomSheetHeader className="bg-background">
-          <Typography className="text-foreground text-xl font-bold pb-1">
+          <Typography variant="h3" padding={false}>
             {sheetTitle}
           </Typography>
         </BottomSheetHeader>

@@ -150,6 +150,7 @@ export const ManageWorkspaceLayout = () => {
     const canDelete = workspaces.length > 1 || !isActive;
     openModal({
       title: "More actions",
+      aboveBottomSheet: true,
       customContent: () => (
         <WorkspaceActionsModal
           workspace={workspace}

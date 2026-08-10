@@ -40,7 +40,7 @@ interface ItemProps {
 // Define props for ListItem with TypeScript interface
 type ListItemProps = VariantProps<typeof listItemTextVariants> & {
   label: string;
-  description?: string;
+  description?: React.ReactNode;
   itemLeft?: (itemProps: ItemProps) => React.ReactElement;
   itemRight?: (itemProps: ItemProps) => React.ReactElement;
   onPress?: () => void;
@@ -128,7 +128,13 @@ const ListItem: React.FC<ListItemProps> = ({
         >
           {label}
         </Typography>
-        {description ? <Muted>{description}</Muted> : undefined}
+        {description ? (
+          typeof description === "string" ? (
+            <Muted>{description}</Muted>
+          ) : (
+            description
+          )
+        ) : undefined}
       </View>
       {rightContent}
     </Component>
