@@ -32,7 +32,11 @@ import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { isEmptyFolderNode } from "@/features/graph/utils/buildGraphByFolder";
+import { isNoteLeafId } from "@/features/graph/utils/mapNoteToLeaf";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
+
+/** Folder-mode note leaf fill. */
+const NOTE_LEAF_FILL = "#E3F0FC";
 
 const parseHslChannels = (hslColor: string) => {
   const inside = hslColor.replace(/^hsla?\(|\)$/g, "").trim();
@@ -296,6 +300,9 @@ const isSecondLevelGroup = (node: NodeInfo, parentInternalId: string) =>
 const emptyFolderFill = (
   colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
 ) => (colorScheme === "dark" ? "hsl(0, 0%, 22%)" : "hsl(0, 0%, 88%)");
+
+const isFolderModeNoteLeaf = (node: NodeInfo) =>
+  !node.hasChildren && isNoteLeafId(node.dbId);
 
 const formatLabel = (name: string) => {
   if (!name) return "";
@@ -575,6 +582,10 @@ function CirclePackSkiaRenderer({
       return emptyFolderFill(colorScheme);
     }
 
+    if (graphMode === "folder" && isFolderModeNoteLeaf(node)) {
+      return NOTE_LEAF_FILL;
+    }
+
     if (!node.hasChildren) return "white";
 
     // Synthetic graph root stays neutral — not the same tint as first real nodes.
@@ -664,28 +675,36 @@ function CirclePackSkiaRenderer({
         <View style={styles.canvasContainer}>
           <GestureDetector gesture={tap}>
             <Canvas style={styles.canvas}>
-              {allNodes.map((node) => (
-                <SkCircle
-                  key={node.internalId}
-                  node={node}
-                  viewX={viewX}
-                  viewY={viewY}
-                  viewR={viewR}
-                  color={getNodeColor(node)}
-                  showBorder={node.internalId === rootNode.internalId}
-                  borderColor={hsl("border", colorScheme)}
-                  isFocusedThought={
-                    hatchHighlightActive &&
-                    !!focusedDbId &&
-                    !node.hasChildren &&
-                    (node.dbId === focusedDbId ||
-                      node.dbId === `note-${focusedDbId}` ||
-                      node.rawData.noteId === focusedDbId ||
-                      !!node.rawData.relatedThoughtIds?.includes(focusedDbId))
-                  }
-                  hatchLineColor={hsl("border", colorScheme, 10)}
-                />
-              ))}
+              {allNodes.map((node) => {
+                const isNoteLeaf =
+                  graphMode === "folder" && isFolderModeNoteLeaf(node);
+                return (
+                  <SkCircle
+                    key={node.internalId}
+                    node={node}
+                    viewX={viewX}
+                    viewY={viewY}
+                    viewR={viewR}
+                    color={getNodeColor(node)}
+                    showBorder={
+                      node.internalId === rootNode.internalId || isNoteLeaf
+                    }
+                    borderColor={
+                      isNoteLeaf ? "#FFFFFF" : hsl("border", colorScheme)
+                    }
+                    isFocusedThought={
+                      hatchHighlightActive &&
+                      !!focusedDbId &&
+                      !node.hasChildren &&
+                      (node.dbId === focusedDbId ||
+                        node.dbId === `note-${focusedDbId}` ||
+                        node.rawData.noteId === focusedDbId ||
+                        !!node.rawData.relatedThoughtIds?.includes(focusedDbId))
+                    }
+                    hatchLineColor={hsl("border", colorScheme, 10)}
+                  />
+                );
+              })}
               {labeledNodes.map(({ node, text }) => (
                 <SkLabel
                   key={`label-${node.internalId}`}
