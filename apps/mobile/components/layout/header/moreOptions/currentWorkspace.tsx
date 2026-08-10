@@ -45,7 +45,7 @@ export const CurrentWorkspace = () => {
                 name="arrow-right-left"
                 size={12}
                 opacity={30}
-                color="background"
+                color="popover-foreground"
               />
             </View>
           </View>

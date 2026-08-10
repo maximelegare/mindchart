@@ -1,7 +1,7 @@
 import * as React from "react";
 import List from "@/components/ui/list";
 import ListItem from "@/components/ui/list-item";
-// import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
+import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { useRouter } from "expo-router";
 import { Icon } from "@/components/ui/icons/icon";
@@ -12,6 +12,7 @@ export const SettingsFeature = () => {
   return (
     <>
       <List>
+        <ThemeSettingItem />
         <ListItem
           className="bg-background"
           itemLeft={() => <Icon name="brain" color="foreground" />} // props adds size and color attributes

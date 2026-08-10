@@ -13,8 +13,8 @@ interface IconProps {
   color?: Theme | "text";
   hslColor?: string;
   style?: StyleProp<ViewStyle>;
-  // className?: string;
 }
+
 export const Icon = ({
   name,
   size = 24,
@@ -22,7 +22,6 @@ export const Icon = ({
   color = "primary",
   style,
   hslColor,
-  // className,
 }: IconProps) => {
   const icon = ICON_METADATA[name];
   const { colorScheme } = useColorScheme();
@@ -32,7 +31,8 @@ export const Icon = ({
     return null;
   }
 
-  const resolvedColor = hslColor ?? hsl(color, colorScheme);
+  const scheme = colorScheme === "dark" ? "dark" : "light";
+  const resolvedColor = hslColor ?? hsl(color, "theme", scheme);
 
   const xml = `
   <svg viewBox="${icon.viewBox}">
@@ -50,12 +50,12 @@ export const Icon = ({
 
   return (
     <SvgXml
+      key={`${name}-${resolvedColor}`}
       xml={xml}
       width={size}
       height={size}
       style={style}
       opacity={opacity / 100}
-      // className={className}
     />
   );
 };

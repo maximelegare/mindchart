@@ -2,6 +2,8 @@ import React from "react";
 import { View, type ViewProps } from "react-native";
 
 import { cn } from "@/lib/cn";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 interface ListHeaderProps extends ViewProps {
   children: React.ReactNode;
@@ -24,6 +26,7 @@ interface ListProps extends ViewProps {
 }
 
 const List: React.FC<ListProps> = ({ children, className, ...props }) => {
+  const { colorScheme } = useColorScheme();
   // Omit null/false children so Android never gets empty native slots in the list ViewGroup.
   const childrenArray = React.Children.toArray(children).filter(Boolean);
   const modifiedChildren = childrenArray.map((child, index) => {
@@ -55,15 +58,18 @@ const List: React.FC<ListProps> = ({ children, className, ...props }) => {
     });
   });
 
+  const { style, ...rest } = props;
+
   return (
     <View
-      className={
-        cn("border-input border-[1px] rounded-lg overflow-hidden", className) ||
-        ""
-      }
+      className={cn("rounded-lg overflow-hidden", className) || ""}
+      style={[
+        { borderWidth: 1, borderColor: hsl("border", colorScheme) },
+        style,
+      ]}
       accessibilityRole="list"
       accessibilityLabel="List of items"
-      {...props}
+      {...rest}
     >
       {modifiedChildren}
     </View>

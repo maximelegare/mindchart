@@ -95,12 +95,11 @@ const ListItem: React.FC<ListItemProps> = ({
   const { ...componentProps } = props as any;
 
   const { colorScheme } = useColorScheme();
+  const borderColor = hsl("border", colorScheme);
   const body = (
     <Component
       className={cn(
-        "flex-row items-center border-border  justify-between w-full px-3 py-3",
-        borderTop && "border-t-[1px] border-border",
-        borderBottom && "border-b-[1px] border-border",
+        "flex-row items-center justify-between w-full px-3 py-3",
         pressable ? "web:hover:opacity-90 active:opacity-90" : "",
         listItemTextVariants({ variant }),
         className
@@ -108,7 +107,12 @@ const ListItem: React.FC<ListItemProps> = ({
       accessibilityRole={pressable ? "button" : "none"}
       accessibilityLabel={`${label}${description ? `, ${description}` : ""}`}
       {...componentProps}
-      style={{ backgroundColor: hsl("card", colorScheme) }}
+      style={{
+        backgroundColor: hsl("card", colorScheme),
+        borderColor,
+        borderTopWidth: borderTop ? 1 : 0,
+        borderBottomWidth: borderBottom ? 1 : 0,
+      }}
     >
       {itemLeft && (
         <View className="mr-3">

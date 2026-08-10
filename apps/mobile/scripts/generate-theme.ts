@@ -21,7 +21,7 @@ function generateCSS() {
   }
 
   const light = `  :root {\n${vars(THEME_CONFIG.light)}\n  }`;
-  const dark = `  .dark:root {\n${vars(THEME_CONFIG.dark)}\n  }`;
+  const dark = `  .dark {\n${vars(THEME_CONFIG.dark)}\n  }`;
 
   const footer = `}\n`;
 

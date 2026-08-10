@@ -1,17 +1,19 @@
 import * as React from "react";
-import { Text as RNText, TextStyle } from "react-native";
+import { StyleSheet, Text as RNText, type TextStyle } from "react-native";
 import * as Slot from "@/components/primitives/slot";
 import type {
   SlottableTextProps,
   TextRef,
 } from "@/components/primitives/types";
 import { cn } from "@/lib/cn";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
+import type { Theme } from "@repo/theme/global";
 
 export const TextClassContext = React.createContext<string | undefined>(
   undefined
 );
 
-// Local font names from your bundled .ttf
 const variantFonts: Record<string, string> = {
   body: "QuicksandRegular",
   h1: "QuicksandRegular",
@@ -30,7 +32,6 @@ const variantFonts: Record<string, string> = {
   date: "QuicksandRegular",
 };
 
-// Tailwind / class mapping for variants
 const variantClasses = {
   h1: "web:scroll-m-20 text-4xl tracking-tight lg:text-5xl",
   h2: "web:scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0",
@@ -49,7 +50,6 @@ const variantClasses = {
   date: "text-sm uppercase tracking-wide opacity-80",
 } as const;
 
-// Optional padding classes
 const paddingClasses: Record<string, string> = {
   h1: "pb-10",
   h2: "pb-8",
@@ -67,17 +67,6 @@ const paddingClasses: Record<string, string> = {
   date: "pb-2",
 };
 
-// Optional ARIA / semantic role mapping for web
-// const variantRoles: Partial<Record<string, string>> = {
-//   h1: "heading",
-//   h2: "heading",
-//   h3: "heading",
-//   h4: "heading",
-//   blockquote: Platform.OS === "web" ? "blockquote" : undefined,
-//   code: Platform.OS === "web" ? "code" : undefined,
-// };
-
-// ARIA heading levels
 const ariaLevels: Partial<Record<string, number>> = {
   h1: 1,
   h2: 2,
@@ -85,8 +74,38 @@ const ariaLevels: Partial<Record<string, number>> = {
   h4: 4,
 };
 
-// Main Typography component
 type TypographyVariant = keyof typeof variantClasses;
+
+/** Strip theme color utilities only — keep text-xl / text-sm / etc. */
+const TEXT_COLOR_CLASS_RE =
+  /\b(?:native:)?text-(?:foreground|muted-foreground|primary-foreground|primary|secondary-foreground|secondary|destructive-foreground|destructive|popover-foreground|popover|card-foreground|card|footer-foreground|footer|accent-foreground|accent)\b/g;
+
+function withoutTextColorClasses(value?: string) {
+  return value?.replace(TEXT_COLOR_CLASS_RE, "").replace(/\s+/g, " ").trim();
+}
+
+function resolveColorToken(
+  variant: TypographyVariant | undefined,
+  ...classSources: Array<string | undefined>
+): Theme {
+  const joined = classSources.filter(Boolean).join(" ");
+  if (joined.includes("popover-foreground")) return "popover-foreground";
+  if (joined.includes("primary-foreground")) return "primary-foreground";
+  if (joined.includes("secondary-foreground")) return "secondary-foreground";
+  if (joined.includes("destructive-foreground"))
+    return "destructive-foreground";
+  if (joined.includes("card-foreground")) return "card-foreground";
+  if (joined.includes("footer-foreground")) return "footer-foreground";
+  if (joined.includes("muted-foreground")) return "muted-foreground";
+  if (joined.includes("accent-foreground") || /\btext-accent\b/.test(joined)) {
+    return "foreground";
+  }
+  if (/\btext-primary\b/.test(joined)) return "primary";
+  if (/\btext-destructive\b/.test(joined)) return "destructive";
+  if (/\btext-secondary\b/.test(joined)) return "secondary";
+  if (variant === "muted" || variant === "lead") return "muted-foreground";
+  return "foreground";
+}
 
 export interface TypographyProps extends SlottableTextProps {
   variant?: TypographyVariant;
@@ -109,14 +128,23 @@ const Typography = React.forwardRef<TextRef, TypographyProps>(
   ) => {
     const Component = asChild ? Slot.Text : RNText;
     const textClass = React.useContext(TextClassContext);
+    const { colorScheme } = useColorScheme();
+    const scheme = colorScheme === "dark" ? "dark" : "light";
+    const flatStyle = StyleSheet.flatten(style);
+    const hasExplicitColor = flatStyle?.color != null;
+    const colorToken = resolveColorToken(variant, textClass, className);
+    const resolvedColor = hasExplicitColor
+      ? undefined
+      : hsl(colorToken, "theme", scheme);
+
     return (
       <Component
         className={cn(
           "web:select-text",
-          textClass,
-          variant && variantClasses[variant],
+          withoutTextColorClasses(textClass),
+          variant && withoutTextColorClasses(variantClasses[variant]),
           padding && variant && paddingClasses[variant],
-          className
+          withoutTextColorClasses(className)
         )}
         style={[
           {
@@ -125,8 +153,9 @@ const Typography = React.forwardRef<TextRef, TypographyProps>(
             includeFontPadding: true,
           } as TextStyle,
           style,
+          // Theme color last so it wins over NativeWind token classes.
+          resolvedColor ? ({ color: resolvedColor } as TextStyle) : null,
         ]}
-        // role={variantRoles[variant]}
         aria-level={ariaLevels[variant]}
         ref={ref}
         {...props}
@@ -137,7 +166,6 @@ const Typography = React.forwardRef<TextRef, TypographyProps>(
 
 Typography.displayName = "Typography";
 
-// Shortcut semantic components
 const H1 = React.forwardRef<TextRef, SlottableTextProps>((props, ref) => (
   <Typography variant="h1" ref={ref} {...props} />
 ));

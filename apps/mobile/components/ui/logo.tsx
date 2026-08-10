@@ -1,11 +1,8 @@
 import { Image, View } from "react-native";
 import { Typography } from "./typography";
 import { hsl } from "@/utils/hsl";
-import { useColorScheme } from "@/lib/useColorScheme";
 
 export const LogoWithText = () => {
-  const { colorScheme } = useColorScheme();
-
   const logoWidth = 24;
   const logoHeight = 24;
   const textPosition = `left-[26px]`;
@@ -23,7 +20,8 @@ export const LogoWithText = () => {
           variant="h4"
           className="text-3xl"
           style={{
-            color: hsl("background", "theme", colorScheme),
+            // Logo sits on the green gradient chrome (always light-on-green).
+            color: hsl("background", "theme", "light"),
             fontFamily: "QuicksandRegular",
           }}
         >
@@ -33,7 +31,7 @@ export const LogoWithText = () => {
           variant="h4"
           className="text-3xl"
           style={{
-            color: hsl("border", "theme", colorScheme, 20),
+            color: hsl("border", "theme", "light", 20),
             fontFamily: "QuicksandRegular",
           }}
         >

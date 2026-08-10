@@ -25,7 +25,7 @@ export const ExpandableThoughtWithOverview: React.FC<ExpandableThoughtProps> =
       const { push } = useRouter();
 
       return (
-        <View className="bg-card border-border border w-full rounded-lg p-2 pb-3">
+        <View className="bg-card w-full rounded-2xl p-3.5 pb-4">
           <View className="flex-row items-center justify-between mb-1">
             <DisplayDate date={date} />
           </View>

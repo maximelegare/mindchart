@@ -215,6 +215,7 @@ function FilterRow({
   summary: string;
   onPress: () => void;
 }) {
+  // Match long-press folder action buttons (outline + h3 inside Button → text-base).
   return (
     <Button variant="outline" size="default" onPress={onPress}>
       <View className="w-full flex-row items-center justify-between gap-2">

@@ -49,7 +49,7 @@ export const HeaderContent = ({
         {showLogo && <LogoWithText />}
         {!hideBackButton && (
           <Button variant="ghost" size="icon" onPress={() => back()}>
-            <Icon color="background" name="arrow-left" />
+            <Icon color="popover-foreground" name="arrow-left" />
           </Button>
         )}
         <View className="min-w-0 flex-1">
@@ -67,7 +67,11 @@ export const HeaderContent = ({
           ) : (
             <View className="flex-row items-center gap-1 mr-1">
               {subtitle?.icon && (
-                <Icon size={12} color="background" name={subtitle.icon} />
+                <Icon
+                  size={12}
+                  color="popover-foreground"
+                  name={subtitle.icon}
+                />
               )}
               {subtitle && (
                 <Typography

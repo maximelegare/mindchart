@@ -9,6 +9,7 @@ import "@/lib/hideScrollIndicators";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { hsl } from "@/utils/hsl";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -27,7 +28,12 @@ import { LlamaProvider } from "@/features/llama/context/llamaContext";
 
 import { DARK_THEME, LIGHT_THEME } from "@repo/theme/global";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { getItem, setItem } from "@/lib/storage";
+import { themeVars } from "@/lib/themeVars";
+import {
+  getThemePreference,
+  resolveThemePreference,
+  setThemePreference,
+} from "@/lib/themePreference";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { useFrameworkReady } from "@/hooks/useFrameworkReady";
 import { cn } from "@/lib/cn";
@@ -100,7 +106,7 @@ async function openActiveWorkspaceAndValidate(): Promise<boolean> {
 }
 
 export default function RootLayout() {
-  const { colorScheme, setColorScheme } = useColorScheme();
+  const { colorScheme } = useColorScheme();
 
   const router = useRouter();
   const segments = useSegments();
@@ -120,16 +126,9 @@ export default function RootLayout() {
    */
   useEffect(() => {
     async function initializeApp() {
-      // Theme Logic
-      const storedTheme = getItem("theme");
-      if (storedTheme) {
-        const normalized = storedTheme === "dark" ? "dark" : "light";
-        if (normalized !== colorScheme) setColorScheme(normalized);
-        setAndroidNavigationBar(normalized);
-      } else {
-        setItem("theme", colorScheme);
-        setAndroidNavigationBar(colorScheme);
-      }
+      // Re-apply stored preference so NativeWind / Appearance match MMKV.
+      setThemePreference(getThemePreference());
+      setAndroidNavigationBar(resolveThemePreference());
 
       // Workspace + DB Logic
       try {
@@ -189,13 +188,10 @@ export default function RootLayout() {
   }, [isDbChecked, loadedFonts, dbExists, segments, router]);
 
   /**
-   * 4. Sync Theme Changes
+   * 4. Android nav bar follows the resolved scheme (preference is owned elsewhere).
    */
   useEffect(() => {
-    if (colorScheme) {
-      setItem("theme", colorScheme);
-      setAndroidNavigationBar(colorScheme);
-    }
+    setAndroidNavigationBar(colorScheme);
   }, [colorScheme]);
 
   // Handle Font Errors
@@ -216,16 +212,25 @@ export default function RootLayout() {
         }
       >
         <KeyboardProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <PaperProvider>
-                <ModalProvider>
-                  <View
-                    className={cn(
-                      "flex-1",
-                      colorScheme === "dark" ? "dark" : ""
-                    )}
-                  >
+          <GestureHandlerRootView
+            style={{
+              flex: 1,
+              backgroundColor: hsl("background", colorScheme),
+            }}
+          >
+            <View
+              style={[
+                {
+                  flex: 1,
+                  backgroundColor: hsl("background", colorScheme),
+                },
+                themeVars(colorScheme === "dark" ? "dark" : "light"),
+              ]}
+              className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}
+            >
+              <BottomSheetModalProvider>
+                <PaperProvider>
+                  <ModalProvider>
                     <LlamaProvider>
                       <StatusBar
                         style={colorScheme === "dark" ? "light" : "dark"}
@@ -233,18 +238,25 @@ export default function RootLayout() {
 
                       <WhisperProvider>
                         <AutoConnectService>
-                          <Stack screenOptions={{ headerShown: false }}>
+                          <Stack
+                            screenOptions={{
+                              headerShown: false,
+                              contentStyle: {
+                                backgroundColor: hsl("background", colorScheme),
+                              },
+                            }}
+                          >
                             <Stack.Screen name="(tabs)" />
                             <Stack.Screen name="(stack)" />
                           </Stack>
                         </AutoConnectService>
                       </WhisperProvider>
                     </LlamaProvider>
-                  </View>
-                </ModalProvider>
-                <PortalHost />
-              </PaperProvider>
-            </BottomSheetModalProvider>
+                  </ModalProvider>
+                  <PortalHost />
+                </PaperProvider>
+              </BottomSheetModalProvider>
+            </View>
           </GestureHandlerRootView>
         </KeyboardProvider>
       </ThemeProvider>

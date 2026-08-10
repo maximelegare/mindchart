@@ -27,11 +27,19 @@ export function Gradient({
   theme,
   custom,
 }: GradientProps) {
+  const isDark = theme === "dark";
+
   const gradientColors: Record<Exclude<Variant, "none">, [string, string]> = {
-    primary: [
-      hsl("foreground", "theme", theme),
-      hsl("primary", "theme", theme, 45),
-    ],
+    primary: isDark
+      ? [
+          // Footer (tab bar) → darker green
+          hsl("footer", "theme", "dark"),
+          "hsl(150, 45%, 11%)",
+        ]
+      : [
+          hsl("foreground", "theme", "light"),
+          hsl("primary", "theme", "light", 45),
+        ],
     destructive: ["#ed333b", "#a51d2d"],
   };
 

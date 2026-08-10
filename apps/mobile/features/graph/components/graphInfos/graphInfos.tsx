@@ -2,6 +2,7 @@ import React, { memo, useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
+import { GRAPH_CANVAS_SIZE } from "@/features/graph/constants";
 import { RootLayerCards } from "./rootLayerCards";
 import { SelectedLayerCard } from "./selectedLayerCard";
 
@@ -56,7 +57,13 @@ const GraphInfos = memo(function GraphInfos({
   }, [activeNode, hierarchy, isRootLayer]);
 
   return (
-    <View className="p-4" style={{ flex: 1 }}>
+    <View
+      style={{
+        width: GRAPH_CANVAS_SIZE,
+        alignSelf: "center",
+        flex: 1,
+      }}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         {isRootLayer ? (
           rootChildren.length > 0 ? (

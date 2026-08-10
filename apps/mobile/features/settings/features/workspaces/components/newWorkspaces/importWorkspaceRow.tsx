@@ -16,15 +16,19 @@ export const ImportWorkspaceRow = ({ onImported }: Props) => {
   return (
     <Button
       variant="outline"
-      style={{ backgroundColor: hsl("card", colorScheme) }}
+      className="w-full"
+      style={{
+        backgroundColor: hsl("card", colorScheme),
+        borderColor: hsl("border", colorScheme),
+      }}
       onPress={async () => {
         const result = await importWorkspace();
         if (result.success) onImported?.();
       }}
     >
-      <View className="flex-row items-center gap-3">
+      <View className="flex-row items-center gap-2">
         <Icon name="import" color="foreground" />
-        <Typography>Import Workspace</Typography>
+        <Typography>Import</Typography>
       </View>
     </Button>
   );

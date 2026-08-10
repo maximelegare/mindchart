@@ -4,7 +4,12 @@ import { THEME_CONFIG } from "../../packages/theme/global";
 
 export default {
   darkMode: "class",
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: [
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./features/**/*.{ts,tsx}",
+    "./pages/**/*.{ts,tsx}",
+  ],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
@@ -42,6 +47,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        footer: {
+          DEFAULT: "hsl(var(--footer))",
+          foreground: "hsl(var(--footer-foreground))",
+        },
       },
       borderWidth: {
         hairline: hairlineWidth(),
@@ -71,7 +80,7 @@ export default {
 
       addBase({
         ":root": vars(THEME_CONFIG.light),
-        ".dark:root": vars(THEME_CONFIG.dark),
+        ".dark": vars(THEME_CONFIG.dark),
       });
     }),
   ],

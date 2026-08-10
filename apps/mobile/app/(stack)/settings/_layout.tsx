@@ -1,8 +1,18 @@
 import { Stack } from "expo-router";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 export default function SettingsLayout() {
+  const { colorScheme } = useColorScheme();
+
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        contentStyle: {
+          backgroundColor: hsl("background", colorScheme),
+        },
+      }}
+    >
       <Stack.Screen
         name="index"
         options={{ title: "Settings", headerShown: false }}

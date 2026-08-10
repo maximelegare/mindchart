@@ -10,6 +10,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { TabBarButton } from "./tabBarButton";
 import { useTabChromeStore } from "./tabChromeStore";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
 const FADE_MS = 220;
 
@@ -19,6 +21,7 @@ export function CustomTabBar({
   navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { colorScheme } = useColorScheme();
   const hidden = useTabChromeStore((s) => s.hidden);
   const [mounted, setMounted] = useState(!hidden);
   const opacity = useSharedValue(hidden ? 0 : 1);
@@ -54,8 +57,8 @@ export function CustomTabBar({
   return (
     <Animated.View
       pointerEvents={hidden ? "none" : "auto"}
-      style={animatedStyle}
-      className="bg-popover z-30 rounded-t-3xl overflow-hidden"
+      style={[animatedStyle, { backgroundColor: hsl("footer", colorScheme) }]}
+      className="z-30 rounded-t-3xl overflow-hidden"
     >
       <View className="flex-row items-start">
         {state.routes.map((route) => {

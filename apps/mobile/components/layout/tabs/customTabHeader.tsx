@@ -29,7 +29,7 @@ export const CustomTabHeader = ({ options }: CustomTabBarProps) => {
                 onPress={() => push("/graph")}
                 cornerRadius="full"
               >
-                <Icon color="background" name="graph" />
+                <Icon color="secondary-foreground" name="graph" />
               </Button>,
               <Button
                 key="categories"

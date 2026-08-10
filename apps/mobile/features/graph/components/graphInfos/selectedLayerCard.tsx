@@ -841,12 +841,12 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
   const isLayerCurrent = layerRoot.id === currentNodeId;
   const children = layerRoot.children ?? [];
 
-  const cardRadius = 8;
+  const cardRadius = 18;
 
   return (
     <Card
-      className="w-full overflow-hidden rounded-lg"
-      style={{ borderRadius: cardRadius, overflow: "hidden" }}
+      className="w-full overflow-hidden rounded-2xl border-0"
+      style={{ borderRadius: cardRadius, overflow: "hidden", borderWidth: 0 }}
     >
       <View className="w-full flex-row" style={{ overflow: "hidden" }}>
         {showMainStripe ? (
@@ -858,7 +858,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
           />
         ) : null}
 
-        <View className="flex-1 min-w-0 p-2">
+        <View className="flex-1 min-w-0 p-3.5">
           <View style={{ alignSelf: "flex-start" }} className="mb-2">
             <Button
               onPress={navigateHome}
