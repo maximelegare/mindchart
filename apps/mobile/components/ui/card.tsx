@@ -1,22 +1,31 @@
 import * as React from "react";
-import { Text, View } from "react-native";
+import { Text, View, type ViewProps } from "react-native";
 import type { TextRef, ViewRef } from "@/components/primitives/types";
 import { TextClassContext } from "@/components/ui/typography";
 import { cn } from "@/lib/cn";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 
-const Card = React.forwardRef<
-  ViewRef,
-  React.ComponentPropsWithoutRef<typeof View>
->(({ className, ...props }, ref) => (
-  <View
-    ref={ref}
-    className={cn(
-      "rounded-lg border border-border bg-card shadow-sm shadow-foreground/10",
-      className
-    )}
-    {...props}
-  />
-));
+const Card = React.forwardRef<ViewRef, ViewProps>(
+  ({ className, style, ...props }, ref) => {
+    const { colorScheme } = useColorScheme();
+    return (
+      <View
+        ref={ref}
+        className={cn("rounded-2xl", className)}
+        style={[
+          {
+            backgroundColor: hsl("card", colorScheme),
+            borderColor: hsl("border", colorScheme),
+            borderWidth: 1,
+          },
+          style,
+        ]}
+        {...props}
+      />
+    );
+  }
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<

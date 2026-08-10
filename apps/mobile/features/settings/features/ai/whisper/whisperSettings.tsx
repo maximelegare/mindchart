@@ -4,11 +4,15 @@ import { useWhisper } from "@/features/whisper/hooks/useWhisperModels";
 import { WHISPER_MODELS } from "@/features/whisper/data/whisperModels";
 import { Typography } from "@/components/ui/typography";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/cn";
 import { hsl } from "@/utils/hsl";
 import { Button } from "@/components/ui";
 import { Gutter } from "@/components/ui/gutter";
 import { useModal } from "@/components/ui/modal/modal";
+import { useColorScheme } from "@/lib/useColorScheme";
+import {
+  settingsInsetStyle,
+  settingsStatusStyle,
+} from "@/features/settings/components/settingsSurfaces";
 
 export const WhisperSettings = () => {
   const {
@@ -23,6 +27,7 @@ export const WhisperSettings = () => {
   } = useWhisper();
 
   const { openModal, closeModal } = useModal();
+  const { colorScheme } = useColorScheme();
 
   const handleModelAction = async (modelId: string) => {
     if (isDownloading || isInitializing) return;
@@ -63,19 +68,24 @@ export const WhisperSettings = () => {
         </View>
 
         <View className="pb-4">
-          <Typography className="text-muted-foreground" variant="h4" padding>
+          <Typography
+            variant="h4"
+            padding
+            style={{ color: hsl("muted-foreground", colorScheme) }}
+          >
             Engine Status
           </Typography>
           <Card
-            className={cn(
-              "p-2 flex-row items-center bg-muted-foreground",
-              !!currentModelId && "border-primary"
-            )}
+            className="p-3 flex-row items-center"
+            style={settingsStatusStyle(colorScheme)}
           >
             <View className="flex-1">
               <Typography
-                className="text-muted-foreground text-sm"
                 variant="h4"
+                style={{
+                  fontSize: 12,
+                  color: hsl("muted-foreground", colorScheme),
+                }}
               >
                 Active Context
               </Typography>
@@ -84,9 +94,9 @@ export const WhisperSettings = () => {
               </Typography>
             </View>
             {isInitializing ? (
-              <ActivityIndicator color={hsl("primary", "light")} />
+              <ActivityIndicator color={hsl("foreground", colorScheme)} />
             ) : currentModelId ? (
-              <Button onPress={releaseAll} variant="destructive">
+              <Button onPress={releaseAll} variant="destructive" size="sm">
                 <Typography>Unload from RAM</Typography>
               </Button>
             ) : null}
@@ -94,10 +104,14 @@ export const WhisperSettings = () => {
         </View>
 
         <View>
-          <Typography variant="h4" className="text-muted-foreground" padding>
+          <Typography
+            variant="h4"
+            padding
+            style={{ color: hsl("muted-foreground", colorScheme) }}
+          >
             Available Models
           </Typography>
-          <View className="flex-col gap-4">
+          <View className="flex-col gap-3">
             {WHISPER_MODELS.map((model) => {
               const isDownloaded = !!modelFiles[model.id];
               const isActive = currentModelId === model.id;
@@ -108,10 +122,8 @@ export const WhisperSettings = () => {
               return (
                 <Card
                   key={model.id}
-                  className={cn(
-                    "p-2 flex-row items-center bg-muted",
-                    isActive && "border-primary"
-                  )}
+                  className="p-3 flex-row items-center"
+                  style={settingsInsetStyle(colorScheme, isActive)}
                 >
                   <View className="flex-1">
                     <Typography variant="h4" padding>
@@ -132,8 +144,13 @@ export const WhisperSettings = () => {
                       <Button
                         onPress={() => handleDelete(model.id)}
                         variant="ghost"
+                        size="sm"
                       >
-                        <Typography className="text-destructive-foreground">
+                        <Typography
+                          style={{
+                            color: hsl("muted-foreground", colorScheme),
+                          }}
+                        >
                           Delete
                         </Typography>
                       </Button>
@@ -142,11 +159,36 @@ export const WhisperSettings = () => {
                     <Button
                       onPress={() => handleModelAction(model.id)}
                       disabled={isDownloading || isInitializing || isActive}
+                      variant={isActive ? "outline" : "default"}
+                      size="sm"
+                      style={
+                        isActive
+                          ? {
+                              backgroundColor: "transparent",
+                              borderColor: hsl("border", colorScheme),
+                            }
+                          : {
+                              backgroundColor: hsl("primary", colorScheme),
+                              borderColor: hsl("primary", colorScheme),
+                            }
+                      }
                     >
                       {downloadingThis ? (
-                        <Typography>{(progress * 100).toFixed(0)}%</Typography>
+                        <Typography
+                          style={{
+                            color: hsl("primary-foreground", colorScheme),
+                          }}
+                        >
+                          {(progress * 100).toFixed(0)}%
+                        </Typography>
                       ) : (
-                        <Typography>
+                        <Typography
+                          style={{
+                            color: isActive
+                              ? hsl("muted-foreground", colorScheme)
+                              : hsl("primary-foreground", colorScheme),
+                          }}
+                        >
                           {isDownloaded
                             ? isActive
                               ? "Loaded"

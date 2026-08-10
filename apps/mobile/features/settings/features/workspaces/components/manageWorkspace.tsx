@@ -7,7 +7,6 @@ import { WorkspaceActionsModal } from "@/features/workspaces/components/modals/w
 import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
 import { WorkspacePasswordModal } from "@/features/workspaces/components/modals/workspacePasswordModal";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
-import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 import { Card } from "@/components/ui/card";
@@ -16,6 +15,13 @@ import { WorkspaceAvatar } from "@/features/workspaces/components/manageWorkspac
 import { Icon } from "@/components/ui/icons/icon";
 import { hasKeyForWorkspace } from "@/features/workspaces/services/workspaceKeyService";
 import { WorkspaceKeyMissingError } from "@/features/workspaces/services/workspaceKeyErrors";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
+import {
+  settingsInsetStyle,
+  settingsStatusStyle,
+} from "@/features/settings/components/settingsSurfaces";
+
 export const ManageWorkspaceLayout = () => {
   const {
     workspaces,
@@ -27,6 +33,7 @@ export const ManageWorkspaceLayout = () => {
     deleteWorkspace,
   } = useWorkSpaces();
   const { openModal, closeModal, setModalContent } = useModal();
+  const { colorScheme } = useColorScheme();
 
   const [hasKeyByWorkspaceId, setHasKeyByWorkspaceId] = useState<
     Record<string, boolean>
@@ -174,16 +181,17 @@ export const ManageWorkspaceLayout = () => {
           </Typography>
         </View>
 
-        {/* Engine Status Card */}
         <View className="pb-6">
-          <Typography className="text-muted-foreground" variant="h4" padding>
+          <Typography
+            variant="h4"
+            padding
+            style={{ color: hsl("muted-foreground", colorScheme) }}
+          >
             Active Workspace
           </Typography>
           <Card
-            className={cn(
-              "p-2 flex-row items-center bg-muted-foreground",
-              !!activeWorkspaceId && "border-primary"
-            )}
+            className="p-3 flex-row items-center"
+            style={settingsStatusStyle(colorScheme)}
           >
             <View className="flex-row items-center gap-2">
               <WorkspaceAvatar />
@@ -194,22 +202,23 @@ export const ManageWorkspaceLayout = () => {
           </Card>
         </View>
 
-        {/* Model List Section */}
         <View>
-          <Typography variant="h4" className="text-muted-foreground" padding>
+          <Typography
+            variant="h4"
+            padding
+            style={{ color: hsl("muted-foreground", colorScheme) }}
+          >
             Available Workspaces
           </Typography>
-          <View className="flex-col gap-4">
+          <View className="flex-col gap-3">
             {workspaces.map((workspace) => {
               const isActive = workspace.id === activeWorkspace?.id;
               const hasKey = hasKeyByWorkspaceId[workspace.id] ?? false;
               return (
                 <Card
                   key={workspace.id}
-                  className={cn(
-                    "p-2 flex-row items-center bg-muted",
-                    isActive && "border-primary"
-                  )}
+                  className="p-3 flex-row items-center"
+                  style={settingsInsetStyle(colorScheme, isActive)}
                 >
                   <View className="flex-1 flex-row items-center gap-2">
                     <WorkspaceAvatar workspace={workspace} />
@@ -231,7 +240,7 @@ export const ManageWorkspaceLayout = () => {
                       onPress={() => handleSwitch(workspace)}
                       disabled={isActive || !hasKey}
                       size="sm"
-                      variant="default"
+                      variant="outline"
                       className="flex-row items-center gap-2"
                     >
                       <Typography>
@@ -241,10 +250,10 @@ export const ManageWorkspaceLayout = () => {
                             ? "Switch"
                             : "Unavailable"}
                       </Typography>
-                      {!isActive && (
+                      {!isActive && hasKey && (
                         <Icon
                           name="arrow-right-left"
-                          color="background"
+                          color="foreground"
                           size={16}
                         />
                       )}

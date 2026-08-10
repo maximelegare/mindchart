@@ -32,14 +32,10 @@ export const CreateWorkspaceRow = ({ onCreated }: Props) => {
   };
 
   return (
-    <Button
-      variant="default"
-      // style={{ backgroundColor: hsl("primary", colorScheme, -100) }}
-      onPress={open}
-    >
-      <View className="flex-row items-center gap-3">
+    <Button variant="default" className="w-full" onPress={open}>
+      <View className="flex-row items-center gap-2">
         <Icon name="plus" color="background" />
-        <Typography>New Workspace</Typography>
+        <Typography>New</Typography>
       </View>
     </Button>
   );

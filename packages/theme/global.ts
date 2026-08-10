@@ -47,7 +47,7 @@ export const THEME_CONFIG = {
     "footer-foreground": "0, 0%, 94%",
 
     primary: "145, 45%, 55%",
-    "primary-foreground": "0, 0%, 10%",
+    "primary-foreground": "0, 0%, 98%",
 
     secondary: "0, 0%, 22%",
     "secondary-foreground": "0, 0%, 94%",

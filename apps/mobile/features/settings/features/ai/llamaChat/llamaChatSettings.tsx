@@ -2,13 +2,17 @@ import React from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { Card } from "@/components/ui/card";
-import { cn } from "@/lib/cn";
 import { hsl } from "@/utils/hsl";
 import { Button } from "@/components/ui";
 import { Gutter } from "@/components/ui/gutter";
 import { useLlamaChat } from "@/features/llama/hooks/useLlamaChat";
 import { CHAT_MODELS } from "@/features/llama/data/models/chat/chatModels";
 import { useModal } from "@/components/ui/modal/modal";
+import { useColorScheme } from "@/lib/useColorScheme";
+import {
+  settingsInsetStyle,
+  settingsStatusStyle,
+} from "@/features/settings/components/settingsSurfaces";
 
 export const LlamaChatSettings = () => {
   const {
@@ -24,6 +28,7 @@ export const LlamaChatSettings = () => {
   } = useLlamaChat();
 
   const { openModal, closeModal } = useModal();
+  const { colorScheme } = useColorScheme();
 
   const handleModelAction = async (modelKey: string) => {
     if (isDownloading || isInitializingChat) return;
@@ -65,17 +70,25 @@ export const LlamaChatSettings = () => {
 
       {/* Engine Status Card */}
       <View className="pb-4">
-        <Typography className="text-muted-foreground" variant="h4" padding>
+        <Typography
+          variant="h4"
+          padding
+          style={{ color: hsl("muted-foreground", colorScheme) }}
+        >
           Engine Status
         </Typography>
         <Card
-          className={cn(
-            "p-2 flex-row items-center bg-muted-foreground",
-            !!currentModelId && "border-primary"
-          )}
+          className="p-3 flex-row items-center"
+          style={settingsStatusStyle(colorScheme)}
         >
           <View className="flex-1">
-            <Typography className="text-muted-foreground text-sm" variant="h4">
+            <Typography
+              variant="h4"
+              style={{
+                fontSize: 12,
+                color: hsl("muted-foreground", colorScheme),
+              }}
+            >
               Active Context
             </Typography>
             <Typography variant="h3" padding>
@@ -83,9 +96,9 @@ export const LlamaChatSettings = () => {
             </Typography>
           </View>
           {isInitializingChat ? (
-            <ActivityIndicator color={hsl("primary", "light")} />
+            <ActivityIndicator color={hsl("foreground", colorScheme)} />
           ) : currentModelId ? (
-            <Button onPress={releaseChat} variant="destructive">
+            <Button onPress={releaseChat} variant="destructive" size="sm">
               <Typography>Unload from RAM</Typography>
             </Button>
           ) : null}
@@ -94,10 +107,14 @@ export const LlamaChatSettings = () => {
 
       {/* Model List Section */}
       <View>
-        <Typography variant="h4" className="text-muted-foreground" padding>
+        <Typography
+          variant="h4"
+          padding
+          style={{ color: hsl("muted-foreground", colorScheme) }}
+        >
           Available Models
         </Typography>
-        <View className="flex-col gap-4">
+        <View className="flex-col gap-3">
           {Object.entries(CHAT_MODELS).map(([key, model]) => {
             const isDownloaded = !!downloadedModels[key];
             const isActive = currentModelId === key;
@@ -108,10 +125,8 @@ export const LlamaChatSettings = () => {
             return (
               <Card
                 key={key}
-                className={cn(
-                  "p-2 flex-row items-center bg-muted",
-                  isActive && "border-primary"
-                )}
+                className="p-3 flex-row items-center"
+                style={settingsInsetStyle(colorScheme, isActive)}
               >
                 <View className="flex-1">
                   <Typography variant="h4" padding>
@@ -126,8 +141,14 @@ export const LlamaChatSettings = () => {
 
                 <View className="flex-row items-center gap-2">
                   {isDownloaded && !isActive && !isInitializingChat && (
-                    <Button onPress={() => handleDelete(key)} variant="ghost">
-                      <Typography className="text-destructive-foreground">
+                    <Button
+                      onPress={() => handleDelete(key)}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <Typography
+                        style={{ color: hsl("muted-foreground", colorScheme) }}
+                      >
                         Delete
                       </Typography>
                     </Button>
@@ -136,15 +157,38 @@ export const LlamaChatSettings = () => {
                   <Button
                     onPress={() => handleModelAction(key)}
                     disabled={isDownloading || isInitializingChat || isActive}
+                    variant={isActive ? "outline" : "default"}
+                    size="sm"
+                    style={
+                      isActive
+                        ? {
+                            backgroundColor: "transparent",
+                            borderColor: hsl("border", colorScheme),
+                          }
+                        : {
+                            backgroundColor: hsl("primary", colorScheme),
+                            borderColor: hsl("primary", colorScheme),
+                          }
+                    }
                   >
                     {downloadingThis ? (
-                      <Typography>
+                      <Typography
+                        style={{
+                          color: hsl("primary-foreground", colorScheme),
+                        }}
+                      >
                         {progress > 0 && progress < 100
                           ? `${progress.toFixed(0)}%`
                           : "Downloading..."}
                       </Typography>
                     ) : (
-                      <Typography>
+                      <Typography
+                        style={{
+                          color: isActive
+                            ? hsl("muted-foreground", colorScheme)
+                            : hsl("primary-foreground", colorScheme),
+                        }}
+                      >
                         {isDownloaded
                           ? isActive
                             ? "Loaded"
