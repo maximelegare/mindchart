@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { FEELINGS_DEFINITIONS } from "@repo/sqlite";
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 import {
@@ -18,6 +18,8 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import { hasActiveAttributeFilters } from "@/features/contentList/utils/filterNotesByAttributes";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
 import {
   FilterAttributePicker,
   type FilterAttributeOption,
@@ -215,18 +217,26 @@ function FilterRow({
   summary: string;
   onPress: () => void;
 }) {
+  const { colorScheme } = useColorScheme();
+  const scheme = colorScheme === "dark" ? "dark" : "light";
+  const borderColor = hsl("border", "theme", scheme);
+  const backgroundColor = hsl("input", "theme", scheme);
+
   return (
-    <Button variant="outline" size="default" onPress={onPress}>
-      <View className="w-full flex-row items-center justify-between gap-2">
-        <View className="flex-row items-center gap-2">
-          <Icon name={icon} color="foreground" size={18} />
-          <Typography variant="h3">{label}</Typography>
-        </View>
-        <Typography variant="p" className="text-muted-foreground">
-          {summary}
-        </Typography>
+    <Pressable
+      onPress={onPress}
+      className="w-full flex-row items-center justify-between gap-2 rounded-md border px-4 py-3"
+      style={{ borderColor, backgroundColor }}
+      accessibilityRole="button"
+    >
+      <View className="flex-row items-center gap-2">
+        <Icon name={icon} color="foreground" size={18} />
+        <Typography variant="h3">{label}</Typography>
       </View>
-    </Button>
+      <Typography variant="p" className="text-muted-foreground">
+        {summary}
+      </Typography>
+    </Pressable>
   );
 }
 
