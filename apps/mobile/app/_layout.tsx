@@ -8,7 +8,7 @@ import "@/lib/hideScrollIndicators";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Appearance, View } from "react-native";
+import { View } from "react-native";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -28,7 +28,11 @@ import { LlamaProvider } from "@/features/llama/context/llamaContext";
 import { DARK_THEME, LIGHT_THEME } from "@repo/theme/global";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { themeVars } from "@/lib/themeVars";
-import { getItem, setItem } from "@/lib/storage";
+import {
+  getThemePreference,
+  resolveThemePreference,
+  setThemePreference,
+} from "@/lib/themePreference";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { useFrameworkReady } from "@/hooks/useFrameworkReady";
 import { cn } from "@/lib/cn";
@@ -101,7 +105,7 @@ async function openActiveWorkspaceAndValidate(): Promise<boolean> {
 }
 
 export default function RootLayout() {
-  const { colorScheme, setColorScheme } = useColorScheme();
+  const { colorScheme } = useColorScheme();
 
   const router = useRouter();
   const segments = useSegments();
@@ -121,28 +125,9 @@ export default function RootLayout() {
    */
   useEffect(() => {
     async function initializeApp() {
-      // Theme Logic
-      const storedTheme = getItem<"light" | "dark" | "system">("theme");
-      if (
-        storedTheme === "dark" ||
-        storedTheme === "light" ||
-        storedTheme === "system"
-      ) {
-        setColorScheme(storedTheme);
-        const resolved =
-          storedTheme === "system"
-            ? Appearance.getColorScheme() === "dark"
-              ? "dark"
-              : "light"
-            : storedTheme;
-        setAndroidNavigationBar(resolved);
-      } else {
-        setItem("theme", "system");
-        setColorScheme("system");
-        setAndroidNavigationBar(
-          Appearance.getColorScheme() === "dark" ? "dark" : "light"
-        );
-      }
+      // Re-apply stored preference so NativeWind / Appearance match MMKV.
+      setThemePreference(getThemePreference());
+      setAndroidNavigationBar(resolveThemePreference());
 
       // Workspace + DB Logic
       try {
@@ -202,15 +187,9 @@ export default function RootLayout() {
   }, [isDbChecked, loadedFonts, dbExists, segments, router]);
 
   /**
-   * 4. Sync Theme Changes
-   * Don't overwrite an explicit "system" preference with the resolved scheme.
+   * 4. Android nav bar follows the resolved scheme (preference is owned elsewhere).
    */
   useEffect(() => {
-    if (!colorScheme) return;
-    const stored = getItem<"light" | "dark" | "system">("theme");
-    if (stored !== "system") {
-      setItem("theme", colorScheme);
-    }
     setAndroidNavigationBar(colorScheme);
   }, [colorScheme]);
 
@@ -233,16 +212,16 @@ export default function RootLayout() {
       >
         <KeyboardProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <BottomSheetModalProvider>
-              <PaperProvider>
-                <ModalProvider>
-                  <View
-                    style={themeVars(colorScheme === "dark" ? "dark" : "light")}
-                    className={cn(
-                      "flex-1",
-                      colorScheme === "dark" ? "dark" : ""
-                    )}
-                  >
+            <View
+              style={[
+                { flex: 1 },
+                themeVars(colorScheme === "dark" ? "dark" : "light"),
+              ]}
+              className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}
+            >
+              <BottomSheetModalProvider>
+                <PaperProvider>
+                  <ModalProvider>
                     <LlamaProvider>
                       <StatusBar
                         style={colorScheme === "dark" ? "light" : "dark"}
@@ -257,11 +236,11 @@ export default function RootLayout() {
                         </AutoConnectService>
                       </WhisperProvider>
                     </LlamaProvider>
-                  </View>
-                </ModalProvider>
-                <PortalHost />
-              </PaperProvider>
-            </BottomSheetModalProvider>
+                  </ModalProvider>
+                  <PortalHost />
+                </PaperProvider>
+              </BottomSheetModalProvider>
+            </View>
           </GestureHandlerRootView>
         </KeyboardProvider>
       </ThemeProvider>

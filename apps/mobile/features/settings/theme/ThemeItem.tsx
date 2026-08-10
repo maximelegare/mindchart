@@ -13,16 +13,17 @@ import { Moon, Palette, Smartphone, Sun } from "@/lib/icons";
 
 import ListItem from "@/components/ui/list-item";
 import { Check } from "@/lib/icons/Check";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
-import { getItem, setItem } from "@/lib/storage";
-
-import { useColorScheme } from "nativewind";
+import { useColorScheme } from "@/lib/useColorScheme";
+import type { ThemePreference } from "@/lib/themePreference";
+import { resolveThemePreference } from "@/lib/themePreference";
+import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 
 type ItemData = {
   title: string;
   subtitle: string;
-  value: "light" | "dark" | "system";
+  value: ThemePreference;
   icon: React.ReactElement;
 };
 
@@ -50,11 +51,7 @@ function ThemeItem({ item, onPress, selected }: ItemProps) {
 }
 
 export const ThemeSettingItem = () => {
-  const [selectedTheme, setSelectedTheme] = useState(
-    getItem<"light" | "dark" | "system">("theme")
-  );
-  const { colorScheme, setColorScheme } = useColorScheme();
-
+  const { themePreference, setColorScheme } = useColorScheme();
   const { dismiss } = useBottomSheetModal();
 
   const themes: ItemData[] = useMemo(
@@ -82,20 +79,20 @@ export const ThemeSettingItem = () => {
   );
 
   const onSelect = useCallback(
-    (value: "light" | "dark" | "system") => {
+    (value: ThemePreference) => {
       setColorScheme(value);
-      setItem("theme", value);
-      setSelectedTheme(value);
+      setAndroidNavigationBar(resolveThemePreference(value));
       dismiss();
     },
-    [selectedTheme, colorScheme, setColorScheme]
+    [dismiss, setColorScheme]
   );
+
   return (
     <BottomSheet>
       <BottomSheetOpenTrigger asChild>
         <ListItem
           className="bg-background"
-          itemLeft={(props) => <Palette {...props} />} // props adds size and color attributes
+          itemLeft={(props) => <Palette {...props} />}
           label="Theme"
         />
       </BottomSheetOpenTrigger>
@@ -111,7 +108,7 @@ export const ThemeSettingItem = () => {
               key={theme.title}
               item={theme}
               onPress={() => onSelect(theme.value)}
-              selected={theme.value === selectedTheme}
+              selected={theme.value === themePreference}
             />
           ))}
         </BottomSheetView>
