@@ -6,7 +6,7 @@ import { categoryGraphNeedsRebuild } from "./buildGraphByCategoryFolders";
 import { isNoteLeafId } from "./mapNoteToLeaf";
 
 /** Bump when folder/category graph shape changes (forces DB cache rebuild). */
-export const GRAPH_CACHE_VERSION = 2;
+export const GRAPH_CACHE_VERSION = 4;
 
 const isRootNode = (data: unknown): data is NodeDatum =>
   typeof data === "object" &&

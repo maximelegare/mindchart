@@ -10,7 +10,10 @@ const stampCategoryId = (node: NodeDatum, categoryId: string): NodeDatum => ({
   children: node.children?.map((child) => stampCategoryId(child, categoryId)),
 });
 
-/** Category → root folders only → thoughts (nested folders collapse into their root). */
+/**
+ * Category → root folders (with content) → thoughts.
+ * Empty folders are omitted; nested folders collapse into their root.
+ */
 export function buildGraphByCategoryFolders(
   folders: Folder[],
   thoughts: ThoughtWithEmbedding[]
@@ -38,6 +41,7 @@ export function buildGraphByCategoryFolders(
             // Same folder under two categories must not share a graph node id,
             // or zoom/focus lands on the first match (often wrong after moves).
             folderIdScope: categoryId,
+            keepEmptyFolders: false,
           }
         );
         return {
@@ -53,7 +57,10 @@ export function buildGraphByCategoryFolders(
   };
 }
 
-/** True when category packs still nest folders or use unscoped folder ids. */
+/**
+ * True when category packs still nest empty/nested folders, use unscoped
+ * folder ids, or flatten thoughts directly under the category.
+ */
 export const categoryGraphNeedsRebuild = (root: NodeDatum): boolean => {
   for (const category of root.children ?? []) {
     if (!category.id.startsWith("category-")) continue;
@@ -61,7 +68,10 @@ export const categoryGraphNeedsRebuild = (root: NodeDatum): boolean => {
       category.categoryId ?? category.id.slice("category-".length);
 
     for (const child of category.children ?? []) {
-      if (child.thoughtId || isNoteLeafId(child.id)) continue;
+      // Flat thought leaves under category = missing folder layer.
+      if (child.thoughtId || isNoteLeafId(child.id)) return true;
+
+      if (child.isEmptyFolder) return true;
 
       const isFolderChild =
         child.folderId != null || child.id.startsWith("folder-");
