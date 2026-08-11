@@ -7,10 +7,13 @@ import {
   isFolderPathUnder,
 } from "@repo/sqlite";
 import { Alert } from "react-native";
+import { useRouter, useSegments } from "expo-router";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";
+import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
+import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useOptionsBar } from "../context/optionBarContext";
 import { FolderFormModalContent } from "../components/folders/folderFormModalContent";
 import { useFolderFormSheet } from "../components/folders/folderFormSheet";
@@ -21,6 +24,8 @@ type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
 export const useFolderActions = () => {
   const { openModal, closeModal } = useModal();
   const { openFolderFormSheet, closeFolderFormSheet } = useFolderFormSheet();
+  const router = useRouter();
+  const segments = useSegments();
   const currentFolderId = useOptionsBar((s) => s.currentFolderId);
   const handleCurrentFolderChange = useOptionsBar(
     (s) => s.handleCurrentFolderChange
@@ -67,22 +72,43 @@ export const useFolderActions = () => {
         );
         return;
       }
+      const parentFolder = target.kind === "root" ? null : target.folder;
+      const isGraphFocused = segments.includes("graph");
       openFolderFormSheet({
         mode: "create",
-        onSave: async (label) => {
+        parentFolder,
+        onSave: async (label, selectedParent) => {
+          const parent = selectedParent ?? null;
           const id = generateID();
-          const path =
-            target.kind === "root"
-              ? buildRootFolderPath(id)
-              : buildChildFolderPath(target.folder.path, id);
+          const path = parent
+            ? buildChildFolderPath(parent.path, id)
+            : buildRootFolderPath(id);
           await insertFolder({
             data: { id, path, label },
           });
+          handleCurrentFolderChange(id);
+          if (isGraphFocused) {
+            setGraphModeImmediate("folder");
+            router.navigate({
+              pathname: "/graph/[id]",
+              params: {
+                id: graphIdFromFolderId(id),
+                _t: Date.now().toString(),
+              },
+            });
+          }
           closeFolderFormSheet();
         },
       });
     },
-    [closeFolderFormSheet, insertFolder, openFolderFormSheet]
+    [
+      closeFolderFormSheet,
+      handleCurrentFolderChange,
+      insertFolder,
+      openFolderFormSheet,
+      router,
+      segments,
+    ]
   );
 
   const openRenameFolderModal = useCallback(

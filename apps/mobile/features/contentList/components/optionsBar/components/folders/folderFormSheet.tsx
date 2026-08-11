@@ -2,11 +2,14 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { View } from "react-native";
+import { canCreateChildFolder, getFolderIdsFromPath } from "@repo/sqlite";
+import { Folder } from "@repo/zod-schemas/src/schemas";
 import {
   BottomSheet,
   BottomSheetContent,
@@ -14,14 +17,21 @@ import {
   BottomSheetView,
   useBottomSheet,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
+import { useControllers } from "@/api/controllers/useControllers";
+import { useColorScheme } from "@/lib/useColorScheme";
+import { hsl } from "@/utils/hsl";
+import { FOLDER_TREE_ROOT_ID } from "@/features/contentList/components/folderTree/folderTreeUtils";
 import { FolderFormModalContent } from "./folderFormModalContent";
 
 type FolderFormSheetOptions = {
   mode: "create" | "rename";
   initialLabel?: string;
-  onSave: (label: string) => Promise<void>;
+  /** Parent location for create — null means root. */
+  parentFolder?: Folder | null;
+  onSave: (label: string, parentFolder?: Folder | null) => Promise<void>;
 };
 
 type FolderFormSheetContextType = {
@@ -34,6 +44,43 @@ const FolderFormSheetContext = createContext<FolderFormSheetContextType | null>(
 );
 const folderFormSheetRef = React.createRef<FolderFormSheetContextType>();
 
+function LocationBreadcrumbs({
+  parentFolder,
+}: {
+  parentFolder: Folder | null;
+}) {
+  const { colorScheme } = useColorScheme();
+  const { folders } = useControllers();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery();
+
+  const foldersById = useMemo(
+    () => new Map(allFolders.map((folder) => [folder.id, folder])),
+    [allFolders]
+  );
+
+  const items = useMemo(() => {
+    const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
+    if (!parentFolder) return [root];
+    const ids = getFolderIdsFromPath(parentFolder.path);
+    return [
+      root,
+      ...ids.map((id) => ({
+        id,
+        name: foldersById.get(id)?.label ?? id,
+      })),
+    ];
+  }, [foldersById, parentFolder]);
+
+  return (
+    <View
+      className="h-10 w-full flex-row items-center overflow-hidden rounded-full shrink-0"
+      style={{ backgroundColor: hsl("card", colorScheme) }}
+    >
+      <Breadcrumbs items={items} onNavigate={() => {}} disabled />
+    </View>
+  );
+}
+
 export const FolderFormSheetProvider = ({
   children,
 }: {
@@ -42,7 +89,9 @@ export const FolderFormSheetProvider = ({
   const sheet = useBottomSheet();
   const [active, setActive] = useState(false);
   const [options, setOptions] = useState<FolderFormSheetOptions | null>(null);
+  const [parentFolder, setParentFolder] = useState<Folder | null>(null);
   const optionsRef = useRef<FolderFormSheetOptions | null>(null);
+  const parentFolderRef = useRef<Folder | null>(null);
 
   const closeFolderFormSheet = useCallback(() => {
     sheet.close();
@@ -50,6 +99,10 @@ export const FolderFormSheetProvider = ({
 
   const openFolderFormSheet = useCallback(
     (next: FolderFormSheetOptions) => {
+      const initialParent =
+        next.mode === "create" ? (next.parentFolder ?? null) : null;
+      parentFolderRef.current = initialParent;
+      setParentFolder(initialParent);
       optionsRef.current = next;
       setOptions(next);
       setActive(true);
@@ -72,10 +125,14 @@ export const FolderFormSheetProvider = ({
     setActive(false);
     setOptions(null);
     optionsRef.current = null;
+    parentFolderRef.current = null;
+    setParentFolder(null);
   }, []);
 
   const current = options ?? optionsRef.current;
   const title = current?.mode === "rename" ? "Rename folder" : "New folder";
+  const isCreate = current?.mode === "create";
+  const canCreateHere = canCreateChildFolder(parentFolder?.path ?? null);
 
   return (
     <FolderFormSheetContext.Provider
@@ -103,12 +160,28 @@ export const FolderFormSheetProvider = ({
                   <Typography variant="h3">{title}</Typography>
                 </View>
               </BottomSheetHeader>
+              {isCreate ? (
+                <LocationBreadcrumbs parentFolder={parentFolder} />
+              ) : null}
               <FolderFormModalContent
                 mode={current.mode}
                 initialLabel={current.initialLabel}
-                onSave={current.onSave}
+                onSave={async (label) => {
+                  if (current.mode === "create") {
+                    const parent = parentFolderRef.current;
+                    if (!canCreateChildFolder(parent?.path ?? null)) {
+                      throw new Error(
+                        "Folders can only be nested 3 levels deep."
+                      );
+                    }
+                    await current.onSave(label, parent);
+                    return;
+                  }
+                  await current.onSave(label);
+                }}
                 onClose={closeFolderFormSheet}
                 inBottomSheet
+                disableSubmit={isCreate && !canCreateHere}
               />
             </BottomSheetView>
           ) : null}

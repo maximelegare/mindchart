@@ -15,6 +15,7 @@ type FolderFormModalContentProps = {
   /** Prefer this over the modal close when hosting in a bottom sheet. */
   onClose?: () => void;
   inBottomSheet?: boolean;
+  disableSubmit?: boolean;
 };
 
 type FolderFormValues = {
@@ -27,6 +28,7 @@ export const FolderFormModalContent = ({
   onSave,
   onClose,
   inBottomSheet = false,
+  disableSubmit = false,
 }: FolderFormModalContentProps) => {
   const modal = useModal();
   const close = onClose ?? modal.closeModal;
@@ -45,6 +47,7 @@ export const FolderFormModalContent = ({
   });
 
   const submit = handleSubmit(async (values) => {
+    if (disableSubmit) return;
     const trimmed = values.label.trim();
     if (!trimmed) return;
     if (mode === "rename" && trimmed === initialLabel) return;
@@ -120,7 +123,10 @@ export const FolderFormModalContent = ({
         <Button
           variant="default"
           disabled={
-            !isValid || isPending || (mode === "rename" ? !isDirty : false)
+            disableSubmit ||
+            !isValid ||
+            isPending ||
+            (mode === "rename" ? !isDirty : false)
           }
           onPress={submit}
         >
