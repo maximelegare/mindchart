@@ -16,7 +16,7 @@ const buttonVariants = cva(
         outline:
           "border bg-input/20 border-[1px] border-input web:hover:bg-muted active:bg-muted",
         secondary: "bg-secondary web:hover:opacity-80 active:opacity-80",
-        ghost: "web:hover:bg-muted active:bg-muted",
+        ghost: "web:hover:opacity-80 active:opacity-70",
         link: "web:underline-offset-4 web:hover:underline web:focus:underline ",
       },
       size: {

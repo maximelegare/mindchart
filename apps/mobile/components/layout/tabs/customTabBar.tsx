@@ -13,6 +13,9 @@ import { useTabChromeStore } from "./tabChromeStore";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 
+/** Match `PageContainer` SIDE_GUTTER / `gutter("sm")` so the pill aligns with the page sheet. */
+const SIDE_GUTTER = 4;
+const TAB_TOP_RADIUS = 24;
 const FADE_MS = 220;
 
 export function CustomTabBar({
@@ -26,6 +29,14 @@ export function CustomTabBar({
   const [mounted, setMounted] = useState(!hidden);
   const opacity = useSharedValue(hidden ? 0 : 1);
   const translateY = useSharedValue(hidden ? 12 : 0);
+
+  // Same chrome as PageContainer side gutters.
+  const sideChrome = hsl(
+    colorScheme === "dark" ? "footer" : "foreground",
+    colorScheme
+  );
+  const pageBackground = hsl("background", colorScheme);
+  const footerColor = hsl("footer", colorScheme);
 
   useEffect(() => {
     if (hidden) {
@@ -57,41 +68,57 @@ export function CustomTabBar({
   return (
     <Animated.View
       pointerEvents={hidden ? "none" : "auto"}
-      style={[animatedStyle, { backgroundColor: hsl("footer", colorScheme) }]}
-      className="z-30 rounded-t-3xl overflow-hidden"
+      style={[animatedStyle, { backgroundColor: sideChrome, zIndex: 30 }]}
     >
-      <View className="flex-row items-start">
-        {state.routes.map((route) => {
-          // Home (`index`) is a redirect-only route — never show it in the tab bar.
-          if (route.name === "index") return null;
+      {/* Inset to the page sheet; page bg fills the radius cutouts ("fake corners"). */}
+      <View
+        style={{
+          marginHorizontal: SIDE_GUTTER,
+          backgroundColor: pageBackground,
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: footerColor,
+            borderTopLeftRadius: TAB_TOP_RADIUS,
+            borderTopRightRadius: TAB_TOP_RADIUS,
+            overflow: "hidden",
+          }}
+        >
+          <View className="flex-row items-start">
+            {state.routes.map((route) => {
+              // Home (`index`) is a redirect-only route — never show it in the tab bar.
+              if (route.name === "index") return null;
 
-          const { options } = descriptors[route.key];
-          const isFocused = state.routes[state.index].key === route.key;
-          const label = options.tabBarLabel ?? options.title ?? route.name;
+              const { options } = descriptors[route.key];
+              const isFocused = state.routes[state.index].key === route.key;
+              const label = options.tabBarLabel ?? options.title ?? route.name;
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
+              const onPress = () => {
+                const event = navigation.emit({
+                  type: "tabPress",
+                  target: route.key,
+                  canPreventDefault: true,
+                });
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+                if (!isFocused && !event.defaultPrevented) {
+                  navigation.navigate(route.name);
+                }
+              };
 
-          return (
-            <TabBarButton
-              key={route.name}
-              routeName={route.name}
-              onPress={onPress}
-              isFocused={isFocused}
-              label={label as string}
-              bottomInset={insets.bottom}
-            />
-          );
-        })}
+              return (
+                <TabBarButton
+                  key={route.name}
+                  routeName={route.name}
+                  onPress={onPress}
+                  isFocused={isFocused}
+                  label={label as string}
+                  bottomInset={insets.bottom}
+                />
+              );
+            })}
+          </View>
+        </View>
       </View>
     </Animated.View>
   );
