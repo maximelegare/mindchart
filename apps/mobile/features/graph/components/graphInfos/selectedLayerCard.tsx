@@ -17,12 +17,16 @@ import { cn } from "@/lib/cn";
 import { hsl } from "@/utils/hsl";
 import capitalize from "@/utils/stringManipulations/capitalize";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { FolderActionsMenu } from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+import { useControllers } from "@/api/controllers/useControllers";
 import { useGraphStore } from "../../context/graphContext";
+import { isRealFolderNode } from "../../utils/buildGraphByFolder";
 import {
   resolveListItemCategoryShade,
   resolveNodeCategoryKey,
 } from "../../utils/resolveNodeCategoryKey";
 import type { GraphMode, NodeDatum } from "../../types/types";
+import type { Folder } from "@repo/zod-schemas/src/schemas";
 
 const MAX_TITLE_LENGTH = 40;
 const ICON_SLOT = 14;
@@ -227,6 +231,7 @@ type TreeCtx = {
   highlightColor: string;
   lineColor: string;
   graphMode: GraphMode;
+  foldersById: ReadonlyMap<string, Folder>;
   onNavigate: (nodeId: string) => void;
   onOpenNote: (noteId?: string) => void;
 };
@@ -630,43 +635,82 @@ const FolderBranch = React.memo(function FolderBranch({
                 />
               </Pressable>
             ) : null}
-            <Pressable
-              onPress={() => ctx.onNavigate(node.id)}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: ROW_GAP,
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={`Zoom to ${node.name || "group"}`}
-            >
-              <IconColumn>
-                <NodeKindIcon node={node} graphMode={ctx.graphMode} />
-              </IconColumn>
-              <Typography
-                variant="small"
-                className={cn("flex-1", isCurrent && "font-semibold")}
-                numberOfLines={1}
-              >
-                {formatTitle(node.name || node.title || "", 35)}
-              </Typography>
-              {children.length > 0 ? (
-                <Typography variant="p" className="text-xs opacity-60">
-                  {children.length}
-                </Typography>
-              ) : null}
-              {isCurrent ? (
-                <View style={{ opacity: 0.45 }}>
-                  <Icon
-                    name="map-pin-simple"
-                    color="muted-foreground"
-                    size={12}
-                  />
-                </View>
-              ) : null}
-            </Pressable>
+            {(() => {
+              const folder =
+                ctx.graphMode === "folder" &&
+                isRealFolderNode(node) &&
+                node.folderId
+                  ? (ctx.foldersById.get(node.folderId) ?? null)
+                  : null;
+
+              const rowContent = (
+                <>
+                  <IconColumn>
+                    <NodeKindIcon node={node} graphMode={ctx.graphMode} />
+                  </IconColumn>
+                  <Typography
+                    variant="small"
+                    className={cn("flex-1", isCurrent && "font-semibold")}
+                    numberOfLines={1}
+                  >
+                    {formatTitle(node.name || node.title || "", 35)}
+                  </Typography>
+                  {children.length > 0 ? (
+                    <Typography variant="p" className="text-xs opacity-60">
+                      {children.length}
+                    </Typography>
+                  ) : null}
+                  {isCurrent ? (
+                    <View style={{ opacity: 0.45 }}>
+                      <Icon
+                        name="map-pin-simple"
+                        color="muted-foreground"
+                        size={12}
+                      />
+                    </View>
+                  ) : null}
+                </>
+              );
+
+              if (folder) {
+                return (
+                  <FolderActionsMenu
+                    target={{ kind: "folder", folder }}
+                    onNavigate={() => ctx.onNavigate(node.id)}
+                    className="flex-1 min-w-0"
+                  >
+                    <View
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: ROW_GAP,
+                      }}
+                    >
+                      {rowContent}
+                    </View>
+                  </FolderActionsMenu>
+                );
+              }
+
+              return (
+                <Pressable
+                  onPress={() => ctx.onNavigate(node.id)}
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: ROW_GAP,
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Zoom to ${node.name || "group"}`}
+                >
+                  {rowContent}
+                </Pressable>
+              );
+            })()}
           </View>
         </View>
       </View>
@@ -726,6 +770,14 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
   const graphMode = useGraphStore((state) => state.mode);
   const highlightColor = hsl("border", colorScheme);
   const lineColor = hsl("border", colorScheme);
+  const { folders } = useControllers();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery({
+    enabled: graphMode === "folder",
+  });
+  const foldersById = useMemo(
+    () => new Map(allFolders.map((folder) => [folder.id, folder])),
+    [allFolders]
+  );
 
   const categoryKey = resolveNodeCategoryKey(layerRoot);
   const showMainStripe = graphMode === "category";
@@ -821,6 +873,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
       highlightColor,
       lineColor,
       graphMode,
+      foldersById,
       onNavigate: navigateToNode,
       onOpenNote: navigateToNote,
     }),
@@ -829,6 +882,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
       currentNodeId,
       expandedIds,
       focusedThoughtId,
+      foldersById,
       graphMode,
       highlightColor,
       lineColor,
@@ -894,40 +948,83 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               backgroundColor: isLayerCurrent ? highlightColor : "transparent",
             }}
           >
-            <Pressable
-              onPress={() => navigateToNode(layerRoot.id)}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: ROW_GAP,
-              }}
-            >
-              <IconColumn>
-                <NodeKindIcon node={layerRoot} graphMode={graphMode} />
-              </IconColumn>
-              <Typography variant="h4" numberOfLines={1} style={{ flex: 1 }}>
-                {formatTitle(
-                  layerRoot.folderLabel ||
-                    layerRoot.name ||
-                    layerRoot.title ||
-                    ""
-                )}
-              </Typography>
-              {children.length ? (
-                <Typography variant="p">({children.length})</Typography>
-              ) : null}
-              {isLayerCurrent ? (
-                <View style={{ opacity: 0.45 }}>
-                  <Icon
-                    name="map-pin-simple"
-                    color="muted-foreground"
-                    size={12}
-                  />
-                </View>
-              ) : null}
-            </Pressable>
+            {(() => {
+              const layerFolder =
+                graphMode === "folder" &&
+                isRealFolderNode(layerRoot) &&
+                layerRoot.folderId
+                  ? (foldersById.get(layerRoot.folderId) ?? null)
+                  : null;
+
+              const layerRow = (
+                <>
+                  <IconColumn>
+                    <NodeKindIcon node={layerRoot} graphMode={graphMode} />
+                  </IconColumn>
+                  <Typography
+                    variant="h4"
+                    numberOfLines={1}
+                    style={{ flex: 1 }}
+                  >
+                    {formatTitle(
+                      layerRoot.folderLabel ||
+                        layerRoot.name ||
+                        layerRoot.title ||
+                        ""
+                    )}
+                  </Typography>
+                  {children.length ? (
+                    <Typography variant="p">({children.length})</Typography>
+                  ) : null}
+                  {isLayerCurrent ? (
+                    <View style={{ opacity: 0.45 }}>
+                      <Icon
+                        name="map-pin-simple"
+                        color="muted-foreground"
+                        size={12}
+                      />
+                    </View>
+                  ) : null}
+                </>
+              );
+
+              if (layerFolder) {
+                return (
+                  <FolderActionsMenu
+                    target={{ kind: "folder", folder: layerFolder }}
+                    onNavigate={() => navigateToNode(layerRoot.id)}
+                    className="flex-1 min-w-0"
+                  >
+                    <View
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: ROW_GAP,
+                      }}
+                    >
+                      {layerRow}
+                    </View>
+                  </FolderActionsMenu>
+                );
+              }
+
+              return (
+                <Pressable
+                  onPress={() => navigateToNode(layerRoot.id)}
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: ROW_GAP,
+                  }}
+                >
+                  {layerRow}
+                </Pressable>
+              );
+            })()}
             {layerRoot.noteId ? (
               <Button
                 className="h-9 w-9 p-0"

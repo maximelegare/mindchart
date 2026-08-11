@@ -217,7 +217,7 @@ function OptionsDropdown<T extends string>({
   );
 }
 
-function NewFolderButton({ onPress }: { onPress: () => void }) {
+export function NewFolderButton({ onPress }: { onPress: () => void }) {
   const { colorScheme } = useColorScheme();
   const backgroundColor = hsl("card", colorScheme);
   const borderColor = hsl("card", colorScheme);

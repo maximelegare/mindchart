@@ -32,7 +32,7 @@ const isContentLeaf = (node: NodeDatum) =>
   !!node.thoughtId || isNoteLeafId(node.id);
 
 /** Real folder pack (not the synthetic "unfiled" bucket). */
-const isRealFolderNode = (node: NodeDatum) =>
+export const isRealFolderNode = (node: NodeDatum) =>
   !!node.folderId && node.folderId !== "unfiled";
 
 /** True when a graph node is an empty folder pack. */
