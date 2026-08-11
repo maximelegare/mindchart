@@ -13,12 +13,14 @@ import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";
 import { useOptionsBar } from "../context/optionBarContext";
 import { FolderFormModalContent } from "../components/folders/folderFormModalContent";
+import { useFolderFormSheet } from "../components/folders/folderFormSheet";
 import { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 
 type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
 
 export const useFolderActions = () => {
   const { openModal, closeModal } = useModal();
+  const { openFolderFormSheet, closeFolderFormSheet } = useFolderFormSheet();
   const currentFolderId = useOptionsBar((s) => s.currentFolderId);
   const handleCurrentFolderChange = useOptionsBar(
     (s) => s.handleCurrentFolderChange
@@ -65,26 +67,22 @@ export const useFolderActions = () => {
         );
         return;
       }
-      openModal({
-        customContent: () => (
-          <FolderFormModalContent
-            mode="create"
-            onSave={async (label) => {
-              const id = generateID();
-              const path =
-                target.kind === "root"
-                  ? buildRootFolderPath(id)
-                  : buildChildFolderPath(target.folder.path, id);
-              await insertFolder({
-                data: { id, path, label },
-              });
-              closeModal();
-            }}
-          />
-        ),
+      openFolderFormSheet({
+        mode: "create",
+        onSave: async (label) => {
+          const id = generateID();
+          const path =
+            target.kind === "root"
+              ? buildRootFolderPath(id)
+              : buildChildFolderPath(target.folder.path, id);
+          await insertFolder({
+            data: { id, path, label },
+          });
+          closeFolderFormSheet();
+        },
       });
     },
-    [closeModal, insertFolder, openModal]
+    [closeFolderFormSheet, insertFolder, openFolderFormSheet]
   );
 
   const openRenameFolderModal = useCallback(

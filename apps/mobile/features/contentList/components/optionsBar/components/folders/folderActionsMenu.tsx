@@ -154,7 +154,9 @@ export const FolderActionsMenu = ({
                 size="default"
                 onPress={() => {
                   closeActions();
-                  openCreateFolderModal(target);
+                  setTimeout(() => {
+                    openCreateFolderModal(target);
+                  }, 200);
                 }}
               >
                 <View className="flex-row items-center gap-2">
