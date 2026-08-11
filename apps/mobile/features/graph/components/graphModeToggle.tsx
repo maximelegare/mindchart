@@ -90,7 +90,7 @@ export const GraphModeToggle = memo(function GraphModeToggle() {
       <View className="h-full w-full flex-row items-center gap-2">
         <View className="shrink-0">
           <TriggerFilterChip
-            icon="funnel"
+            icon="settings-2"
             selected={expanded}
             showDot={mode !== DEFAULT_GRAPH_MODE}
             onPress={() => setExpanded((prev) => !prev)}
