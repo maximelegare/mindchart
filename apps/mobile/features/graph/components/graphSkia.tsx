@@ -29,6 +29,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
+import { GraphModeTabs } from "./graphModeTabs";
 import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { isEmptyFolderNode } from "@/features/graph/utils/buildGraphByFolder";
@@ -732,6 +733,14 @@ function CirclePackSkiaRenderer({
           },
         ]}
       >
+        <View
+          style={[
+            styles.header,
+            { borderBottomColor: hsl("border", colorScheme) },
+          ]}
+        >
+          <GraphModeTabs />
+        </View>
         <View style={styles.canvasContainer}>
           <GestureDetector gesture={tap}>
             <Canvas style={styles.canvas}>
@@ -963,6 +972,14 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   canvasContainer: {
     width: SIZE,

@@ -3,6 +3,7 @@ import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { View, StyleSheet } from "react-native";
 import { GRAPH_CANVAS_SIZE } from "../constants";
+import { GraphModeTabs } from "./graphModeTabs";
 
 export const GraphLoadingPlaceholder = () => {
   const { colorScheme } = useColorScheme();
@@ -17,6 +18,14 @@ export const GraphLoadingPlaceholder = () => {
         },
       ]}
     >
+      <View
+        style={[
+          styles.header,
+          { borderBottomColor: hsl("border", colorScheme) },
+        ]}
+      >
+        <GraphModeTabs />
+      </View>
       <View style={styles.canvasArea}>
         <LoadingState title="Loading graph" size="large" />
       </View>
@@ -31,6 +40,14 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 10,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   canvasArea: {
     width: GRAPH_CANVAS_SIZE,
