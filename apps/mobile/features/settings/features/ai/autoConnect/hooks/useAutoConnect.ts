@@ -36,31 +36,33 @@ export const useAiAutoConnect = () => {
   const initializeAi = async () => {
     if (isInitializing) return;
 
+    const tasks = [];
+
+    // Embeddings always auto-connect when downloaded
+    if (llamaEmbeddingsModelFiles[llamaEmbeddings]) {
+      tasks.push(initializeEmbeddingModel(llamaEmbeddings));
+    }
+
+    // Whisper and Llama Chat only when Auto Connect is enabled
+    if (autoConnect) {
+      if (modelFiles[whisper]) {
+        tasks.push(initializeModel(whisper));
+      }
+
+      if (llamaChatModelFiles[llamaChat]) {
+        tasks.push(initializeChatModel(llamaChat));
+      }
+    }
+
+    if (tasks.length === 0) {
+      setHasAttempted(true);
+      return;
+    }
+
     try {
       setIsInitializing(true);
-
-      const tasks = [];
-
-      // Embeddings always auto-connect when downloaded
-      if (llamaEmbeddingsModelFiles[llamaEmbeddings]) {
-        tasks.push(initializeEmbeddingModel(llamaEmbeddings));
-      }
-
-      // Whisper and Llama Chat only when Auto Connect is enabled
-      if (autoConnect) {
-        if (modelFiles[whisper]) {
-          tasks.push(initializeModel(whisper));
-        }
-
-        if (llamaChatModelFiles[llamaChat]) {
-          tasks.push(initializeChatModel(llamaChat));
-        }
-      }
-
-      if (tasks.length > 0) {
-        await Promise.all(tasks);
-        console.log("AI Services initialized successfully");
-      }
+      await Promise.all(tasks);
+      console.log("AI Services initialized successfully");
     } catch (error) {
       console.error("Failed to auto-connect AI services:", error);
     } finally {
