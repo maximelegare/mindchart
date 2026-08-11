@@ -1,7 +1,5 @@
 import { Typography } from "@/components/ui";
-import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
-
 import { View } from "react-native";
 
 type SwitchSettingProps = {
@@ -16,7 +14,7 @@ export const CustomSettingComponent = ({
   children,
 }: SwitchSettingProps) => {
   return (
-    <Card>
+    <View>
       <Gutter size="md" className="py-3 gap-4">
         <View className="flex-1">
           <Typography variant="h3" padding>
@@ -28,6 +26,6 @@ export const CustomSettingComponent = ({
         </View>
         <View className="flex-1">{children}</View>
       </Gutter>
-    </Card>
+    </View>
   );
 };

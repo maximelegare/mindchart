@@ -40,7 +40,7 @@ interface ItemProps {
 // Define props for ListItem with TypeScript interface
 type ListItemProps = VariantProps<typeof listItemTextVariants> & {
   label: string;
-  description?: string;
+  description?: React.ReactNode;
   itemLeft?: (itemProps: ItemProps) => React.ReactElement;
   itemRight?: (itemProps: ItemProps) => React.ReactElement;
   onPress?: () => void;
@@ -56,6 +56,8 @@ type ListItemProps = VariantProps<typeof listItemTextVariants> & {
    */
   href?: any;
   className?: string;
+  /** `none` = transparent (settings plain lists). */
+  surface?: "card" | "none";
 } & (ViewProps | PressableProps | LinkProps);
 
 // ListItem component
@@ -71,6 +73,7 @@ const ListItem: React.FC<ListItemProps> = ({
   noChevron = false,
   borderTop = false,
   borderBottom = true,
+  surface = "card",
   ...props
 }) => {
   const rightClassName = cn(
@@ -95,7 +98,12 @@ const ListItem: React.FC<ListItemProps> = ({
   const { ...componentProps } = props as any;
 
   const { colorScheme } = useColorScheme();
-  const borderColor = hsl("border", colorScheme);
+  const solidBorder = hsl("border", colorScheme);
+  // Grouped/settings rows: hairline dividers with lower contrast.
+  const borderColor =
+    surface === "none"
+      ? solidBorder.replace(/^hsl\((.+)\)$/, "hsla($1, 0.35)")
+      : solidBorder;
   const body = (
     <Component
       className={cn(
@@ -108,7 +116,8 @@ const ListItem: React.FC<ListItemProps> = ({
       accessibilityLabel={`${label}${description ? `, ${description}` : ""}`}
       {...componentProps}
       style={{
-        backgroundColor: hsl("card", colorScheme),
+        backgroundColor:
+          surface === "none" ? "transparent" : hsl("card", colorScheme),
         borderColor,
         borderTopWidth: borderTop ? 1 : 0,
         borderBottomWidth: borderBottom ? 1 : 0,
@@ -128,7 +137,13 @@ const ListItem: React.FC<ListItemProps> = ({
         >
           {label}
         </Typography>
-        {description ? <Muted>{description}</Muted> : undefined}
+        {description ? (
+          typeof description === "string" ? (
+            <Muted>{description}</Muted>
+          ) : (
+            description
+          )
+        ) : undefined}
       </View>
       {rightContent}
     </Component>

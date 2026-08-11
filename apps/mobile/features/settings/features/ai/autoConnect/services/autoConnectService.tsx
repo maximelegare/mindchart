@@ -27,7 +27,7 @@ export const AutoConnectService = ({
             modalName: "AI_SETUP_REQUIRED",
             confirmButton: { text: "Go to Settings" },
             onConfirm: () => {
-              router.push("/settings/ai");
+              router.push("/settings");
               closeModal();
             },
           });

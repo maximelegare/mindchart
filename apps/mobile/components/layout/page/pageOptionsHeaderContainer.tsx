@@ -5,7 +5,7 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 
 type PageOptionsHeaderContainerProps = {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   footer?: React.ReactNode;
 };
 
@@ -23,11 +23,13 @@ export const PageOptionsHeaderContainer = ({
           className="justify-center"
           style={{ height: LAYOUT_SIZES.OPTIONS_HEADER_HEIGHT }}
         >
-          <Gutter size="md">{children}</Gutter>
+          <Gutter size="md">{children ?? <View />}</Gutter>
         </View>
         {footer}
       </View>
-      <View className="border-b border-border" style={styles.bottomEdge} />
+      {children ? (
+        <View className="border-b border-border" style={styles.bottomEdge} />
+      ) : null}
     </View>
   );
 };

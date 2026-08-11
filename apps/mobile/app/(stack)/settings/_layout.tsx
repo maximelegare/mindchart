@@ -18,33 +18,16 @@ export default function SettingsLayout() {
         options={{ title: "Settings", headerShown: false }}
       />
       <Stack.Screen
-        name="ai"
-        options={{
-          title: "AI",
-          header: () => null,
-        }}
-      />
-      <Stack.Screen
         name="developer"
         options={{
           title: "Developer Options",
           header: () => null,
         }}
       />
-      <Stack.Screen
-        name="workspaces"
-        options={{
-          title: "Workspaces",
-          header: () => null,
-        }}
-      />
-      <Stack.Screen
-        name="aboutApp"
-        options={{
-          title: "About App",
-          header: () => null,
-        }}
-      />
+      {/* Legacy routes — redirect to main settings */}
+      <Stack.Screen name="ai" options={{ header: () => null }} />
+      <Stack.Screen name="workspaces" options={{ header: () => null }} />
+      <Stack.Screen name="aboutApp" options={{ header: () => null }} />
     </Stack>
   );
 }

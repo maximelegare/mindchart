@@ -1,54 +1,44 @@
 import * as React from "react";
-import List from "@/components/ui/list";
-import ListItem from "@/components/ui/list-item";
-import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
+import { View } from "react-native";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { useRouter } from "expo-router";
-import { Icon } from "@/components/ui/icons/icon";
+import ListItem from "@/components/ui/list-item";
+import { SettingsSection } from "@/features/settings/components/settingsSection";
+import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
+import { AiSettingsSection } from "@/features/settings/features/ai/components/aiSettingsSection";
+import { WorkspacesSettingsSection } from "@/features/settings/features/workspaces/components/workspacesSettingsSection";
+import { AppVersionFeature } from "@/features/settings/features/aboutApp/features/appVersion";
 
 export const SettingsFeature = () => {
   const { push } = useRouter();
 
   return (
-    <>
-      <List>
+    <View className="flex-col gap-8">
+      <SettingsSection title="Appearance" icon="palette">
         <ThemeSettingItem />
+      </SettingsSection>
+
+      <AiSettingsSection />
+
+      <WorkspacesSettingsSection />
+
+      <SettingsSection title="About" icon="info">
+        <AppVersionFeature />
+      </SettingsSection>
+
+      <SettingsSection title="Developer" icon="brackets-curly">
         <ListItem
-          className="bg-background"
-          itemLeft={() => <Icon name="brain" color="foreground" />} // props adds size and color attributes
-          label="AI"
-          onPress={() => push("/settings/ai")}
-        />
-        <ListItem
-          className="bg-background"
-          itemLeft={() => <Icon name="layers" color="foreground" />}
-          label="Workspaces"
-          onPress={() => push("/settings/workspaces")}
-        />
-        <ListItem
-          className="bg-background"
-          itemLeft={() => <Icon name="key-round" color="foreground" />}
-          label="Recovery Password"
-          onPress={() => push("/settings/workspaces/recovery")}
-        />
-        <ListItem
-          className="bg-background"
-          itemLeft={() => <Icon name="brackets-curly" color="foreground" />}
           label="Developer Options"
+          borderBottom={false}
           onPress={() => push("/settings/developer")}
         />
-        <ListItem
-          className="bg-background"
-          itemLeft={() => <Icon name="info" color="foreground" />}
-          label="About App"
-          onPress={() => push("/settings/aboutApp")}
-        />
-      </List>
+      </SettingsSection>
+
       <SpaceFiller
         sizes={{
           marginBottom: ["TAB_BAR_HEIGHT", 20],
         }}
       />
-    </>
+    </View>
   );
 };

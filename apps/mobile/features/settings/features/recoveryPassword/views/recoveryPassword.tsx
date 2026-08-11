@@ -1,11 +1,12 @@
-import { ScrollView } from "react-native";
+import { View } from "react-native";
 import { CustomSettingComponent } from "@/features/settings/components/customSettingComponent";
 import { EnableRecoveryPassword } from "../components/enableRecoveryPassword";
 import { RecoveryPassphraseReveal } from "../components/recoveryPassphraseReveal";
 
+/** Recovery password UI (no scroll wrapper — parent page/sheet scrolls). */
 export const RecoveryPasswordFeature = () => {
   return (
-    <ScrollView contentContainerStyle={{ gap: 12, paddingBottom: 24 }}>
+    <View style={{ gap: 12 }}>
       <EnableRecoveryPassword />
 
       <CustomSettingComponent
@@ -14,6 +15,6 @@ export const RecoveryPasswordFeature = () => {
       >
         <RecoveryPassphraseReveal />
       </CustomSettingComponent>
-    </ScrollView>
+    </View>
   );
 };

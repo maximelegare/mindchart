@@ -330,14 +330,14 @@ const BottomSheetHeader = React.forwardRef<
     <View
       ref={ref}
       className={cn(
-        "border-b border-border flex-row items-center justify-between",
+        "border-b border-border flex-row items-center justify-between px-4",
         className
       )}
       {...props}
     >
       {children}
       {closeButton && (
-        <Button onPress={close} variant="ghost" className="pr-4">
+        <Button onPress={close} variant="ghost" size="icon">
           <X className="text-muted-foreground" size={24} />
         </Button>
       )}

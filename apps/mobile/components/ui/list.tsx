@@ -23,10 +23,27 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
 
 interface ListProps extends ViewProps {
   children: React.ReactNode;
+  /**
+   * - `default`: bordered card list
+   * - `plain`: no chrome
+   * - `grouped`: card fill + large radius, no outer border (settings)
+   */
+  variant?: "default" | "plain" | "grouped";
 }
 
-const List: React.FC<ListProps> = ({ children, className, ...props }) => {
+const GROUPED_RADIUS = 22;
+
+const List: React.FC<ListProps> = ({
+  children,
+  className,
+  variant = "default",
+  ...props
+}) => {
   const { colorScheme } = useColorScheme();
+  const plain = variant === "plain";
+  const grouped = variant === "grouped";
+  const transparentRows = plain || grouped;
+
   // Omit null/false children so Android never gets empty native slots in the list ViewGroup.
   const childrenArray = React.Children.toArray(children).filter(Boolean);
   const modifiedChildren = childrenArray.map((child, index) => {
@@ -34,20 +51,24 @@ const List: React.FC<ListProps> = ({ children, className, ...props }) => {
       return child;
     }
     let injectClassName = "";
-    const isFirstChild = index === 0;
     const isLastChild = index === childrenArray.length - 1;
-
-    // if first child or the previous sibling is a ListHeader
+    const isFirstChild = index === 0;
     const prevSibling = childrenArray[index - 1];
     const isValidPrevSibling = React.isValidElement(prevSibling);
-    if (
-      isFirstChild ||
-      (isValidPrevSibling && prevSibling.type === ListHeader)
-    ) {
-      injectClassName += "rounded-t-lg "; // whitespace is important
-    }
-    if (isLastChild) {
-      injectClassName += "rounded-b-lg border-b-0";
+
+    if (variant === "default") {
+      if (
+        isFirstChild ||
+        (isValidPrevSibling && prevSibling.type === ListHeader)
+      ) {
+        injectClassName += "rounded-t-lg ";
+      }
+      if (isLastChild) {
+        injectClassName += "rounded-b-lg border-b-0";
+      }
+    } else if (isLastChild) {
+      // Drop the trailing divider under the last row.
+      injectClassName += "border-b-0";
     }
 
     return React.cloneElement<any>(child, {
@@ -55,6 +76,7 @@ const List: React.FC<ListProps> = ({ children, className, ...props }) => {
         (child as React.ReactElement<any>).props.className,
         injectClassName
       ),
+      ...(transparentRows ? { surface: "none" as const } : null),
     });
   });
 
@@ -62,9 +84,24 @@ const List: React.FC<ListProps> = ({ children, className, ...props }) => {
 
   return (
     <View
-      className={cn("rounded-lg overflow-hidden", className) || ""}
+      className={cn(
+        (variant === "default" || grouped) && "overflow-hidden",
+        className
+      )}
       style={[
-        { borderWidth: 1, borderColor: hsl("border", colorScheme) },
+        variant === "default"
+          ? {
+              borderWidth: 1,
+              borderColor: hsl("border", colorScheme),
+              borderRadius: 8,
+            }
+          : grouped
+            ? {
+                borderWidth: 0,
+                backgroundColor: hsl("card", colorScheme),
+                borderRadius: GROUPED_RADIUS,
+              }
+            : { borderWidth: 0, backgroundColor: "transparent" },
         style,
       ]}
       accessibilityRole="list"

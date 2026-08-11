@@ -18,6 +18,7 @@ export const EnableRecoveryPassword = () => {
     openModal({
       title: "Recovery Password",
       description: message,
+      aboveBottomSheet: true,
       confirmButton: { text: "Ok", variant: "default" },
       cancelButton: { text: "Cancel", variant: "default" },
       onConfirm: closeModal,
@@ -40,6 +41,7 @@ export const EnableRecoveryPassword = () => {
   const openDisableModal = () => {
     openModal({
       modalName: "DISABLE_RECOVERY_PASSWORD",
+      aboveBottomSheet: true,
       onConfirm: () => {
         void runDisable();
       },
@@ -50,6 +52,7 @@ export const EnableRecoveryPassword = () => {
   const openSetupModal = () => {
     openModal({
       title: "Recovery Password",
+      aboveBottomSheet: true,
       dismissOnBackgroundPress: false,
       customContent: () => (
         <RecoveryPassphraseSetupForm
@@ -76,6 +79,7 @@ export const EnableRecoveryPassword = () => {
     if (!biometricAvailable) {
       openModal({
         modalName: "BIOMETRICS_UNAVAILABLE",
+        aboveBottomSheet: true,
         onConfirm: closeModal,
         onCancel: closeModal,
       });

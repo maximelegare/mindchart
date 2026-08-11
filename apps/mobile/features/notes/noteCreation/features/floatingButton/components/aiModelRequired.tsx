@@ -13,7 +13,7 @@ export const AiModelRequired = ({ message }: { message: string }) => {
 
   const handleOpenSettings = () => {
     requestFabClose();
-    router.push("/settings/ai");
+    router.push("/settings");
   };
 
   return (

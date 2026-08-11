@@ -1,6 +1,5 @@
 import { memo } from "react";
 import { View } from "react-native";
-import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
 import { useRouter } from "expo-router";
@@ -32,15 +31,13 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
         <View className="flex-row items-center justify-between mb-1">
           <DisplayDate date={date} />
         </View>
-        <Separator className="mb-2" color="border" />
         <CardTitleRow
           title={title}
           onTitlePress={() => push({ pathname: "/notes/[id]", params: { id } })}
           menu={<NoteBottomSheet noteId={id} />}
         />
         {visibleItems.length > 0 && (
-          <View className="gap-3 mt-2">
-            <Separator />
+          <View className="gap-3 mt-4">
             <BulletList
               bulletClassName="mt-[10px]"
               bulletColor="border"
