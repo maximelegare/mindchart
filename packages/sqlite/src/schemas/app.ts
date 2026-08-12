@@ -3,7 +3,6 @@ import {
   sqliteTable,
   text,
   foreignKey,
-  blob,
   integer,
   primaryKey,
 } from "drizzle-orm/sqlite-core";
@@ -65,7 +64,6 @@ export const NoteTable = sqliteTable(
     title: text("title"),
     summary: text("summary"),
     rawText: text("raw_text"),
-    topicId: text("topic_id"),
     folderId: text("folder_id"),
     feeling: integer("feeling"),
     locationId: text("location_id"),
@@ -74,10 +72,6 @@ export const NoteTable = sqliteTable(
       .notNull(),
   },
   (note) => [
-    foreignKey({
-      columns: [note.topicId],
-      foreignColumns: [TopicTable.id],
-    }).onDelete("cascade"),
     foreignKey({
       columns: [note.folderId],
       foreignColumns: [FolderTable.id],
@@ -126,15 +120,6 @@ export const AppDataTable = sqliteTable("app_data", {
 export const CategoryTable = sqliteTable("category", {
   id: text("id").notNull().primaryKey(),
   name: text("name").notNull(),
-  createdAt: text("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-});
-
-export const TopicTable = sqliteTable("topic", {
-  id: text("id").notNull().primaryKey(),
-  name: text("name").notNull(),
-  embedding: float32ArrayBlob("embedding").notNull(),
   createdAt: text("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

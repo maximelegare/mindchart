@@ -19,8 +19,6 @@ export const mapNoteToLeaf = (
   summary: note.summary || null,
   noteId: note.id,
   relatedThoughtIds,
-  topicId: note.topicId ?? undefined,
-  topicName: note.topicName ?? null,
   folderId: note.folderId ?? undefined,
   folderLabel: note.folderLabel ?? undefined,
   createdAt: note.createdAt ?? null,

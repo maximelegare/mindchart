@@ -14,7 +14,6 @@ type ListItemProps = {
   title: string;
   date?: string | null;
   category?: string | null;
-  topic?: string | null;
   overviewItems: string[];
 };
 

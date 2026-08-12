@@ -25,7 +25,6 @@ export const MODALS_CONTENT: Record<
   | "DELETE_NOTE_CONFIRMATION"
   | "DISABLE_RECOVERY_PASSWORD"
   | "BIOMETRICS_UNAVAILABLE"
-  | "DELETE_TOPIC_CONFIRMATION"
   | "DELETE_FOLDER_CONFIRMATION"
   | "DELETE_LOCATION_CONFIRMATION",
   ModalPreset
@@ -40,13 +39,6 @@ export const MODALS_CONTENT: Record<
     title: "Delete Folder?",
     description:
       "This will permanently delete this folder and all nested folders.",
-    confirmButton: { text: "Delete", variant: "destructive" },
-    cancelButton: { text: "Cancel", variant: "default" },
-  },
-  DELETE_TOPIC_CONFIRMATION: {
-    title: "Delete Topic?",
-    description:
-      "This will permanently delete this topic and all associated notes.",
     confirmButton: { text: "Delete", variant: "destructive" },
     cancelButton: { text: "Cancel", variant: "default" },
   },

@@ -12,8 +12,6 @@ export type Thought = z.infer<typeof ThoughtSchema>;
 
 export type Category = z.infer<typeof CategorySchema>;
 
-export type Topic = z.infer<typeof TopicSchema>;
-
 export type Person = z.infer<typeof PersonSchema>;
 
 export type FeelingValue = z.infer<typeof FeelingValueSchema>;
@@ -51,37 +49,17 @@ export const PersonSchema = z.object({
   createdAt: z.string().optional(),
 });
 
-export const TopicSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  embedding: z.custom<Float32Array>(),
-  isNew: z.boolean().optional(),
-  createdAt: z.string().optional(),
-});
-
-export const TopicWithNotesInfosSchema = TopicSchema.extend({
-  noteCount: z.number(),
-}).omit({
-  embedding: true,
-  isNew: true,
-});
-
 export const CategoryWithThoughtsInfosSchema = CategorySchema.extend({
   thoughtCount: z.number(),
-  topicsCount: z.number(),
 });
 
 export type CategoryWithThoughtsInfos = z.infer<
   typeof CategoryWithThoughtsInfosSchema
 >;
 
-export type TopicWithNotesInfos = z.infer<typeof TopicWithNotesInfosSchema>;
-
 export const ThoughtSchema = z.object({
   id: z.string(),
   title: z.string(),
-  topicName: z.string().optional(),
-  topicId: z.string().optional(),
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
   folderPath: z.string().nullable().optional(),
@@ -107,8 +85,6 @@ export const NoteSchema = z.object({
   title: z.string(),
   summary: z.string(),
   rawText: z.string().default(""),
-  topicId: z.string().nullable().optional(),
-  topicName: z.string().nullable().optional(),
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
   feeling: FeelingValueSchema.nullable().optional(),

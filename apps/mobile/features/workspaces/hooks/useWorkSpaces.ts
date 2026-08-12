@@ -103,7 +103,7 @@ export const useWorkSpaces = () => {
       setWorkspaceEncryptionKey(key);
       // Critical: migrations must complete BEFORE any consumer query fires.
       // Otherwise refetchQueries({type:"active"}) below races migrate() and
-      // observed queries (e.g. fetch_all_topics) hit a tableless DB.
+      // observed queries hit a tableless DB.
       await runMigrations();
       setActiveWorkspaceId(workspace.id);
       bumpDbEpoch();

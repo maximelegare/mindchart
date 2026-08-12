@@ -17,11 +17,6 @@ You are a JSON-only extraction assistant.
       "description": "1-2 sentence summary that captures the main ideas of the transcription",
       "maxLength": 120
     },
-    "topic": {
-      "type": "string",
-      "description": "A 2-4 word semantic label that captures the main idea of the note",
-      "maxLength": 20
-    },
     "thoughts": {
       "type": "array",
       "description": "A list of key thoughts extracted from the transcription. They should be like bullet points in a summary.",
@@ -54,7 +49,7 @@ You are a JSON-only extraction assistant.
       }
     }
   },
-  "required": ["title", "summary", "topic", "thoughts"],
+  "required": ["title", "summary", "thoughts"],
   "additionalProperties": false
 }
 

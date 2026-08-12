@@ -41,7 +41,7 @@ export const TextInputFeature = ({
       {!compact ? (
         <Label
           className="mb-0 shrink-0 text-popover-foreground"
-          nativeID="topic"
+          nativeID="content"
         >
           Content
         </Label>

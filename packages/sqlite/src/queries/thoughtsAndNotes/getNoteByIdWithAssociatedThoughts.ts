@@ -3,7 +3,6 @@ import { DB } from "../../utils/initialize/getOPDatabase";
 import {
   ThoughtTable,
   NoteTable,
-  TopicTable,
   FolderTable,
   LocationTable,
 } from "../../schema.root";
@@ -25,8 +24,6 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
         note_feeling: NoteTable.feeling,
         location_id: NoteTable.locationId,
         location_name: LocationTable.name,
-        topic_id: NoteTable.topicId,
-        topic_name: TopicTable.name,
         folder_id: NoteTable.folderId,
         folder_label: FolderTable.label,
         thoughts_json: sql<string>`
@@ -46,7 +43,6 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
       })
       .from(NoteTable)
       .leftJoin(ThoughtTable, eq(ThoughtTable.noteId, NoteTable.id))
-      .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id))
       .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id))
       .leftJoin(LocationTable, eq(NoteTable.locationId, LocationTable.id))
       .where(eq(NoteTable.id, id))

@@ -13,7 +13,6 @@ import { getOPDatabase } from "./src/utils/initialize/getOPDatabase";
 import { getAllCategoriesQuery } from "./src/queries/categories/getAllcategories";
 import { removeDatabaseFile } from "./src/utils/removeDatabaseFile";
 import { setupDB } from "./src/utils/initialize/setupDB";
-import { insertNewTopicQuery } from "./src/queries/topics/insertNewTopic";
 import {
   AppDataTable,
   CategoryTable,
@@ -46,7 +45,6 @@ import { getMigratingStatusQuery } from "./src/queries/databaseInspector/getMigr
 import { updateMigratingStatusQuery } from "./src/queries/databaseInspector/updateMigratingStatus";
 import { getNoteByIdWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNoteByIdWithAssociatedThoughts";
 import { exportDatabaseQuery } from "./src/queries/settings/exportDatabase";
-import { getNotesByTopicWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNotesByTopicWithAssociatedThoughts";
 import {
   closeOPDatabase,
   setActiveWorkspace,
@@ -61,7 +59,6 @@ import { runMigrations } from "./src/utils/runMigrations";
 import { validateIfDBExists } from "./src/queries/dbStatus/validateIfDBExists";
 import { insertEmbeddingsQuery } from "./src/queries/embeddings/insertEmbeddings";
 import { seedDatabaseQuery } from "./src/queries/bulk/seedDatabase";
-import { getAllTopicsQuery } from "./src/queries/topics/getAllTopics";
 import { updateNoteQuery } from "./src/queries/notes/updateNote";
 import { updateThoughtsQuery } from "./src/queries/thoughts/updateThouhts";
 import { updateEmbeddingsQuery } from "./src/queries/embeddings/updateEmbeddings";
@@ -69,9 +66,6 @@ import { deleteThoughByIdQuery } from "./src/queries/thoughts/deleteThoughById";
 import { deleteThoughtsByIdsQuery } from "./src/queries/thoughts/deleteThoughtsByIds";
 import { deleteNoteByIdQuery } from "./src/queries/notes/deleteNoteById";
 import { searchThoughtsInFTSQuery } from "./src/queries/search/fts5/search";
-import { getAllTopicsWithNotesInfosQuery } from "./src/queries/topics/getAllTopicsWithNotesInfos";
-import { deleteTopicByIdQuery } from "./src/queries/topics/deleteTopicById";
-import { updateTopicByIdQuery } from "./src/queries/topics/updateTopicById";
 import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
 import { getAllFoldersQuery } from "./src/queries/folders/getAllFolders";
 import { getAllFoldersWithNotesInfosQuery } from "./src/queries/folders/getAllFoldersWithNotesInfos";
@@ -137,8 +131,6 @@ export {
   getDbLocation,
   WorkspaceEncryptionKeyMissingError,
   seedDatabaseQuery,
-  getAllTopicsQuery,
-  insertNewTopicQuery,
   updateNoteQuery,
   updateThoughtsQuery,
   updateEmbeddingsQuery,
@@ -146,11 +138,7 @@ export {
   deleteThoughtsByIdsQuery,
   deleteNoteByIdQuery,
   searchThoughtsInFTSQuery,
-  getAllTopicsWithNotesInfosQuery,
-  deleteTopicByIdQuery,
-  updateTopicByIdQuery,
   getAllCategoriesWithThoughtsInfosQuery,
-  getNotesByTopicWithAssociatedThoughtsQuery,
   getAllFoldersQuery,
   getAllFoldersWithNotesInfosQuery,
   getFolderByIdQuery,

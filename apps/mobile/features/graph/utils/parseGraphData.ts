@@ -6,7 +6,7 @@ import { categoryGraphNeedsRebuild } from "./buildGraphByCategoryFolders";
 import { isNoteLeafId } from "./mapNoteToLeaf";
 
 /** Bump when folder/category graph shape changes (forces DB cache rebuild). */
-export const GRAPH_CACHE_VERSION = 4;
+export const GRAPH_CACHE_VERSION = 5;
 
 const isRootNode = (data: unknown): data is NodeDatum =>
   typeof data === "object" &&
@@ -17,11 +17,6 @@ const isRootNode = (data: unknown): data is NodeDatum =>
 export const isGraphDataCache = (data: unknown): data is GraphDataCache =>
   isRootNode((data as GraphDataCache)?.category) &&
   isRootNode((data as GraphDataCache)?.folder);
-
-const treeContainsTopicNodes = (root: NodeDatum): boolean => {
-  if (root.id.startsWith("topic-")) return true;
-  return (root.children ?? []).some(treeContainsTopicNodes);
-};
 
 const walkTree = (
   root: NodeDatum,
@@ -45,16 +40,13 @@ const categoryTreeHasThoughtLeaves = (root: NodeDatum) =>
   walkTree(root, (node) => !!node.thoughtId);
 
 /**
- * True when cache is legacy/topic-based, wrong version, category packs need
- * work, folder still uses thoughts, or folder has no note leaves while
- * category still has thoughts.
+ * True when cache is wrong version, category packs need work, folder still
+ * uses thoughts, or folder has no note leaves while category still has thoughts.
  */
 export const needsFolderGraphRebuild = (data: unknown): boolean => {
   if (!isGraphDataCache(data)) return true;
   if (data.version !== GRAPH_CACHE_VERSION) return true;
   return (
-    treeContainsTopicNodes(data.category) ||
-    treeContainsTopicNodes(data.folder) ||
     categoryGraphNeedsRebuild(data.category) ||
     folderTreeHasThoughtLeaves(data.folder) ||
     (categoryTreeHasThoughtLeaves(data.category) &&
@@ -80,12 +72,6 @@ export const stripEmbeddingsFromCache = (
   };
 };
 
-const isLegacyTopicCache = (
-  data: unknown
-): data is { category: NodeDatum; topic: NodeDatum } =>
-  isRootNode((data as { category?: NodeDatum })?.category) &&
-  isRootNode((data as { topic?: NodeDatum })?.topic);
-
 export const extractThoughtLeaves = (
   root: NodeDatum
 ): ThoughtWithEmbedding[] => {
@@ -100,8 +86,6 @@ export const extractThoughtLeaves = (
           summary: node.summary ?? null,
           noteId: node.noteId ?? "",
           categoryId: node.categoryId ?? "",
-          topicId: node.topicId ?? "",
-          topicName: node.topicName ?? null,
           folderId: node.folderId ?? null,
           folderLabel: node.folderLabel ?? null,
           folderPath: node.folderPath ?? null,
@@ -128,8 +112,6 @@ const notesFromThoughtLeaves = (thoughts: ThoughtWithEmbedding[]): Note[] => {
       title: thought.title || "Untitled",
       summary: thought.summary || "",
       rawText: "",
-      topicId: thought.topicId || undefined,
-      topicName: thought.topicName ?? undefined,
       folderId: thought.folderId ?? undefined,
       folderLabel: thought.folderLabel ?? undefined,
       createdAt: thought.createdAt ?? undefined,
@@ -144,15 +126,6 @@ export const normalizeGraphData = (data: unknown): GraphDataCache | null => {
       version: data.version ?? GRAPH_CACHE_VERSION,
       category: data.category,
       folder: data.folder,
-    };
-  }
-
-  if (isLegacyTopicCache(data)) {
-    const thoughts = extractThoughtLeaves(data.topic);
-    return {
-      version: GRAPH_CACHE_VERSION,
-      category: data.category,
-      folder: buildGraphByFolder([], notesFromThoughtLeaves(thoughts)),
     };
   }
 

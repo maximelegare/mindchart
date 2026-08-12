@@ -1,10 +1,5 @@
 import { eq } from "drizzle-orm";
-import {
-  CategoryTable,
-  NoteTable,
-  ThoughtTable,
-  TopicTable,
-} from "../../schema.root";
+import { CategoryTable, ThoughtTable } from "../../schema.root";
 import { type DB } from "../../utils/initialize/getOPDatabase";
 
 type CategoryThoughtRow = {
@@ -16,8 +11,6 @@ type CategoryThoughtRow = {
   createdAt: string;
   categoryId: string;
   noteId: string;
-  topicId: string | null;
-  topicName: string | null;
 };
 
 export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
@@ -34,13 +27,9 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         thought_created_at: ThoughtTable.createdAt,
         thought_note_id: ThoughtTable.noteId,
         thought_category_id: ThoughtTable.categoryId,
-        topic_id: TopicTable.id,
-        topic_name: TopicTable.name,
       })
       .from(ThoughtTable)
-      .innerJoin(CategoryTable, eq(ThoughtTable.categoryId, CategoryTable.id))
-      .leftJoin(NoteTable, eq(ThoughtTable.noteId, NoteTable.id))
-      .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id));
+      .innerJoin(CategoryTable, eq(ThoughtTable.categoryId, CategoryTable.id));
 
     const categoriesById = new Map<
       string,
@@ -64,8 +53,6 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         createdAt: row.thought_created_at,
         categoryId: row.thought_category_id,
         noteId: row.thought_note_id,
-        topicId: row.topic_id,
-        topicName: row.topic_name,
       };
 
       const existing = categoriesById.get(row.category_id);

@@ -4,7 +4,6 @@ import {
   NoteSchema,
   PersonSchema,
   ThoughtSchema,
-  TopicSchema,
 } from "./schemas";
 
 // Client-side API response schemas (what clients receive)
@@ -13,7 +12,6 @@ export const GenerateNoteResponseSchema = z.object({
   responseObject: z.object({
     note: NoteSchema,
     thoughts: z.array(ThoughtSchema),
-    topic: TopicSchema.merge(z.object({ isNew: z.boolean().optional() })),
   }),
 });
 
@@ -39,8 +37,6 @@ export const NotesJoinThoughtsPageSchema = z.object({
   note_summary: z.string(),
   note_raw_text: z.string().nullable().optional(),
   note_created_at: z.string().nullable(),
-  topic_id: z.string().nullable().optional(),
-  topic_name: z.string().nullable().optional(),
   folder_id: z.string().nullable().optional(),
   folder_label: z.string().nullable().optional(),
   thoughts_json: z.string(),
@@ -52,8 +48,6 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   summary: z.string(),
   createdAt: z.string().optional(),
   rawText: z.string(),
-  topicId: z.string().nullable().optional(),
-  topicName: z.string().nullable().optional(),
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
   feeling: FeelingValueSchema.nullable().optional(),
@@ -65,17 +59,6 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
 
 export type NotesJoinThoughtsParsedJSONPageSchemaModel = z.infer<
   typeof NotesJoinThoughtsParsedJSONPageSchema
->;
-
-export const TopicsJoinNotesThoughtsParsedSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  createdAt: z.string().optional(),
-  notes: z.array(NotesJoinThoughtsParsedJSONPageSchema),
-});
-
-export type TopicsJoinNotesThoughtsParsedSchemaModel = z.infer<
-  typeof TopicsJoinNotesThoughtsParsedSchema
 >;
 
 export const CategoriesJoinThoughtsPageSchema = z.object({
@@ -111,8 +94,6 @@ export const LocalAIResThoughtSchema = z.object({
 });
 
 export const LocalAIResNoteSchema = z.object({
-  topic: z.string(),
-  topicId: z.string().optional(),
   title: z.string(),
   summary: z
     .union([z.string(), z.array(z.string())])
@@ -171,7 +152,6 @@ export type {
   Thought,
   ThoughtWithEmbedding,
   Category,
-  Topic,
   Person,
   Feeling,
   FeelingValue,

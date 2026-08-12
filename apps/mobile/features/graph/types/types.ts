@@ -5,8 +5,6 @@ export type NodeDatum = {
   id: string;
   value?: number;
   children?: NodeDatum[];
-  topicId?: string;
-  topicName?: string | null;
   folderId?: string;
   folderPath?: string | null;
   folderLabel?: string | null;
@@ -36,6 +34,6 @@ export type GraphDataCache = Record<GraphMode, NodeDatum> & {
 export const parseGraphMode = (
   value: string | string[] | undefined
 ): GraphMode => {
-  if (value === "folder" || value === "topic") return "folder";
+  if (value === "folder") return "folder";
   return "category";
 };

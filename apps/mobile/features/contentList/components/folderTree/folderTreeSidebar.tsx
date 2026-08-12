@@ -48,7 +48,7 @@ export function FolderTreeSidebar() {
   );
 
   const canCreateHere = canCreateChildFolder(currentFolder?.path ?? null);
-  const isGraphFocused = segments.includes("graph");
+  const isGraphFocused = (segments as string[]).includes("graph");
 
   const breadcrumbItems = useMemo(() => {
     const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };

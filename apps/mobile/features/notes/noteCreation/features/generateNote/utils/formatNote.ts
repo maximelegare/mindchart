@@ -7,20 +7,15 @@ import {
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 
-type NoteWithTopic = Omit<Note, "topicId"> & {
-  topic: string;
-};
-
 export const formatNote = (
   data: LocalAIResNoteSchemaModel,
   rawText: string
-): { note: NoteWithTopic; thoughts: Thought[] } => {
-  const { summary, thoughts, title, topic } = LocalAIResNoteSchema.parse(data);
+): { note: Note; thoughts: Thought[] } => {
+  const { summary, thoughts, title } = LocalAIResNoteSchema.parse(data);
 
   const noteId = generateID();
 
-  const formatedNote = {
-    topic,
+  const formatedNote: Note = {
     id: noteId,
     title,
     summary,
@@ -48,7 +43,5 @@ export const formatNote = (
     };
   });
 
-  const ret = { note: formatedNote, thoughts: formatedToughts };
-
-  return ret;
+  return { note: formatedNote, thoughts: formatedToughts };
 };

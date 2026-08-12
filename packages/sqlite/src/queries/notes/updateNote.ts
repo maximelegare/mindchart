@@ -16,7 +16,6 @@ export const updateNoteQuery = async (db: DB, data: Note) => {
             ? data.summary
             : JSON.stringify(data.summary ?? ""),
         rawText: data.rawText,
-        topicId: data.topicId,
         folderId: data.folderId ?? null,
         feeling: data.feeling ?? null,
         locationId: data.locationId ?? null,
