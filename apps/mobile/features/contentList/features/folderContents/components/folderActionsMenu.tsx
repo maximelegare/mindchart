@@ -18,7 +18,8 @@ import {
   FolderSelection,
 } from "@/features/notes/shared/ui/folderSelector";
 import { useControllers } from "@/api/controllers/useControllers";
-import { useFolderActions } from "../../hooks/useFolderActions";
+import { useFolderActions } from "../hooks/useFolderActions";
+import { useCreateBlankNote } from "@/features/notes/noteCreation/hooks/useCreateBlankNote";
 
 export type FolderActionsTarget =
   | { kind: "root" }
@@ -47,6 +48,7 @@ export const FolderActionsMenu = ({
     getFolderParent,
     moveFolderTo,
   } = useFolderActions();
+  const { createBlankNote } = useCreateBlankNote();
 
   const isRoot = target.kind === "root";
   const movingFolder = target.kind === "folder" ? target.folder : null;
@@ -152,7 +154,9 @@ export const FolderActionsMenu = ({
                 size="default"
                 onPress={() => {
                   closeActions();
-                  openCreateFolderModal(target);
+                  setTimeout(() => {
+                    openCreateFolderModal(target);
+                  }, 200);
                 }}
               >
                 <View className="flex-row items-center gap-2">
@@ -161,6 +165,22 @@ export const FolderActionsMenu = ({
                 </View>
               </Button>
             ) : null}
+
+            <Button
+              variant="outline"
+              size="default"
+              onPress={() => {
+                closeActions();
+                void createBlankNote(
+                  target.kind === "root" ? null : target.folder.id
+                );
+              }}
+            >
+              <View className="flex-row items-center gap-2">
+                <Icon name="notebook-text" color="foreground" size={18} />
+                <Typography variant="h3">New note</Typography>
+              </View>
+            </Button>
 
             {!isRoot && target.kind === "folder" ? (
               <>

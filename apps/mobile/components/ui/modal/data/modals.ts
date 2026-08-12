@@ -15,8 +15,6 @@ type ModalPreset = {
 export const MODALS_CONTENT: Record<
   | "DELETE_DATABASE_FILE"
   | "DELETE_WORKSPACE"
-  | "CREATE_WORKSPACE"
-  | "RENAME_WORKSPACE"
   | "IMPORT_WORKSPACE_CHOICE"
   | "INITIALIZE_MODEL_ERROR"
   | "DELETE_MODEL_ERROR"
@@ -25,7 +23,6 @@ export const MODALS_CONTENT: Record<
   | "DELETE_NOTE_CONFIRMATION"
   | "DISABLE_RECOVERY_PASSWORD"
   | "BIOMETRICS_UNAVAILABLE"
-  | "DELETE_TOPIC_CONFIRMATION"
   | "DELETE_FOLDER_CONFIRMATION"
   | "DELETE_LOCATION_CONFIRMATION",
   ModalPreset
@@ -43,13 +40,6 @@ export const MODALS_CONTENT: Record<
     confirmButton: { text: "Delete", variant: "destructive" },
     cancelButton: { text: "Cancel", variant: "default" },
   },
-  DELETE_TOPIC_CONFIRMATION: {
-    title: "Delete Topic?",
-    description:
-      "This will permanently delete this topic and all associated notes.",
-    confirmButton: { text: "Delete", variant: "destructive" },
-    cancelButton: { text: "Cancel", variant: "default" },
-  },
   DELETE_DATABASE_FILE: {
     title: "Delete Workspace?",
     description:
@@ -62,18 +52,6 @@ export const MODALS_CONTENT: Record<
     description:
       "This will permanently delete this workspace's database. You can always re-import it later.",
     confirmButton: { text: "Delete", variant: "destructive" },
-    cancelButton: { text: "Cancel", variant: "default" },
-  },
-  CREATE_WORKSPACE: {
-    title: "New Workspace",
-    description: "Give your new workspace a name.",
-    confirmButton: { text: "Create", variant: "default" },
-    cancelButton: { text: "Cancel", variant: "default" },
-  },
-  RENAME_WORKSPACE: {
-    title: "Rename Workspace",
-    description: "Choose a new name for this workspace.",
-    confirmButton: { text: "Save", variant: "default" },
     cancelButton: { text: "Cancel", variant: "default" },
   },
   IMPORT_WORKSPACE_CHOICE: {
@@ -116,7 +94,7 @@ export const MODALS_CONTENT: Record<
     cancelButton: { text: "Cancel", variant: "default" },
   },
   DISABLE_RECOVERY_PASSWORD: {
-    title: "Disable Recovery Password",
+    title: "Disable recovery passphrase",
     description:
       "This deletes your recovery passphrase. Exports made with recovery enabled won't unlock with recovery unless you remember the passphrase you chose.",
     confirmButton: { text: "Disable", variant: "destructive" },

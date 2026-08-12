@@ -14,6 +14,8 @@ type BreadcrumbsProps = {
   items: BreadcrumbItem[];
   onNavigate: (id: string) => void;
   className?: string;
+  /** When true, crumbs and back control are non-interactive with a muted look. */
+  disabled?: boolean;
   /** When provided, fully replaces the default crumb for each item. */
   renderItem?: (args: {
     item: BreadcrumbItem;
@@ -32,18 +34,24 @@ export function BreadcrumbCrumb({
   item,
   isLast,
   onNavigate,
+  disabled = false,
 }: {
   item: BreadcrumbItem;
   isLast: boolean;
   onNavigate: (id: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <View className="flex-row items-center shrink-0" collapsable={false}>
-      <Pressable onPress={() => onNavigate(item.id)} hitSlop={8}>
+      <Pressable
+        disabled={disabled}
+        onPress={() => onNavigate(item.id)}
+        hitSlop={8}
+      >
         <View
           className={cn(
             "h-10 justify-center opacity-50 px-1",
-            isLast ? "opacity-100" : ""
+            !disabled && isLast ? "opacity-100" : ""
           )}
         >
           {isRootItem(item) ? (
@@ -73,27 +81,36 @@ export const Breadcrumbs = ({
   onNavigate,
   renderItem,
   className,
+  disabled = false,
 }: BreadcrumbsProps) => {
+  const backDisabled = disabled || items.length <= 1;
+
   const handleGoBack = () => {
-    if (items.length > 1) {
-      onNavigate(items[items.length - 2].id);
-    }
+    if (disabled || items.length <= 1) return;
+    onNavigate(items[items.length - 2].id);
   };
 
   return (
-    <View className={cn("min-w-0 w-full flex-row items-center", className)}>
+    <View
+      className={cn(
+        "min-w-0 w-full flex-row items-center",
+        disabled && "opacity-50",
+        className
+      )}
+      pointerEvents={disabled ? "none" : "auto"}
+    >
       <TouchableOpacity
-        disabled={items.length <= 1}
+        disabled={backDisabled}
         onPress={handleGoBack}
         className={cn(
           "h-10 w-8 shrink-0 bg-input rounded-sm items-center justify-center",
-          items.length <= 1 ? "opacity-50" : ""
+          backDisabled ? "opacity-50" : ""
         )}
       >
         <Icon
           name="chevron-left"
           color="text"
-          opacity={items.length <= 1 ? 50 : 100}
+          opacity={backDisabled ? 50 : 100}
         />
       </TouchableOpacity>
 
@@ -126,6 +143,7 @@ export const Breadcrumbs = ({
               item={item}
               isLast={isLast}
               onNavigate={onNavigate}
+              disabled={disabled}
             />
           );
         })}

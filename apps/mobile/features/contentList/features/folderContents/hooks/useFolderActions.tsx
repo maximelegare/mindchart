@@ -7,18 +7,25 @@ import {
   isFolderPathUnder,
 } from "@repo/sqlite";
 import { Alert } from "react-native";
+import { useRouter, useSegments } from "expo-router";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";
-import { useOptionsBar } from "../context/optionBarContext";
-import { FolderFormModalContent } from "../components/folders/folderFormModalContent";
+import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
+import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { useOptionsBar } from "../../../components/optionsBar/context/optionBarContext";
+import { FolderFormModalContent } from "../components/folderFormModalContent";
+import { useFolderFormSheet } from "../components/folderFormSheet";
 import { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 
 type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
 
 export const useFolderActions = () => {
   const { openModal, closeModal } = useModal();
+  const { openFolderFormSheet, closeFolderFormSheet } = useFolderFormSheet();
+  const router = useRouter();
+  const segments = useSegments();
   const currentFolderId = useOptionsBar((s) => s.currentFolderId);
   const handleCurrentFolderChange = useOptionsBar(
     (s) => s.handleCurrentFolderChange
@@ -65,26 +72,43 @@ export const useFolderActions = () => {
         );
         return;
       }
-      openModal({
-        customContent: () => (
-          <FolderFormModalContent
-            mode="create"
-            onSave={async (label) => {
-              const id = generateID();
-              const path =
-                target.kind === "root"
-                  ? buildRootFolderPath(id)
-                  : buildChildFolderPath(target.folder.path, id);
-              await insertFolder({
-                data: { id, path, label },
-              });
-              closeModal();
-            }}
-          />
-        ),
+      const parentFolder = target.kind === "root" ? null : target.folder;
+      const isGraphFocused = (segments as string[]).includes("graph");
+      openFolderFormSheet({
+        mode: "create",
+        parentFolder,
+        onSave: async (label, selectedParent) => {
+          const parent = selectedParent ?? null;
+          const id = generateID();
+          const path = parent
+            ? buildChildFolderPath(parent.path, id)
+            : buildRootFolderPath(id);
+          await insertFolder({
+            data: { id, path, label },
+          });
+          handleCurrentFolderChange(id);
+          if (isGraphFocused) {
+            setGraphModeImmediate("folder");
+            router.navigate({
+              pathname: "/graph/[id]",
+              params: {
+                id: graphIdFromFolderId(id),
+                _t: Date.now().toString(),
+              },
+            });
+          }
+          closeFolderFormSheet();
+        },
       });
     },
-    [closeModal, insertFolder, openModal]
+    [
+      closeFolderFormSheet,
+      handleCurrentFolderChange,
+      insertFolder,
+      openFolderFormSheet,
+      router,
+      segments,
+    ]
   );
 
   const openRenameFolderModal = useCallback(

@@ -80,9 +80,9 @@ export const useGenerateNoteAction = ({
         return;
       }
 
-      const { note, thoughts, topic } = response.responseObject;
+      const { note, thoughts } = response.responseObject;
 
-      if (!note || !thoughts?.length || !topic) {
+      if (!note || !thoughts?.length) {
         closeModal();
         return;
       }
@@ -96,7 +96,6 @@ export const useGenerateNoteAction = ({
       const noteId = await saveGeneratedNote({
         note,
         thoughts,
-        topic,
         folderId: null,
       });
 

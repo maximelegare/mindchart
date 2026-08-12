@@ -18,8 +18,6 @@ export const NotesListWithoutOverviewFeature = () => {
     if (!data || !Array.isArray(data)) return null;
     const normalized = data.map((row) => ({
       ...row,
-      topicId: row.topic_id ?? undefined,
-      topicName: row.topic_name ?? undefined,
       folderId: row.folder_id ?? undefined,
       folderLabel: row.folder_label ?? undefined,
     }));

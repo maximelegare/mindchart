@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useSegments } from "expo-router";
 import { canCreateChildFolder, getFolderIdsFromPath } from "@repo/sqlite";
 import { Button } from "@/components/ui";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
@@ -9,14 +9,17 @@ import { Sidebar } from "@/components/ui/sidebar/sidebar";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { useFolderActions } from "../optionsBar/hooks/useFolderActions";
+import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
+import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { useFolderActions } from "../../features/folderContents/hooks/useFolderActions";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
-import { FolderBreadcrumbCrumb } from "../optionsBar/components/folders/folderActionsMenu";
+import { FolderBreadcrumbCrumb } from "../../features/folderContents/components/folderActionsMenu";
 import { FolderTree, FolderTreeFile } from "./folderTree";
 import { FOLDER_TREE_ROOT_ID } from "./folderTreeUtils";
 
 export function FolderTreeSidebar() {
   const router = useRouter();
+  const segments = useSegments();
   const { colorScheme } = useColorScheme();
   const open = useOptionsBar((s) => s.folderTreeSidebarOpen);
   const setFolderTreeSidebarOpen = useOptionsBar(
@@ -45,6 +48,7 @@ export function FolderTreeSidebar() {
   );
 
   const canCreateHere = canCreateChildFolder(currentFolder?.path ?? null);
+  const isGraphFocused = (segments as string[]).includes("graph");
 
   const breadcrumbItems = useMemo(() => {
     const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
@@ -78,6 +82,18 @@ export function FolderTreeSidebar() {
   const onSelect = (folderId: string | null) => {
     handleFoldersModeChange("with");
     handleCurrentFolderChange(folderId);
+
+    // Keep the open graph in sync with the sidebar location.
+    if (isGraphFocused) {
+      setGraphModeImmediate("folder");
+      router.navigate({
+        pathname: "/graph/[id]",
+        params: {
+          id: graphIdFromFolderId(folderId),
+          _t: Date.now().toString(),
+        },
+      });
+    }
   };
 
   const onNavigateBreadcrumb = (id: string) => {

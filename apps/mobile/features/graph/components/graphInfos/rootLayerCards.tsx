@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
+import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import capitalize from "@/utils/stringManipulations/capitalize";
+import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
+import { isRealFolderNode } from "../../utils/buildGraphByFolder";
 import { resolveNodeCategoryKey } from "../../utils/resolveNodeCategoryKey";
 import type { NodeDatum } from "../../types/types";
 
@@ -33,6 +36,14 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
   const { colorScheme } = useColorScheme();
   const { setParams } = useRouter();
   const graphMode = useGraphStore((state) => state.mode);
+  const { folders } = useControllers();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery({
+    enabled: graphMode === "folder",
+  });
+  const foldersById = useMemo(
+    () => new Map(allFolders.map((folder) => [folder.id, folder])),
+    [allFolders]
+  );
 
   if (nodes.length === 0) return null;
 
@@ -52,18 +63,16 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
               ? ("folder" as const)
               : ("shapes" as const);
 
-        return (
-          <Pressable
-            key={node.id}
-            onPress={() => {
-              setParams({
-                id: node.id,
-                _t: Date.now().toString(),
-              });
-              onGraphBreadcrumbNavigate(node.id);
-            }}
-            accessibilityRole="button"
-            accessibilityLabel={`Open ${node.name || "item"}`}
+        const navigate = () => {
+          setParams({
+            id: node.id,
+            _t: Date.now().toString(),
+          });
+          onGraphBreadcrumbNavigate(node.id);
+        };
+
+        const card = (
+          <View
             className="bg-card rounded-2xl overflow-hidden self-start"
             style={{ borderRadius: CARD_RADIUS, overflow: "hidden" }}
           >
@@ -97,6 +106,35 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
                 ) : null}
               </View>
             </View>
+          </View>
+        );
+
+        const folder =
+          graphMode === "folder" && isRealFolderNode(node) && node.folderId
+            ? (foldersById.get(node.folderId) ?? null)
+            : null;
+
+        if (folder) {
+          return (
+            <FolderActionsMenu
+              key={node.id}
+              target={{ kind: "folder", folder }}
+              onNavigate={navigate}
+              className="shrink-0"
+            >
+              {card}
+            </FolderActionsMenu>
+          );
+        }
+
+        return (
+          <Pressable
+            key={node.id}
+            onPress={navigate}
+            accessibilityRole="button"
+            accessibilityLabel={`Open ${node.name || "item"}`}
+          >
+            {card}
           </Pressable>
         );
       })}

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Typography } from "@/components/ui/typography";
+import { BottomSheetTextInput } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 
 const MIN_PASSPHRASE_LENGTH = 8;
 
@@ -44,8 +44,8 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
   return (
     <View className="flex-col gap-4">
       <Typography variant="muted">
-        Choose a recovery passphrase. You will need it to import exported
-        workspaces if you forget the export password.
+        Choose a passphrase. You’ll need it to import exported workspaces if you
+        forget the export password.
       </Typography>
 
       <Controller
@@ -58,15 +58,16 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="recovery-passphrase">Recovery passphrase</Label>
-            <Input
+            <Label nativeID="recovery-passphrase">Passphrase</Label>
+            <BottomSheetTextInput
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
-              placeholder="Recovery passphrase"
+              autoFocus
+              placeholder="Passphrase"
             />
           </View>
         )}
@@ -80,17 +81,15 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="recovery-passphrase-confirm">
-              Confirm recovery passphrase
-            </Label>
-            <Input
+            <Label nativeID="recovery-passphrase-confirm">Confirm</Label>
+            <BottomSheetTextInput
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
-              placeholder="Confirm recovery passphrase"
+              placeholder="Confirm passphrase"
               onSubmitEditing={submit}
             />
           </View>

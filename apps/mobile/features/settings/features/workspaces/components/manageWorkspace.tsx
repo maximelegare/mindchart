@@ -3,8 +3,8 @@ import { Alert, View } from "react-native";
 import type { IconName } from "@/components/ui/icons/icon-registry";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
-import { WorkspaceActionsModal } from "@/features/workspaces/components/modals/workspaceActionsModal";
-import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
+import { useWorkspaceActionsSheet } from "@/features/workspaces/components/manageWorkspaces/workspaceActionsSheet";
+import { useWorkspaceEditSheet } from "@/features/workspaces/components/manageWorkspaces/workspaceEditSheet";
 import { WorkspacePasswordModal } from "@/features/workspaces/components/modals/workspacePasswordModal";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,10 @@ export const ManageWorkspaceLayout = () => {
     exportWorkspace,
     deleteWorkspace,
   } = useWorkSpaces();
-  const { openModal, closeModal, setModalContent } = useModal();
+  const { openModal, closeModal } = useModal();
+  const { openWorkspaceActionsSheet } = useWorkspaceActionsSheet();
+  const { openWorkspaceEditSheet, closeWorkspaceEditSheet } =
+    useWorkspaceEditSheet();
   const { colorScheme } = useColorScheme();
 
   const [hasKeyByWorkspaceId, setHasKeyByWorkspaceId] = useState<
@@ -67,33 +70,25 @@ export const ManageWorkspaceLayout = () => {
     }
   };
 
-  const openRenameModal = (workspace: Workspace) => {
-    setModalContent({
-      modalName: "RENAME_WORKSPACE",
-      customContent: () => (
-        <WorkspaceEdit
-          initialName={workspace.name}
-          initialColor={workspace.color}
-          initialIcon={workspace.icon as IconName | undefined}
-          confirmLabel="Save"
-          description="Choose a new name, color, and icon for this workspace."
-          onCancel={closeModal}
-          onConfirm={async ({ name, color, icon }) => {
-            await renameWorkspace(workspace.id, name, { color, icon });
-            closeModal();
-          }}
-        />
-      ),
+  const openRenameSheet = (workspace: Workspace) => {
+    openWorkspaceEditSheet({
+      mode: "edit",
+      initialName: workspace.name,
+      initialColor: workspace.color,
+      initialIcon: workspace.icon as IconName | undefined,
+      confirmLabel: "Save",
+      description: "Choose a new name, color, and icon for this workspace.",
+      onConfirm: async ({ name, color, icon }) => {
+        await renameWorkspace(workspace.id, name, { color, icon });
+        closeWorkspaceEditSheet();
+      },
     });
   };
 
   const openExportPasswordModal = (workspace: Workspace) => {
-    // Use setModalContent (like rename/delete) — closeModal + openModal races
-    // because closeModal sets isVisible false in its animation callback.
-    setModalContent({
+    openModal({
       title: "Export Workspace",
-      modalName: undefined,
-      description: undefined,
+      aboveBottomSheet: true,
       customContent: () => (
         <WorkspacePasswordModal
           mode="export"
@@ -121,17 +116,13 @@ export const ManageWorkspaceLayout = () => {
           }}
         />
       ),
-      onConfirm: undefined,
-      onCancel: undefined,
-      confirmButton: undefined,
-      cancelButton: undefined,
     });
   };
 
   const openDeleteModal = (workspace: Workspace) => {
-    setModalContent({
+    openModal({
       modalName: "DELETE_WORKSPACE",
-      customContent: undefined,
+      aboveBottomSheet: true,
       onConfirm: async () => {
         await deleteWorkspace(workspace.id);
         closeModal();
@@ -140,27 +131,16 @@ export const ManageWorkspaceLayout = () => {
     });
   };
 
-  const openActionsModal = (workspace: Workspace) => {
+  const openActionsSheet = (workspace: Workspace) => {
     const isActive = workspace.id === activeWorkspaceId;
     const canDelete = workspaces.length > 1 || !isActive;
-    openModal({
-      title: "More actions",
-      aboveBottomSheet: true,
-      customContent: () => (
-        <WorkspaceActionsModal
-          workspace={workspace}
-          isActive={isActive}
-          canDelete={canDelete}
-          onSwitch={async () => {
-            closeModal();
-            await handleSwitch(workspace);
-          }}
-          onRename={() => openRenameModal(workspace)}
-          onExport={() => openExportPasswordModal(workspace)}
-          onDelete={() => openDeleteModal(workspace)}
-          onCancel={closeModal}
-        />
-      ),
+    openWorkspaceActionsSheet({
+      workspace,
+      isActive,
+      canDelete,
+      onRename: () => openRenameSheet(workspace),
+      onExport: () => openExportPasswordModal(workspace),
+      onDelete: () => openDeleteModal(workspace),
     });
   };
 
@@ -263,7 +243,7 @@ export const ManageWorkspaceLayout = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onPress={() => openActionsModal(workspace)}
+                      onPress={() => openActionsSheet(workspace)}
                     >
                       <Icon
                         name="ellipsis-vertical"

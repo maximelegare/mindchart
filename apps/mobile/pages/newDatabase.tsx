@@ -1,8 +1,7 @@
 import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
-import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
-import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
+import { useWorkspaceEditSheet } from "@/features/workspaces/components/manageWorkspaces/workspaceEditSheet";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { router } from "expo-router";
@@ -14,23 +13,19 @@ export const NewDatabaseScreen = () => {
   const { bottom } = useSafeAreaInsets();
 
   const { createWorkspace, importWorkspace, loading } = useWorkSpaces();
-  const { openModal, closeModal } = useModal();
+  const { openWorkspaceEditSheet, closeWorkspaceEditSheet } =
+    useWorkspaceEditSheet();
 
   const handleCreateWorkspace = () => {
-    openModal({
-      modalName: "CREATE_WORKSPACE",
-      customContent: () => (
-        <WorkspaceEdit
-          confirmLabel="Create"
-          description="Each workspace has its own isolated database."
-          onCancel={closeModal}
-          onConfirm={async ({ name, color, icon }) => {
-            closeModal();
-            await createWorkspace(name, { color, icon });
-            router.replace("/(tabs)");
-          }}
-        />
-      ),
+    openWorkspaceEditSheet({
+      mode: "create",
+      confirmLabel: "Create",
+      description: "Each workspace has its own isolated database.",
+      onConfirm: async ({ name, color, icon }) => {
+        closeWorkspaceEditSheet();
+        await createWorkspace(name, { color, icon });
+        router.replace("/(tabs)");
+      },
     });
   };
 

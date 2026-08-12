@@ -22,7 +22,7 @@ export const RecoveryPassphraseReveal = () => {
       setRevealedPassphrase(passphrase);
     } catch (e) {
       Alert.alert(
-        "Recovery failed",
+        "Recovery passphrase",
         e instanceof Error ? e.message : "Unknown error"
       );
     } finally {
@@ -35,16 +35,15 @@ export const RecoveryPassphraseReveal = () => {
   };
 
   if (!recoveryPassphraseEnabled) {
-    return (
-      <Typography variant="muted" padding>
-        Enable Recovery Password and choose a passphrase to view it here later.
-      </Typography>
-    );
+    return null;
   }
 
   if (revealedPassphrase) {
     return (
       <View className="gap-2">
+        <Typography variant="muted" padding>
+          Save this somewhere safe. Long-press to copy-friendly view.
+        </Typography>
         <Pressable
           onLongPress={() => {
             Alert.alert("Recovery passphrase", revealedPassphrase);
@@ -59,9 +58,6 @@ export const RecoveryPassphraseReveal = () => {
             </Typography>
           </View>
         </Pressable>
-        <Typography variant="muted" padding>
-          Long-press to view the full passphrase. Save it somewhere safe.
-        </Typography>
         <Button variant="outline" size="sm" onPress={hidePassphrase}>
           <Typography>Hide passphrase</Typography>
         </Button>
@@ -71,6 +67,9 @@ export const RecoveryPassphraseReveal = () => {
 
   return (
     <View className="gap-2">
+      <Typography variant="muted" padding>
+        Reveal your saved recovery passphrase if you need a reminder.
+      </Typography>
       <View className="rounded-md bg-muted p-3">
         <Typography variant="small" className="font-mono text-muted-foreground">
           {MASKED_PASSPHRASE}

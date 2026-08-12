@@ -1,6 +1,5 @@
 import {
   getNoteByIdWithAssociatedThoughtsQuery,
-  getNotesByTopicWithAssociatedThoughtsQuery,
   getNotesWithAssociatedThoughtsQuery,
   getOPDatabase,
   getPersonsByNoteIdQuery,
@@ -51,12 +50,4 @@ export const fetchNoteDetails = async (id: string) => {
     ...row,
     persons_json: JSON.stringify(persons),
   }));
-};
-
-export const fetchNotesByTopicWithAssociatedThoughts = async (
-  topicId: string
-) => {
-  const db = getOPDatabase();
-  const rows = await getNotesByTopicWithAssociatedThoughtsQuery(db, topicId);
-  return attachPersonsToNoteRows(rows);
 };

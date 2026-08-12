@@ -299,7 +299,7 @@ const ImportPasswordForm = ({
 };
 
 const ImportRecoveryForm = ({
-  description = "Enter the recovery passphrase you chose when you enabled Recovery Password.",
+  description = "Enter the recovery passphrase you chose when you enabled recovery passphrase.",
   confirmLabel,
   errorMessage,
   onPassphraseChange,

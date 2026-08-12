@@ -8,7 +8,7 @@ export const RecoveryPasswordRow = () => {
   return (
     <ListItem
       itemLeft={() => <Icon name="key-round" color="foreground" />}
-      label="Recovery Password"
+      label="Recovery passphrase"
       borderBottom={false}
       onPress={() => router.push("/settings/workspaces/recovery")}
     />

@@ -12,7 +12,6 @@ Return JSON:
 {
   "title": "4-10 word title",
   "summary": "1-2 sentence summary",
-  "topic": "2-4 word label",
   "thoughts": [
     {
       "title": "short bullet title",

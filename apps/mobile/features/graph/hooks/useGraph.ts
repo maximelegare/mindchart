@@ -25,8 +25,6 @@ const deriveNotesFromThoughts = (thoughts: ThoughtWithEmbedding[]): Note[] => {
       title: thought.title || "Untitled",
       summary: thought.summary || "",
       rawText: "",
-      topicId: thought.topicId || undefined,
-      topicName: thought.topicName ?? undefined,
       folderId: thought.folderId ?? undefined,
       folderLabel: thought.folderLabel ?? undefined,
       createdAt: thought.createdAt ?? undefined,

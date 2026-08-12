@@ -13,7 +13,7 @@ export const GraphButton = ({
 }: {
   type?: "button" | "icon";
   id: string;
-  elementType: "category" | "thought" | "note" | "topic";
+  elementType: "category" | "thought" | "note";
   graph?: GraphMode;
 }) => {
   const { push } = useRouter();

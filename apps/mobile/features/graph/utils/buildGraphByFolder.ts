@@ -26,13 +26,18 @@ export type BuildGraphByFolderOptions = {
   folderIdScope?: string;
   /** Optional thought ids per note for focus resolution on note leaves. */
   thoughtIdsByNoteId?: Map<string, string[]>;
+  /**
+   * When false, empty folders are dropped from the tree.
+   * Defaults to true (folder mode keeps empty packs for navigation).
+   */
+  keepEmptyFolders?: boolean;
 };
 
 const isContentLeaf = (node: NodeDatum) =>
   !!node.thoughtId || isNoteLeafId(node.id);
 
 /** Real folder pack (not the synthetic "unfiled" bucket). */
-const isRealFolderNode = (node: NodeDatum) =>
+export const isRealFolderNode = (node: NodeDatum) =>
   !!node.folderId && node.folderId !== "unfiled";
 
 /** True when a graph node is an empty folder pack. */
@@ -51,6 +56,7 @@ function buildFolderHierarchy(
   const maxFolderDepth = options?.maxFolderDepth;
   const flattenToRootFolders = maxFolderDepth === 1;
   const folderIdScope = options?.folderIdScope;
+  const keepEmptyFolders = options?.keepEmptyFolders !== false;
 
   const foldersById = new Map(folders.map((folder) => [folder.id, folder]));
   const folderNodes = new Map<string, MutableFolderNode>();
@@ -127,8 +133,8 @@ function buildFolderHierarchy(
   }
 
   /**
-   * Drop empty non-folder packs, but keep empty folders so they stay
-   * navigable (muted) in the graph and linked breadcrumbs.
+   * Drop empty packs. Empty folders are kept only when `keepEmptyFolders`
+   * (folder mode) so they stay navigable; category mode drops them.
    */
   const pruneEmpty = (node: NodeDatum): NodeDatum | null => {
     if (isContentLeaf(node)) return node;
@@ -136,7 +142,7 @@ function buildFolderHierarchy(
       .map(pruneEmpty)
       .filter((child): child is NodeDatum => child != null);
     if (!kids.length) {
-      if (!isRealFolderNode(node)) return null;
+      if (!keepEmptyFolders || !isRealFolderNode(node)) return null;
       // Leaf-sized pack so d3 can lay it out; flag for muted styling / nav.
       return {
         ...node,

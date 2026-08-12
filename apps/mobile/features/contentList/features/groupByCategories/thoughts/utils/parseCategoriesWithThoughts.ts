@@ -29,8 +29,6 @@ export const parseCategoriesWithThoughts = (
           semanticLabel: thought.semanticLabel ?? "",
           categoryId: thought.categoryId ?? row.category_id,
           noteId: thought.noteId,
-          topicId: thought.topicId ?? undefined,
-          topicName: thought.topicName ?? undefined,
           createdAt: thought.createdAt ?? null,
         })
       ),

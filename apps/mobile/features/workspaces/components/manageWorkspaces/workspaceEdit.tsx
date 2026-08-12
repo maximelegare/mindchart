@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
+import { BottomSheetTextInput } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { cn } from "@/lib/cn";
 
 import { PROFILE_COLORS } from "../../data/profileColors";
@@ -51,13 +52,14 @@ type Props = {
   description?: string;
   confirmLabel: string;
   cancelLabel?: string;
-  onConfirm: (values: WorkspaceFormValues) => void;
+  onConfirm: (values: WorkspaceFormValues) => void | Promise<void>;
   onCancel: () => void;
+  inBottomSheet?: boolean;
 };
 
 /**
- * Custom modal body to capture a workspace's name, color (required), and
- * icon (optional). Use as the `customContent` of `useModal().openModal`.
+ * Form to capture a workspace's name, color (required), and icon (optional).
+ * Use inside a modal or with `inBottomSheet` inside WorkspaceEditSheetProvider.
  */
 export const WorkspaceEdit = ({
   initialName = "",
@@ -69,6 +71,7 @@ export const WorkspaceEdit = ({
   cancelLabel = "Cancel",
   onConfirm,
   onCancel,
+  inBottomSheet = false,
 }: Props) => {
   const {
     control,
@@ -86,7 +89,7 @@ export const WorkspaceEdit = ({
   const submit = handleSubmit((values) => {
     const trimmed = values.name.trim();
     if (!trimmed) return;
-    onConfirm({ name: trimmed, color: values.color, icon: values.icon });
+    void onConfirm({ name: trimmed, color: values.color, icon: values.icon });
   });
 
   return (
@@ -100,16 +103,29 @@ export const WorkspaceEdit = ({
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
             <Label nativeID="workspace-name">Name</Label>
-            <Input
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder={placeholder}
-              autoFocus
-              autoCapitalize="words"
-              returnKeyType="done"
-              onSubmitEditing={submit}
-            />
+            {inBottomSheet ? (
+              <BottomSheetTextInput
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder={placeholder}
+                autoFocus
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={submit}
+              />
+            ) : (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder={placeholder}
+                autoFocus
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={submit}
+              />
+            )}
           </View>
         )}
       />

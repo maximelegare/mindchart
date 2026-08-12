@@ -36,8 +36,6 @@ export const parseNoteAndThoughts = (
     summary: normalizeNoteSummary(row.note_summary),
     rawText: row.note_raw_text ?? "",
     createdAt: row.note_created_at ?? undefined,
-    topicId: row.topic_id ?? undefined,
-    topicName: row.topic_name ?? undefined,
     folderId: row.folder_id ?? undefined,
     folderLabel: row.folder_label ?? undefined,
     feeling: typeof row.note_feeling === "number" ? row.note_feeling : null,

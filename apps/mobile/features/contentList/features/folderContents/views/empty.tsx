@@ -72,7 +72,6 @@ export const FolderContentsView = () => {
           title={note.title}
           category="idea"
           date={note.createdAt ?? ""}
-          topic={note.topicName}
           overviewItems={note.thoughts.map((thought) => thought.summary)}
         />
       ))}

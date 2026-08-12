@@ -9,7 +9,6 @@ export const NotesListPage = () => {
   const [open, setOpen] = useState(false);
 
   const moreOptionsMenuLinks: MoreOptionsMenuProps["links"] = [
-    { label: "Manage Topics", icon: "tag", href: "/topics" },
     { label: "Settings", icon: "settings", href: "/settings" },
   ];
 

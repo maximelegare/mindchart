@@ -7,7 +7,6 @@ import { useGraphController } from "./useGraphController";
 import { useNotesAndThoughtsController } from "./useNotesAndThoughtsController";
 import { useSearchController } from "./useSearch";
 import { useSettingsController } from "./useSettingsController";
-import { useTopicsController } from "./useTopicsController";
 import { usePersonsController } from "./usePersonsController";
 import { useLocationsController } from "./useLocationsController";
 
@@ -22,7 +21,6 @@ export const useControllers = () => ({
   graph: useGraphController(),
   databaseInspector: useDatabaseInspectorController(),
   settings: useSettingsController(),
-  topics: useTopicsController(),
   persons: usePersonsController(),
   locations: useLocationsController(),
   search: useSearchController(),

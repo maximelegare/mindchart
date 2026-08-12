@@ -1,4 +1,5 @@
 import { useModal } from "@/components/ui/modal/modal";
+import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { useAiAutoConnect } from "@/features/settings/features/ai/autoConnect/hooks/useAutoConnect";
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
@@ -8,14 +9,33 @@ export const AutoConnectService = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { setupRequired, isReady } = useAiAutoConnect();
+  const { setupRequired, isReady, isInitializing } = useAiAutoConnect();
   const { openModal, closeModal } = useModal();
   const router = useRouter();
 
   const hasShownSetupModal = useRef(false);
+  const connectingModalOpen = useRef(false);
 
   useEffect(() => {
-    if (!isReady) return;
+    if (isInitializing) {
+      connectingModalOpen.current = true;
+      openModal({
+        dismissOnBackgroundPress: false,
+        customContent: () => (
+          <LoadingState title="Connecting to AI Models" size="large" />
+        ),
+      });
+      return;
+    }
+
+    if (connectingModalOpen.current) {
+      connectingModalOpen.current = false;
+      closeModal();
+    }
+  }, [isInitializing, openModal, closeModal]);
+
+  useEffect(() => {
+    if (!isReady || isInitializing) return;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -39,7 +59,7 @@ export const AutoConnectService = ({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [setupRequired, isReady, openModal, closeModal, router]);
+  }, [setupRequired, isReady, isInitializing, openModal, closeModal, router]);
 
   return <>{children}</>;
 };

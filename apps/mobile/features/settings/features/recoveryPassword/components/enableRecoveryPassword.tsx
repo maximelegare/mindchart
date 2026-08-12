@@ -1,29 +1,24 @@
+import { useState } from "react";
+import { Alert, View } from "react-native";
 import { SwitchSetting } from "@/features/settings/components/switchSetting";
 import { useModal } from "@/components/ui/modal/modal";
 import { useRecoveryPassphrase } from "../hooks/useRecoveryPassphrase";
 import { RecoveryPassphraseSetupForm } from "./recoveryPassphraseSetupForm";
+import { RecoveryPassphraseReveal } from "./recoveryPassphraseReveal";
 
-export const EnableRecoveryPassword = () => {
+export const EnableRecoveryPassphrase = () => {
   const { openModal, closeModal } = useModal();
   const {
     recoveryPassphraseEnabled,
-    biometricAvailable,
     busy,
     setBusy,
     enableRecoveryPassphrase,
     disableRecoveryPassphrase,
   } = useRecoveryPassphrase();
+  const [showSetup, setShowSetup] = useState(false);
 
-  const openErrorModal = (message: string) => {
-    openModal({
-      title: "Recovery Password",
-      description: message,
-      aboveBottomSheet: true,
-      confirmButton: { text: "Ok", variant: "default" },
-      cancelButton: { text: "Cancel", variant: "default" },
-      onConfirm: closeModal,
-      onCancel: closeModal,
-    });
+  const openErrorAlert = (message: string) => {
+    Alert.alert("Recovery passphrase", message);
   };
 
   const runDisable = async () => {
@@ -31,8 +26,9 @@ export const EnableRecoveryPassword = () => {
     setBusy(true);
     try {
       await disableRecoveryPassphrase();
+      setShowSetup(false);
     } catch (e) {
-      openErrorModal(e instanceof Error ? e.message : "Unknown error");
+      openErrorAlert(e instanceof Error ? e.message : "Unknown error");
     } finally {
       setBusy(false);
     }
@@ -49,59 +45,47 @@ export const EnableRecoveryPassword = () => {
     });
   };
 
-  const openSetupModal = () => {
-    openModal({
-      title: "Recovery Password",
-      aboveBottomSheet: true,
-      dismissOnBackgroundPress: false,
-      customContent: () => (
+  const onToggle = async (next: boolean) => {
+    if (busy || next === recoveryPassphraseEnabled) return;
+
+    if (!next) {
+      setShowSetup(false);
+      openDisableModal();
+      return;
+    }
+
+    setShowSetup(true);
+  };
+
+  return (
+    <View style={{ gap: 12 }}>
+      <SwitchSetting
+        title="Recovery passphrase"
+        description="Add a recovery passphrase as a second unlock option for exported workspaces."
+        checked={recoveryPassphraseEnabled || showSetup}
+        disabled={busy}
+        onCheckedChange={onToggle}
+        accessibilityLabel="Enable recovery passphrase"
+      />
+
+      {showSetup && !recoveryPassphraseEnabled ? (
         <RecoveryPassphraseSetupForm
-          onCancel={closeModal}
+          onCancel={() => setShowSetup(false)}
           onConfirm={async (passphrase) => {
             setBusy(true);
             try {
               await enableRecoveryPassphrase(passphrase);
-              closeModal();
+              setShowSetup(false);
             } catch (e) {
-              openErrorModal(e instanceof Error ? e.message : "Unknown error");
+              openErrorAlert(e instanceof Error ? e.message : "Unknown error");
             } finally {
               setBusy(false);
             }
           }}
         />
-      ),
-    });
-  };
+      ) : null}
 
-  const onToggle = async (next: boolean) => {
-    if (busy || next === recoveryPassphraseEnabled) return;
-
-    if (!biometricAvailable) {
-      openModal({
-        modalName: "BIOMETRICS_UNAVAILABLE",
-        aboveBottomSheet: true,
-        onConfirm: closeModal,
-        onCancel: closeModal,
-      });
-      return;
-    }
-
-    if (!next) {
-      openDisableModal();
-      return;
-    }
-
-    openSetupModal();
-  };
-
-  return (
-    <SwitchSetting
-      title="Recovery Password"
-      description="Enable Recovery Password to add a second unlock option to exported workspaces."
-      checked={recoveryPassphraseEnabled}
-      disabled={!biometricAvailable || busy}
-      onCheckedChange={onToggle}
-      accessibilityLabel="Enable Recovery Password"
-    />
+      {recoveryPassphraseEnabled ? <RecoveryPassphraseReveal /> : null}
+    </View>
   );
 };

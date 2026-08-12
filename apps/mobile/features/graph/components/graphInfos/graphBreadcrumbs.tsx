@@ -2,9 +2,14 @@ import React, { useMemo } from "react";
 import { View } from "react-native";
 import { useRouter } from "expo-router";
 import { BreadcrumbCrumb, Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { FolderBreadcrumbCrumb } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
+import {
+  folderIdFromGraphTarget,
+  onGraphBreadcrumbNavigate,
+} from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
 
@@ -25,7 +30,17 @@ function BreadcrumbsSurface({ children }: { children: React.ReactNode }) {
 export const GraphBreadcrumbs = () => {
   const hierarchy = useGraphStore((s) => s.breadcrumbHierarchy);
   const activeId = useGraphStore((s) => s.breadcrumbActiveId);
+  const graphMode = useGraphStore((s) => s.mode);
   const { setParams } = useRouter();
+  const { folders } = useControllers();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery({
+    enabled: graphMode === "folder",
+  });
+
+  const foldersById = useMemo(
+    () => new Map(allFolders.map((folder) => [folder.id, folder])),
+    [allFolders]
+  );
 
   const breadcrumbs = useMemo(() => {
     if (!hierarchy) return [{ id: "root", name: "Root" }];
@@ -55,13 +70,35 @@ export const GraphBreadcrumbs = () => {
       <Breadcrumbs
         items={breadcrumbs}
         onNavigate={updateGraphParams}
-        renderItem={({ item, isLast }) => (
-          <BreadcrumbCrumb
-            item={item}
-            isLast={isLast}
-            onNavigate={updateGraphParams}
-          />
-        )}
+        renderItem={({ item, isLast }) => {
+          if (graphMode !== "folder") {
+            return (
+              <BreadcrumbCrumb
+                item={item}
+                isLast={isLast}
+                onNavigate={updateGraphParams}
+              />
+            );
+          }
+
+          const folderId =
+            item.id === "root"
+              ? null
+              : folderIdFromGraphTarget(item.id, hierarchy);
+          const folder =
+            typeof folderId === "string"
+              ? (foldersById.get(folderId) ?? null)
+              : null;
+
+          return (
+            <FolderBreadcrumbCrumb
+              item={item}
+              isLast={isLast}
+              folder={folder}
+              onNavigate={updateGraphParams}
+            />
+          );
+        }}
       />
     </BreadcrumbsSurface>
   );

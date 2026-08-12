@@ -39,7 +39,6 @@ export const NoteEditor = ({ noteId, setOpen, onAction }: NoteEditorProps) => {
   const note: Note = {
     id,
     title,
-    topicId: "test",
     summary: summary,
     rawText: rawText ?? "",
     createdAt: createdAt ?? new Date().toISOString(),
@@ -72,13 +71,7 @@ export const NoteEditor = ({ noteId, setOpen, onAction }: NoteEditorProps) => {
     <EditNotePreview
       categories={categoriesData ?? []}
       note={note}
-      // Example logic: doubling thoughts as in your original snippet
       thoughts={[...thoughts]}
-      topic={{
-        id: "test",
-        name: "test",
-        embedding: new Float32Array(),
-      }}
       onAction={onActionHandler}
       onCancel={onCancel}
     />

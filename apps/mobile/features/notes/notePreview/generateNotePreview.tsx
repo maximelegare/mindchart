@@ -11,8 +11,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { Icon } from "@/components/ui/icons/icon";
 import { CategorySelector } from "../shared/ui/categoriesSelector";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import { FeelingValue, Location, Topic } from "@repo/zod-schemas/src/schemas";
-import { TopicSelector } from "../shared/ui/topicSelector";
+import { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
 import { PersonSelector } from "../shared/ui/personSelector";
 import { FeelingSelector } from "../shared/ui/feelingSelector";
 import { LocationSelector } from "../shared/ui/locationSelector";
@@ -22,15 +21,13 @@ type GenerateNotePreviewProps = {
   note: Note;
   thoughts: Thought[];
   categories: Category[];
-  topic: Topic;
-  onAction: (note: Note, thoughts: Thought[], topic: Topic | null) => void;
+  onAction: (note: Note, thoughts: Thought[]) => void;
 };
 
 export const GenerateNotePreview = ({
   note,
   thoughts,
   categories,
-  topic,
   onAction,
 }: GenerateNotePreviewProps) => {
   const { closeModal, setModalContent } = useModal();
@@ -45,20 +42,12 @@ export const GenerateNotePreview = ({
       title: string;
       summary: string;
       semanticLabel: string;
-      topic: string;
       id: string;
       createdAt: string;
       noteId: string;
       categoryId: string;
       thoughtId: string;
     }>;
-    topic: {
-      id: string;
-      name: string;
-      isNew?: boolean;
-      embedding: Float32Array;
-      createdAt: string;
-    };
   };
 
   const { control, handleSubmit } = useForm<FormData>({
@@ -71,13 +60,6 @@ export const GenerateNotePreview = ({
         note.locationId && note.locationName
           ? { id: note.locationId, name: note.locationName }
           : null,
-      topic: {
-        id: topic.id,
-        name: topic?.name,
-        isNew: topic.isNew,
-        embedding: topic.embedding,
-        createdAt: topic.createdAt,
-      },
       thoughts: thoughts.map((thought) => ({
         title: thought.title ?? "",
         summary: thought.summary ?? "",
@@ -91,7 +73,6 @@ export const GenerateNotePreview = ({
     },
   });
 
-  // 1. Initialize useFieldArray
   const {
     fields,
     remove: thoughtsRemove,
@@ -114,7 +95,6 @@ export const GenerateNotePreview = ({
         title: title,
         summary: summary,
         rawText: note.rawText,
-        topicId: topic.id,
         persons,
         feeling,
         locationId: location?.id ?? null,
@@ -122,10 +102,7 @@ export const GenerateNotePreview = ({
         createdAt: note.createdAt ?? new Date().toISOString(),
       };
 
-      // Call the onGeneratedNote callback to handle the note and thoughts
-      // This is to be able to use useLlamaEmbeddings without being blocked by the modal
-
-      onAction({ ...noteData }, data.thoughts, topic.isNew ? topic : null);
+      onAction({ ...noteData }, data.thoughts);
     } catch (error) {
       console.error("Error inserting note and thoughts:", error);
       setModalContent({
@@ -145,7 +122,6 @@ export const GenerateNotePreview = ({
       title: "",
       summary: "",
       semanticLabel: "",
-      topic: topic.id,
       id: thoughtId,
       createdAt: new Date().toISOString(),
       noteId: note.id,
@@ -157,21 +133,6 @@ export const GenerateNotePreview = ({
   return (
     <View className="flex-col gap-4 w-full">
       <View className="flex-col gap-1">
-        <View className="flex-col gap-2">
-          <Label nativeID="title">Topic</Label>
-          <Controller
-            control={control}
-            name="topic"
-            render={({ field: { onChange, value } }) => {
-              return (
-                <TopicSelector
-                  selectedTopic={{ ...value }}
-                  onSelect={(t) => onChange({ ...t })}
-                />
-              );
-            }}
-          />
-        </View>
         <View className="flex-col gap-2">
           <Label nativeID="persons">People</Label>
           <Controller
@@ -251,13 +212,9 @@ export const GenerateNotePreview = ({
         <Label nativeID="thoughts">Thoughts</Label>
         <ScrollView style={{ maxHeight: 400 }}>
           <View className="flex-col gap-4">
-            {/* 2. Map over 'fields' instead of Controller 'value' */}
             {fields.map((field, index) => (
               <View
                 key={field.id}
-                /* CRITICAL: We decrease the zIndex as the index increases.
-                   This ensures the top items float ABOVE the bottom items.
-                */
                 style={{ zIndex: fields.length - index }}
                 className="flex-col gap-1 p-2 rounded-lg bg-card border border-input relative"
               >

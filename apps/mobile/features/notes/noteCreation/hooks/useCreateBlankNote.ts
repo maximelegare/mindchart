@@ -11,29 +11,34 @@ export const useCreateBlankNote = () => {
   const { mutateAsync: insertNoteAndThoughts } =
     notesAndThoughts.useInsertNoteAndThoughtsMutation();
 
-  const createBlankNote = useCallback(async () => {
-    const noteId = generateID();
-    const thought = createEmptyThought(noteId);
-    // Non-empty so local embedding helpers never see a blank label.
-    thought.semanticLabel = " ";
+  const createBlankNote = useCallback(
+    async (folderIdOverride?: string | null) => {
+      const noteId = generateID();
+      const thought = createEmptyThought(noteId);
+      // Non-empty so local embedding helpers never see a blank label.
+      thought.semanticLabel = " ";
+      const folderId =
+        folderIdOverride !== undefined ? folderIdOverride : currentFolderId;
 
-    await insertNoteAndThoughts({
-      note: {
-        id: noteId,
-        title: "",
-        summary: "",
-        rawText: "",
-        folderId: currentFolderId,
-        createdAt: new Date().toISOString(),
-      },
-      thoughts: [thought],
-    });
+      await insertNoteAndThoughts({
+        note: {
+          id: noteId,
+          title: "",
+          summary: "",
+          rawText: "",
+          folderId,
+          createdAt: new Date().toISOString(),
+        },
+        thoughts: [thought],
+      });
 
-    router.push({
-      pathname: "/notes/[id]",
-      params: { id: noteId, mode: "preview" },
-    });
-  }, [currentFolderId, insertNoteAndThoughts]);
+      router.push({
+        pathname: "/notes/[id]",
+        params: { id: noteId, mode: "preview" },
+      });
+    },
+    [currentFolderId, insertNoteAndThoughts]
+  );
 
   return { createBlankNote };
 };

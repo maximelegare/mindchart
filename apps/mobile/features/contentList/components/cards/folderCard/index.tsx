@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
-import { FolderActionsMenu } from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 
 type FolderCardProps = {
   folder: Folder;

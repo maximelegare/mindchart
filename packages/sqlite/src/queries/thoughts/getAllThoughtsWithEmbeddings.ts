@@ -4,7 +4,6 @@ import {
   FolderTable,
   NoteTable,
   ThoughtTable,
-  TopicTable,
 } from "../../schema.root";
 import { type DB } from "../../utils/initialize/getOPDatabase";
 
@@ -19,8 +18,6 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
         categoryId: ThoughtTable.categoryId,
         noteId: ThoughtTable.noteId,
         semanticLabel: ThoughtTable.semanticLabel,
-        topicName: TopicTable.name,
-        topicId: TopicTable.id,
         folderId: NoteTable.folderId,
         folderLabel: FolderTable.label,
         folderPath: FolderTable.path,
@@ -31,7 +28,6 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
       .from(ThoughtTable)
       .innerJoin(EmbeddingTable, eq(EmbeddingTable.thoughtId, ThoughtTable.id))
       .innerJoin(NoteTable, eq(ThoughtTable.noteId, NoteTable.id))
-      .leftJoin(TopicTable, eq(NoteTable.topicId, TopicTable.id))
       .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id));
 
     return rows.map((row) => {

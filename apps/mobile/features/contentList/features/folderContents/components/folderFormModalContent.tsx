@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ModalTitle } from "@/components/ui/modal/components/modalTitle";
 import { useModal } from "@/components/ui/modal/modal";
+import { BottomSheetTextInput } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, View } from "react-native";
@@ -11,6 +12,10 @@ type FolderFormModalContentProps = {
   mode: "create" | "rename";
   initialLabel?: string;
   onSave: (label: string) => Promise<void>;
+  /** Prefer this over the modal close when hosting in a bottom sheet. */
+  onClose?: () => void;
+  inBottomSheet?: boolean;
+  disableSubmit?: boolean;
 };
 
 type FolderFormValues = {
@@ -21,8 +26,12 @@ export const FolderFormModalContent = ({
   mode,
   initialLabel = "",
   onSave,
+  onClose,
+  inBottomSheet = false,
+  disableSubmit = false,
 }: FolderFormModalContentProps) => {
-  const { closeModal } = useModal();
+  const modal = useModal();
+  const close = onClose ?? modal.closeModal;
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -38,6 +47,7 @@ export const FolderFormModalContent = ({
   });
 
   const submit = handleSubmit(async (values) => {
+    if (disableSubmit) return;
     const trimmed = values.label.trim();
     if (!trimmed) return;
     if (mode === "rename" && trimmed === initialLabel) return;
@@ -60,7 +70,11 @@ export const FolderFormModalContent = ({
 
   return (
     <View className="flex-col gap-4">
-      <ModalTitle title={mode === "create" ? "New folder" : "Rename folder"} />
+      {!inBottomSheet ? (
+        <ModalTitle
+          title={mode === "create" ? "New folder" : "Rename folder"}
+        />
+      ) : null}
 
       {errorMessage ? (
         <Typography className="text-destructive-foreground" variant="p">
@@ -75,28 +89,44 @@ export const FolderFormModalContent = ({
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
             <Label nativeID="folder-label">Name</Label>
-            <Input
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="Folder name"
-              autoFocus
-              autoCapitalize="words"
-              returnKeyType="done"
-              onSubmitEditing={submit}
-            />
+            {inBottomSheet ? (
+              <BottomSheetTextInput
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="Folder name"
+                autoFocus
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={submit}
+              />
+            ) : (
+              <Input
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="Folder name"
+                autoFocus
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={submit}
+              />
+            )}
           </View>
         )}
       />
 
       <View className="flex-row justify-end gap-2 mt-2 items-center">
-        <Button variant="default" onPress={closeModal} disabled={isPending}>
+        <Button variant="default" onPress={close} disabled={isPending}>
           <Typography>Cancel</Typography>
         </Button>
         <Button
           variant="default"
           disabled={
-            !isValid || isPending || (mode === "rename" ? !isDirty : false)
+            disableSubmit ||
+            !isValid ||
+            isPending ||
+            (mode === "rename" ? !isDirty : false)
           }
           onPress={submit}
         >

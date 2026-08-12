@@ -1,11 +1,10 @@
 import { useCallback } from "react";
-import { Note, Thought, Topic } from "@repo/zod-schemas";
+import { Note, Thought } from "@repo/zod-schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 
 export type SaveGeneratedNoteInput = {
   note: Note;
   thoughts: Thought[];
-  topic: Topic & { isNew?: boolean };
   folderId?: string | null;
 };
 
@@ -17,16 +16,15 @@ function asText(value: unknown): string {
 }
 
 /**
- * Persists an AI-generated note: embeddings → optional new topic → note/thoughts → embeddings rows.
+ * Persists an AI-generated note: embeddings → note/thoughts → embeddings rows.
  * Returns the saved note id for navigation.
  */
 export const useSaveGeneratedNote = () => {
-  const { notesAndThoughts, embeddings, topics } = useControllers();
+  const { notesAndThoughts, embeddings } = useControllers();
 
   const { useInsertNoteAndThoughtsMutation } = notesAndThoughts;
   const { useInsertEmbeddingsMutation, useGenerateLocalEmbeddingsMutation } =
     embeddings;
-  const { useInsertNewTopicMutation } = topics;
 
   const { mutateAsync: insertNoteAndThoughtsMutateAsync } =
     useInsertNoteAndThoughtsMutation();
@@ -34,17 +32,14 @@ export const useSaveGeneratedNote = () => {
     useGenerateLocalEmbeddingsMutation();
   const { mutateAsync: insertEmbeddingsMutateAsync } =
     useInsertEmbeddingsMutation();
-  const { mutateAsync: insertNewTopicMutateAsync } =
-    useInsertNewTopicMutation();
 
   const saveGeneratedNote = useCallback(
-    async ({ note, thoughts, topic, folderId }: SaveGeneratedNoteInput) => {
+    async ({ note, thoughts, folderId }: SaveGeneratedNoteInput) => {
       const noteToInsert: Note = {
         id: note.id,
         title: asText(note.title),
         summary: asText(note.summary),
         rawText: note.rawText ?? "",
-        topicId: topic.id || note.topicId,
         folderId: folderId ?? note.folderId ?? null,
         persons: note.persons ?? [],
         feeling: note.feeling ?? null,
@@ -74,10 +69,6 @@ export const useSaveGeneratedNote = () => {
         thoughts: thoughtsToInsert,
       });
 
-      if (topic.isNew) {
-        await insertNewTopicMutateAsync({ data: topic });
-      }
-
       await insertNoteAndThoughtsMutateAsync({
         note: noteToInsert,
         thoughts: thoughtsToInsert,
@@ -89,7 +80,6 @@ export const useSaveGeneratedNote = () => {
     [
       generateLocalEmbeddingsMutateAsync,
       insertEmbeddingsMutateAsync,
-      insertNewTopicMutateAsync,
       insertNoteAndThoughtsMutateAsync,
     ]
   );

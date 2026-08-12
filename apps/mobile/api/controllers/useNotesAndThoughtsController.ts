@@ -17,7 +17,6 @@ import {
 import {
   fetchNoteDetails,
   fetchNotesAndThoughts,
-  fetchNotesByTopicWithAssociatedThoughts,
 } from "@/api/endpoints/thoughtsAndNotes";
 import {
   deleteThoughtsByIds,
@@ -170,15 +169,6 @@ export const useNotesAndThoughtsController = () => {
       ...options,
     });
 
-  const useFetchNoteByTopic = (topicId: string, options?: ReactQueryOptions) =>
-    useQuery<
-      Awaited<ReturnType<typeof fetchNotesByTopicWithAssociatedThoughts>>
-    >({
-      queryKey: [REACT_QUERY_KEYS.fetchNoteByTopic, topicId],
-      queryFn: () => fetchNotesByTopicWithAssociatedThoughts(topicId),
-      ...options,
-    });
-
   const useDeleteNoteByIdMutation = (
     options?: Partial<InferMutationOptions<typeof deleteNoteById>>
   ) => {
@@ -307,6 +297,5 @@ export const useNotesAndThoughtsController = () => {
     useUpdateNoteFeelingMutation,
     useUpdateNoteLocationMutation,
     useFetchAllNotesQuery,
-    useFetchNoteByTopic,
   };
 };

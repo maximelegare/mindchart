@@ -23,8 +23,6 @@ export const NotesListGroupByFoldersWithoutOverviewFeature = () => {
               title={note.title}
               summary={note.summary}
               rawText={note.rawText}
-              topicId={note.topicId}
-              topicName={note.topicName}
               folderId={note.folderId ?? folder.id}
               folderLabel={note.folderLabel ?? folder.name}
               createdAt={note.createdAt ?? ""}

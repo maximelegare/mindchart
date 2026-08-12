@@ -21,9 +21,11 @@ type SettingsSheetRowProps = {
   subtitle?: string;
   /** Status line under the subtitle (Loaded / Setup / Enabled). */
   status?: string;
-  /** Force red chevron (e.g. Recovery Password). */
+  /** Force red chevron (e.g. Recovery passphrase). */
   dangerChevron?: boolean;
   sheetTitle: string;
+  /** Sheet height snap points. Defaults to 88%. */
+  snapPoints?: Array<string | number>;
   borderBottom?: boolean;
   children: React.ReactNode;
   /** Injected by `List` for first/last row rounding. */
@@ -40,6 +42,7 @@ export function SettingsSheetRow({
   status,
   dangerChevron = false,
   sheetTitle,
+  snapPoints = ["88%"],
   borderBottom = true,
   children,
   className,
@@ -125,7 +128,7 @@ export function SettingsSheetRow({
       </BottomSheetOpenTrigger>
       <BottomSheetContent
         enableDynamicSizing={false}
-        snapPoints={["88%"]}
+        snapPoints={snapPoints}
         backgroundStyle={{ backgroundColor: hsl("background", colorScheme) }}
       >
         <BottomSheetHeader className="bg-background">

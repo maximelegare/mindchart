@@ -12,6 +12,7 @@ import m0007 from "./0007_same_captain_cross.sql";
 import m0008 from "./0008_previous_lester.sql";
 import m0009 from "./0009_worthless_la_nuit.sql";
 import m0010 from "./0010_robust_gabe_jones.sql";
+import m0011 from "./0011_remove_topic.sql";
 
 export default {
   journal,
@@ -27,5 +28,6 @@ export default {
     m0008,
     m0009,
     m0010,
+    m0011,
   },
 };
