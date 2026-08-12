@@ -17,6 +17,7 @@ import {
   FolderPickerSheet,
   FolderSelection,
 } from "@/features/notes/shared/ui/folderSelector";
+import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 import { EditNote } from "./components/editNote";
 import { DeleteNote } from "./components/deleteNote";
 import { MoveNote } from "./components/moveNote";
@@ -38,12 +39,21 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
     notesAndThoughts.useUpdateNoteFolderIdMutation();
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
 
+  const parsedNote = useMemo(
+    () => parseNoteAndThoughts(noteRows)?.[0] ?? null,
+    [noteRows]
+  );
+
   const currentFolder = useMemo((): FolderSelection => {
-    const row = Array.isArray(noteRows) ? noteRows[0] : null;
-    const folderId = row?.folder_id as string | null | undefined;
+    const folderId = parsedNote?.folderId;
     if (!folderId || !allFolders) return null;
     return allFolders.find((folder) => folder.id === folderId) ?? null;
-  }, [allFolders, noteRows]);
+  }, [allFolders, parsedNote]);
+
+  const noteTitle = useMemo(() => {
+    const raw = parsedNote?.title?.trim() || "Untitled";
+    return raw.length > 28 ? `${raw.slice(0, 28)}…` : raw;
+  }, [parsedNote]);
 
   const openEditSheet = useCallback(() => {
     setEditOpen(true);
@@ -126,11 +136,12 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
       </BottomSheet>
 
       <FolderPickerSheet
-        title="Move note to…"
+        moveTarget={{ name: noteTitle, kind: "file" }}
         sheet={moveSheet}
         active={moveActive}
         selectedFolder={currentFolder}
         rootLabel="No folder"
+        showLocationPin
         onSelect={handleMoveSelect}
         onDismiss={() => setMoveActive(false)}
       />

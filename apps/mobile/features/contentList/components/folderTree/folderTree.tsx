@@ -71,7 +71,11 @@ export function FolderTree({
 }: FolderTreeProps) {
   const { colorScheme } = useColorScheme();
   const highlightColor = hsl("border", colorScheme);
-  const locationPinColor = hsl("muted", colorScheme);
+  // Dark muted is nearly background — use a lighter surface so the pin row reads.
+  const locationPinColor =
+    colorScheme === "dark"
+      ? hsl("secondary", colorScheme)
+      : hsl("muted", colorScheme);
 
   const visibleFolders = useMemo(
     () => filterFoldersExcludingPath(folders, excludePathPrefix),
@@ -383,6 +387,7 @@ function FolderTreeRow({
   fileActionsTarget?: FolderTreeFile;
   onFileActionNavigate?: () => void;
 }) {
+  const { colorScheme } = useColorScheme();
   const iconName =
     kind === "root" ? "house" : kind === "folder" ? "folder" : "notebook-text";
 
@@ -392,9 +397,13 @@ function FolderTreeRow({
   );
 
   const locationPin = showLocationPin ? (
-    <View style={{ opacity: 0.35 }}>
-      <Icon name="map-pin-simple" color="muted-foreground" size={12} />
-    </View>
+    <Icon
+      name="map-pin-simple"
+      color={colorScheme === "dark" ? "foreground" : "muted-foreground"}
+      hslColor={colorScheme === "dark" ? "#FFFFFF" : undefined}
+      size={12}
+      opacity={colorScheme === "dark" ? 100 : 35}
+    />
   ) : null;
 
   const rowBackground = isCurrent
