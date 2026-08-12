@@ -23,6 +23,7 @@ import { PaperProvider } from "react-native-paper";
 import { PortalHost } from "@/components/primitives/portal";
 import { ModalProvider } from "@/components/ui/modal/modal";
 import { FolderFormSheetProvider } from "@/features/contentList/features/folderContents/components/folderFormSheet";
+import { WorkspaceEditSheetProvider } from "@/features/workspaces/components/manageWorkspaces/workspaceEditSheet";
 
 import { WhisperProvider } from "@/features/whisper/context/whispterContext";
 import { LlamaProvider } from "@/features/llama/context/llamaContext";
@@ -233,30 +234,32 @@ export default function RootLayout() {
                 <PaperProvider>
                   <ModalProvider>
                     <FolderFormSheetProvider>
-                      <LlamaProvider>
-                        <StatusBar
-                          style={colorScheme === "dark" ? "light" : "dark"}
-                        />
+                      <WorkspaceEditSheetProvider>
+                        <LlamaProvider>
+                          <StatusBar
+                            style={colorScheme === "dark" ? "light" : "dark"}
+                          />
 
-                        <WhisperProvider>
-                          <AutoConnectService>
-                            <Stack
-                              screenOptions={{
-                                headerShown: false,
-                                contentStyle: {
-                                  backgroundColor: hsl(
-                                    "background",
-                                    colorScheme
-                                  ),
-                                },
-                              }}
-                            >
-                              <Stack.Screen name="(tabs)" />
-                              <Stack.Screen name="(stack)" />
-                            </Stack>
-                          </AutoConnectService>
-                        </WhisperProvider>
-                      </LlamaProvider>
+                          <WhisperProvider>
+                            <AutoConnectService>
+                              <Stack
+                                screenOptions={{
+                                  headerShown: false,
+                                  contentStyle: {
+                                    backgroundColor: hsl(
+                                      "background",
+                                      colorScheme
+                                    ),
+                                  },
+                                }}
+                              >
+                                <Stack.Screen name="(tabs)" />
+                                <Stack.Screen name="(stack)" />
+                              </Stack>
+                            </AutoConnectService>
+                          </WhisperProvider>
+                        </LlamaProvider>
+                      </WorkspaceEditSheetProvider>
                     </FolderFormSheetProvider>
                   </ModalProvider>
                   <PortalHost />

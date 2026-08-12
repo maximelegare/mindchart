@@ -4,7 +4,7 @@ import type { IconName } from "@/components/ui/icons/icon-registry";
 import { useModal } from "@/components/ui/modal/modal";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
 import { WorkspaceActionsModal } from "@/features/workspaces/components/modals/workspaceActionsModal";
-import { WorkspaceEdit } from "@/features/workspaces/components/manageWorkspaces/workspaceEdit";
+import { useWorkspaceEditSheet } from "@/features/workspaces/components/manageWorkspaces/workspaceEditSheet";
 import { WorkspacePasswordModal } from "@/features/workspaces/components/modals/workspacePasswordModal";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ export const ManageWorkspaceLayout = () => {
     deleteWorkspace,
   } = useWorkSpaces();
   const { openModal, closeModal, setModalContent } = useModal();
+  const { openWorkspaceEditSheet, closeWorkspaceEditSheet } =
+    useWorkspaceEditSheet();
   const { colorScheme } = useColorScheme();
 
   const [hasKeyByWorkspaceId, setHasKeyByWorkspaceId] = useState<
@@ -67,24 +69,22 @@ export const ManageWorkspaceLayout = () => {
     }
   };
 
-  const openRenameModal = (workspace: Workspace) => {
-    setModalContent({
-      modalName: "RENAME_WORKSPACE",
-      customContent: () => (
-        <WorkspaceEdit
-          initialName={workspace.name}
-          initialColor={workspace.color}
-          initialIcon={workspace.icon as IconName | undefined}
-          confirmLabel="Save"
-          description="Choose a new name, color, and icon for this workspace."
-          onCancel={closeModal}
-          onConfirm={async ({ name, color, icon }) => {
-            await renameWorkspace(workspace.id, name, { color, icon });
-            closeModal();
-          }}
-        />
-      ),
-    });
+  const openRenameSheet = (workspace: Workspace) => {
+    closeModal();
+    setTimeout(() => {
+      openWorkspaceEditSheet({
+        mode: "edit",
+        initialName: workspace.name,
+        initialColor: workspace.color,
+        initialIcon: workspace.icon as IconName | undefined,
+        confirmLabel: "Save",
+        description: "Choose a new name, color, and icon for this workspace.",
+        onConfirm: async ({ name, color, icon }) => {
+          await renameWorkspace(workspace.id, name, { color, icon });
+          closeWorkspaceEditSheet();
+        },
+      });
+    }, 200);
   };
 
   const openExportPasswordModal = (workspace: Workspace) => {
@@ -155,7 +155,7 @@ export const ManageWorkspaceLayout = () => {
             closeModal();
             await handleSwitch(workspace);
           }}
-          onRename={() => openRenameModal(workspace)}
+          onRename={() => openRenameSheet(workspace)}
           onExport={() => openExportPasswordModal(workspace)}
           onDelete={() => openDeleteModal(workspace)}
           onCancel={closeModal}
