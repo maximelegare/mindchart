@@ -24,7 +24,6 @@ export function WorkspacesSettingsSection() {
       <SettingsSheetRow
         label="Recovery passphrase"
         status={recoveryPassphraseEnabled ? "Enabled" : "Disabled"}
-        dangerChevron
         sheetTitle="Recovery passphrase"
         snapPoints={["100%"]}
         borderBottom={false}
