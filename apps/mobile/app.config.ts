@@ -74,6 +74,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     [
+      "expo-local-authentication",
+      {
+        faceIDPermission:
+          "Allow MindChart to use Face ID to enable and reveal your recovery passphrase.",
+      },
+    ],
+    [
       "expo-secure-store",
       {
         faceIDPermission:

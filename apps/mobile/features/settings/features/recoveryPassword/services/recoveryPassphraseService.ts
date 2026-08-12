@@ -20,9 +20,15 @@ export async function setupRecoveryCredentials(
   const saltBytes = await Crypto.getRandomBytesAsync(SALT_LENGTH);
   const derivedKey = await deriveRecoveryExportKey(passphrase, saltBytes);
 
-  await store.setRecoveryPassphrase(passphrase);
-  await store.setRecoverySalt(toBase64(saltBytes));
-  await store.setRecoveryDerivedKey(toBase64(derivedKey));
+  try {
+    await store.setRecoveryPassphrase(passphrase);
+    await store.setRecoverySalt(toBase64(saltBytes));
+    await store.setRecoveryDerivedKey(toBase64(derivedKey));
+  } catch (error) {
+    // Avoid a half-written recovery state if SecureStore fails mid-write.
+    await clearRecoveryPassphrase().catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function getRecoveryExportMaterial(): Promise<RecoveryExportMaterial | null> {

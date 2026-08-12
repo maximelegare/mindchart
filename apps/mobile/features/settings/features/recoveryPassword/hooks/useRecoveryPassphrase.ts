@@ -21,9 +21,17 @@ async function authenticateOnce(promptMessage: string): Promise<void> {
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage,
     cancelLabel: "Cancel",
+    disableDeviceFallback: false,
   });
   if (!result.success) {
-    throw new WorkspaceRecoveryError("Authentication cancelled.");
+    const reason =
+      "error" in result && result.error ? String(result.error) : "cancelled";
+    if (reason === "user_cancel" || reason === "system_cancel") {
+      throw new WorkspaceRecoveryError("Authentication cancelled.");
+    }
+    throw new WorkspaceRecoveryError(
+      `Authentication failed (${reason}). Try again.`
+    );
   }
 }
 
@@ -49,14 +57,6 @@ export function useRecoveryPassphrase() {
         throw new WorkspaceRecoveryError("Recovery passphrase is required.");
       }
 
-      const available = await checkBiometricAvailability();
-      if (!available) {
-        throw new WorkspaceRecoveryError(
-          "Biometrics are not available on this device."
-        );
-      }
-
-      await authenticateOnce("Authenticate to enable Recovery Password");
       await setupRecoveryCredentials(trimmed);
       setRecoveryPassphraseEnabled(true);
     },
@@ -70,7 +70,14 @@ export function useRecoveryPassphrase() {
 
   const revealRecoveryPassphrase = useCallback(async () => {
     if (!recoveryPassphraseEnabled) {
-      throw new WorkspaceRecoveryError("Recovery Password is not enabled.");
+      throw new WorkspaceRecoveryError("Recovery passphrase is not enabled.");
+    }
+
+    const available = await checkBiometricAvailability();
+    if (!available) {
+      throw new WorkspaceRecoveryError(
+        "Biometrics are required to reveal your recovery passphrase."
+      );
     }
 
     await authenticateOnce("Authenticate to reveal recovery passphrase");
@@ -78,7 +85,7 @@ export function useRecoveryPassphrase() {
     const passphrase = await recoveryPassphraseStore.getRecoveryPassphrase();
     if (!passphrase) {
       throw new WorkspaceRecoveryError(
-        "No recovery passphrase found. Turn Recovery Password off and on again in settings."
+        "No recovery passphrase found. Turn it off and on again in settings."
       );
     }
     return passphrase;

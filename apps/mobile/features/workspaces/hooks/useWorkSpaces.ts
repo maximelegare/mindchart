@@ -236,7 +236,7 @@ export const useWorkSpaces = () => {
         ) {
           recoveryMaterial = await getRecoveryExportMaterial();
           if (!recoveryMaterial) {
-            throw new Error("Re-enable Recovery Password in settings.");
+            throw new Error("Re-enable recovery passphrase in settings.");
           }
         }
         const metadata = await buildExportMetadata(

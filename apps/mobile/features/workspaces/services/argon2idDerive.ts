@@ -40,8 +40,13 @@ const deriveWithNative = async (
   salt: Uint8Array,
   params: Argon2idParams
 ): Promise<Uint8Array> => {
-  const argon2 = (await import("react-native-argon2")).default;
-  const { rawHash } = await argon2(secret, bytesToHex(salt), {
+  const argon2Module = await import("react-native-argon2");
+  const argon2 = argon2Module.default;
+  if (typeof argon2 !== "function") {
+    throw new Error("react-native-argon2 native module unavailable");
+  }
+
+  const result = await argon2(secret, bytesToHex(salt), {
     iterations: params.iterations,
     memory: params.memoryKiB,
     parallelism: params.parallelism,
@@ -49,10 +54,20 @@ const deriveWithNative = async (
     mode: "argon2id",
     saltEncoding: "hex",
   });
-  return hexToBytes(rawHash);
+
+  if (!result?.rawHash || typeof result.rawHash !== "string") {
+    throw new Error("react-native-argon2 returned an invalid hash");
+  }
+
+  return hexToBytes(result.rawHash);
 };
 
-export const argon2idDerive = (
+/**
+ * Derive an Argon2id key. Prefers native acceleration on iOS/Android, with a
+ * noble/JS fallback when the native module is missing or throws (avoids
+ * hard-crashing enable/export flows under New Architecture).
+ */
+export const argon2idDerive = async (
   secret: string,
   salt: Uint8Array,
   params: Argon2idParams
@@ -60,5 +75,11 @@ export const argon2idDerive = (
   if (Platform.OS === "web") {
     return deriveWithNoble(secret, salt, params);
   }
-  return deriveWithNative(secret, salt, params);
+
+  try {
+    return await deriveWithNative(secret, salt, params);
+  } catch (error) {
+    console.warn("[argon2idDerive] native failed, falling back to JS:", error);
+    return deriveWithNoble(secret, salt, params);
+  }
 };

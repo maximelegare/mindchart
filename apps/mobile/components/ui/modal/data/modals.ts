@@ -94,7 +94,7 @@ export const MODALS_CONTENT: Record<
     cancelButton: { text: "Cancel", variant: "default" },
   },
   DISABLE_RECOVERY_PASSWORD: {
-    title: "Disable Recovery Password",
+    title: "Disable recovery passphrase",
     description:
       "This deletes your recovery passphrase. Exports made with recovery enabled won't unlock with recovery unless you remember the passphrase you chose.",
     confirmButton: { text: "Disable", variant: "destructive" },

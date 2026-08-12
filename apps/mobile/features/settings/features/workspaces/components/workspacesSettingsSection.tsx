@@ -1,7 +1,7 @@
 import { SettingsSection } from "@/features/settings/components/settingsSection";
 import { SettingsSheetRow } from "@/features/settings/components/settingsSheetRow";
 import { WorkspacesSheetContent } from "./workspacesSheetContent";
-import { RecoveryPasswordFeature } from "@/features/settings/features/recoveryPassword/views/recoveryPassword";
+import { RecoveryPassphraseFeature } from "@/features/settings/features/recoveryPassword/views/recoveryPassword";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 
@@ -22,13 +22,14 @@ export function WorkspacesSettingsSection() {
       </SettingsSheetRow>
 
       <SettingsSheetRow
-        label="Recovery Password"
+        label="Recovery passphrase"
         status={recoveryPassphraseEnabled ? "Enabled" : "Disabled"}
         dangerChevron
-        sheetTitle="Recovery Password"
+        sheetTitle="Recovery passphrase"
+        snapPoints={["100%"]}
         borderBottom={false}
       >
-        <RecoveryPasswordFeature />
+        <RecoveryPassphraseFeature />
       </SettingsSheetRow>
     </SettingsSection>
   );
