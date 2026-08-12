@@ -22,7 +22,7 @@ import { PaperProvider } from "react-native-paper";
 
 import { PortalHost } from "@/components/primitives/portal";
 import { ModalProvider } from "@/components/ui/modal/modal";
-import { FolderFormSheetProvider } from "@/features/contentList/components/optionsBar/components/folders/folderFormSheet";
+import { FolderFormSheetProvider } from "@/features/contentList/features/folderContents/components/folderFormSheet";
 
 import { WhisperProvider } from "@/features/whisper/context/whispterContext";
 import { LlamaProvider } from "@/features/llama/context/llamaContext";

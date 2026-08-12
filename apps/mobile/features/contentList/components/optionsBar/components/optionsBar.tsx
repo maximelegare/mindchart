@@ -36,8 +36,8 @@ import {
   OPTIONS_BAR_DEFAULTS,
   useOptionsBar,
 } from "../context/optionBarContext";
-import { useFolderActions } from "../hooks/useFolderActions";
-import { FolderBreadcrumbCrumb } from "./folders/folderActionsMenu";
+import { useFolderActions } from "../../../features/folderContents/hooks/useFolderActions";
+import { FolderBreadcrumbCrumb } from "../../../features/folderContents/components/folderActionsMenu";
 import { TriggerFilterChip } from "./triggerFilterChip";
 import { OptionChip } from "./options/optionChip";
 import { Gutter } from "@/components/ui/gutter";

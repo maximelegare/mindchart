@@ -2,7 +2,7 @@ import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { NewFolderButton } from "@/features/contentList/components/optionsBar/components/optionsBar";
-import { useFolderActions } from "@/features/contentList/components/optionsBar/hooks/useFolderActions";
+import { useFolderActions } from "@/features/contentList/features/folderContents/hooks/useFolderActions";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import { useControllers } from "@/api/controllers/useControllers";
 import { canCreateChildFolder } from "@repo/sqlite";

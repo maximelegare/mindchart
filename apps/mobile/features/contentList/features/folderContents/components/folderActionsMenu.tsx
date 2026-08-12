@@ -18,7 +18,7 @@ import {
   FolderSelection,
 } from "@/features/notes/shared/ui/folderSelector";
 import { useControllers } from "@/api/controllers/useControllers";
-import { useFolderActions } from "../../hooks/useFolderActions";
+import { useFolderActions } from "../hooks/useFolderActions";
 import { useCreateBlankNote } from "@/features/notes/noteCreation/hooks/useCreateBlankNote";
 
 export type FolderActionsTarget =

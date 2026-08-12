@@ -17,7 +17,7 @@ import { cn } from "@/lib/cn";
 import { hsl } from "@/utils/hsl";
 import capitalize from "@/utils/stringManipulations/capitalize";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
-import { FolderActionsMenu } from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";

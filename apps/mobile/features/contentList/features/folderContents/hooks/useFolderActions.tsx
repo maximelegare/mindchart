@@ -14,9 +14,9 @@ import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";
 import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
-import { useOptionsBar } from "../context/optionBarContext";
-import { FolderFormModalContent } from "../components/folders/folderFormModalContent";
-import { useFolderFormSheet } from "../components/folders/folderFormSheet";
+import { useOptionsBar } from "../../../components/optionsBar/context/optionBarContext";
+import { FolderFormModalContent } from "../components/folderFormModalContent";
+import { useFolderFormSheet } from "../components/folderFormSheet";
 import { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 
 type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
@@ -73,7 +73,7 @@ export const useFolderActions = () => {
         return;
       }
       const parentFolder = target.kind === "root" ? null : target.folder;
-      const isGraphFocused = segments.includes("graph");
+      const isGraphFocused = (segments as string[]).includes("graph");
       openFolderFormSheet({
         mode: "create",
         parentFolder,

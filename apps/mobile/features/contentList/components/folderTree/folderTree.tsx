@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
 import {
   FolderActionsMenu,
   FolderActionsTarget,
-} from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+} from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { FileActionsMenu } from "./fileActionsMenu";
 import {
   FOLDER_TREE_ROOT_ID,

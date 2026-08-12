@@ -11,9 +11,9 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
-import { useFolderActions } from "../optionsBar/hooks/useFolderActions";
+import { useFolderActions } from "../../features/folderContents/hooks/useFolderActions";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
-import { FolderBreadcrumbCrumb } from "../optionsBar/components/folders/folderActionsMenu";
+import { FolderBreadcrumbCrumb } from "../../features/folderContents/components/folderActionsMenu";
 import { FolderTree, FolderTreeFile } from "./folderTree";
 import { FOLDER_TREE_ROOT_ID } from "./folderTreeUtils";
 

@@ -7,7 +7,7 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import capitalize from "@/utils/stringManipulations/capitalize";
-import { FolderActionsMenu } from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";

@@ -5,7 +5,7 @@ import { BreadcrumbCrumb, Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { FolderBreadcrumbCrumb } from "@/features/contentList/components/optionsBar/components/folders/folderActionsMenu";
+import { FolderBreadcrumbCrumb } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import {
   folderIdFromGraphTarget,
   onGraphBreadcrumbNavigate,

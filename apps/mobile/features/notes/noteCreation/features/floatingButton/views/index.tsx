@@ -42,7 +42,7 @@ import {
 import type { FloatingModalTab } from "@/features/notes/noteCreation/features/floatingButton/types/types";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { useCreateBlankNote } from "@/features/notes/noteCreation/hooks/useCreateBlankNote";
-import { useFolderActions } from "@/features/contentList/components/optionsBar/hooks/useFolderActions";
+import { useFolderActions } from "@/features/contentList/features/folderContents/hooks/useFolderActions";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import { useControllers } from "@/api/controllers/useControllers";
 
