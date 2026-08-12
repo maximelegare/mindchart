@@ -2,7 +2,7 @@ const NAV_FONT_FAMILY = "Quicksand";
 
 export const THEME_CONFIG = {
   light: {
-    background: "145, 35%, 92%", // slightly greener, still light
+    background: "145, 35%, 90%", // slightly greener, still light
     foreground: "150, 45%, 14%", // deep green instead of flat dark
 
     card: "145, 30%, 95%", // subtle green tint
