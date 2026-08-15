@@ -48,7 +48,7 @@ export const CREATE_ACTION_COLORS = {
   dark: {
     notes: {
       background: "210, 80%, 58%",
-      foreground: "210, 40%, 10%",
+      foreground: "0, 0%, 100%",
       label: "210, 35%, 18%",
       labelForeground: "210, 70%, 85%",
     },
