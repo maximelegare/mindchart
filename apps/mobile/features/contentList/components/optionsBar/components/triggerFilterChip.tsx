@@ -1,17 +1,17 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import React from "react";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { FilterChipProps } from "./filters/filterChips";
 import { Icon } from "@/components/ui/icons/icon";
-import { Typography } from "@/components/ui";
+import { Button, Typography } from "@/components/ui";
 
 type TriggerFilterChipProps = FilterChipProps & {
   showDot?: boolean;
 };
 
 export const TriggerFilterChip = React.forwardRef<
-  React.ElementRef<typeof Pressable>,
+  React.ElementRef<typeof Button>,
   TriggerFilterChipProps
 >(function FunnelFilterChip(
   {
@@ -33,10 +33,12 @@ export const TriggerFilterChip = React.forwardRef<
   const dotColor = hsl("popover", colorScheme);
 
   return (
-    <Pressable
+    <Button
       ref={ref}
       onPress={onPress}
-      className="relative min-w-10 flex-row items-center gap-1.5 rounded-full border px-3 py-2"
+      variant="ghost"
+      size="xs"
+      className="relative h-9 min-w-10 flex-row items-center gap-1.5 border px-3 py-0"
       style={{ backgroundColor, borderColor }}
       accessibilityRole="button"
       accessibilityState={{ selected }}
@@ -72,6 +74,6 @@ export const TriggerFilterChip = React.forwardRef<
           {label}
         </Typography>
       ) : null}
-    </Pressable>
+    </Button>
   );
 });
