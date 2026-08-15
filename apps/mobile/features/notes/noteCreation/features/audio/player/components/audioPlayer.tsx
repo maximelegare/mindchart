@@ -1,6 +1,6 @@
-// import Icon from '@/ui/Icon';
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
+
 type PlayerProps = {
   fileURI: string | null;
   isPlaying: boolean;
@@ -9,6 +9,7 @@ type PlayerProps = {
 };
 
 export const Player = ({ fileURI, isPlaying, onPlay, onStop }: PlayerProps) => {
+  const disabled = !fileURI;
   const handlePlay = () => {
     if (!isPlaying) {
       onPlay();
@@ -19,14 +20,19 @@ export const Player = ({ fileURI, isPlaying, onPlay, onStop }: PlayerProps) => {
 
   return (
     <Button
-      variant="outline"
+      variant={disabled ? "outline" : "default"}
       cornerRadius="full"
       size="icon"
       onPress={handlePlay}
-      disabled={!fileURI}
+      disabled={disabled}
+      accessibilityLabel={isPlaying ? "Stop playback" : "Play recording"}
       className="overflow-hidden"
     >
-      <Icon name="play" color="card" size={20} />
+      <Icon
+        name={isPlaying ? "square" : "play"}
+        color={disabled ? "muted-foreground" : "primary-foreground"}
+        size={18}
+      />
     </Button>
   );
 };

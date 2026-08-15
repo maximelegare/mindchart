@@ -52,11 +52,15 @@ export const RecorderButton = React.forwardRef<
           }}
         />
       ) : (
-        <Gradient theme={colorScheme} variant="primary" className="absolute" />
+        <Gradient
+          theme={colorScheme}
+          variant="primaryBrand"
+          className="absolute"
+        />
       )}
       <Icon
         name={!isRecording ? (!fileURI ? "mic" : "rotate-cw") : "square"}
-        color="background"
+        color="primary-foreground"
         size={dimensions.icon}
       />
     </TouchableOpacity>

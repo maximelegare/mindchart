@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 import { ColorScheme } from "@repo/theme/global";
 import { hsl } from "@/utils/hsl";
 
-export type Variant = "primary" | "destructive" | "none";
+export type Variant = "primary" | "primaryBrand" | "destructive" | "none";
 export type GradientType = "linear" | "radial";
 
 type GradientProps = {
@@ -30,6 +30,7 @@ export function Gradient({
   const isDark = theme === "dark";
 
   const gradientColors: Record<Exclude<Variant, "none">, [string, string]> = {
+    // Header / chrome: deep green wash
     primary: isDark
       ? [
           // Footer (tab bar) → darker green
@@ -40,6 +41,10 @@ export function Gradient({
           hsl("foreground", "theme", "light"),
           hsl("primary", "theme", "light", 45),
         ],
+    // Logo tree: bluer green → paler, greener green
+    primaryBrand: isDark
+      ? ["hsl(165, 42%, 28%)", "hsl(128, 38%, 44%)"]
+      : ["hsl(162, 44%, 34%)", "hsl(122, 40%, 55%)"],
     destructive: ["#ed333b", "#a51d2d"],
   };
 
