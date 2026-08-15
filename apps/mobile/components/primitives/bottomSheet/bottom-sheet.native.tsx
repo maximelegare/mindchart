@@ -75,6 +75,8 @@ type BottomSheetContentProps = Omit<
   >;
 };
 
+const SHEET_TOP_RADIUS = 28;
+
 const CustomHandle = (props: any) => {
   const { colorScheme } = useColorScheme();
   return (
@@ -83,8 +85,8 @@ const CustomHandle = (props: any) => {
       style={{
         padding: 16,
         backgroundColor: hsl("background", colorScheme),
-        borderTopRightRadius: 10,
-        borderTopLeftRadius: 10,
+        borderTopRightRadius: SHEET_TOP_RADIUS,
+        borderTopLeftRadius: SHEET_TOP_RADIUS,
       }}
       indicatorStyle={{
         width: 50,
@@ -162,7 +164,14 @@ const BottomSheetContent = React.forwardRef<
         backdropComponent={renderBackdrop}
         handleComponent={CustomHandle}
         enableDynamicSizing={enableDynamicSizing}
-        backgroundStyle={[{ backgroundColor: colors.card }, backgroundStyle]}
+        backgroundStyle={[
+          {
+            backgroundColor: colors.card,
+            borderTopLeftRadius: SHEET_TOP_RADIUS,
+            borderTopRightRadius: SHEET_TOP_RADIUS,
+          },
+          backgroundStyle,
+        ]}
         handleIndicatorStyle={{
           backgroundColor: colors.text,
         }}
@@ -254,7 +263,7 @@ const BottomSheetTextInput = React.forwardRef<
     <GBottomSheetTextInput
       ref={ref}
       className={cn(
-        "rounded-md border border-input bg-background px-3 text-xl h-14 leading-[1.25] text-foreground items-center disabled:opacity-50",
+        "rounded-2xl border border-input bg-background px-3 text-xl h-14 leading-[1.25] text-foreground items-center disabled:opacity-50",
         className
       )}
       placeholderClassName={cn("text-muted-foreground", placeholderClassName)}
