@@ -336,21 +336,43 @@ const computeLayout = (data: NodeDatum, padding: number): Layout => {
 const countDirectChildren = (parent: NodeInfo, allNodes: NodeInfo[]) =>
   allNodes.filter((n) => n.parentId === parent.internalId).length;
 
+/** Empty folder pack in layout space (flag + leaf folder without content). */
+const isEmptyPackNode = (node: NodeInfo) => {
+  if (isEmptyFolderNode(node.rawData)) return true;
+  if (node.hasChildren) return false;
+  if (
+    isNoteLeafId(node.dbId) ||
+    node.rawData.thoughtId ||
+    node.rawData.noteId
+  ) {
+    return false;
+  }
+  const folderId = node.rawData.folderId;
+  return !!folderId && folderId !== "unfiled";
+};
+
 /** Packs you can zoom into — includes empty folders (no content children). */
 const isNavigablePack = (node: NodeInfo) =>
-  node.hasChildren || isEmptyFolderNode(node.rawData);
+  node.hasChildren || isEmptyPackNode(node);
 
 const isFirstLevelGroup = (node: NodeInfo) =>
   node.depth === 1 && isNavigablePack(node);
 
-const isSecondLevelGroup = (node: NodeInfo, parentInternalId: string) =>
-  node.depth === 2 &&
-  isNavigablePack(node) &&
-  node.parentId === parentInternalId;
-
+/** Muted empty-folder fill — hex so Skia paints reliably vs card canvas (~#2E2E2E). */
 const emptyFolderFill = (
   colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
-) => (colorScheme === "dark" ? "hsl(0, 0%, 22%)" : "hsl(0, 0%, 88%)");
+) => (colorScheme === "dark" ? "#6B6B6B" : "#C8C8C8");
+
+const emptyFolderStroke = (
+  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
+) => (colorScheme === "dark" ? "#9A9A9A" : "#A3A3A3");
+
+/** Centered “Empty” label — light grey on the node. */
+const emptyLabelColor = (
+  colorScheme: ReturnType<typeof useColorScheme>["colorScheme"]
+) => (colorScheme === "dark" ? "#D0D0D0" : "#8A8A8A");
+
+const EMPTY_LABEL_FONT_SIZE = 12;
 
 const isFolderModeNoteLeaf = (node: NodeInfo) =>
   !node.hasChildren && isNoteLeafId(node.dbId);
@@ -634,7 +656,7 @@ function CirclePackSkiaRenderer({
   };
 
   const getNodeColor = (node: NodeInfo) => {
-    if (isEmptyFolderNode(node.rawData)) {
+    if (isEmptyPackNode(node)) {
       return emptyFolderFill(colorScheme);
     }
 
@@ -682,27 +704,43 @@ function CirclePackSkiaRenderer({
   const focusedDbId = focusedThoughtId ? String(focusedThoughtId) : undefined;
 
   const labelsByInternalId = useMemo(() => {
-    const labels = new Map<string, string>();
+    const labels = new Map<string, { text: string; empty: boolean }>();
     const atRoot = activeViewNode.internalId === rootNode.internalId;
+
+    // Current folder is an empty pack — centered “Empty” on the node.
+    if (isEmptyPackNode(activeViewNode)) {
+      labels.set(activeViewNode.internalId, { text: "Empty", empty: true });
+      return labels;
+    }
 
     if (atRoot) {
       for (const node of allNodes) {
         if (!isFirstLevelGroup(node)) continue;
-        // Empty folders always get a label; other packs need enough children.
-        if (
-          isEmptyFolderNode(node.rawData) ||
-          countDirectChildren(node, allNodes) >= 2
-        ) {
-          labels.set(node.internalId, formatLabel(node.rawData.name));
+        if (isEmptyPackNode(node)) {
+          labels.set(node.internalId, { text: "Empty", empty: true });
+          continue;
+        }
+        if (countDirectChildren(node, allNodes) >= 2) {
+          labels.set(node.internalId, {
+            text: formatLabel(node.rawData.name),
+            empty: false,
+          });
         }
       }
       return labels;
     }
 
-    if (isFirstLevelGroup(activeViewNode)) {
-      for (const node of allNodes) {
-        if (!isSecondLevelGroup(node, activeViewNode.internalId)) continue;
-        labels.set(node.internalId, formatLabel(node.rawData.name));
+    // Parent pack selected — label direct children; empty ones say Empty.
+    for (const node of allNodes) {
+      if (node.parentId !== activeViewNode.internalId) continue;
+      if (!isNavigablePack(node)) continue;
+      if (isEmptyPackNode(node)) {
+        labels.set(node.internalId, { text: "Empty", empty: true });
+      } else {
+        labels.set(node.internalId, {
+          text: formatLabel(node.rawData.name),
+          empty: false,
+        });
       }
     }
 
@@ -711,12 +749,13 @@ function CirclePackSkiaRenderer({
 
   const labelColor = hsl("foreground", colorScheme);
   const labelBgColor = hsl("background", colorScheme);
+  const emptyLabelFill = emptyLabelColor(colorScheme);
 
   const labeledNodes = useMemo(() => {
-    const items: { node: NodeInfo; text: string }[] = [];
-    labelsByInternalId.forEach((text, internalId) => {
+    const items: { node: NodeInfo; text: string; empty: boolean }[] = [];
+    labelsByInternalId.forEach(({ text, empty }, internalId) => {
       const node = nodeMap.get(internalId);
-      if (node) items.push({ node, text });
+      if (node) items.push({ node, text, empty });
     });
     return items;
   }, [labelsByInternalId, nodeMap]);
@@ -747,6 +786,7 @@ function CirclePackSkiaRenderer({
               {allNodes.map((node) => {
                 const isNoteLeaf =
                   graphMode === "folder" && isFolderModeNoteLeaf(node);
+                const isEmpty = isEmptyPackNode(node);
                 return (
                   <SkCircle
                     key={node.internalId}
@@ -755,8 +795,10 @@ function CirclePackSkiaRenderer({
                     viewY={viewY}
                     viewR={viewR}
                     color={getNodeColor(node)}
-                    showBorder={isNoteLeaf}
-                    borderColor="#FFFFFF"
+                    showBorder={isNoteLeaf || isEmpty}
+                    borderColor={
+                      isEmpty ? emptyFolderStroke(colorScheme) : "#FFFFFF"
+                    }
                     isFocusedThought={
                       hatchHighlightActive &&
                       !!focusedDbId &&
@@ -770,13 +812,16 @@ function CirclePackSkiaRenderer({
                   />
                 );
               })}
-              {labeledNodes.map(({ node, text }) => (
+              {labeledNodes.map(({ node, text, empty }) => (
                 <SkLabel
                   key={`label-${node.internalId}`}
                   node={node}
                   text={text}
-                  color={labelColor}
+                  color={empty ? emptyLabelFill : labelColor}
                   backgroundColor={labelBgColor}
+                  thin={empty}
+                  hideBackground={empty}
+                  centered={empty}
                   viewX={viewX}
                   viewY={viewY}
                   viewR={viewR}
@@ -827,6 +872,11 @@ type SkLabelProps = {
   text: string;
   color: string;
   backgroundColor: string;
+  /** Regular weight instead of bold (empty-state hints). */
+  thin?: boolean;
+  hideBackground?: boolean;
+  /** Place label at the node center (empty folders). */
+  centered?: boolean;
   viewX: { value: number };
   viewY: { value: number };
   viewR: { value: number };
@@ -837,13 +887,19 @@ const SkLabel = ({
   text,
   color,
   backgroundColor,
+  thin = false,
+  hideBackground = false,
+  centered = false,
   viewX,
   viewY,
   viewR,
 }: SkLabelProps) => {
+  const fontSize = centered ? EMPTY_LABEL_FONT_SIZE : LABEL_FONT_SIZE;
   const font = useFont(
-    require("@/assets/fonts/Quicksand-Bold.ttf"),
-    LABEL_FONT_SIZE
+    thin
+      ? require("@/assets/fonts/Quicksand-Regular.ttf")
+      : require("@/assets/fonts/Quicksand-Bold.ttf"),
+    fontSize
   );
 
   const textWidth = useMemo(() => {
@@ -852,17 +908,25 @@ const SkLabel = ({
   }, [font, text]);
 
   const bgWidth = textWidth + LABEL_PAD_X * 2;
-  const bgHeight = LABEL_FONT_SIZE + LABEL_PAD_Y * 2;
+  const bgHeight = fontSize + LABEL_PAD_Y * 2;
 
   const textY = useMemo(() => {
-    if (!font) return -bgHeight / 2;
+    if (!font) return 0;
     const metrics = font.getMetrics();
+    if (centered) {
+      // Baseline so the glyph box is vertically centered on the node.
+      return -(metrics.ascent + metrics.descent) / 2;
+    }
     return -bgHeight / 2 - (metrics.ascent + metrics.descent) / 2;
-  }, [font, bgHeight]);
+  }, [font, bgHeight, centered]);
 
   const labelTransform = useDerivedValue(() => {
     const k = SIZE / (viewR.value * 2);
     const cx = SIZE / 2 + (node.x - viewX.value) * k;
+    if (centered) {
+      const cy = SIZE / 2 + (node.y - viewY.value) * k;
+      return [{ translateX: cx }, { translateY: cy }];
+    }
     const anchorY =
       SIZE / 2 + (node.y - viewY.value) * k - node.r * k - LABEL_GAP;
     return [{ translateX: cx }, { translateY: anchorY }];
@@ -872,15 +936,17 @@ const SkLabel = ({
 
   return (
     <Group transform={labelTransform}>
-      <RoundedRect
-        x={-bgWidth / 2}
-        y={-bgHeight}
-        width={bgWidth}
-        height={bgHeight}
-        r={LABEL_BG_RADIUS}
-        color={backgroundColor}
-        opacity={0.7}
-      />
+      {!hideBackground ? (
+        <RoundedRect
+          x={-bgWidth / 2}
+          y={-bgHeight}
+          width={bgWidth}
+          height={bgHeight}
+          r={LABEL_BG_RADIUS}
+          color={backgroundColor}
+          opacity={0.7}
+        />
+      ) : null}
       <Text
         x={-textWidth / 2}
         y={textY}
