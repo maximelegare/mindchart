@@ -3,13 +3,10 @@ import { Typography } from "@/components/ui/typography";
 
 export const ModalTitle = ({ title }: { title: string }) => {
   return (
-    <View className="relative">
-      <View className="mb-2">
-        <Typography className="relative z-10" variant="h3">
-          {title}
-        </Typography>
-      </View>
-      <View className="absolute -top-3 -right-3 -left-3 bg-border h-12"></View>
+    <View className="-mx-3 -mt-3 mb-1 bg-border px-3 pt-3 pb-2.5">
+      <Typography variant="h3" className="shrink">
+        {title}
+      </Typography>
     </View>
   );
 };

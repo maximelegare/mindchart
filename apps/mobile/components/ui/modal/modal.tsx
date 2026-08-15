@@ -181,18 +181,15 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     >
       <View
         className={cn(
-          "flex-col gap-4 bg-background p-3 rounded-lg overflow-hidden",
+          "flex-col gap-4 bg-background p-3 rounded-3xl overflow-hidden",
           customContent && "min-h-0"
         )}
       >
         {hasTitle && (
-          <View className="relative">
-            <View className="mb-2">
-              <Typography className="relative z-10" variant="h3">
-                {title || (modalName && MODALS_CONTENT[modalName]?.title)}
-              </Typography>
-            </View>
-            <View className="absolute -top-3 -right-3 -left-3 bg-border h-12" />
+          <View className="-mx-3 -mt-3 bg-border px-3 pt-3 pb-2.5">
+            <Typography variant="h3" className="shrink">
+              {title || (modalName && MODALS_CONTENT[modalName]?.title)}
+            </Typography>
           </View>
         )}
 
@@ -211,6 +208,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
           <View className="mt-4 flex-row justify-end gap-2">
             <Button
               variant={cancelButton.variant}
+              cornerRadius="full"
               onPress={() => {
                 onCancel?.();
                 closeModal();
@@ -221,6 +219,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
             {onConfirm && (
               <Button
                 variant={confirmButton.variant}
+                cornerRadius="full"
                 onPress={() => void onConfirm()}
               >
                 <Typography>{confirmButton.text}</Typography>

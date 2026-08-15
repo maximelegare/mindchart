@@ -76,8 +76,8 @@ export const MODALS_CONTENT: Record<
   DELETE_MODEL_ACTION: {
     title: "Are you sure you want to remove this model?",
     description: "You will need to download it again to use it.",
-    confirmButton: { text: "Delete" },
-    cancelButton: { text: "Cancel" },
+    confirmButton: { text: "Delete", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
   },
   AI_SETUP_REQUIRED: {
     title: "AI Setup Required",
