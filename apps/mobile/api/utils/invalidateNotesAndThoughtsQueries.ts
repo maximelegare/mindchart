@@ -16,6 +16,15 @@ const NOTES_AND_THOUGHTS_QUERY_KEYS = [
   REACT_QUERY_KEYS.seedDatabase,
 ] as const;
 
+/** Folder tree / cards — seed and note moves change these; must not stay warm for 60s. */
+const FOLDER_QUERY_KEYS = [
+  REACT_QUERY_KEYS.fetchAllFolders,
+  REACT_QUERY_KEYS.fetchAllFoldersWithNotesInfos,
+  REACT_QUERY_KEYS.fetchChildFolders,
+  REACT_QUERY_KEYS.fetchFolderById,
+  REACT_QUERY_KEYS.fetchFolderContents,
+] as const;
+
 export const invalidateNotesListQueries = async (queryClient: QueryClient) => {
   await Promise.all(
     NOTES_LIST_QUERY_KEYS.map((queryKey) =>
@@ -27,16 +36,27 @@ export const invalidateNotesListQueries = async (queryClient: QueryClient) => {
   );
 };
 
+export const invalidateFolderQueries = async (queryClient: QueryClient) => {
+  await Promise.all(
+    FOLDER_QUERY_KEYS.map((queryKey) =>
+      queryClient.invalidateQueries({
+        queryKey: [queryKey],
+      })
+    )
+  );
+};
+
 export const invalidateNotesAndThoughtsQueries = async (
   queryClient: QueryClient
 ) => {
   await invalidateNotesListQueries(queryClient);
-  await Promise.all(
-    NOTES_AND_THOUGHTS_QUERY_KEYS.map((queryKey) =>
+  await Promise.all([
+    ...NOTES_AND_THOUGHTS_QUERY_KEYS.map((queryKey) =>
       queryClient.refetchQueries({
         queryKey: [queryKey],
         type: "all",
       })
-    )
-  );
+    ),
+    invalidateFolderQueries(queryClient),
+  ]);
 };

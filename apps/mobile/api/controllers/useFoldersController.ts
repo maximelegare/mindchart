@@ -18,26 +18,7 @@ import {
 } from "../endpoints/folders";
 import { updateSyncGraphData } from "../endpoints/graph";
 import { Folder } from "@repo/zod-schemas/src/schemas";
-
-const invalidateFolderQueries = async (
-  queryClient: ReturnType<typeof useQueryClient>
-) => {
-  await queryClient.invalidateQueries({
-    queryKey: [REACT_QUERY_KEYS.fetchAllFolders],
-  });
-  await queryClient.invalidateQueries({
-    queryKey: [REACT_QUERY_KEYS.fetchAllFoldersWithNotesInfos],
-  });
-  await queryClient.invalidateQueries({
-    queryKey: [REACT_QUERY_KEYS.fetchChildFolders],
-  });
-  await queryClient.invalidateQueries({
-    queryKey: [REACT_QUERY_KEYS.fetchFolderById],
-  });
-  await queryClient.invalidateQueries({
-    queryKey: [REACT_QUERY_KEYS.fetchFolderContents],
-  });
-};
+import { invalidateFolderQueries } from "../utils/invalidateNotesAndThoughtsQueries";
 
 const markGraphDirty = async (
   queryClient: ReturnType<typeof useQueryClient>
