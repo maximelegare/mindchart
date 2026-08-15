@@ -92,7 +92,7 @@ export const FolderSelector = ({
       ? `${label.slice(0, maxChars)}…`
       : label;
 
-  const errorBorder = hsl("destructive-foreground", colorScheme);
+  const errorBorder = hsl("foreground-errors", colorScheme);
 
   return (
     <BottomSheet>
@@ -110,15 +110,13 @@ export const FolderSelector = ({
         >
           <Icon
             name="folder"
-            color={error ? "destructive-foreground" : "foreground"}
+            color={error ? "foreground-errors" : "foreground"}
             size={16}
           />
           <Typography
             variant="p"
             className={
-              error
-                ? "shrink text-destructive-foreground"
-                : "shrink text-foreground"
+              error ? "shrink text-foreground-errors" : "shrink text-foreground"
             }
             numberOfLines={1}
           >

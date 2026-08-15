@@ -48,7 +48,7 @@ export const RecorderButton = React.forwardRef<
         <View
           className="absolute inset-0"
           style={{
-            backgroundColor: hsl("destructive", "theme", colorScheme),
+            backgroundColor: hsl("foreground-errors", "theme", colorScheme),
           }}
         />
       ) : (

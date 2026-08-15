@@ -53,10 +53,7 @@ export function SettingsSheetRow({
   const needsSetup = !!status && status !== "Loaded" && /setup/i.test(status);
   const isDisabledStatus = status === "Disabled";
   const attention = needsSetup || isDisabledStatus;
-  const dangerColor = hsl(
-    colorScheme === "dark" ? "destructive" : "destructive-foreground",
-    colorScheme
-  );
+  const dangerColor = hsl("foreground-errors", colorScheme);
   const redChevron = dangerChevron || attention;
 
   return (
@@ -113,9 +110,7 @@ export function SettingsSheetRow({
                 name="chevron-right"
                 color={
                   redChevron
-                    ? colorScheme === "dark"
-                      ? "destructive"
-                      : "destructive-foreground"
+                    ? "foreground-errors"
                     : showMeta
                       ? "primary"
                       : "muted-foreground"

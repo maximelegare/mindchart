@@ -54,7 +54,7 @@ export const RecordGenerateButton = ({
   const morph = useSharedValue(isGenerateMode ? 1 : 0);
   const recordingProgress = useSharedValue(isRecording ? 1 : 0);
   const pulse = useSharedValue(0);
-  const recordingColor = hsl("destructive-foreground", "theme", colorScheme);
+  const recordingColor = hsl("foreground-errors", "theme", colorScheme);
 
   useEffect(() => {
     morph.value = withTiming(isGenerateMode ? 1 : 0, {

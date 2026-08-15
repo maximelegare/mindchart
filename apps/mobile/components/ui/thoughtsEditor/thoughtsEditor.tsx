@@ -500,7 +500,7 @@ function ThoughtsEditorInner(
   const backgroundColor = plain ? "transparent" : hsl("card", colorScheme);
   const textColor = hsl("text", colorScheme);
   const placeholderColor = hsl("muted-foreground", colorScheme);
-  const errorPlaceholderColor = hsl("destructive-foreground", colorScheme);
+  const errorPlaceholderColor = hsl("foreground-errors", colorScheme);
   const caretColor = hsl("primary", colorScheme);
   const headerBg = hsl("muted", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);

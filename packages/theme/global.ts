@@ -27,6 +27,9 @@ export const THEME_CONFIG = {
     destructive: "357, 90%, 94%",
     "destructive-foreground": "3, 85%, 55%",
 
+    // Stable error/recording red — same in light and dark
+    "foreground-errors": "3, 72%, 60%",
+
     border: "145, 25%, 80%",
     input: "145, 25%, 80%",
     ring: "145, 45%, 45%",
@@ -57,6 +60,9 @@ export const THEME_CONFIG = {
 
     destructive: "0, 72%, 51%",
     "destructive-foreground": "0, 0%, 98%",
+
+    // Stable error/recording red — same in light and dark
+    "foreground-errors": "3, 72%, 60%",
 
     border: "0, 0%, 24%",
     input: "0, 0%, 24%",

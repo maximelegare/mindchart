@@ -21,6 +21,7 @@
     --muted-foreground: 150, 15%, 45%;
     --destructive: 357, 90%, 94%;
     --destructive-foreground: 3, 85%, 55%;
+    --foreground-errors: 3, 72%, 62%;
     --border: 145, 25%, 80%;
     --input: 145, 25%, 80%;
     --ring: 145, 45%, 45%;
@@ -43,6 +44,7 @@
     --muted-foreground: 0, 0%, 60%;
     --destructive: 0, 72%, 51%;
     --destructive-foreground: 0, 0%, 98%;
+    --foreground-errors: 3, 72%, 62%;
     --border: 0, 0%, 24%;
     --input: 0, 0%, 24%;
     --ring: 145, 50%, 50%;

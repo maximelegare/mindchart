@@ -217,7 +217,7 @@ export const ImportWorkspaceFlowModal = ({
     return (
       <View className="flex-col gap-4">
         <ModalTitle title="Import Workspace" />
-        <Typography className="text-destructive-foreground" variant="p">
+        <Typography className="text-foreground-errors" variant="p">
           {extractError}
         </Typography>
         <View className="flex-row justify-end gap-2 mt-2">

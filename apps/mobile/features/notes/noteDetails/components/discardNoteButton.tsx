@@ -16,7 +16,7 @@ export function DiscardNoteButton({
 }: DiscardNoteButtonProps) {
   const { colorScheme } = useColorScheme();
 
-  const chipColor = hsl("destructive-foreground", colorScheme);
+  const chipColor = hsl("foreground-errors", colorScheme);
   return (
     <Button
       onPress={onPress}
