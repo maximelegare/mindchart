@@ -64,11 +64,6 @@ const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
   { icon: "circle-off", value: "none", label: "Not grouping" },
 ];
 
-const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
-  { icon: "notebook-text", value: "notes", label: "Notes" },
-  { icon: "layers", value: "categories", label: "Categories" },
-];
-
 type OptionsPickerProps<T extends string> = {
   title: string;
   /** Prefix shown on the chip, e.g. "Display:" → "Display: Notes". */
@@ -178,7 +173,11 @@ function OptionsDropdown<T extends string>({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <OptionChip icon={selectedIcon} label={chipLabel} selected={open} />
+        <TriggerFilterChip
+          icon={selectedIcon}
+          label={chipLabel}
+          selected={open}
+        />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -473,12 +472,16 @@ export const OptionsBar = () => {
               options={GROUP_OPTIONS}
               onValueChange={onGroupByChange}
             />
-            <OptionsDropdown
-              title="Display"
-              chipLabelPrefix="Display"
-              value={displayMode}
-              options={DISPLAY_OPTIONS}
-              onValueChange={onDisplayModeChange}
+            <TriggerFilterChip
+              icon={displayMode === "notes" ? "notebook-text" : "shapes"}
+              label={
+                displayMode === "notes" ? "Display Notes" : "Display Categories"
+              }
+              onPress={() =>
+                onDisplayModeChange(
+                  displayMode === "notes" ? "categories" : "notes"
+                )
+              }
             />
           </View>
         </View>
