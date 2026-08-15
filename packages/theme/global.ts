@@ -59,7 +59,7 @@ export const THEME_CONFIG = {
     "muted-foreground": "0, 0%, 60%",
 
     destructive: "0, 72%, 51%",
-    "destructive-foreground": "0, 0%, 98%",
+    "destructive-foreground": "3, 70%, 88%",
 
     // Stable error/recording red — same in light and dark
     "foreground-errors": "3, 72%, 60%",
