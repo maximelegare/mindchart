@@ -54,7 +54,11 @@ export const GenerateNote = ({
       }}
     >
       {!isDisabled && (
-        <Gradient theme={colorScheme} variant="primary" className="absolute" />
+        <Gradient
+          theme={colorScheme}
+          variant="primaryBrand"
+          className="absolute"
+        />
       )}
 
       <View
@@ -68,12 +72,14 @@ export const GenerateNote = ({
         <Icon
           name="sparkles"
           size={dimensions.icon}
-          color={isDisabled ? "border" : "background"}
+          color={isDisabled ? "muted-foreground" : "primary-foreground"}
         />
         <Typography
+          variant="h4"
+          padding={false}
           className={cn(
-            isDisabled ? "text-border" : "text-background",
-            "font-bold text-center",
+            isDisabled ? "text-muted-foreground" : "text-primary-foreground",
+            "text-center",
             size === "md" ? "text-base" : "text-sm"
           )}
         >

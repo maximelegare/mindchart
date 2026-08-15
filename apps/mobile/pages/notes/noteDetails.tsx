@@ -67,6 +67,8 @@ export const NoteDetailsPage = () => {
     notesAndThoughts.useUpdateNoteLocationMutation();
 
   const isPreviewMode = editorMode === "preview";
+  const showHeaderDeleteAction = isPreviewMode || isEditing;
+  const headerDeleteLabel = isPreviewMode ? "Delete" : "Discard";
 
   const leaveAfterDelete = useCallback(() => {
     if (openedFromGraph) {
@@ -251,9 +253,9 @@ export const NoteDetailsPage = () => {
   return (
     <PageContainer
       headerVariant="tab"
-      title={noteTitle ?? ""}
+      title={showHeaderDeleteAction ? undefined : (noteTitle ?? "")}
       subtitle={
-        isPreviewMode
+        showHeaderDeleteAction
           ? undefined
           : {
               text: "Note",
@@ -261,8 +263,9 @@ export const NoteDetailsPage = () => {
             }
       }
       subtitleContent={
-        isPreviewMode ? (
+        showHeaderDeleteAction ? (
           <DiscardNoteButton
+            label={headerDeleteLabel}
             onPress={handleDiscardNote}
             disabled={isDiscarding || !noteId}
           />

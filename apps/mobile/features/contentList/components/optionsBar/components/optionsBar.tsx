@@ -12,14 +12,6 @@ import {
   BottomSheetView,
   useBottomSheet,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import { useControllers } from "@/api/controllers/useControllers";
@@ -64,11 +56,6 @@ const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
   { icon: "circle-off", value: "none", label: "Not grouping" },
 ];
 
-const DISPLAY_OPTIONS: OptionItem<DisplayMode>[] = [
-  { icon: "notebook-text", value: "notes", label: "Notes" },
-  { icon: "layers", value: "categories", label: "Categories" },
-];
-
 type OptionsPickerProps<T extends string> = {
   title: string;
   /** Prefix shown on the chip, e.g. "Display:" → "Display: Notes". */
@@ -76,6 +63,8 @@ type OptionsPickerProps<T extends string> = {
   value: T;
   options: OptionItem<T>[];
   onValueChange: (value: T) => void;
+  /** Header-sized chip (outside collapsible) vs compact OptionChip. */
+  largeChip?: boolean;
 };
 
 function OptionsSheet<T extends string>({
@@ -84,6 +73,7 @@ function OptionsSheet<T extends string>({
   value,
   options,
   onValueChange,
+  largeChip = false,
 }: OptionsPickerProps<T>) {
   const sheet = useBottomSheet();
   const selected = options.find((option) => option.value === value);
@@ -92,10 +82,11 @@ function OptionsSheet<T extends string>({
     ? `${chipLabelPrefix} ${selectedLabel}`
     : selectedLabel;
   const selectedIcon = selected?.icon;
+  const Chip = largeChip ? TriggerFilterChip : OptionChip;
 
   return (
     <View className="shrink-0">
-      <OptionChip
+      <Chip
         icon={selectedIcon}
         label={chipLabel}
         onPress={() => sheet.open()}
@@ -157,63 +148,6 @@ function OptionsSheet<T extends string>({
         </BottomSheetContent>
       </BottomSheet>
     </View>
-  );
-}
-
-function OptionsDropdown<T extends string>({
-  title,
-  chipLabelPrefix,
-  value,
-  options,
-  onValueChange,
-}: OptionsPickerProps<T>) {
-  const [open, setOpen] = useState(false);
-  const selected = options.find((option) => option.value === value);
-  const selectedLabel = selected?.label ?? value;
-  const chipLabel = chipLabelPrefix
-    ? `${chipLabelPrefix} ${selectedLabel}`
-    : selectedLabel;
-  const selectedIcon = selected?.icon;
-
-  return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <OptionChip icon={selectedIcon} label={chipLabel} selected={open} />
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        side="bottom"
-        align="start"
-        className=" border border-border bg-popover pb-2 shadow-md"
-        style={{ minWidth: 160, marginTop: 8 }}
-      >
-        <DropdownMenuLabel className="px-3 py-1.5 text-xs text-muted-foreground native:text-sm">
-          {title}
-        </DropdownMenuLabel>
-        <DropdownMenuRadioGroup
-          value={value}
-          onValueChange={(next) => onValueChange(next as T)}
-        >
-          {options.map((option) => (
-            <DropdownMenuRadioItem
-              key={option.value}
-              value={option.value}
-              className="flex-row items-center gap-2"
-            >
-              {option.icon ? (
-                <Icon name={option.icon} color="popover-foreground" size={16} />
-              ) : null}
-              <Typography
-                variant="p"
-                className="text-md text-popover-foreground"
-              >
-                {option.label}
-              </Typography>
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
 
@@ -466,19 +400,24 @@ export const OptionsBar = () => {
         <View className="h-full w-full flex-row items-center gap-2">
           <View className="shrink-0">{settingsToggle}</View>
           <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-2">
-            <OptionsDropdown
+            <OptionsSheet
               title="Group by"
               chipLabelPrefix={groupBy === "none" ? undefined : "Group"}
               value={groupBy}
               options={GROUP_OPTIONS}
               onValueChange={onGroupByChange}
+              largeChip
             />
-            <OptionsDropdown
-              title="Display"
-              chipLabelPrefix="Display"
-              value={displayMode}
-              options={DISPLAY_OPTIONS}
-              onValueChange={onDisplayModeChange}
+            <TriggerFilterChip
+              icon={displayMode === "notes" ? "notebook-text" : "shapes"}
+              label={
+                displayMode === "notes" ? "Display Notes" : "Display Categories"
+              }
+              onPress={() =>
+                onDisplayModeChange(
+                  displayMode === "notes" ? "categories" : "notes"
+                )
+              }
             />
           </View>
         </View>

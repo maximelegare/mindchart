@@ -6,10 +6,10 @@ export const RecordingLabel = () => {
   return (
     <View className="mb-1 flex-row items-center justify-center gap-1.5">
       <View
-        style={{ backgroundColor: hsl("destructive-foreground", "light") }}
+        style={{ backgroundColor: hsl("foreground-errors", "light") }}
         className="h-2 w-2 rounded-full"
       />
-      <Typography variant="small" className="text-destructive">
+      <Typography variant="small" className="text-foreground-errors">
         Recording
       </Typography>
     </View>

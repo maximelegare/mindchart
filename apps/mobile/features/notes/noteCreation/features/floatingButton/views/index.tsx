@@ -336,7 +336,7 @@ export const FloatingModal = ({
       },
       {
         key: "ai",
-        label: "New AI generated",
+        label: "AI Generated...",
         icon: "sparkles",
         createAction: "aiGenerated",
         onPress: handleGenerateWithAi,

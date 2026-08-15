@@ -10,23 +10,29 @@ export const DeleteURI = ({
   onDelete: () => void;
 }) => {
   const { deleteFile } = useFileSystem();
+  const disabled = !fileURI;
 
   const handleDelete = () => {
     if (fileURI) {
       deleteFile(fileURI);
       onDelete();
-    } else return;
+    }
   };
 
   return (
     <Button
-      variant="outline"
+      variant={disabled ? "outline" : "destructive"}
       size="icon"
       cornerRadius="full"
       onPress={handleDelete}
-      disabled={!fileURI}
+      disabled={disabled}
+      accessibilityLabel="Delete recording"
     >
-      <Icon name="trash-2" color="card" size={20} />
+      <Icon
+        name="trash-2"
+        color={disabled ? "muted-foreground" : "destructive-foreground"}
+        size={18}
+      />
     </Button>
   );
 };

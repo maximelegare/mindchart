@@ -15,7 +15,7 @@ export const THEME_CONFIG = {
     footer: "150, 45%, 14%",
     "footer-foreground": "145, 35%, 92%",
 
-    primary: "145, 45%, 42%", // main logo green
+    primary: "145, 50%, 34%", // deeper main green
     "primary-foreground": "145, 35%, 95%",
 
     secondary: "155, 35%, 30%", // slightly bluish-green (depth)
@@ -27,9 +27,12 @@ export const THEME_CONFIG = {
     destructive: "357, 90%, 94%",
     "destructive-foreground": "3, 85%, 55%",
 
+    // Stable error/recording red — same in light and dark
+    "foreground-errors": "3, 72%, 60%",
+
     border: "145, 25%, 80%",
     input: "145, 25%, 80%",
-    ring: "145, 45%, 45%",
+    ring: "145, 50%, 38%",
   },
 
   dark: {
@@ -46,7 +49,7 @@ export const THEME_CONFIG = {
     footer: "0, 0%, 7%",
     "footer-foreground": "0, 0%, 94%",
 
-    primary: "145, 45%, 55%",
+    primary: "145, 48%, 42%",
     "primary-foreground": "0, 0%, 98%",
 
     secondary: "0, 0%, 22%",
@@ -56,11 +59,14 @@ export const THEME_CONFIG = {
     "muted-foreground": "0, 0%, 60%",
 
     destructive: "0, 72%, 51%",
-    "destructive-foreground": "0, 0%, 98%",
+    "destructive-foreground": "3, 70%, 88%",
+
+    // Stable error/recording red — same in light and dark
+    "foreground-errors": "3, 72%, 60%",
 
     border: "0, 0%, 24%",
     input: "0, 0%, 24%",
-    ring: "145, 50%, 50%",
+    ring: "145, 48%, 42%",
   },
 } as const;
 

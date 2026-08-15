@@ -52,7 +52,13 @@ export const HeaderContent = ({
             <Icon color="popover-foreground" name="arrow-left" />
           </Button>
         )}
-        <View className="min-w-0 flex-1">
+        <View
+          className={
+            !title && subtitleContent
+              ? "min-w-0 flex-1 justify-center"
+              : "min-w-0 flex-1"
+          }
+        >
           {title && (
             <Typography
               variant="h3"
@@ -63,7 +69,7 @@ export const HeaderContent = ({
             </Typography>
           )}
           {subtitleContent ? (
-            <View style={{ alignSelf: "flex-start" }}>{subtitleContent}</View>
+            <View className="self-start">{subtitleContent}</View>
           ) : (
             <View className="flex-row items-center gap-1 mr-1">
               {subtitle?.icon && (

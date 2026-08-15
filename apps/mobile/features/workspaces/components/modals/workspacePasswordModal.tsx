@@ -243,7 +243,7 @@ const ImportPasswordForm = ({
       <Typography variant="muted">{description}</Typography>
 
       {errorMessage ? (
-        <Typography className="text-destructive-foreground" variant="p">
+        <Typography className="text-foreground-errors" variant="p">
           {errorMessage}
         </Typography>
       ) : null}
@@ -337,7 +337,7 @@ const ImportRecoveryForm = ({
       <Typography variant="muted">{description}</Typography>
 
       {errorMessage ? (
-        <Typography className="text-destructive-foreground" variant="p">
+        <Typography className="text-foreground-errors" variant="p">
           {errorMessage}
         </Typography>
       ) : null}

@@ -12,7 +12,7 @@ const buttonVariants = cva(
         default:
           "bg-primary/80 border border-primary/80 web:hover:opacity-90 active:opacity-90",
         destructive:
-          "bg-destructive/50 border border-destructive-foreground/30 web:hover:opacity-90 active:opacity-90",
+          "bg-destructive border border-destructive-foreground/30 web:hover:opacity-90 active:opacity-90",
         outline:
           "border bg-input/20 border-[1px] border-input web:hover:bg-muted active:bg-muted",
         secondary: "bg-secondary web:hover:opacity-80 active:opacity-80",
@@ -36,7 +36,7 @@ const buttonVariants = cva(
     defaultVariants: {
       variant: "default",
       size: "default",
-      cornerRadius: "md",
+      cornerRadius: "full",
     },
   }
 );

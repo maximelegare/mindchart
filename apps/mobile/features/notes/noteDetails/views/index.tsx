@@ -87,7 +87,7 @@ function NoteDetailsContent({
   // Remount TextInput when re-showing the error — Android/RN often won't
   // refresh placeholder text/color on an empty field otherwise.
   const [titleInputEpoch, setTitleInputEpoch] = React.useState(0);
-  const requiredPlaceholderColor = hsl("destructive-foreground", colorScheme);
+  const requiredPlaceholderColor = hsl("foreground-errors", colorScheme);
   const thoughtsEditorRef = React.useRef<ThoughtsEditorHandle>(null);
   // Latest title from the input — RHF getValues can lag behind native TextInput.
   const titleDraftRef = React.useRef(note.title ?? "");

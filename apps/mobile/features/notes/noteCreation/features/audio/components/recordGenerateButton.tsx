@@ -54,7 +54,7 @@ export const RecordGenerateButton = ({
   const morph = useSharedValue(isGenerateMode ? 1 : 0);
   const recordingProgress = useSharedValue(isRecording ? 1 : 0);
   const pulse = useSharedValue(0);
-  const recordingColor = hsl("destructive-foreground", "theme", colorScheme);
+  const recordingColor = hsl("foreground-errors", "theme", colorScheme);
 
   useEffect(() => {
     morph.value = withTiming(isGenerateMode ? 1 : 0, {
@@ -180,7 +180,7 @@ export const RecordGenerateButton = ({
           >
             <Gradient
               theme={colorScheme}
-              variant="primary"
+              variant="primaryBrand"
               style={StyleSheet.absoluteFillObject}
             />
           </Animated.View>
@@ -200,7 +200,7 @@ export const RecordGenerateButton = ({
           >
             <Gradient
               theme={colorScheme}
-              variant="primary"
+              variant="primaryBrand"
               style={StyleSheet.absoluteFillObject}
             />
           </Animated.View>
@@ -208,7 +208,7 @@ export const RecordGenerateButton = ({
           <Animated.View style={[styles.content, recordContentStyle]}>
             <Icon
               name={isRecording ? "square" : "mic"}
-              color="background"
+              color="primary-foreground"
               size={34}
             />
           </Animated.View>
@@ -220,8 +220,12 @@ export const RecordGenerateButton = ({
               generateContentStyle,
             ]}
           >
-            <Icon name="sparkles" color="background" size={14} />
-            <Typography className="text-sm font-bold text-background">
+            <Icon name="sparkles" color="primary-foreground" size={14} />
+            <Typography
+              variant="h4"
+              padding={false}
+              className="text-sm text-primary-foreground"
+            >
               Generate Note
             </Typography>
           </Animated.View>

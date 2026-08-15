@@ -78,7 +78,7 @@ type TypographyVariant = keyof typeof variantClasses;
 
 /** Strip theme color utilities only — keep text-xl / text-sm / etc. */
 const TEXT_COLOR_CLASS_RE =
-  /\b(?:native:)?text-(?:foreground|muted-foreground|primary-foreground|primary|secondary-foreground|secondary|destructive-foreground|destructive|popover-foreground|popover|card-foreground|card|footer-foreground|footer|accent-foreground|accent)\b/g;
+  /\b(?:native:)?text-(?:foreground|muted-foreground|primary-foreground|primary|secondary-foreground|secondary|destructive-foreground|destructive|foreground-errors|popover-foreground|popover|card-foreground|card|footer-foreground|footer|accent-foreground|accent)\b/g;
 
 function withoutTextColorClasses(value?: string) {
   return value?.replace(TEXT_COLOR_CLASS_RE, "").replace(/\s+/g, " ").trim();
@@ -92,6 +92,7 @@ function resolveColorToken(
   if (joined.includes("popover-foreground")) return "popover-foreground";
   if (joined.includes("primary-foreground")) return "primary-foreground";
   if (joined.includes("secondary-foreground")) return "secondary-foreground";
+  if (joined.includes("foreground-errors")) return "foreground-errors";
   if (joined.includes("destructive-foreground"))
     return "destructive-foreground";
   if (joined.includes("card-foreground")) return "card-foreground";
