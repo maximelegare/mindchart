@@ -12,12 +12,15 @@ import {
   BottomSheetHeader,
   BottomSheetView,
   useBottomSheet,
+  useBottomSheetContext,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icons/icon";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Check } from "@/lib/icons/Check";
+import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useRouter } from "expo-router";
@@ -130,25 +133,24 @@ type CategoryListItemProps = {
 };
 
 function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
-  const { colorScheme } = useColorScheme();
-
   return (
     <Pressable
-      className="py-4 px-2 w-full rounded-lg border border-solid"
-      style={{
-        borderColor: selected ? hsl("border", colorScheme) : "transparent",
-      }}
+      className={cn("w-full rounded-lg px-2 py-4", selected && "bg-border")}
       onPress={onPress}
     >
-      <View className="flex gap-2 items-center flex-row justify-between">
-        <View
-          className="w-4 h-4 rounded-full pr-4 pt-1"
-          style={{ backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey] }}
-        />
-        <View className="flex-1">
-          <Typography>{item.name}</Typography>
+      <View className="flex-row items-center justify-between gap-2">
+        <View className="min-w-0 flex-1 flex-row items-center gap-2">
+          <View
+            className="h-4 w-4 rounded-full"
+            style={{
+              backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey],
+            }}
+          />
+          <Typography variant="p" className="text-foreground">
+            {item.name}
+          </Typography>
         </View>
-        <View>{selected && <Check className="text-accent-foreground" />}</View>
+        {selected ? <Check className="text-accent-foreground" /> : null}
       </View>
     </Pressable>
   );
@@ -156,6 +158,23 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
 
 /** Height of the floating Clear / Titles toolbar overlay. */
 const EDITOR_TOOLBAR_HEIGHT = 44;
+
+/** Presents the category sheet from inside the BottomSheet provider. */
+function CategorySheetPresenter({ index }: { index: number | null }) {
+  const { sheetRef } = useBottomSheetContext();
+
+  React.useEffect(() => {
+    if (index == null) return;
+    Keyboard.dismiss();
+    const timer = setTimeout(() => {
+      Keyboard.dismiss();
+      sheetRef.current?.present();
+    }, 40);
+    return () => clearTimeout(timer);
+  }, [index, sheetRef]);
+
+  return null;
+}
 
 type ThoughtsEditorProps = {
   noteId: string;
@@ -222,11 +241,7 @@ function ThoughtsEditorInner(
     })
   );
   const categoryColorsCssRef = React.useRef(buildCategoryColorCss());
-  const {
-    ref: categorySheetRef,
-    open: openCategorySheet,
-    close: closeCategorySheet,
-  } = useBottomSheet();
+  const { ref: categorySheetRef, close: closeCategorySheet } = useBottomSheet();
 
   const thoughts = watch("thoughts");
   const selectedCategoryId =
@@ -472,10 +487,11 @@ function ThoughtsEditorInner(
       if (readOnly || message.type !== "SELECT_CATEGORY") return;
       const index = Number(message.data);
       if (!Number.isFinite(index) || index < 0) return;
+      richRef.current?.dismissKeyboard();
+      Keyboard.dismiss();
       setCategoryPickerIndex(index);
-      openCategorySheet();
     },
-    [openCategorySheet, push, readOnly]
+    [push, readOnly]
   );
 
   const handleSelectCategory = React.useCallback(
@@ -578,6 +594,7 @@ function ThoughtsEditorInner(
 
   return (
     <BottomSheet className="flex-1 min-h-0">
+      <CategorySheetPresenter index={categoryPickerIndex} />
       <View className="flex-col flex-1 min-h-0">
         {!readOnly && !plain ? (
           <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
@@ -744,8 +761,9 @@ function ThoughtsEditorInner(
                     pointer-events: none;
                   }
                   .thought-category {
-                    height: 14px;
-                    margin: 0 0 2px;
+                    min-height: 18px;
+                    margin: 0 0 4px;
+                    padding: 2px 0;
                     overflow: hidden;
                     font-family: 'QuicksandRegular', sans-serif;
                     font-size: 12px;
@@ -758,7 +776,9 @@ function ThoughtsEditorInner(
                     transition:
                       opacity 0.28s ease,
                       height 0.38s ease,
-                      margin 0.38s ease;
+                      margin 0.38s ease,
+                      min-height 0.38s ease,
+                      padding 0.38s ease;
                   }
                   .thought-category-name {
                     display: block;
@@ -772,7 +792,9 @@ function ThoughtsEditorInner(
                   li.thought-item.is-collapsed .thought-category {
                     opacity: 0;
                     height: 0;
+                    min-height: 0;
                     margin: 0;
+                    padding: 0;
                     pointer-events: none;
                   }
                   li.thought-item.is-collapsed .thought-stripe {
@@ -783,13 +805,19 @@ function ThoughtsEditorInner(
                     margin-left: -3px;
                     border-radius: 999px;
                   }
-                  @keyframes thought-dot-bounce {
-                    0%, 100% { transform: scale(1); }
-                    35% { transform: scale(1.45); }
-                    60% { transform: scale(0.88); }
+                  @keyframes thought-dot-pulse {
+                    0%,
+                    100% {
+                      transform: scale(1);
+                      opacity: 1;
+                    }
+                    50% {
+                      transform: scale(1.22);
+                      opacity: 0.4;
+                    }
                   }
                   .thought-stripe.is-bouncing {
-                    animation: thought-dot-bounce 0.32s ease 2;
+                    animation: thought-dot-pulse 0.56s ease-in-out 3;
                   }
                   .thought-title,
                   .thought-summary {
@@ -857,17 +885,26 @@ function ThoughtsEditorInner(
         <BottomSheetContent
           ref={categorySheetRef}
           style={{ zIndex: 100 }}
+          snapPoints={["100%"]}
+          enableDynamicSizing={false}
           enablePanDownToClose
           enableContentPanningGesture={false}
+          keyboardBehavior="extend"
+          keyboardBlurBehavior="restore"
+          android_keyboardInputMode="adjustResize"
           onDismiss={() => setCategoryPickerIndex(null)}
         >
-          <BottomSheetView className="gap-5 pt-6 bg-background">
+          <BottomSheetView className="gap-5 pt-6 bg-background flex-1">
             <BottomSheetHeader className="bg-background">
-              <Typography className="text-foreground text-xl font-bold pb-1">
-                Categories
-              </Typography>
+              <View className="flex-row items-center gap-2">
+                <Icon name="shapes" color="foreground" size={18} />
+                <Typography variant="h3">Categories</Typography>
+              </View>
             </BottomSheetHeader>
-            <ScrollView style={{ maxHeight: 300 }}>
+            <ScrollView
+              className="flex-1"
+              contentContainerStyle={{ paddingBottom: 120 }}
+            >
               <View className="flex flex-col w-full flex-wrap gap-2">
                 {categories.map((category) => (
                   <CategoryListItem
