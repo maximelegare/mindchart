@@ -818,6 +818,8 @@ const FolderBranch = React.memo(function FolderBranch({
                   height: CHEVRON_SLOT,
                   alignItems: "center",
                   justifyContent: "center",
+                  // Above FolderActionsMenu — its hitSlop steals chevron taps in folder mode.
+                  zIndex: 2,
                 }}
               >
                 <Icon
@@ -870,6 +872,7 @@ const FolderBranch = React.memo(function FolderBranch({
                     target={{ kind: "folder", folder }}
                     onNavigate={() => ctx.onNavigate(node.id)}
                     className="flex-1 min-w-0"
+                    hitSlop={0}
                   >
                     <View
                       style={{
@@ -1191,6 +1194,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
                     target={{ kind: "folder", folder: layerFolder }}
                     onNavigate={() => navigateToNode(layerRoot.id)}
                     className="flex-1 min-w-0"
+                    hitSlop={0}
                   >
                     <View
                       style={{

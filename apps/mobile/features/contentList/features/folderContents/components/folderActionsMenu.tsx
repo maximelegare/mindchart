@@ -30,6 +30,8 @@ type FolderActionsMenuProps = {
   onNavigate?: () => void;
   children: React.ReactNode;
   className?: string;
+  /** Extra press area; avoid when a sibling control (e.g. collapse chevron) sits beside this. */
+  hitSlop?: number;
 };
 
 export const FolderActionsMenu = ({
@@ -37,6 +39,7 @@ export const FolderActionsMenu = ({
   onNavigate,
   children,
   className,
+  hitSlop = 8,
 }: FolderActionsMenuProps) => {
   const actionsSheet = useBottomSheet();
   const moveSheet = useBottomSheet();
@@ -119,7 +122,7 @@ export const FolderActionsMenu = ({
         onLongPress={() => actionsSheet.open()}
         delayLongPress={400}
         className={cn("shrink-0", className)}
-        hitSlop={8}
+        hitSlop={hitSlop}
       >
         {children}
       </Pressable>
