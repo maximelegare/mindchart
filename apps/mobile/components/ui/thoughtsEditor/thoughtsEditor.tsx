@@ -785,6 +785,8 @@ function ThoughtsEditorInner(
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    text-decoration: underline;
+                    text-underline-offset: 2px;
                   }
                   .thought-fields {
                     min-width: 0;
