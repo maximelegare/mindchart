@@ -1,9 +1,11 @@
 import {
   getNoteByIdWithAssociatedThoughtsQuery,
   getNotesWithAssociatedThoughtsQuery,
+  getPaginatedNotesWithThoughtsAndCountQuery,
   getOPDatabase,
   getPersonsByNoteIdQuery,
   getPersonsByNoteIdsQuery,
+  type NoteListQueryParams,
 } from "@repo/sqlite";
 
 async function attachPersonsToNoteRows<T extends { note_id?: string | null }>(
@@ -38,6 +40,25 @@ export const fetchNotesAndThoughts = async () => {
   const db = getOPDatabase();
   const rows = await getNotesWithAssociatedThoughtsQuery(db);
   return attachPersonsToNoteRows(rows);
+};
+
+export type PaginatedNotesAndThoughtsRequest = NoteListQueryParams;
+
+export type PaginatedNotesAndThoughtsResponse = {
+  rows: Awaited<ReturnType<typeof attachPersonsToNoteRows>>;
+  totalCount: number;
+};
+
+export const fetchPaginatedNotesAndThoughts = async (
+  params: PaginatedNotesAndThoughtsRequest
+): Promise<PaginatedNotesAndThoughtsResponse> => {
+  const db = getOPDatabase();
+  const { rows, totalCount } = await getPaginatedNotesWithThoughtsAndCountQuery(
+    db,
+    params
+  );
+  const withPersons = await attachPersonsToNoteRows(rows);
+  return { rows: withPersons ?? [], totalCount };
 };
 
 export const fetchNoteDetails = async (id: string) => {

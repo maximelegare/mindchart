@@ -2,11 +2,19 @@ import { getPendingEmbeddingsQuery } from "./src/queries/embeddings/getPendingEm
 import { insertPendingEmbeddingsQuery } from "./src/queries/embeddings/insertPendingEmbeddings";
 import { updatePendingEmbeddingsQuery } from "./src/queries/embeddings/updatePendingEmbeddings";
 import { getAllNotesQuery } from "./src/queries/notes/getAllNotes";
+import { getPaginatedNotesWithCountQuery } from "./src/queries/notes/getPaginatedNotes";
+import {
+  countNotesQuery,
+  type NoteListFilters,
+  type NoteListQueryParams,
+  type NoteListSortBy,
+} from "./src/queries/notes/noteListQuery";
 import { insertNoteQuery } from "./src/queries/notes/insertNote";
 import { getAllThoughtsQuery } from "./src/queries/thoughts/getAllThoughts";
 import { getAllThoughtsGroupByCategoryQuery } from "./src/queries/thoughts/getAllThoughtsGroupByCategory";
 import { insertThoughtsQuery } from "./src/queries/thoughts/insertThoughts";
 import { getNotesWithAssociatedThoughtsQuery } from "./src/queries/thoughtsAndNotes/getNotesWithAssociatedThoughts";
+import { getPaginatedNotesWithThoughtsAndCountQuery } from "./src/queries/thoughtsAndNotes/getPaginatedNotesWithAssociatedThoughts";
 import { getAllThoughtsWithEmbeddingsQuery } from "./src/queries/thoughts/getAllThoughtsWithEmbeddings";
 import { emptyDB } from "./src/utils/emtpyDB";
 import { getOPDatabase } from "./src/utils/initialize/getOPDatabase";
@@ -99,11 +107,17 @@ export {
   insertPendingEmbeddingsQuery,
   updatePendingEmbeddingsQuery,
   getAllNotesQuery,
+  getPaginatedNotesWithCountQuery,
+  countNotesQuery,
+  type NoteListFilters,
+  type NoteListQueryParams,
+  type NoteListSortBy,
   insertNoteQuery,
   getAllThoughtsQuery,
   getAllThoughtsGroupByCategoryQuery,
   insertThoughtsQuery,
   getNotesWithAssociatedThoughtsQuery,
+  getPaginatedNotesWithThoughtsAndCountQuery,
   emptyDB,
   getOPDatabase,
   removeDatabaseFile,

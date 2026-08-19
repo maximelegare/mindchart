@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 import { OptionsBar } from "../../../types";
+import { DEFAULT_PAGE_SIZE } from "../../../features/pagination/constants";
+import type { PageSize } from "../../../features/pagination/types";
 
 export const OPTIONS_BAR_DEFAULTS = {
   sortBy: "newest",
@@ -14,7 +16,11 @@ export const OPTIONS_BAR_DEFAULTS = {
   filterPersonIds: [] as string[],
   filterFeelings: [] as FeelingValue[],
   filterLocationIds: [] as string[],
+  pageSize: DEFAULT_PAGE_SIZE,
+  page: 1,
 } as const satisfies OptionsBar;
+
+const resetPage = { page: 1 } as const;
 
 export type OptionsBarStore = OptionsBar & {
   handleSortByChange: (sortBy: OptionsBar["sortBy"]) => void;
@@ -30,46 +36,54 @@ export type OptionsBarStore = OptionsBar & {
   setFilterFeelings: (feelings: FeelingValue[]) => void;
   setFilterLocationIds: (locationIds: string[]) => void;
   clearAttributeFilters: () => void;
+  setPageSize: (pageSize: PageSize) => void;
+  setPage: (page: number) => void;
 };
 
 export const useOptionsBar = create<OptionsBarStore>((set) => ({
   ...OPTIONS_BAR_DEFAULTS,
-  handleSortByChange: (sortBy) => set({ sortBy }),
+  handleSortByChange: (sortBy) => set({ sortBy, ...resetPage }),
   handleGroupByChange: (groupBy) =>
     set((state) => ({
       groupBy,
       displayMode: groupBy !== "none" ? "notes" : state.displayMode,
-      // Keep only the filter that matches the active chip row.
       selectedFolderId:
         groupBy === "categories" ? null : state.selectedFolderId,
       selectedCategoryId:
         groupBy === "categories" ? state.selectedCategoryId : null,
+      ...resetPage,
     })),
-  handleDisplayModeChange: (displayMode) => set({ displayMode }),
+  handleDisplayModeChange: (displayMode) => set({ displayMode, ...resetPage }),
   handleFoldersModeChange: (foldersMode) =>
     set((state) => ({
       foldersMode,
-      // Leave folder navigation when switching back to filter chips.
       currentFolderId: foldersMode === "without" ? null : state.currentFolderId,
       folderTreeSidebarOpen:
         foldersMode === "without" ? false : state.folderTreeSidebarOpen,
+      ...resetPage,
     })),
-  handleSelectedFolderChange: (selectedFolderId) => set({ selectedFolderId }),
+  handleSelectedFolderChange: (selectedFolderId) =>
+    set({ selectedFolderId, ...resetPage }),
   handleSelectedCategoryChange: (selectedCategoryId) =>
-    set({ selectedCategoryId }),
+    set({ selectedCategoryId, ...resetPage }),
   handleCurrentFolderChange: (currentFolderId) => set({ currentFolderId }),
   setFolderTreeSidebarOpen: (folderTreeSidebarOpen) =>
     set({ folderTreeSidebarOpen }),
   toggleFolderTreeSidebar: () =>
     set((state) => ({ folderTreeSidebarOpen: !state.folderTreeSidebarOpen })),
-  setFilterPersonIds: (filterPersonIds) => set({ filterPersonIds }),
-  setFilterFeelings: (filterFeelings) => set({ filterFeelings }),
-  setFilterLocationIds: (filterLocationIds) => set({ filterLocationIds }),
+  setFilterPersonIds: (filterPersonIds) =>
+    set({ filterPersonIds, ...resetPage }),
+  setFilterFeelings: (filterFeelings) => set({ filterFeelings, ...resetPage }),
+  setFilterLocationIds: (filterLocationIds) =>
+    set({ filterLocationIds, ...resetPage }),
   clearAttributeFilters: () =>
     set({
       filterPersonIds: [],
       filterFeelings: [],
       filterLocationIds: [],
       selectedFolderId: null,
+      ...resetPage,
     }),
+  setPageSize: (pageSize) => set({ pageSize, ...resetPage }),
+  setPage: (page) => set({ page }),
 }));

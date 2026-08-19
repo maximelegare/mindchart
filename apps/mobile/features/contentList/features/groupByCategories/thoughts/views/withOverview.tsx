@@ -2,12 +2,18 @@ import { View } from "react-native";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 import { useState } from "react";
+import { PaginationControls } from "@/features/contentList/features/pagination/components/paginationControls";
 import { CategorySection } from "../components/categorySection";
 import { ExpandableThoughtWithOverview } from "../components/expandableThoughtWithOverview";
-import { useGroupByCategoriesThoughtsData } from "../hooks/useGroupByCategoriesThoughtsData";
+import {
+  useGroupByCategoriesPagination,
+  useGroupByCategoriesThoughtsData,
+} from "../hooks/useGroupByCategoriesThoughtsData";
 
 export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
   const parsedData = useGroupByCategoriesThoughtsData();
+  const { page, pageCount, setPage, isFetching } =
+    useGroupByCategoriesPagination();
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
 
   const handleExpandableCardPress = (id: string) => {
@@ -30,9 +36,9 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
             <ExpandableThoughtWithOverview
               key={thought.id}
               id={thought.id}
-              noteId={thought.noteId}
+              noteId={thought.noteId ?? ""}
               title={thought.title}
-              date={thought.createdAt}
+              date={thought.createdAt ?? ""}
               expanded={expandedCardId === thought.id}
               onPress={handleExpandableCardPress}
             >
@@ -44,6 +50,12 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
           ))}
         </CategorySection>
       ))}
+      <PaginationControls
+        page={page}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        isFetching={isFetching}
+      />
     </View>
   );
 };

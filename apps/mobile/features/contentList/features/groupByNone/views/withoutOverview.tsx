@@ -1,44 +1,31 @@
 import { View } from "react-native";
-import { useMemo } from "react";
 import { NoteWithoutOverview } from "@/features/contentList/components/cards/noteWithoutOverview";
-import { useSelectedFolderId } from "@/features/contentList/hooks/useContentListFilter";
-import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
-import { sortContentList } from "@/features/contentList/utils/sortContentList";
-import { useControllers } from "@/api/controllers/useControllers";
-import { NoteSchema } from "@repo/zod-schemas";
-import z from "zod";
+import { PaginationControls } from "@/features/contentList/features/pagination/components/paginationControls";
+import { usePaginatedNotesPlain } from "@/features/contentList/features/pagination/hooks/usePaginatedNotes";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 
 export const NotesListWithoutOverviewFeature = () => {
-  const sortBy = useContentListSort();
-  const selectedFolderId = useSelectedFolderId();
-  const { useFetchAllNotesQuery } = useControllers().notesAndThoughts;
-  const { data } = useFetchAllNotesQuery();
+  const { items, page, pageCount, setPage, isFetching, refetch } =
+    usePaginatedNotesPlain();
 
-  const parsedData = useMemo(() => {
-    if (!data || !Array.isArray(data)) return null;
-    const normalized = data.map((row) => ({
-      ...row,
-      folderId: row.folder_id ?? undefined,
-      folderLabel: row.folder_label ?? undefined,
-    }));
-    const result = z.array(NoteSchema).safeParse(normalized);
-    if (!result.success) return null;
-
-    const filtered = selectedFolderId
-      ? result.data.filter((note) => note.folderId === selectedFolderId)
-      : result.data;
-
-    return sortContentList(filtered, sortBy, {
-      getName: (note) => note.title,
-      getDate: (note) => note.createdAt,
-    });
-  }, [data, selectedFolderId, sortBy]);
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   return (
     <View className="gap-2" style={{ paddingTop: 20 }}>
-      {parsedData?.map((n) => (
+      {items.map((n) => (
         <NoteWithoutOverview key={n.id} {...n} />
       ))}
+      <PaginationControls
+        page={page}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        isFetching={isFetching}
+      />
     </View>
   );
 };

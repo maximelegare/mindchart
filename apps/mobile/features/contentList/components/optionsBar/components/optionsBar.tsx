@@ -36,6 +36,7 @@ import { Gutter } from "@/components/ui/gutter";
 import { BreadcrumbLinkToggle } from "@/features/navigation/breadcrumbLinkToggle";
 import { NotesFilterSheet } from "@/features/contentList/features/notesFilters/components/notesFilterSheet";
 import { hasActiveAttributeFilters } from "@/features/contentList/utils/filterNotesByAttributes";
+import { PageSizeChip } from "@/features/contentList/features/pagination/components/pageSizeChip";
 
 type OptionItem<T extends string> = {
   value: T;
@@ -307,7 +308,8 @@ export const OptionsBar = () => {
   const hasNonDefaultWithoutFolderOptions =
     localFoldersMode === "without" &&
     (groupBy !== OPTIONS_BAR_DEFAULTS.groupBy ||
-      displayMode !== OPTIONS_BAR_DEFAULTS.displayMode);
+      displayMode !== OPTIONS_BAR_DEFAULTS.displayMode ||
+      useOptionsBar.getState().pageSize !== OPTIONS_BAR_DEFAULTS.pageSize);
 
   const hasNonDefaultOptions =
     sortBy !== OPTIONS_BAR_DEFAULTS.sortBy ||
@@ -364,6 +366,9 @@ export const OptionsBar = () => {
               />
               <NotesFilterSheet />
               {localFoldersMode === "with" ? <BreadcrumbLinkToggle /> : null}
+              {displayMode === "notes" && localFoldersMode === "without" ? (
+                <PageSizeChip />
+              ) : null}
             </View>
           </Gutter>
         </CollapsibleContainer>

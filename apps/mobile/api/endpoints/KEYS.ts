@@ -48,6 +48,8 @@ export const REACT_QUERY_KEYS = {
   fetchMigratingStatus: "fetch_migrating_status",
   updateMigratingStatus: "update_migrating_status",
   fetchNoteDetails: "fetch_note_details",
+  fetchPaginatedNotes: "fetch_paginated_notes",
+  fetchPaginatedNotesAndThoughts: "fetch_paginated_notes_and_thoughts",
   fetchAllFolders: "fetch_all_folders",
   fetchAllFoldersWithNotesInfos: "fetch_all_folders_with_notes_infos",
   fetchFolderById: "fetch_folder_by_id",

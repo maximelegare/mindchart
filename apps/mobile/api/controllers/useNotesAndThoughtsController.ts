@@ -17,7 +17,10 @@ import {
 import {
   fetchNoteDetails,
   fetchNotesAndThoughts,
+  fetchPaginatedNotesAndThoughts,
+  type PaginatedNotesAndThoughtsRequest,
 } from "@/api/endpoints/thoughtsAndNotes";
+import { fetchPaginatedNotes } from "@/api/endpoints/paginatedNotes";
 import {
   deleteThoughtsByIds,
   fetchAllThoughtsWithEmbeddings,
@@ -151,6 +154,30 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchNotesAndThoughts>>>({
       queryKey: [REACT_QUERY_KEYS.fetchNotesAndThoughts],
       queryFn: fetchNotesAndThoughts,
+      refetchOnMount: "always",
+      structuralSharing: false,
+      ...options,
+    });
+
+  const useFetchPaginatedNotesQuery = (
+    params: PaginatedNotesAndThoughtsRequest,
+    options?: ReactQueryOptions
+  ) =>
+    useQuery<Awaited<ReturnType<typeof fetchPaginatedNotes>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchPaginatedNotes, params],
+      queryFn: () => fetchPaginatedNotes(params),
+      refetchOnMount: "always",
+      structuralSharing: false,
+      ...options,
+    });
+
+  const useFetchPaginatedNotesAndThoughtsQuery = (
+    params: PaginatedNotesAndThoughtsRequest,
+    options?: ReactQueryOptions
+  ) =>
+    useQuery<Awaited<ReturnType<typeof fetchPaginatedNotesAndThoughts>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchPaginatedNotesAndThoughts, params],
+      queryFn: () => fetchPaginatedNotesAndThoughts(params),
       refetchOnMount: "always",
       structuralSharing: false,
       ...options,
@@ -290,6 +317,8 @@ export const useNotesAndThoughtsController = () => {
     useInsertNoteAndThoughtsMutation,
     useFetchAllThoughtsWithEmbeddingsQuery,
     useFetchNotesAndThoughtsQuery,
+    useFetchPaginatedNotesQuery,
+    useFetchPaginatedNotesAndThoughtsQuery,
     useFetchNoteDetails,
     useSeedDatabaseMutation,
     useUpdateNoteAndThoughtsMutation,
