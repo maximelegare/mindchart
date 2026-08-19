@@ -1,8 +1,12 @@
 import React, { memo, useMemo } from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { GRAPH_CANVAS_SIZE } from "@/features/graph/constants";
+import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
+import { isNoteLeafId } from "@/features/graph/utils/mapNoteToLeaf";
+import { useGraphStore } from "@/features/graph/context/graphContext";
 import { RootLayerCards } from "./rootLayerCards";
 import { SelectedLayerCard } from "./selectedLayerCard";
 
@@ -18,10 +22,39 @@ function containsNode(node: NodeDatum, targetId: string): boolean {
   return (node.children ?? []).some((child) => containsNode(child, targetId));
 }
 
-/** Top-level child of the graph root that contains (or is) the active node. */
-function findLayerRoot(hierarchy: NodeDatum, activeNode: NodeDatum): NodeDatum {
+function findParentNode(root: NodeDatum, targetId: string): NodeDatum | null {
+  for (const child of root.children ?? []) {
+    if (child.id === targetId) return root;
+    const found = findParentNode(child, targetId);
+    if (found) return found;
+  }
+  return null;
+}
+
+const isFolderPack = (node: NodeDatum) =>
+  !isNoteLeafId(node.id) &&
+  !node.thoughtId &&
+  (!!node.folderId || node.id.startsWith("folder-"));
+
+/**
+ * Card root for the infos panel.
+ * - Category mode: top-level category that contains the selection (folders under it collapse).
+ * - Folder mode: the zoomed folder itself (or the note's parent folder), so nested
+ *   folders under it get the same expand/collapse chevrons as category mode.
+ */
+function findLayerRoot(
+  hierarchy: NodeDatum,
+  activeNode: NodeDatum,
+  mode: "folder" | "category"
+): NodeDatum {
   if (activeNode.id === hierarchy.id || activeNode.id === "root") {
     return activeNode;
+  }
+
+  if (mode === "folder") {
+    if (isFolderPack(activeNode)) return activeNode;
+    const parent = findParentNode(hierarchy, activeNode.id);
+    if (parent && isFolderPack(parent)) return parent;
   }
 
   for (const child of hierarchy.children ?? []) {
@@ -36,11 +69,20 @@ const GraphInfos = memo(function GraphInfos({
   activeNode,
   focusedThoughtId,
 }: Props) {
+  const graphMode = useGraphStore((state) => state.mode);
+
   const isRootLayer = useMemo(() => {
     if (!activeNode) return true;
     if (!hierarchy) return activeNode.id === "root";
     return activeNode.id === hierarchy.id || activeNode.id === "root";
   }, [activeNode, hierarchy]);
+
+  /** Flat chips only for the synthetic graph root — a filtered folder root uses the tree card. */
+  const showRootCards = useMemo(() => {
+    if (!isRootLayer) return false;
+    const root = hierarchy ?? activeNode;
+    return !!root && isSyntheticRoot(root);
+  }, [activeNode, hierarchy, isRootLayer]);
 
   const rootChildren = useMemo(() => {
     if (!hierarchy?.children?.length) {
@@ -51,10 +93,16 @@ const GraphInfos = memo(function GraphInfos({
   }, [activeNode, hierarchy]);
 
   const layerRoot = useMemo(() => {
-    if (!activeNode || isRootLayer) return null;
+    if (!activeNode) return null;
+    if (showRootCards) return null;
+    // Folder (or category) used as hierarchy root — show it as the tree card.
+    if (isRootLayer && hierarchy && !isSyntheticRoot(hierarchy)) {
+      return hierarchy;
+    }
+    if (isRootLayer) return null;
     if (!hierarchy) return activeNode;
-    return findLayerRoot(hierarchy, activeNode);
-  }, [activeNode, hierarchy, isRootLayer]);
+    return findLayerRoot(hierarchy, activeNode, graphMode);
+  }, [activeNode, graphMode, hierarchy, isRootLayer, showRootCards]);
 
   return (
     <View
@@ -64,8 +112,12 @@ const GraphInfos = memo(function GraphInfos({
         flex: 1,
       }}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {isRootLayer ? (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 8 }}
+      >
+        {showRootCards ? (
           rootChildren.length > 0 ? (
             <RootLayerCards nodes={rootChildren} />
           ) : (

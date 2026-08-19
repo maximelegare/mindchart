@@ -225,7 +225,15 @@ const computePackLayerCounts = (
 const computeSignature = (root: NodeDatum): string => {
   const parts: string[] = [];
   const walk = (n: NodeDatum) => {
-    parts.push(n.id, String(n.children?.length ?? 0));
+    // Include folder/category attach so moves bust layout cache even when the
+    // preorder of ids + child counts happens to collide.
+    parts.push(
+      n.id,
+      String(n.children?.length ?? 0),
+      n.folderId ?? "",
+      n.categoryId ?? "",
+      n.folderPath ?? ""
+    );
     n.children?.forEach(walk);
   };
   walk(root);

@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo } from "react";
-import { Alert, Pressable, View } from "react-native";
+import { Alert, View } from "react-native";
 import { canCreateChildFolder, canMoveFolderTo } from "@repo/sqlite";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
+import { LongPressable } from "@/components/ui/longPressable";
 import { cn } from "@/lib/cn";
 import {
   BottomSheet,
@@ -30,6 +31,8 @@ type FolderActionsMenuProps = {
   onNavigate?: () => void;
   children: React.ReactNode;
   className?: string;
+  /** Extra press area; avoid when a sibling control (e.g. collapse chevron) sits beside this. */
+  hitSlop?: number;
 };
 
 export const FolderActionsMenu = ({
@@ -37,6 +40,7 @@ export const FolderActionsMenu = ({
   onNavigate,
   children,
   className,
+  hitSlop = 8,
 }: FolderActionsMenuProps) => {
   const actionsSheet = useBottomSheet();
   const moveSheet = useBottomSheet();
@@ -67,6 +71,10 @@ export const FolderActionsMenu = ({
 
   const closeActions = useCallback(() => {
     actionsSheet.close();
+  }, [actionsSheet]);
+
+  const openActions = useCallback(() => {
+    actionsSheet.open();
   }, [actionsSheet]);
 
   const openMoveSheet = useCallback(() => {
@@ -114,15 +122,14 @@ export const FolderActionsMenu = ({
 
   return (
     <>
-      <Pressable
+      <LongPressable
         onPress={() => onNavigate?.()}
-        onLongPress={() => actionsSheet.open()}
-        delayLongPress={400}
+        onLongPress={openActions}
         className={cn("shrink-0", className)}
-        hitSlop={8}
+        style={hitSlop ? { margin: -hitSlop, padding: hitSlop } : undefined}
       >
         {children}
-      </Pressable>
+      </LongPressable>
 
       <BottomSheet>
         <BottomSheetContent

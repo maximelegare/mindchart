@@ -18,6 +18,8 @@ import { hsl } from "@/utils/hsl";
 import capitalize from "@/utils/stringManipulations/capitalize";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
+import { FileActionsMenu } from "@/features/contentList/components/folderTree/fileActionsMenu";
+import type { FolderTreeFile } from "@/features/contentList/components/folderTree/folderTreeUtils";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";
@@ -33,6 +35,9 @@ const ICON_SLOT = 14;
 const CHEVRON_SLOT = 22;
 const BULLET_SIZE = 6;
 const ROW_GAP = 6;
+/** First-line box height — bullet + trailing actions align to this, not the full row. */
+const TITLE_LINE_HEIGHT = 20;
+const BODY_LINE_HEIGHT = 22;
 /** Horizontal inset shared by the layer header and its child tree rail. */
 const HEADER_INSET = 6;
 /** Short horizontal run from the rail into the row — keep tight to free content width. */
@@ -57,6 +62,33 @@ const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
   const title = capitalize(value || "");
   if (title.length <= maxLength) return title;
   return `${title.slice(0, maxLength)}…`;
+};
+
+/** Real title only — ignore empty / "Untitled" fallbacks from graph mappers. */
+const resolveDisplayTitle = (node: NodeDatum): string | null => {
+  const raw = (node.title ?? "").trim();
+  if (!raw || raw.toLowerCase() === "untitled") return null;
+  return raw;
+};
+
+const resolveDisplaySummary = (node: NodeDatum): string | null => {
+  const summary = (node.summary ?? "").trim();
+  return summary.length > 0 ? summary : null;
+};
+
+/** Map a graph leaf to the file-actions sheet payload. */
+const noteFileFromNode = (node: NodeDatum): FolderTreeFile | null => {
+  if (!node.noteId) return null;
+  const title =
+    resolveDisplayTitle(node) ??
+    resolveDisplaySummary(node) ??
+    (node.name || "").trim();
+  return {
+    id: node.noteId,
+    title: title || "Untitled",
+    folderId:
+      node.folderId && node.folderId !== "unfiled" ? node.folderId : null,
+  };
 };
 
 const isThoughtLeaf = (node: NodeDatum) => !!node.thoughtId;
@@ -97,6 +129,82 @@ const IconColumn = ({ children }: { children: React.ReactNode }) => (
     style={{ width: ICON_SLOT }}
   >
     {children}
+  </View>
+);
+
+/** Bullet centered on the first text line (not the taller open-note button). */
+const ThoughtBullet = ({
+  color,
+  lineHeight,
+}: {
+  color: string;
+  lineHeight: number;
+}) => (
+  <View
+    className="items-center justify-center shrink-0"
+    style={{ width: ICON_SLOT, height: lineHeight }}
+  >
+    <View
+      className="rounded-full"
+      style={{
+        width: BULLET_SIZE,
+        height: BULLET_SIZE,
+        backgroundColor: color,
+      }}
+    />
+  </View>
+);
+
+/**
+ * Open-note (+ pin) chrome — same first-line box as the bullet so the glyph
+ * lines up with title *or* body text (a fixed h-8 button only matched titles).
+ */
+const ThoughtRowActions = ({
+  lineHeight,
+  emphasized,
+  noteId,
+  onOpenNote,
+}: {
+  lineHeight: number;
+  emphasized: boolean;
+  noteId?: string;
+  onOpenNote: (noteId?: string) => void;
+}) => (
+  <View
+    style={{
+      height: lineHeight,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      alignSelf: "flex-start",
+    }}
+  >
+    {emphasized ? (
+      <View style={{ opacity: 0.45 }}>
+        <Icon name="map-pin-simple" color="muted-foreground" size={12} />
+      </View>
+    ) : null}
+    {noteId ? (
+      <Pressable
+        onPress={() => onOpenNote(noteId)}
+        hitSlop={10}
+        accessibilityRole="button"
+        accessibilityLabel="Open note"
+        style={{
+          height: lineHeight,
+          width: lineHeight + 4,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Icon
+          size={16}
+          color="text"
+          name="notebook-text"
+          style={{ opacity: 0.8 }}
+        />
+      </Pressable>
+    ) : null}
   </View>
 );
 
@@ -195,9 +303,17 @@ function estimateBranchHeight(
   if (isNoteLeaf(node)) return EST_NOTE_LEAF;
 
   if (isThoughtLeaf(node)) {
-    const hasSummary = !!node.summary?.trim();
-    let height = hasSummary ? EST_THOUGHT_TITLE_COMPACT : EST_THOUGHT_TITLE;
-    if (hasSummary) height += estimateSummaryHeight(node.summary!);
+    const hasTitle = !!resolveDisplayTitle(node);
+    const summary = resolveDisplaySummary(node);
+    if (!hasTitle && summary) {
+      return (
+        estimateSummaryHeight(summary) +
+        EST_THOUGHT_TITLE_COMPACT +
+        THOUGHT_BLOCK_GAP
+      );
+    }
+    let height = summary ? EST_THOUGHT_TITLE_COMPACT : EST_THOUGHT_TITLE;
+    if (summary) height += estimateSummaryHeight(summary);
     return height + THOUGHT_BLOCK_GAP;
   }
 
@@ -244,6 +360,30 @@ type NoteTitleRowProps = {
   onOpenNote: (noteId?: string) => void;
 };
 
+/** Long-press → note options sheet (same as folder tree files). */
+function NoteActionsWrap({
+  node,
+  onOpenNote,
+  children,
+}: {
+  node: NodeDatum;
+  onOpenNote: (noteId?: string) => void;
+  children: React.ReactNode;
+}) {
+  const file = noteFileFromNode(node);
+  if (!file) return <>{children}</>;
+  return (
+    <FileActionsMenu
+      file={file}
+      onNavigate={() => onOpenNote(node.noteId)}
+      className="flex-1 min-w-0"
+      hitSlop={0}
+    >
+      {children}
+    </FileActionsMenu>
+  );
+}
+
 /** Hoisted function — Hermes TDZ breaks const components used above their binding. */
 function NoteTitleRow({
   node,
@@ -253,13 +393,16 @@ function NoteTitleRow({
   onOpenNote,
 }: NoteTitleRowProps) {
   const emphasized = isCurrent || isFocused;
+  const title = resolveDisplayTitle(node);
+  const summary = resolveDisplaySummary(node);
+  const label = title ?? summary ?? "";
+  const lineHeight = title ? TITLE_LINE_HEIGHT : BODY_LINE_HEIGHT;
 
-  return (
-    <Pressable
-      onPress={() => onOpenNote(node.noteId)}
+  const row = (
+    <View
       style={{
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: ROW_GAP,
         paddingTop: 4,
         paddingBottom: 4,
@@ -270,28 +413,49 @@ function NoteTitleRow({
         backgroundColor: emphasized ? highlightColor : "transparent",
       }}
       accessibilityRole="button"
-      accessibilityLabel={`Open note ${node.title || node.name || ""}`}
+      accessibilityLabel={`Open note ${label}`}
     >
-      <IconColumn>
-        <Icon name="notebook-text" color="muted-foreground" size={ICON_SLOT} />
-      </IconColumn>
-      <Typography
-        variant="h5"
-        className={cn(
-          "flex-1 pb-0 leading-tight",
-          emphasized && "font-semibold"
-        )}
-        style={{ includeFontPadding: false }}
-        numberOfLines={2}
+      <View
+        className="items-center justify-center shrink-0"
+        style={{ width: ICON_SLOT, height: lineHeight }}
       >
-        {formatTitle(node.title || node.name || "")}
-      </Typography>
+        <Icon name="notebook-text" color="muted-foreground" size={ICON_SLOT} />
+      </View>
+      {label ? (
+        <Typography
+          variant={title ? "h5" : "p"}
+          className={cn(
+            "flex-1 pb-0",
+            title ? "leading-tight" : "leading-snug",
+            emphasized && "font-semibold"
+          )}
+          style={{
+            includeFontPadding: false,
+            lineHeight,
+          }}
+          numberOfLines={title ? 2 : 3}
+        >
+          {title ? formatTitle(title) : label}
+        </Typography>
+      ) : null}
       {emphasized ? (
-        <View style={{ opacity: 0.45 }}>
+        <View
+          style={{
+            height: lineHeight,
+            justifyContent: "center",
+            opacity: 0.45,
+          }}
+        >
           <Icon name="map-pin-simple" color="muted-foreground" size={12} />
         </View>
       ) : null}
-    </Pressable>
+    </View>
+  );
+
+  return (
+    <NoteActionsWrap node={node} onOpenNote={onOpenNote}>
+      {row}
+    </NoteActionsWrap>
   );
 }
 
@@ -303,6 +467,8 @@ type ThoughtTitleRowProps = {
   onOpenNote: (noteId?: string) => void;
   /** When true, drop bottom padding so the summary sits tight under the title. */
   compactBottom?: boolean;
+  /** Parent already wraps with NoteActionsWrap — avoid nested menus. */
+  skipNoteActions?: boolean;
 };
 
 function ThoughtTitleRow({
@@ -312,16 +478,18 @@ function ThoughtTitleRow({
   highlightColor,
   onOpenNote,
   compactBottom = false,
+  skipNoteActions = false,
 }: ThoughtTitleRowProps) {
   const { colorScheme } = useColorScheme();
   const bulletColor = hsl("muted-foreground", colorScheme);
   const emphasized = isCurrent || isFocused;
+  const title = resolveDisplayTitle(node);
 
-  return (
+  const row = (
     <View
       style={{
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-start",
         gap: ROW_GAP,
         paddingTop: 4,
         paddingBottom: compactBottom ? 0 : 4,
@@ -332,48 +500,100 @@ function ThoughtTitleRow({
         backgroundColor: emphasized ? highlightColor : "transparent",
       }}
     >
-      <IconColumn>
-        <View
-          className="rounded-full"
+      <ThoughtBullet color={bulletColor} lineHeight={TITLE_LINE_HEIGHT} />
+      {title ? (
+        <Typography
+          variant="h5"
+          className={cn(
+            "flex-1 pb-0 leading-tight",
+            emphasized && "font-semibold"
+          )}
           style={{
-            width: BULLET_SIZE,
-            height: BULLET_SIZE,
-            backgroundColor: bulletColor,
+            includeFontPadding: false,
+            lineHeight: TITLE_LINE_HEIGHT,
           }}
-        />
-      </IconColumn>
-      <Typography
-        variant="h5"
-        className={cn(
-          "flex-1 pb-0 leading-tight",
-          emphasized && "font-semibold"
-        )}
-        style={{ includeFontPadding: false }}
-        numberOfLines={2}
-      >
-        {formatTitle(node.title || node.name || "")}
-      </Typography>
-      {emphasized ? (
-        <View style={{ opacity: 0.45 }}>
-          <Icon name="map-pin-simple" color="muted-foreground" size={12} />
-        </View>
-      ) : null}
-      {node.noteId ? (
-        <Button
-          className="h-8 w-8 p-0"
-          variant="ghost"
-          size="icon"
-          onPress={() => onOpenNote(node.noteId)}
+          numberOfLines={2}
         >
-          <Icon
-            size={18}
-            color="text"
-            name="notebook-text"
-            style={{ opacity: 0.8 }}
-          />
-        </Button>
-      ) : null}
+          {formatTitle(title)}
+        </Typography>
+      ) : (
+        <View className="flex-1" style={{ height: TITLE_LINE_HEIGHT }} />
+      )}
+      <ThoughtRowActions
+        lineHeight={TITLE_LINE_HEIGHT}
+        emphasized={emphasized}
+        noteId={node.noteId}
+        onOpenNote={onOpenNote}
+      />
     </View>
+  );
+
+  if (skipNoteActions) return row;
+  return (
+    <NoteActionsWrap node={node} onOpenNote={onOpenNote}>
+      {row}
+    </NoteActionsWrap>
+  );
+}
+
+/** Title-less thought: content is the primary row (bullet + summary + open). */
+function ThoughtContentRow({
+  node,
+  summary,
+  isCurrent,
+  isFocused,
+  highlightColor,
+  onOpenNote,
+}: {
+  node: NodeDatum;
+  summary: string;
+  isCurrent: boolean;
+  isFocused: boolean;
+  highlightColor: string;
+  onOpenNote: (noteId?: string) => void;
+}) {
+  const { colorScheme } = useColorScheme();
+  const bulletColor = hsl("muted-foreground", colorScheme);
+  const emphasized = isCurrent || isFocused;
+
+  return (
+    <NoteActionsWrap node={node} onOpenNote={onOpenNote}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "flex-start",
+          gap: ROW_GAP,
+          paddingTop: 4,
+          paddingBottom: 4,
+          paddingRight: 4,
+          borderRadius: 8,
+          borderWidth: HAIRLINE,
+          borderColor: emphasized ? highlightColor : "transparent",
+          backgroundColor: emphasized ? highlightColor : "transparent",
+        }}
+      >
+        <ThoughtBullet color={bulletColor} lineHeight={BODY_LINE_HEIGHT} />
+        <Typography
+          variant="p"
+          className={cn(
+            "flex-1 pb-0 leading-snug",
+            emphasized && "font-semibold"
+          )}
+          style={{
+            includeFontPadding: false,
+            lineHeight: BODY_LINE_HEIGHT,
+          }}
+        >
+          {summary}
+        </Typography>
+        <ThoughtRowActions
+          lineHeight={BODY_LINE_HEIGHT}
+          emphasized={emphasized}
+          noteId={node.noteId}
+          onOpenNote={onOpenNote}
+        />
+      </View>
+    </NoteActionsWrap>
   );
 }
 
@@ -523,25 +743,61 @@ const TreeBranch = React.memo(function TreeBranch({
   if (isThoughtLeaf(node)) {
     const isCurrent = node.id === ctx.currentNodeId;
     const isFocused = ctx.focusedThoughtId === node.thoughtId;
-    const hasSummary = !!node.summary;
+    const title = resolveDisplayTitle(node);
+    const summary = resolveDisplaySummary(node);
 
+    // No title → content is the primary row (never show "Untitled").
+    if (!title) {
+      return (
+        <LeafBranch
+          isLast={isLast}
+          lineColor={ctx.lineColor}
+          guideWidth={guideWidth}
+          header={
+            summary ? (
+              <ThoughtContentRow
+                node={node}
+                summary={summary}
+                isCurrent={isCurrent}
+                isFocused={isFocused}
+                highlightColor={ctx.highlightColor}
+                onOpenNote={ctx.onOpenNote}
+              />
+            ) : (
+              <ThoughtTitleRow
+                node={node}
+                isCurrent={isCurrent}
+                isFocused={isFocused}
+                highlightColor={ctx.highlightColor}
+                onOpenNote={ctx.onOpenNote}
+              />
+            )
+          }
+        />
+      );
+    }
+
+    // Title + optional summary: one long-press target for the whole thought block.
     return (
       <LeafBranch
         isLast={isLast}
         lineColor={ctx.lineColor}
         guideWidth={guideWidth}
         header={
-          <ThoughtTitleRow
-            node={node}
-            isCurrent={isCurrent}
-            isFocused={isFocused}
-            highlightColor={ctx.highlightColor}
-            onOpenNote={ctx.onOpenNote}
-            compactBottom={hasSummary}
-          />
-        }
-        nested={
-          hasSummary ? <ThoughtSummary summary={node.summary!} /> : undefined
+          <NoteActionsWrap node={node} onOpenNote={ctx.onOpenNote}>
+            <View>
+              <ThoughtTitleRow
+                node={node}
+                isCurrent={isCurrent}
+                isFocused={isFocused}
+                highlightColor={ctx.highlightColor}
+                onOpenNote={ctx.onOpenNote}
+                compactBottom={!!summary}
+                skipNoteActions
+              />
+              {summary ? <ThoughtSummary summary={summary} /> : null}
+            </View>
+          </NoteActionsWrap>
         }
       />
     );
@@ -626,6 +882,8 @@ const FolderBranch = React.memo(function FolderBranch({
                   height: CHEVRON_SLOT,
                   alignItems: "center",
                   justifyContent: "center",
+                  // Above FolderActionsMenu — its hitSlop steals chevron taps in folder mode.
+                  zIndex: 2,
                 }}
               >
                 <Icon
@@ -678,6 +936,7 @@ const FolderBranch = React.memo(function FolderBranch({
                     target={{ kind: "folder", folder }}
                     onNavigate={() => ctx.onNavigate(node.id)}
                     className="flex-1 min-w-0"
+                    hitSlop={0}
                   >
                     <View
                       style={{
@@ -799,26 +1058,31 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
     () => new Set(activePathIds)
   );
   const layerIdRef = useRef(layerRoot.id);
+  const selectionKeyRef = useRef(`${currentNodeId}:${focusedThoughtId ?? ""}`);
 
-  // New layer resets expands; same layer keeps manual opens and merges the path.
+  // Auto-expand the path only when the layer or selection changes — not on every
+  // activePathIds rebuild (layerRoot churn), so the user can collapse a selected folder.
   useEffect(() => {
-    if (layerIdRef.current !== layerRoot.id) {
+    const selectionKey = `${currentNodeId}:${focusedThoughtId ?? ""}`;
+    const layerChanged = layerIdRef.current !== layerRoot.id;
+    const selectionChanged = selectionKeyRef.current !== selectionKey;
+
+    if (layerChanged) {
       layerIdRef.current = layerRoot.id;
+      selectionKeyRef.current = selectionKey;
       setExpandedIds(new Set(activePathIds));
       return;
     }
-    setExpandedIds((prev) => {
-      let changed = false;
-      const next = new Set(prev);
-      for (const id of activePathIds) {
-        if (!next.has(id)) {
-          next.add(id);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [activePathIds, layerRoot.id]);
+
+    if (selectionChanged) {
+      selectionKeyRef.current = selectionKey;
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of activePathIds) next.add(id);
+        return next;
+      });
+    }
+  }, [activePathIds, currentNodeId, focusedThoughtId, layerRoot.id]);
 
   const toggleExpanded = useCallback((nodeId: string) => {
     setExpandedIds((prev) => {
@@ -994,6 +1258,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
                     target={{ kind: "folder", folder: layerFolder }}
                     onNavigate={() => navigateToNode(layerRoot.id)}
                     className="flex-1 min-w-0"
+                    hitSlop={0}
                   >
                     <View
                       style={{
@@ -1074,7 +1339,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
                 onOpenNote={navigateToNote}
               />
             </View>
-          ) : layerRoot.summary || isThoughtLeaf(layerRoot) ? (
+          ) : resolveDisplaySummary(layerRoot) || isThoughtLeaf(layerRoot) ? (
             <View
               style={{
                 marginLeft: HEADER_INSET + HAIRLINE,
@@ -1082,20 +1347,44 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               }}
             >
               {isThoughtLeaf(layerRoot) ? (
-                <View>
-                  <ThoughtTitleRow
-                    node={layerRoot}
-                    isCurrent={false}
-                    isFocused={focusedThoughtId === layerRoot.thoughtId}
-                    highlightColor={highlightColor}
-                    onOpenNote={navigateToNote}
-                  />
-                  {layerRoot.summary ? (
-                    <ThoughtSummary summary={layerRoot.summary} />
-                  ) : null}
-                </View>
+                (() => {
+                  const title = resolveDisplayTitle(layerRoot);
+                  const summary = resolveDisplaySummary(layerRoot);
+                  if (!title && summary) {
+                    return (
+                      <ThoughtContentRow
+                        node={layerRoot}
+                        summary={summary}
+                        isCurrent={false}
+                        isFocused={focusedThoughtId === layerRoot.thoughtId}
+                        highlightColor={highlightColor}
+                        onOpenNote={navigateToNote}
+                      />
+                    );
+                  }
+                  return (
+                    <NoteActionsWrap
+                      node={layerRoot}
+                      onOpenNote={navigateToNote}
+                    >
+                      <View>
+                        <ThoughtTitleRow
+                          node={layerRoot}
+                          isCurrent={false}
+                          isFocused={focusedThoughtId === layerRoot.thoughtId}
+                          highlightColor={highlightColor}
+                          onOpenNote={navigateToNote}
+                          skipNoteActions
+                        />
+                        {summary ? <ThoughtSummary summary={summary} /> : null}
+                      </View>
+                    </NoteActionsWrap>
+                  );
+                })()
               ) : (
-                <Typography variant="p">{layerRoot.summary}</Typography>
+                <Typography variant="p">
+                  {resolveDisplaySummary(layerRoot)}
+                </Typography>
               )}
             </View>
           ) : (

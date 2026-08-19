@@ -18,7 +18,7 @@ import {
 } from "../endpoints/folders";
 import { updateSyncGraphData } from "../endpoints/graph";
 import { Folder } from "@repo/zod-schemas/src/schemas";
-import { invalidateFolderQueries } from "../utils/invalidateNotesAndThoughtsQueries";
+import { invalidateNotesAndThoughtsQueries } from "../utils/invalidateNotesAndThoughtsQueries";
 
 const markGraphDirty = async (
   queryClient: ReturnType<typeof useQueryClient>
@@ -92,7 +92,9 @@ export const useFoldersController = () => {
       mutationKey: [REACT_QUERY_KEYS.insertFolder],
       mutationFn: ({ data }) => insertFolder(data),
       onSuccess: async () => {
-        await invalidateFolderQueries(queryClient);
+        // Category graph joins thoughts → note.folder + folder paths; folder-only
+        // invalidation leaves stale thought folderPath/attach data in cache.
+        await invalidateNotesAndThoughtsQueries(queryClient);
         await markGraphDirty(queryClient);
       },
     });
@@ -108,7 +110,7 @@ export const useFoldersController = () => {
       mutationKey: [REACT_QUERY_KEYS.updateFolderLabel],
       mutationFn: (data) => updateFolderLabel(data),
       onSuccess: async () => {
-        await invalidateFolderQueries(queryClient);
+        await invalidateNotesAndThoughtsQueries(queryClient);
         await markGraphDirty(queryClient);
       },
     });
@@ -124,7 +126,7 @@ export const useFoldersController = () => {
       mutationKey: [REACT_QUERY_KEYS.deleteFolderByPath],
       mutationFn: ({ path }) => deleteFolderByPath(path),
       onSuccess: async () => {
-        await invalidateFolderQueries(queryClient);
+        await invalidateNotesAndThoughtsQueries(queryClient);
         await markGraphDirty(queryClient);
       },
     });
@@ -140,7 +142,7 @@ export const useFoldersController = () => {
       mutationKey: [REACT_QUERY_KEYS.moveFolder],
       mutationFn: (data) => moveFolder(data),
       onSuccess: async () => {
-        await invalidateFolderQueries(queryClient);
+        await invalidateNotesAndThoughtsQueries(queryClient);
         await markGraphDirty(queryClient);
       },
     });
