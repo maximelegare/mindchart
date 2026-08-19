@@ -94,12 +94,33 @@ const BottomSheetContent = React.forwardRef<
     const { colors } = useTheme();
     const { sheetRef } = useBottomSheetContext();
 
-    React.useImperativeHandle(ref, () => {
-      if (!sheetRef.current) {
-        return {} as BottomSheetModalMethods;
-      }
-      return sheetRef.current;
-    }, [sheetRef.current]);
+    React.useImperativeHandle(
+      ref,
+      () =>
+        ({
+          present: (...args: Parameters<BottomSheetModalMethods["present"]>) =>
+            sheetRef.current?.present(...args),
+          dismiss: (...args: Parameters<BottomSheetModalMethods["dismiss"]>) =>
+            sheetRef.current?.dismiss(...args),
+          snapToIndex: (
+            ...args: Parameters<BottomSheetModalMethods["snapToIndex"]>
+          ) => sheetRef.current?.snapToIndex(...args),
+          snapToPosition: (
+            ...args: Parameters<BottomSheetModalMethods["snapToPosition"]>
+          ) => sheetRef.current?.snapToPosition(...args),
+          expand: (...args: Parameters<BottomSheetModalMethods["expand"]>) =>
+            sheetRef.current?.expand(...args),
+          collapse: (
+            ...args: Parameters<BottomSheetModalMethods["collapse"]>
+          ) => sheetRef.current?.collapse(...args),
+          close: (...args: Parameters<BottomSheetModalMethods["close"]>) =>
+            sheetRef.current?.close(...args),
+          forceClose: (
+            ...args: Parameters<BottomSheetModalMethods["forceClose"]>
+          ) => sheetRef.current?.forceClose(...args),
+        }) as BottomSheetModalMethods,
+      [sheetRef]
+    );
 
     const renderBackdrop = React.useCallback(
       (props: BottomSheetBackdropProps) => {

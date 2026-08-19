@@ -217,7 +217,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       li.__mcBounceTimer = setTimeout(function () {
         stripe.classList.remove("is-bouncing");
         li.__mcBounceTimer = null;
-      }, 700);
+      }, 1800);
     }
 
     function collapseThoughtCategory(li) {
@@ -634,9 +634,40 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (!li || !li.parentNode || !window.ReactNativeWebView) return;
       var index = Array.prototype.indexOf.call(li.parentNode.children, li);
       if (index < 0) return;
+      var now = Date.now();
+      if (
+        window.__mcCategoryPickerAt &&
+        now - window.__mcCategoryPickerAt < 400
+      ) {
+        return;
+      }
+      window.__mcCategoryPickerAt = now;
       window.ReactNativeWebView.postMessage(
         JSON.stringify({ type: "SELECT_CATEGORY", data: index })
       );
+    }
+
+    function onCategoryChromePointer(e) {
+      if (window.__mcSimplified) return;
+      var rail = closestClass(e.target, "thought-rail");
+      var stripe = closestClass(e.target, "thought-stripe");
+      var chip = closestClass(e.target, "thought-category");
+      if (!rail && !stripe && !chip) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var li = closestLi(e.target);
+      if (!li) return;
+
+      if (li.classList.contains("is-collapsed")) {
+        expandThoughtCategory(li, true);
+        // Collapsed label is not hittable; stripe/rail expands only.
+        return;
+      }
+
+      // Expanded: open category picker from label or stripe.
+      openCategoryPicker(li);
     }
 
     content.addEventListener(
@@ -680,27 +711,19 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       true
     );
 
-    content.addEventListener("click", function (e) {
-      if (window.__mcSimplified) return;
-      var rail = closestClass(e.target, "thought-rail");
-      var stripe = closestClass(e.target, "thought-stripe");
-      var chip = closestClass(e.target, "thought-category");
-      if (!rail && !stripe && !chip) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      var li = closestLi(e.target);
-      if (!li) return;
-
-      if (li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, true);
-        return;
-      }
-
-      // Expanded: open category picker from label or stripe.
-      openCategoryPicker(li);
-    });
+    content.addEventListener("click", onCategoryChromePointer, true);
+    // Android WebView often delivers contenteditable=false taps more reliably here.
+    content.addEventListener(
+      "touchend",
+      function (e) {
+        var chip = closestClass(e.target, "thought-category");
+        var stripe = closestClass(e.target, "thought-stripe");
+        var rail = closestClass(e.target, "thought-rail");
+        if (!chip && !stripe && !rail) return;
+        onCategoryChromePointer(e);
+      },
+      true
+    );
 
     content.addEventListener("input", function () {
       ensureUl();
@@ -1004,7 +1027,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     li.__mcBounceTimer = setTimeout(function () {
       stripe.classList.remove("is-bouncing");
       li.__mcBounceTimer = null;
-    }, 700);
+    }, 1800);
   }
 
   function collapseThoughtCategory(li) {
@@ -1055,6 +1078,8 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   content.addEventListener(
     "click",
     function (e) {
+      // Edit mode owns category chrome clicks (opens the picker).
+      if (window.__mcBulletGuardInstalled) return;
       if (window.__mcSimplified) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");

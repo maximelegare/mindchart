@@ -371,13 +371,13 @@ export const ThoughtBulletItem = ({
             {isExpanded ? (
               <BottomSheetOpenTrigger asChild>
                 <Pressable>
-                  <Typography className="text-muted-foreground text-xs opacity-80">
+                  <Typography className="text-muted-foreground text-xs opacity-80 underline">
                     {selectedCategory?.name}
                   </Typography>
                 </Pressable>
               </BottomSheetOpenTrigger>
             ) : (
-              <Typography className="text-muted-foreground text-xs opacity-80">
+              <Typography className="text-muted-foreground text-xs opacity-80 underline">
                 {selectedCategory?.name}
               </Typography>
             )}
