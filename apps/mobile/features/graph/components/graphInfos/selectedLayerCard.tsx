@@ -991,26 +991,31 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
     () => new Set(activePathIds)
   );
   const layerIdRef = useRef(layerRoot.id);
+  const selectionKeyRef = useRef(`${currentNodeId}:${focusedThoughtId ?? ""}`);
 
-  // New layer resets expands; same layer keeps manual opens and merges the path.
+  // Auto-expand the path only when the layer or selection changes — not on every
+  // activePathIds rebuild (layerRoot churn), so the user can collapse a selected folder.
   useEffect(() => {
-    if (layerIdRef.current !== layerRoot.id) {
+    const selectionKey = `${currentNodeId}:${focusedThoughtId ?? ""}`;
+    const layerChanged = layerIdRef.current !== layerRoot.id;
+    const selectionChanged = selectionKeyRef.current !== selectionKey;
+
+    if (layerChanged) {
       layerIdRef.current = layerRoot.id;
+      selectionKeyRef.current = selectionKey;
       setExpandedIds(new Set(activePathIds));
       return;
     }
-    setExpandedIds((prev) => {
-      let changed = false;
-      const next = new Set(prev);
-      for (const id of activePathIds) {
-        if (!next.has(id)) {
-          next.add(id);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [activePathIds, layerRoot.id]);
+
+    if (selectionChanged) {
+      selectionKeyRef.current = selectionKey;
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of activePathIds) next.add(id);
+        return next;
+      });
+    }
+  }, [activePathIds, currentNodeId, focusedThoughtId, layerRoot.id]);
 
   const toggleExpanded = useCallback((nodeId: string) => {
     setExpandedIds((prev) => {
