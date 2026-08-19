@@ -115,6 +115,7 @@ const GraphInfos = memo(function GraphInfos({
       <ScrollView
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 8 }}
       >
         {showRootCards ? (
           rootChildren.length > 0 ? (

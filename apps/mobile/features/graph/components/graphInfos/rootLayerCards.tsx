@@ -48,7 +48,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
   if (nodes.length === 0) return null;
 
   return (
-    <View className="flex-row flex-wrap items-start gap-2">
+    <View className="flex-row flex-wrap items-start gap-2 pb-1">
       {nodes.map((node) => {
         const categoryKey = resolveNodeCategoryKey(node);
         const showCategoryStripe =
@@ -121,6 +121,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
               target={{ kind: "folder", folder }}
               onNavigate={navigate}
               className="shrink-0"
+              hitSlop={0}
             >
               {card}
             </FolderActionsMenu>
