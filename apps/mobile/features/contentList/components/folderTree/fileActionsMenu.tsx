@@ -1,9 +1,10 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Alert, Pressable, View } from "react-native";
+import { Alert, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
+import { LongPressable } from "@/components/ui/longPressable";
 import { cn } from "@/lib/cn";
 import {
   BottomSheet,
@@ -120,17 +121,20 @@ export function FileActionsMenu({
     });
   }, [closeActions, closeModal, deleteNoteAction, file.id, openModal]);
 
+  const openActions = useCallback(() => {
+    actionsSheet.open();
+  }, [actionsSheet]);
+
   return (
     <>
-      <Pressable
+      <LongPressable
         onPress={() => onNavigate?.()}
-        onLongPress={() => actionsSheet.open()}
-        delayLongPress={400}
+        onLongPress={openActions}
         className={cn("shrink-0", className)}
-        hitSlop={hitSlop}
+        style={hitSlop ? { margin: -hitSlop, padding: hitSlop } : undefined}
       >
         {children}
-      </Pressable>
+      </LongPressable>
 
       <BottomSheet>
         <BottomSheetContent

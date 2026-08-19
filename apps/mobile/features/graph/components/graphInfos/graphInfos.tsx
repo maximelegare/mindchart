@@ -1,5 +1,6 @@
 import React, { memo, useMemo } from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { GRAPH_CANVAS_SIZE } from "@/features/graph/constants";
@@ -111,7 +112,10 @@ const GraphInfos = memo(function GraphInfos({
         flex: 1,
       }}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {showRootCards ? (
           rootChildren.length > 0 ? (
             <RootLayerCards nodes={rootChildren} />
