@@ -141,6 +141,9 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchAllThoughtsWithEmbeddings>>>({
       queryKey: [REACT_QUERY_KEYS.fetchAllThoughtsWithEmbeddings],
       queryFn: fetchAllThoughtsWithEmbeddings,
+      // Float32Array rows + folder joins confuse structural sharing after moves.
+      structuralSharing: false,
+      refetchOnMount: "always",
       ...options,
     });
 

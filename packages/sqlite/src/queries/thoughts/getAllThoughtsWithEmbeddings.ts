@@ -9,10 +9,13 @@ import { type DB } from "../../utils/initialize/getOPDatabase";
 
 export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
   try {
+    // Left-join embeddings so thoughts appear in the category graph as soon as
+    // notes are saved — insertEmbeddings runs after insertNoteAndThoughts, and
+    // an inner join would omit new thoughts until a later refetch.
     const rows = await db
       .select({
         id: EmbeddingTable.id,
-        thoughtId: EmbeddingTable.thoughtId,
+        thoughtId: ThoughtTable.id,
         summary: ThoughtTable.summary,
         title: ThoughtTable.title,
         categoryId: ThoughtTable.categoryId,
@@ -22,11 +25,11 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
         folderLabel: FolderTable.label,
         folderPath: FolderTable.path,
         // Using raw SQL selection to ensure we get the clean binary blob
-        embedding: sql<Uint8Array>`${EmbeddingTable.embedding}`,
+        embedding: sql<Uint8Array | null>`${EmbeddingTable.embedding}`,
         createdAt: ThoughtTable.createdAt,
       })
       .from(ThoughtTable)
-      .innerJoin(EmbeddingTable, eq(EmbeddingTable.thoughtId, ThoughtTable.id))
+      .leftJoin(EmbeddingTable, eq(EmbeddingTable.thoughtId, ThoughtTable.id))
       .innerJoin(NoteTable, eq(ThoughtTable.noteId, NoteTable.id))
       .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id));
 
@@ -35,7 +38,12 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
 
       // If it's truly null or undefined, return empty
       if (!raw) {
-        return { ...row, embedding: new Float32Array() };
+        return {
+          ...row,
+          // Embedding row may be missing; callers treat null as "no vector".
+          id: row.id ?? row.thoughtId,
+          embedding: null,
+        };
       }
 
       /**

@@ -151,11 +151,14 @@ export const useGraph = () => {
       activeWorkspaceId,
       GRAPH_CACHE_VERSION,
       notes
-        .map((n) => n.id)
+        .map((n) => `${n.id}:${n.folderId ?? ""}`)
         .sort()
         .join(","),
       typedThoughts
-        .map((t) => t.thoughtId)
+        .map(
+          (t) =>
+            `${t.thoughtId}:${t.folderId ?? ""}:${t.categoryId ?? ""}:${t.folderPath ?? ""}`
+        )
         .sort()
         .join(","),
       folderList
