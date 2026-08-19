@@ -7,6 +7,7 @@ import { SettingsSection } from "@/features/settings/components/settingsSection"
 import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
 import { AiSettingsSection } from "@/features/settings/features/ai/components/aiSettingsSection";
 import { WorkspacesSettingsSection } from "@/features/settings/features/workspaces/components/workspacesSettingsSection";
+import { LockScreenSettingsSection } from "@/features/lockScreen/views/lockScreenSettingsSection";
 import { AppVersionFeature } from "@/features/settings/features/aboutApp/features/appVersion";
 
 export const SettingsFeature = () => {
@@ -17,6 +18,8 @@ export const SettingsFeature = () => {
       <SettingsSection title="Appearance" icon="palette">
         <ThemeSettingItem />
       </SettingsSection>
+
+      <LockScreenSettingsSection />
 
       <AiSettingsSection />
 

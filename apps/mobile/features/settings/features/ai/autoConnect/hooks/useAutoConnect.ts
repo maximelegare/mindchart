@@ -2,6 +2,7 @@ import { useLlamaChat } from "@/features/llama/hooks/useLlamaChat";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { useWhisper } from "@/features/whisper/hooks/useWhisperModels";
+import { useAppLock } from "@/features/lockScreen/context/appLockProvider";
 import { useEffect, useState } from "react";
 
 export const useAiAutoConnect = () => {
@@ -26,6 +27,8 @@ export const useAiAutoConnect = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasAttempted, setHasAttempted] = useState(false);
   const [setupRequired, setSetupRequired] = useState(false);
+
+  const { isLocked, isReady: isLockReady } = useAppLock();
 
   // Wait until disk scans finish — empty {} is not "ready"
   const isReady =
@@ -72,16 +75,19 @@ export const useAiAutoConnect = () => {
   };
 
   useEffect(() => {
-    if (!isReady) return;
+    if (!isReady || !isLockReady) return;
 
     const hasSelectedEmbedding = !!llamaEmbeddingsModelFiles[llamaEmbeddings];
 
     // Setup modal is embeddings-only; missing whisper/llama should not trigger it
     setSetupRequired(!hasSelectedEmbedding);
 
-    if (!hasAttempted) {
-      initializeAi();
-    }
+    if (hasAttempted) return;
+
+    // When auto-connect is on, wait until the user unlocks the app first.
+    if (autoConnect && isLocked) return;
+
+    initializeAi();
   }, [
     autoConnect,
     modelFiles,
@@ -89,6 +95,8 @@ export const useAiAutoConnect = () => {
     llamaEmbeddingsModelFiles,
     hasAttempted,
     isReady,
+    isLockReady,
+    isLocked,
   ]);
 
   return {
