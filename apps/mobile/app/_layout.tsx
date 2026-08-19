@@ -54,6 +54,9 @@ import {
 import { migrateLegacyDatabase } from "@/features/workspaces/utils/migrateLegacyDatabase";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { AppLockProvider } from "@/features/lockScreen/context/appLockProvider";
+import { AppLockOverlay } from "@/features/lockScreen/components/appLockOverlay";
+import { LockScreenSettingsUiProvider } from "@/features/lockScreen/context/lockScreenSettingsUiContext";
 
 import { Buffer } from "buffer";
 import { AutoConnectService } from "@/features/settings/features/ai/autoConnect/services/autoConnectService";
@@ -231,43 +234,50 @@ export default function RootLayout() {
               ]}
               className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}
             >
-              <BottomSheetModalProvider>
-                <PaperProvider>
-                  <ModalProvider>
-                    <FolderFormSheetProvider>
-                      <WorkspaceEditSheetProvider>
-                        <WorkspaceActionsSheetProvider>
-                          <LlamaProvider>
-                            <StatusBar
-                              style={colorScheme === "dark" ? "light" : "dark"}
-                            />
+              <AppLockProvider>
+                <LockScreenSettingsUiProvider>
+                  <BottomSheetModalProvider>
+                    <PaperProvider>
+                      <ModalProvider>
+                        <FolderFormSheetProvider>
+                          <WorkspaceEditSheetProvider>
+                            <WorkspaceActionsSheetProvider>
+                              <LlamaProvider>
+                                <StatusBar
+                                  style={
+                                    colorScheme === "dark" ? "light" : "dark"
+                                  }
+                                />
 
-                            <WhisperProvider>
-                              <AutoConnectService>
-                                <Stack
-                                  screenOptions={{
-                                    headerShown: false,
-                                    contentStyle: {
-                                      backgroundColor: hsl(
-                                        "background",
-                                        colorScheme
-                                      ),
-                                    },
-                                  }}
-                                >
-                                  <Stack.Screen name="(tabs)" />
-                                  <Stack.Screen name="(stack)" />
-                                </Stack>
-                              </AutoConnectService>
-                            </WhisperProvider>
-                          </LlamaProvider>
-                        </WorkspaceActionsSheetProvider>
-                      </WorkspaceEditSheetProvider>
-                    </FolderFormSheetProvider>
-                  </ModalProvider>
-                  <PortalHost />
-                </PaperProvider>
-              </BottomSheetModalProvider>
+                                <WhisperProvider>
+                                  <AutoConnectService>
+                                    <Stack
+                                      screenOptions={{
+                                        headerShown: false,
+                                        contentStyle: {
+                                          backgroundColor: hsl(
+                                            "background",
+                                            colorScheme
+                                          ),
+                                        },
+                                      }}
+                                    >
+                                      <Stack.Screen name="(tabs)" />
+                                      <Stack.Screen name="(stack)" />
+                                    </Stack>
+                                  </AutoConnectService>
+                                </WhisperProvider>
+                              </LlamaProvider>
+                            </WorkspaceActionsSheetProvider>
+                          </WorkspaceEditSheetProvider>
+                        </FolderFormSheetProvider>
+                      </ModalProvider>
+                      <PortalHost />
+                    </PaperProvider>
+                  </BottomSheetModalProvider>
+                  <AppLockOverlay />
+                </LockScreenSettingsUiProvider>
+              </AppLockProvider>
             </View>
           </GestureHandlerRootView>
         </KeyboardProvider>
