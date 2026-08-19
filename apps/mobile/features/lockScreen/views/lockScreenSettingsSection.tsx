@@ -17,19 +17,14 @@ import { LockScreenSettingsFeature } from "@/features/lockScreen/views/lockScree
 import { LockScreenPinSetupFeature } from "@/features/lockScreen/views/lockScreenPinSetupFeature";
 import { hasAppPin } from "@/features/lockScreen/services/passcodeService";
 
-function LockScreenPinSheet() {
+function LockScreenPinSheet({
+  onPinConfigured,
+}: {
+  onPinConfigured: () => void;
+}) {
   const { colorScheme } = useColorScheme();
-  const { pinSheetRef } = useLockScreenSettingsUi();
-  const [pinConfigured, setPinConfigured] = useState(false);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const refreshPinStatus = useCallback(async () => {
-    setPinConfigured(await hasAppPin());
-  }, []);
-
-  useEffect(() => {
-    void refreshPinStatus();
-  }, [refreshPinStatus]);
+  const { pinSheetRef, pinSheetSession, clearPinSheetSession } =
+    useLockScreenSettingsUi();
 
   return (
     <BottomSheet>
@@ -39,10 +34,8 @@ function LockScreenPinSheet() {
         snapPoints={["100%"]}
         backgroundStyle={{ backgroundColor: hsl("background", colorScheme) }}
         onChange={(index) => {
-          const open = index >= 0;
-          setIsSheetOpen(open);
-          if (open) {
-            void refreshPinStatus();
+          if (index < 0) {
+            clearPinSheetSession();
           }
         }}
       >
@@ -55,11 +48,13 @@ function LockScreenPinSheet() {
           className="bg-background px-4"
           style={{ minHeight: 520 }}
         >
-          <LockScreenPinSetupFeature
-            isActive={isSheetOpen}
-            initialHasPin={pinConfigured}
-            onPinConfigured={refreshPinStatus}
-          />
+          {pinSheetSession ? (
+            <LockScreenPinSetupFeature
+              key={pinSheetSession.sessionId}
+              session={pinSheetSession}
+              onPinConfigured={onPinConfigured}
+            />
+          ) : null}
         </BottomSheetView>
       </BottomSheetContent>
     </BottomSheet>
@@ -70,11 +65,16 @@ export function LockScreenSettingsSection() {
   const lockScreenMode = useSecuritySettingsPreferences(
     (s) => s.lockScreenMode
   );
+  const { pinSheetSession } = useLockScreenSettingsUi();
   const [pinConfigured, setPinConfigured] = useState(false);
 
+  const refreshPinStatus = useCallback(async () => {
+    setPinConfigured(await hasAppPin());
+  }, []);
+
   useEffect(() => {
-    void hasAppPin().then(setPinConfigured);
-  }, [lockScreenMode]);
+    void refreshPinStatus();
+  }, [lockScreenMode, pinSheetSession, refreshPinStatus]);
 
   const lockScreenStatus =
     lockScreenMode === "customPin"
@@ -96,11 +96,11 @@ export function LockScreenSettingsSection() {
           borderBottom={false}
           dangerChevron={needsAttention}
         >
-          <LockScreenSettingsFeature />
+          <LockScreenSettingsFeature onPinConfigured={refreshPinStatus} />
         </SettingsSheetRow>
       </SettingsSection>
 
-      <LockScreenPinSheet />
+      <LockScreenPinSheet onPinConfigured={refreshPinStatus} />
     </>
   );
 }

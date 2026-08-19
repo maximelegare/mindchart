@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
@@ -6,23 +6,22 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 import { useAppLock } from "../context/appLockProvider";
+import type { PinSheetSession } from "../context/lockScreenSettingsUiContext";
 import { clearAppPin, hasAppPin } from "../services/passcodeService";
 import { CreatePasscode } from "../components/createPasscode";
 import { ChangePasscode } from "../components/changePasscode";
 import { VerifyPasscode } from "../components/verifyPasscode";
 import { useLockScreenSettingsUi } from "../context/lockScreenSettingsUiContext";
 
-type SetupMode = "idle" | "create" | "change" | "remove";
+type SetupMode = "create" | "change" | "remove" | "manage" | "verify-activate";
 
 type LockScreenPinSetupFeatureProps = {
-  isActive: boolean;
-  initialHasPin: boolean;
+  session: PinSheetSession;
   onPinConfigured?: () => void;
 };
 
 export function LockScreenPinSetupFeature({
-  isActive,
-  initialHasPin,
+  session,
   onPinConfigured,
 }: LockScreenPinSetupFeatureProps) {
   const { colorScheme } = useColorScheme();
@@ -35,22 +34,10 @@ export function LockScreenPinSetupFeature({
   );
   const { refreshCustomPinState } = useAppLock();
 
-  const [hasPin, setHasPin] = useState(initialHasPin);
-  const [mode, setMode] = useState<SetupMode>("idle");
-  const [isReady, setIsReady] = useState(!isActive);
-
-  useEffect(() => {
-    if (!isActive) {
-      setIsReady(false);
-      return;
-    }
-
-    void hasAppPin().then((exists) => {
-      setHasPin(exists);
-      setMode(exists ? "idle" : "create");
-      setIsReady(true);
-    });
-  }, [isActive]);
+  const [hasPin, setHasPin] = useState(session.hasPin);
+  const [mode, setMode] = useState<SetupMode>(() =>
+    resolveInitialMode(session.hasPin, lockScreenMode)
+  );
 
   const refreshPinState = useCallback(async () => {
     const exists = await hasAppPin();
@@ -67,39 +54,30 @@ export function LockScreenPinSetupFeature({
 
   const handleCreateDone = useCallback(async () => {
     await activateCustomPin();
-    setMode("idle");
-  }, [activateCustomPin]);
+    onPinConfigured?.();
+  }, [activateCustomPin, onPinConfigured]);
 
   const handleChangeDone = useCallback(async () => {
     await refreshPinState();
-    setMode("idle");
+    setMode("manage");
   }, [refreshPinState]);
 
-  const handleCancel = useCallback(() => {
-    if (mode === "create" && !hasPin) {
-      closePinSheet();
-      return;
-    }
-    setMode("idle");
-  }, [closePinSheet, hasPin, mode]);
+  const handleCancelCreate = useCallback(() => {
+    closePinSheet();
+  }, [closePinSheet]);
 
   const handleRemoveVerified = useCallback(async () => {
     await clearAppPin();
     await refreshPinState();
     setLockScreenMode("off");
-    setMode("idle");
     closePinSheet();
   }, [closePinSheet, refreshPinState, setLockScreenMode]);
-
-  if (isActive && !isReady) {
-    return <View style={{ minHeight: 320 }} />;
-  }
 
   if (mode === "create") {
     return (
       <CreatePasscode
         onDone={() => void handleCreateDone()}
-        onCancel={handleCancel}
+        onCancel={handleCancelCreate}
       />
     );
   }
@@ -108,7 +86,7 @@ export function LockScreenPinSetupFeature({
     return (
       <ChangePasscode
         onDone={() => void handleChangeDone()}
-        onCancel={() => setMode("idle")}
+        onCancel={() => setMode("manage")}
       />
     );
   }
@@ -117,7 +95,16 @@ export function LockScreenPinSetupFeature({
     return (
       <VerifyPasscode
         onVerify={() => void handleRemoveVerified()}
-        onCancel={() => setMode("idle")}
+        onCancel={() => setMode("manage")}
+      />
+    );
+  }
+
+  if (mode === "verify-activate") {
+    return (
+      <VerifyPasscode
+        onVerify={() => void activateCustomPin()}
+        onCancel={closePinSheet}
       />
     );
   }
@@ -126,16 +113,7 @@ export function LockScreenPinSetupFeature({
     return (
       <CreatePasscode
         onDone={() => void handleCreateDone()}
-        onCancel={closePinSheet}
-      />
-    );
-  }
-
-  if (lockScreenMode !== "customPin") {
-    return (
-      <VerifyPasscode
-        onVerify={() => void activateCustomPin()}
-        onCancel={closePinSheet}
+        onCancel={handleCancelCreate}
       />
     );
   }
@@ -158,4 +136,13 @@ export function LockScreenPinSetupFeature({
       </Button>
     </View>
   );
+}
+
+function resolveInitialMode(
+  hasPin: boolean,
+  lockScreenMode: string
+): SetupMode {
+  if (!hasPin) return "create";
+  if (lockScreenMode !== "customPin") return "verify-activate";
+  return "manage";
 }

@@ -1,10 +1,25 @@
-import React, { createContext, useContext, useMemo, useRef } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
+import { hasAppPin } from "../services/passcodeService";
+
+export type PinSheetSession = {
+  hasPin: boolean;
+  sessionId: number;
+};
 
 type LockScreenSettingsUiContextValue = {
-  openPinSheet: () => void;
+  openPinSheet: () => Promise<void>;
   closePinSheet: () => void;
+  clearPinSheetSession: () => void;
   pinSheetRef: React.RefObject<BottomSheetModalMethods | null>;
+  pinSheetSession: PinSheetSession | null;
 };
 
 const LockScreenSettingsUiContext =
@@ -16,14 +31,37 @@ export function LockScreenSettingsUiProvider({
   children: React.ReactNode;
 }) {
   const pinSheetRef = useRef<BottomSheetModalMethods | null>(null);
+  const [pinSheetSession, setPinSheetSession] =
+    useState<PinSheetSession | null>(null);
+
+  const clearPinSheetSession = useCallback(() => {
+    setPinSheetSession(null);
+  }, []);
+
+  const openPinSheet = useCallback(async () => {
+    const pinExists = await hasAppPin();
+    setPinSheetSession({
+      hasPin: pinExists,
+      sessionId: Date.now(),
+    });
+    requestAnimationFrame(() => {
+      pinSheetRef.current?.present();
+    });
+  }, []);
+
+  const closePinSheet = useCallback(() => {
+    pinSheetRef.current?.dismiss();
+  }, []);
 
   const value = useMemo(
     () => ({
       pinSheetRef,
-      openPinSheet: () => pinSheetRef.current?.present(),
-      closePinSheet: () => pinSheetRef.current?.dismiss(),
+      pinSheetSession,
+      openPinSheet,
+      closePinSheet,
+      clearPinSheetSession,
     }),
-    []
+    [clearPinSheetSession, closePinSheet, openPinSheet, pinSheetSession]
   );
 
   return (

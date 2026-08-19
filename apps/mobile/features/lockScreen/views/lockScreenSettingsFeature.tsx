@@ -22,7 +22,13 @@ type PendingAction =
   | { type: "enableSystem" }
   | null;
 
-export function LockScreenSettingsFeature() {
+type LockScreenSettingsFeatureProps = {
+  onPinConfigured?: () => void;
+};
+
+export function LockScreenSettingsFeature({
+  onPinConfigured,
+}: LockScreenSettingsFeatureProps = {}) {
   const { colorScheme } = useColorScheme();
   const lockScreenMode = useSecuritySettingsPreferences(
     (s) => s.lockScreenMode
@@ -65,8 +71,8 @@ export function LockScreenSettingsFeature() {
   }, [lockScreenMode, refreshPinConfigured, setLockScreenMode, unlock]);
 
   const openCustomPinSheet = useCallback(() => {
-    openPinSheet();
-  }, [openPinSheet]);
+    void openPinSheet().then(() => onPinConfigured?.());
+  }, [onPinConfigured, openPinSheet]);
 
   const applyTarget = useCallback(
     async (target: LockScreenMode) => {
