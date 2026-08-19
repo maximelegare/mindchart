@@ -27,6 +27,8 @@ type FileActionsMenuProps = {
   onCloseSidebar?: () => void;
   children: React.ReactNode;
   className?: string;
+  /** Extra press area; avoid when a sibling control sits beside this. */
+  hitSlop?: number;
 };
 
 export function FileActionsMenu({
@@ -35,6 +37,7 @@ export function FileActionsMenu({
   onCloseSidebar,
   children,
   className,
+  hitSlop = 8,
 }: FileActionsMenuProps) {
   const router = useRouter();
   const actionsSheet = useBottomSheet();
@@ -124,7 +127,7 @@ export function FileActionsMenu({
         onLongPress={() => actionsSheet.open()}
         delayLongPress={400}
         className={cn("shrink-0", className)}
-        hitSlop={8}
+        hitSlop={hitSlop}
       >
         {children}
       </Pressable>
