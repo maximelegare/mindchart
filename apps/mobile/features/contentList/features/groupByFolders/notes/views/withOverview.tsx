@@ -1,10 +1,16 @@
 import { View } from "react-native";
 import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
 import { FolderSection } from "../components/folderSection";
-import { useGroupByFoldersNotesWithOverviewData } from "../hooks/useGroupByFoldersNotesData";
+import { PaginationControls } from "@/features/contentList/features/pagination/components/paginationControls";
+import {
+  useGroupByFoldersNotesPagination,
+  useGroupByFoldersNotesWithOverviewData,
+} from "../hooks/useGroupByFoldersNotesData";
 
 export const NotesListGroupByFoldersWithOverviewFeature = () => {
   const parsedData = useGroupByFoldersNotesWithOverviewData();
+  const { page, pageCount, setPage, isFetching } =
+    useGroupByFoldersNotesPagination();
 
   if (!parsedData) return null;
 
@@ -28,6 +34,12 @@ export const NotesListGroupByFoldersWithOverviewFeature = () => {
           ))}
         </FolderSection>
       ))}
+      <PaginationControls
+        page={page}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        isFetching={isFetching}
+      />
     </View>
   );
 };

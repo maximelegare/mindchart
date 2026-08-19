@@ -41,6 +41,7 @@ export type IconName =
   | "layers"
   | "link-2-off"
   | "link-2"
+  | "list"
   | "lock-keyhole"
   | "map-pin-simple"
   | "map-pin"
@@ -240,13 +241,17 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"></path>`,
   },
+  list: {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h.01M3 12h.01M3 19h.01M8 5h13M8 12h13M8 19h13"></path>`,
+  },
   "lock-keyhole": {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="16" r="1"></circle><rect width="18" height="12" x="3" y="10" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></g>`,
   },
   "map-pin-simple": {
     viewBox: "0 0 256 256",
-    content: `<path d="M184 72a56 56 0 1 0-64 55.42V232a8 8 0 0 0 16 0V127.42A56.09 56.09 0 0 0 184 72m-56 40a40 40 0 1 1 40-40a40 40 0 0 1-40 40"></path>`,
+    content: `<path fill="currentColor" d="M184 72a56 56 0 1 0-64 55.42V232a8 8 0 0 0 16 0V127.42A56.09 56.09 0 0 0 184 72m-56 40a40 40 0 1 1 40-40a40 40 0 0 1-40 40"></path>`,
   },
   "map-pin": {
     viewBox: "0 0 24 24",

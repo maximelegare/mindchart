@@ -1,18 +1,15 @@
-import { useControllers } from "@/api/controllers/useControllers";
-import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useMemo } from "react";
 import {
-  useNotesAttributeFilters,
-  useSelectedFolderId,
-} from "@/features/contentList/hooks/useContentListFilter";
+  usePaginatedNotes,
+  usePaginatedNotesControls,
+  usePaginatedNotesPlain,
+} from "@/features/contentList/features/pagination/hooks/usePaginatedNotes";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
-import { filterNotesByAttributes } from "@/features/contentList/utils/filterNotesByAttributes";
 import {
   latestDate,
   sortContentList,
 } from "@/features/contentList/utils/sortContentList";
-import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
-import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo } from "react";
 import { groupNotesByFolder } from "../utils/groupNotesByFolder";
 
 const sortFolderGroups = <
@@ -34,10 +31,7 @@ const sortFolderGroups = <
 
 export const useGroupByFoldersNotesWithOverviewData = () => {
   const sortBy = useContentListSort();
-  const selectedFolderId = useSelectedFolderId();
-  const attributeFilters = useNotesAttributeFilters();
-  const { useFetchNotesAndThoughtsQuery } = useControllers().notesAndThoughts;
-  const { data, refetch } = useFetchNotesAndThoughtsQuery();
+  const { items, refetch } = usePaginatedNotes();
 
   useFocusEffect(
     useCallback(() => {
@@ -45,21 +39,15 @@ export const useGroupByFoldersNotesWithOverviewData = () => {
     }, [refetch])
   );
 
-  return useMemo(() => {
-    const notes = parseNoteAndThoughts(data);
-    const byFolder = selectedFolderId
-      ? (notes ?? []).filter((note) => note.folderId === selectedFolderId)
-      : (notes ?? []);
-    const filtered = filterNotesByAttributes(byFolder, attributeFilters);
-    return sortFolderGroups(groupNotesByFolder(filtered), sortBy);
-  }, [attributeFilters, data, selectedFolderId, sortBy]);
+  return useMemo(
+    () => sortFolderGroups(groupNotesByFolder(items), sortBy),
+    [items, sortBy]
+  );
 };
 
 export const useGroupByFoldersNotesWithoutOverviewData = () => {
   const sortBy = useContentListSort();
-  const selectedFolderId = useSelectedFolderId();
-  const { useFetchAllNotesQuery } = useControllers().notesAndThoughts;
-  const { data, refetch } = useFetchAllNotesQuery();
+  const { items, refetch } = usePaginatedNotesPlain();
 
   useFocusEffect(
     useCallback(() => {
@@ -67,11 +55,11 @@ export const useGroupByFoldersNotesWithoutOverviewData = () => {
     }, [refetch])
   );
 
-  return useMemo(() => {
-    const notes = normalizeNotesFromQuery(data);
-    const filtered = selectedFolderId
-      ? (notes ?? []).filter((note) => note.folderId === selectedFolderId)
-      : (notes ?? []);
-    return sortFolderGroups(groupNotesByFolder(filtered), sortBy);
-  }, [data, selectedFolderId, sortBy]);
+  return useMemo(
+    () => sortFolderGroups(groupNotesByFolder(items), sortBy),
+    [items, sortBy]
+  );
 };
+
+export const useGroupByFoldersNotesPagination = () =>
+  usePaginatedNotesControls();

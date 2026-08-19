@@ -1,4 +1,5 @@
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { PageSize } from "./features/pagination/types";
 
 export type DisplayMode = "notes" | "categories";
 
@@ -26,6 +27,10 @@ export type OptionsBar = {
   filterFeelings: FeelingValue[];
   /** Empty = no location filter */
   filterLocationIds: string[];
+  /** Without-folders notes list page size */
+  pageSize: PageSize;
+  /** 1-based page index (not persisted) */
+  page: number;
 };
 
 export type UiKey = `groupBy=${OptionsBar["groupBy"]}&display=${DisplayKey}`;
