@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
+import { SwitchSetting } from "@/features/settings/components/switchSetting";
 import ListItem from "@/components/ui/list-item";
 import { Typography } from "@/components/ui/typography";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -8,14 +9,18 @@ import { hsl } from "@/utils/hsl";
 import type { LockScreenMode } from "../types";
 import { LOCK_SCREEN_MODE_LABELS } from "../types";
 import { useAppLock } from "../context/appLockProvider";
+import { useLockScreenSettingsUi } from "../context/lockScreenSettingsUiContext";
+import { checkBiometricAvailability } from "@/lib/localAuth";
 import { clearAppPin } from "../services/passcodeService";
 import { VerifyPasscode } from "../components/verifyPasscode";
 import { SystemLockVerify } from "../components/systemLockVerify";
 
-const MODE_OPTIONS: Array<Exclude<LockScreenMode, "customPin">> = [
-  "off",
-  "system",
-];
+const MODE_OPTIONS: LockScreenMode[] = ["off", "system", "customPin"];
+
+type PendingAction =
+  | { type: "disable"; target: LockScreenMode }
+  | { type: "enableSystem" }
+  | null;
 
 export function LockScreenSettingsFeature() {
   const { colorScheme } = useColorScheme();
@@ -25,72 +30,130 @@ export function LockScreenSettingsFeature() {
   const setLockScreenMode = useSecuritySettingsPreferences(
     (s) => s.setLockScreenMode
   );
+  const customPinBiometricEnabled = useSecuritySettingsPreferences(
+    (s) => s.customPinBiometricEnabled
+  );
+  const setCustomPinBiometricEnabled = useSecuritySettingsPreferences(
+    (s) => s.setCustomPinBiometricEnabled
+  );
 
   const { refreshCustomPinState, unlock } = useAppLock();
+  const { openPinSheet } = useLockScreenSettingsUi();
 
-  const [pendingMode, setPendingMode] = useState<LockScreenMode | null>(null);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   const refreshPinConfigured = useCallback(async () => {
     await refreshCustomPinState();
   }, [refreshCustomPinState]);
 
-  const completeModeChange = useCallback(
-    async (targetMode: LockScreenMode) => {
-      if (lockScreenMode === "customPin") {
-        await clearAppPin();
-        await refreshPinConfigured();
-      }
+  useEffect(() => {
+    checkBiometricAvailability().then(setBiometricAvailable);
+  }, []);
 
-      setLockScreenMode(targetMode);
-      if (targetMode === "off") {
-        unlock();
-      }
-    },
-    [lockScreenMode, refreshPinConfigured, setLockScreenMode, unlock]
-  );
+  const enableSystemLock = useCallback(() => {
+    setLockScreenMode("system");
+  }, [setLockScreenMode]);
 
-  const selectMode = useCallback(
-    (mode: Exclude<LockScreenMode, "customPin">) => {
-      if (mode === lockScreenMode) return;
+  const disableLock = useCallback(async () => {
+    if (lockScreenMode === "customPin") {
+      await clearAppPin();
+      await refreshPinConfigured();
+    }
+    setLockScreenMode("off");
+    unlock();
+  }, [lockScreenMode, refreshPinConfigured, setLockScreenMode, unlock]);
 
-      if (lockScreenMode !== "off") {
-        setPendingMode(mode);
+  const openCustomPinSheet = useCallback(() => {
+    openPinSheet();
+  }, [openPinSheet]);
+
+  const applyTarget = useCallback(
+    async (target: LockScreenMode) => {
+      if (target === "customPin") {
+        openCustomPinSheet();
         return;
       }
 
-      void completeModeChange(mode);
+      if (target === "system") {
+        setPendingAction({ type: "enableSystem" });
+        return;
+      }
+
+      await disableLock();
     },
-    [completeModeChange, lockScreenMode]
+    [disableLock, openCustomPinSheet]
   );
 
-  const cancelVerification = useCallback(() => {
-    setPendingMode(null);
+  const selectMode = useCallback(
+    (mode: LockScreenMode) => {
+      if (mode === lockScreenMode) {
+        if (mode === "customPin") {
+          openCustomPinSheet();
+        }
+        return;
+      }
+
+      if (lockScreenMode !== "off") {
+        setPendingAction({ type: "disable", target: mode });
+        return;
+      }
+
+      if (mode === "system") {
+        setPendingAction({ type: "enableSystem" });
+        return;
+      }
+
+      if (mode === "customPin") {
+        openCustomPinSheet();
+        return;
+      }
+    },
+    [lockScreenMode, openCustomPinSheet]
+  );
+
+  const cancelPending = useCallback(() => {
+    setPendingAction(null);
   }, []);
 
-  const onVerificationSuccess = useCallback(() => {
-    const target = pendingMode;
-    setPendingMode(null);
+  const onDisableVerified = useCallback(() => {
+    const target =
+      pendingAction?.type === "disable" ? pendingAction.target : null;
+    setPendingAction(null);
     if (target) {
-      void completeModeChange(target);
+      void applyTarget(target);
     }
-  }, [completeModeChange, pendingMode]);
+  }, [applyTarget, pendingAction]);
 
-  if (pendingMode != null && lockScreenMode === "customPin") {
+  const onEnableSystemVerified = useCallback(() => {
+    setPendingAction(null);
+    enableSystemLock();
+  }, [enableSystemLock]);
+
+  if (pendingAction?.type === "disable" && lockScreenMode === "customPin") {
     return (
-      <VerifyPasscode
-        onVerify={onVerificationSuccess}
-        onCancel={cancelVerification}
+      <VerifyPasscode onVerify={onDisableVerified} onCancel={cancelPending} />
+    );
+  }
+
+  if (pendingAction?.type === "disable" && lockScreenMode === "system") {
+    return (
+      <SystemLockVerify
+        title="Confirm device lock"
+        description="Authenticate to change or turn off your lock screen."
+        onVerify={onDisableVerified}
+        onCancel={cancelPending}
       />
     );
   }
 
-  if (pendingMode != null && lockScreenMode === "system") {
+  if (pendingAction?.type === "enableSystem") {
     return (
       <SystemLockVerify
-        title="Turn off device lock?"
-        description="Authenticate to change or remove your current lock screen."
-        onVerify={onVerificationSuccess}
-        onCancel={cancelVerification}
+        title="Enable device lock"
+        description="Authenticate with your device biometrics or PIN to enable this lock screen."
+        onVerify={onEnableSystemVerified}
+        onCancel={cancelPending}
       />
     );
   }
@@ -98,8 +161,7 @@ export function LockScreenSettingsFeature() {
   return (
     <View style={{ gap: 12 }}>
       <Typography variant="p" padding={false}>
-        Choose how MindChart locks when you leave the app. Custom PIN is managed
-        separately below.
+        Choose how MindChart locks when you leave the app.
       </Typography>
 
       {MODE_OPTIONS.map((mode, index) => (
@@ -110,7 +172,9 @@ export function LockScreenSettingsFeature() {
           description={
             mode === "off"
               ? "No lock screen"
-              : "Device biometrics or system PIN"
+              : mode === "system"
+                ? "Device biometrics or system PIN"
+                : "Your own 6-digit app PIN"
           }
           borderBottom={index < MODE_OPTIONS.length - 1}
           noChevron
@@ -130,6 +194,16 @@ export function LockScreenSettingsFeature() {
           )}
         />
       ))}
+
+      {lockScreenMode === "customPin" && biometricAvailable ? (
+        <SwitchSetting
+          title="Unlock with biometrics"
+          description="Use Face ID, fingerprint, or device PIN as a shortcut when a custom PIN is enabled."
+          checked={customPinBiometricEnabled}
+          onCheckedChange={setCustomPinBiometricEnabled}
+          accessibilityLabel="Unlock with biometrics"
+        />
+      ) : null}
     </View>
   );
 }

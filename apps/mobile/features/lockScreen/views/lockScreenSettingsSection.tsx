@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { View } from "react-native";
-import ListItem from "@/components/ui/list-item";
-import { Typography } from "@/components/ui/typography";
-import { Icon } from "@/components/ui/icons/icon";
 import {
   BottomSheet,
   BottomSheetContent,
   BottomSheetHeader,
-  BottomSheetOpenTrigger,
   BottomSheetView,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { SettingsSection } from "@/features/settings/components/settingsSection";
 import { SettingsSheetRow } from "@/features/settings/components/settingsSheetRow";
+import { Typography } from "@/components/ui/typography";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
@@ -21,11 +17,8 @@ import { LockScreenSettingsFeature } from "@/features/lockScreen/views/lockScree
 import { LockScreenPinSetupFeature } from "@/features/lockScreen/views/lockScreenPinSetupFeature";
 import { hasAppPin } from "@/features/lockScreen/services/passcodeService";
 
-function CustomPinSheetRow() {
+function LockScreenPinSheet() {
   const { colorScheme } = useColorScheme();
-  const lockScreenMode = useSecuritySettingsPreferences(
-    (s) => s.lockScreenMode
-  );
   const { pinSheetRef } = useLockScreenSettingsUi();
   const [pinConfigured, setPinConfigured] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -38,55 +31,8 @@ function CustomPinSheetRow() {
     void refreshPinStatus();
   }, [refreshPinStatus]);
 
-  const status =
-    lockScreenMode === "customPin" && pinConfigured
-      ? "Active"
-      : pinConfigured
-        ? "Configured"
-        : "Not set";
-
-  const needsAttention = status === "Not set";
-
   return (
     <BottomSheet>
-      <BottomSheetOpenTrigger asChild>
-        <ListItem
-          surface="card"
-          label="Custom PIN"
-          borderBottom={false}
-          noChevron
-          description={
-            <Typography
-              variant="small"
-              style={{ color: hsl("muted-foreground", colorScheme) }}
-            >
-              Set up or manage your 6-digit PIN
-            </Typography>
-          }
-          itemRight={() => (
-            <View className="flex-row items-center gap-1.5">
-              <Typography
-                variant="small"
-                style={{
-                  color:
-                    status === "Not set"
-                      ? hsl("foreground-errors", colorScheme)
-                      : status === "Active"
-                        ? hsl("primary", colorScheme)
-                        : hsl("muted-foreground", colorScheme),
-                }}
-              >
-                {status}
-              </Typography>
-              <Icon
-                name="chevron-right"
-                color={needsAttention ? "foreground-errors" : "primary"}
-                size={20}
-              />
-            </View>
-          )}
-        />
-      </BottomSheetOpenTrigger>
       <BottomSheetContent
         ref={pinSheetRef}
         enableDynamicSizing={false}
@@ -120,33 +66,41 @@ function CustomPinSheetRow() {
   );
 }
 
-function LockScreenSettingsSectionContent() {
+export function LockScreenSettingsSection() {
   const lockScreenMode = useSecuritySettingsPreferences(
     (s) => s.lockScreenMode
   );
+  const [pinConfigured, setPinConfigured] = useState(false);
+
+  useEffect(() => {
+    void hasAppPin().then(setPinConfigured);
+  }, [lockScreenMode]);
 
   const lockScreenStatus =
     lockScreenMode === "customPin"
       ? LOCK_SCREEN_MODE_LABELS.customPin
       : LOCK_SCREEN_MODE_LABELS[lockScreenMode];
 
-  return (
-    <SettingsSection title="Lock screen" icon="lock-keyhole">
-      <SettingsSheetRow
-        label="Lock screen"
-        status={lockScreenStatus}
-        sheetTitle="Lock screen"
-        snapPoints={["100%"]}
-        borderBottom
-        dangerChevron={lockScreenMode === "off"}
-      >
-        <LockScreenSettingsFeature />
-      </SettingsSheetRow>
-      <CustomPinSheetRow />
-    </SettingsSection>
-  );
-}
+  const needsAttention =
+    lockScreenMode === "off" ||
+    (lockScreenMode === "customPin" && !pinConfigured);
 
-export function LockScreenSettingsSection() {
-  return <LockScreenSettingsSectionContent />;
+  return (
+    <>
+      <SettingsSection title="Lock screen" icon="lock-keyhole">
+        <SettingsSheetRow
+          label="Lock screen"
+          status={lockScreenStatus}
+          sheetTitle="Lock screen"
+          snapPoints={["100%"]}
+          borderBottom={false}
+          dangerChevron={needsAttention}
+        >
+          <LockScreenSettingsFeature />
+        </SettingsSheetRow>
+      </SettingsSection>
+
+      <LockScreenPinSheet />
+    </>
+  );
 }
