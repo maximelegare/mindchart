@@ -26,11 +26,6 @@ type PaginatedNotesHookResult<T> = PaginatedResult<T> & {
   refetch: () => void;
 };
 
-type UsePaginatedNotesOptions = {
-  withThoughts?: boolean;
-  enabled?: boolean;
-};
-
 const usePaginatedNotesQueryParams = () => {
   const sortBy = useContentListSort();
   const selectedFolderId = useSelectedFolderId();
