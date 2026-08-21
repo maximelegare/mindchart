@@ -1,0 +1,236 @@
+{
+  "fb-locale": "fr-CA",
+  "translations": {
+    "NeTBiNqqkwFJTDXwzsP4XQ==": {
+      "description": "Theme option title: follow device settings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Réglages de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "I/w36TnVlm9Y6wsoAv7RTA==": {
+      "description": "Theme option title: dark mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Mode sombre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "z7p6sN1fN0om/uIgO6eQtA==": {
+      "description": "Theme option title: light mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Mode clair",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "1PIA0oeQ3AJ4MTmRwBkUYQ==": {
+      "description": "Theme option subtitle: follow device settings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utiliser le theme par défaut de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "iYrYR4/1yU6OmtlhVDFefA==": {
+      "description": "Theme option subtitle: dark mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Toujours utiliser le mode sombre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "pQmX4nywEmYjlK2j38unQg==": {
+      "description": "Theme option subtitle: light mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Toujours utiliser le mode clair",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZIea05BAUtOVIeKtuAJcrQ==": {
+      "description": "Selected theme label: system",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Système",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5jXzrpo4FuX2Fy0FtUH6aw==": {
+      "description": "Selected theme label: dark",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sombre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "O8iHEmWBTj/c4ezmzk67tg==": {
+      "description": "Selected theme label: light",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Clair",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IYUmtYxQtGdt1MucjXrsVA==": {
+      "description": "Label with meaning 'at least number'",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{number}+",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZIF1WhVQwt7WZJvFTEbMWw==": {
+      "description": "Label with meaning 'less than number'",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "<{number}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Oc/9PrbjfyLHS60BXceD1A==": {
+      "description": "A list of items of various types, for example: \"San Francisco; London; Tokyo\". {previous items} and {following items} are themselves lists that contain one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items}; {following items}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AXXbKEUZuc0ji1IClRrOOw==": {
+      "description": "A list of items of various types separated by bullets, for example: \"San Francisco \\u2022 London \\u2022 Tokyo\". {previous items} and {following items} are themselves lists that contain one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items} • {following items}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "89ACgPMtnwlLDSeqhLBx2Q==": {
+      "description": "A list of items of various types separated by commas, for example: \"San Francisco, London, Tokyo\". {previous items} and {following items} are themselves lists that contain one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items}, {following items}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5hL7VXOBVnetm46YAjpX0g==": {
+      "description": "A list of items of various types with a serial comma, for example: \"item1, item2, and item3\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items}, et {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "icNetEL/crQv/PS6yhySVQ==": {
+      "description": "A list of items of various types, for example: \"item1, item2, item3 and item4\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items} et {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8kLAQ3ffiiFnQ/bWPqXfuQ==": {
+      "description": "A list of items of various types with a serial comma, for example: \"item1, item2, or item3\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items}, ou {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8eSaAzrWtAqn9ktNKfkaEg==": {
+      "description": "A list of items of various types, for example: \"item1, item2, item3 or item4\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items} ou {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+IBI7kr/mMKdzp+3stDvkw==": {
+      "description": "A list of items of various types, for example: \"San Francisco; London; Tokyo\". {previous items} itself contains one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items}; {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "55IeE8c0qqtjTU0lo7q9AA==": {
+      "description": "A list of items of various types separated by bullets, for example: \"San Francisco \\u2022 London \\u2022 Tokyo\". {previous items} contains one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items} • {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6PRJS0QalZfvaN8CkKCUCw==": {
+      "description": "A list of items of various types, for example: \"item1, item2, item3, item4\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items}, {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    }
+  }
+}

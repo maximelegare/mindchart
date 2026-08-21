@@ -1,5 +1,6 @@
 module.exports = (api) => {
   api.cache(true);
+
   return {
     presets: [
       [
@@ -10,6 +11,7 @@ module.exports = (api) => {
         },
       ],
       "nativewind/babel",
+      "@nkzw/babel-preset-fbtee",
     ],
     plugins: [
       "react-native-reanimated/plugin",

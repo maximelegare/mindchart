@@ -38,6 +38,7 @@ export type IconName =
   | "info"
   | "key-round"
   | "keyboard"
+  | "languages"
   | "layers"
   | "link-2-off"
   | "link-2"
@@ -228,6 +229,10 @@ export const ICON_METADATA: Record<
   keyboard: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 8h.01M12 12h.01M14 8h.01M16 12h.01M18 8h.01M6 8h.01M7 16h10m-9-4h.01"></path><rect width="20" height="16" x="2" y="4" rx="2"></rect></g>`,
+  },
+  languages: {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 8l6 6m-7 0l6-6l2-3M2 5h12M7 2h1m14 20l-5-10l-5 10m2-4h6"></path>`,
   },
   layers: {
     viewBox: "0 0 24 24",

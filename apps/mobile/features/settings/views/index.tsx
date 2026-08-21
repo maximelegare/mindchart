@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import ListItem from "@/components/ui/list-item";
 import { SettingsSection } from "@/features/settings/components/settingsSection";
 import { ThemeSettingItem } from "@/features/settings/theme/ThemeItem";
+import { LanguageSettingSection } from "@/features/settings/features/translations/components/languageSetting";
 import { AiSettingsSection } from "@/features/settings/features/ai/components/aiSettingsSection";
 import { WorkspacesSettingsSection } from "@/features/settings/features/workspaces/components/workspacesSettingsSection";
 import { LockScreenSettingsSection } from "@/features/lockScreen/views/lockScreenSettingsSection";
@@ -18,17 +19,13 @@ export const SettingsFeature = () => {
       <SettingsSection title="Appearance" icon="palette">
         <ThemeSettingItem />
       </SettingsSection>
-
+      <LanguageSettingSection />
       <LockScreenSettingsSection />
-
       <AiSettingsSection />
-
       <WorkspacesSettingsSection />
-
       <SettingsSection title="About" icon="info">
         <AppVersionFeature />
       </SettingsSection>
-
       <SettingsSection title="Developer" icon="brackets-curly">
         <ListItem
           label="Developer Options"
