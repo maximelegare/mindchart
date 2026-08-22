@@ -1,4 +1,5 @@
 import { createEmptyThought, type ThoughtsFormValue } from "./types";
+import type { ThoughtFieldPlaceholders } from "./thoughtsEditorLabels";
 
 const TITLE_CLASS = "thought-title";
 const SUMMARY_CLASS = "thought-summary";
@@ -248,8 +249,9 @@ function thoughtItemHtml(
 function liToHtml(
   thought: ThoughtsFormValue,
   showTitles: boolean,
-  showGraphButton: boolean
-): string {
+  showGraphButton: boolean,
+  placeholders: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">
+) {
   const categoryId = thought.categoryId || "uncategorized";
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
@@ -261,8 +263,8 @@ function liToHtml(
     const summary = escapeHtml(thought.summary).replace(/\n/g, "<br>");
     return thoughtItemHtml(
       categoryId,
-      titledFieldHtml(TITLE_CLASS, TITLE_PLACEHOLDER, title) +
-        titledFieldHtml(SUMMARY_CLASS, SUMMARY_PLACEHOLDER, summary),
+      titledFieldHtml(TITLE_CLASS, placeholders.title, title) +
+        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, summary),
       options
     );
   }
@@ -271,13 +273,14 @@ function liToHtml(
   const summary = escapeHtml(summaryText).replace(/\n/g, "<br>");
   return thoughtItemHtml(
     categoryId,
-    titledFieldHtml(SUMMARY_CLASS, BULLET_PLACEHOLDER, summary),
+    titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, summary),
     options
   );
 }
 
 export type ThoughtsToHtmlOptions = {
   showGraphButtons?: boolean;
+  placeholders?: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">;
 };
 
 /** Serialize thoughts into an HTML unordered list for the rich editor. */
@@ -287,17 +290,24 @@ export function thoughtsToHtml(
   options: ThoughtsToHtmlOptions = {}
 ): string {
   const showGraphButtons = options.showGraphButtons ?? false;
+  const placeholders = {
+    title: options.placeholders?.title ?? TITLE_PLACEHOLDER,
+    summary: options.placeholders?.summary ?? SUMMARY_PLACEHOLDER,
+    bullet: options.placeholders?.bullet ?? BULLET_PLACEHOLDER,
+  };
 
   if (thoughts.length === 0) {
     const body = showTitles
-      ? titledFieldHtml(TITLE_CLASS, TITLE_PLACEHOLDER, "") +
-        titledFieldHtml(SUMMARY_CLASS, SUMMARY_PLACEHOLDER, "")
-      : titledFieldHtml(SUMMARY_CLASS, BULLET_PLACEHOLDER, "");
+      ? titledFieldHtml(TITLE_CLASS, placeholders.title, "") +
+        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, "")
+      : titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, "");
     return `<ul>${thoughtItemHtml("uncategorized", body)}</ul>`;
   }
 
   return `<ul>${thoughts
-    .map((thought) => liToHtml(thought, showTitles, showGraphButtons))
+    .map((thought) =>
+      liToHtml(thought, showTitles, showGraphButtons, placeholders)
+    )
     .join("")}</ul>`;
 }
 

@@ -40,6 +40,14 @@ import {
   setSimplifiedModeScript,
   setThoughtValidationErrorsScript,
 } from "./bulletEditorScript";
+import {
+  ThoughtsEditorClearLabel,
+  ThoughtsEditorContentLabel,
+  ThoughtsEditorTitlesToggleLabel,
+  buildThoughtPlaceholdersScript,
+  getThoughtFieldPlaceholders,
+  thoughtsEditorShowTitlesAccessibilityLabel,
+} from "./thoughtsEditorLabels";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
 const QUICKSAND_BOLD = require("@/assets/fonts/Quicksand-Bold.ttf");
@@ -235,10 +243,31 @@ function ThoughtsEditorInner(
   simplifiedRef.current = effectiveSimplified;
   const borderColorRef = React.useRef(hsl("border", colorScheme));
   borderColorRef.current = hsl("border", colorScheme);
-  const initialHtmlRef = React.useRef(
-    thoughtsToHtml(getValues("thoughts"), effectiveShowTitles, {
+  const thoughtPlaceholders = React.useMemo(
+    () => getThoughtFieldPlaceholders(),
+    []
+  );
+  const htmlOptions = React.useMemo(
+    () => ({
       showGraphButtons,
-    })
+      placeholders: {
+        title: thoughtPlaceholders.title,
+        summary: thoughtPlaceholders.summary,
+        bullet: thoughtPlaceholders.bullet,
+      },
+    }),
+    [showGraphButtons, thoughtPlaceholders]
+  );
+  const validationMessages = React.useMemo(
+    () => ({
+      titleRequired: thoughtPlaceholders.titleRequired,
+      summaryRequired: thoughtPlaceholders.summaryRequired,
+      emptyBullet: thoughtPlaceholders.emptyBullet,
+    }),
+    [thoughtPlaceholders]
+  );
+  const initialHtmlRef = React.useRef(
+    thoughtsToHtml(getValues("thoughts"), effectiveShowTitles, htmlOptions)
   );
   const categoryColorsCssRef = React.useRef(buildCategoryColorCss());
   const { ref: categorySheetRef, close: closeCategorySheet } = useBottomSheet();
@@ -337,6 +366,9 @@ function ThoughtsEditorInner(
     if (readOnly) {
       richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
     } else {
+      richRef.current?.injectJavascript(
+        buildThoughtPlaceholdersScript(thoughtPlaceholders)
+      );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
     }
     if (showGraphButtons) {
@@ -345,7 +377,13 @@ function ThoughtsEditorInner(
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
     });
-  }, [applyEditorFlags, applySimplifiedMode, readOnly, showGraphButtons]);
+  }, [
+    applyEditorFlags,
+    applySimplifiedMode,
+    readOnly,
+    showGraphButtons,
+    thoughtPlaceholders,
+  ]);
 
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
@@ -374,9 +412,12 @@ function ThoughtsEditorInner(
     // Set titles flag before the guard installs/normalizes, or titles get stripped.
     applyEditorFlags(showTitles);
     applySimplifiedMode(false);
+    richRef.current?.injectJavascript(
+      buildThoughtPlaceholdersScript(thoughtPlaceholders)
+    );
     richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
     richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
+      thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
     );
     refreshCategoryTimers();
     // Intentionally keyed on edit entry only (readOnly / graph chrome), not Titles toggle.
@@ -385,23 +426,24 @@ function ThoughtsEditorInner(
     applySimplifiedMode,
     readOnly,
     refreshCategoryTimers,
-    showGraphButtons,
+    htmlOptions,
+    thoughtPlaceholders,
   ]);
 
   const handleClearContent = React.useCallback(() => {
     const empty = [createEmptyThought(noteId)];
     setValue("thoughts", empty, { shouldDirty: true });
     richRef.current?.setContentHTML(
-      thoughtsToHtml(empty, showTitlesRef.current, { showGraphButtons })
+      thoughtsToHtml(empty, showTitlesRef.current, htmlOptions)
     );
     refreshCategoryTimers();
     applySimplifiedMode(simplifiedRef.current);
   }, [
     applySimplifiedMode,
+    htmlOptions,
     noteId,
     refreshCategoryTimers,
     setValue,
-    showGraphButtons,
   ]);
 
   const handleShowTitlesChange = React.useCallback(
@@ -421,7 +463,7 @@ function ThoughtsEditorInner(
       }
 
       richRef.current?.setContentHTML(
-        thoughtsToHtml(nextThoughts, nextShowTitles, { showGraphButtons })
+        thoughtsToHtml(nextThoughts, nextShowTitles, htmlOptions)
       );
       refreshCategoryTimers();
       applySimplifiedMode(simplifiedRef.current);
@@ -446,7 +488,7 @@ function ThoughtsEditorInner(
       showTitlesRef.current = false;
       applyEditorFlags(false);
       richRef.current?.setContentHTML(
-        thoughtsToHtml(getValues("thoughts"), false, { showGraphButtons })
+        thoughtsToHtml(getValues("thoughts"), false, htmlOptions)
       );
       refreshCategoryTimers();
       applySimplifiedMode(true);
@@ -456,7 +498,7 @@ function ThoughtsEditorInner(
     showTitlesRef.current = showTitles;
     applyEditorFlags(showTitles);
     richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), showTitles, { showGraphButtons })
+      thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
     );
     refreshCategoryTimers();
     applySimplifiedMode(false);
@@ -550,6 +592,7 @@ function ThoughtsEditorInner(
             setThoughtValidationErrorsScript({
               emptyContent: true,
               incomplete: [],
+              messages: validationMessages,
             })
           );
           return false;
@@ -576,6 +619,7 @@ function ThoughtsEditorInner(
               setThoughtValidationErrorsScript({
                 emptyContent: false,
                 incomplete,
+                messages: validationMessages,
               })
             );
             return false;
@@ -589,7 +633,7 @@ function ThoughtsEditorInner(
         richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
       },
     }),
-    [getValues]
+    [getValues, validationMessages]
   );
 
   return (
@@ -598,7 +642,7 @@ function ThoughtsEditorInner(
       <View className="flex-col flex-1 min-h-0">
         {!readOnly && !plain ? (
           <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
-            Content
+            <ThoughtsEditorContentLabel />
           </Label>
         ) : null}
 
@@ -626,19 +670,19 @@ function ThoughtsEditorInner(
             >
               <Button onPress={handleClearContent} variant="ghost" size="sm">
                 <Typography className="text-muted-foreground text-xs">
-                  Clear
+                  <ThoughtsEditorClearLabel />
                 </Typography>
               </Button>
 
               {showToolbar && !effectiveSimplified ? (
                 <View className="flex-row items-center gap-3">
                   <Typography className="text-sm text-muted-foreground">
-                    Titles
+                    <ThoughtsEditorTitlesToggleLabel />
                   </Typography>
                   <Switch
                     checked={showTitles}
                     onCheckedChange={handleShowTitlesChange}
-                    aria-label="Show thought titles"
+                    aria-label={thoughtsEditorShowTitlesAccessibilityLabel()}
                     trackColor={hsl("border", colorScheme)}
                     trackCheckedColor={hsl("primary", colorScheme)}
                     thumbColor={hsl("card", colorScheme)}

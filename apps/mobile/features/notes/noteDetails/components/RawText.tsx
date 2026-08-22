@@ -8,6 +8,10 @@ import {
   BottomSheetView,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Button, Typography } from "@/components/ui";
+import {
+  RawTextButtonLabel,
+  RawTextSheetTitle,
+} from "@/features/notes/noteDetails/noteDetailsLabels";
 
 export const RawTextViewer = ({ rawText }: { rawText: string }) => {
   return (
@@ -15,7 +19,9 @@ export const RawTextViewer = ({ rawText }: { rawText: string }) => {
       <BottomSheet>
         <BottomSheetOpenTrigger asChild className="w-fit">
           <Button variant="outline" size="xs" className="px-1">
-            <Typography variant="h4">Raw Text</Typography>
+            <Typography variant="h4">
+              <RawTextButtonLabel />
+            </Typography>
           </Button>
         </BottomSheetOpenTrigger>
         <BottomSheetContent
@@ -28,7 +34,9 @@ export const RawTextViewer = ({ rawText }: { rawText: string }) => {
             style={{ left: 19 }}
           >
             <BottomSheetHeader className="bg-background">
-              <Typography variant="h3">Raw Text (Original text)</Typography>
+              <Typography variant="h3">
+                <RawTextSheetTitle />
+              </Typography>
             </BottomSheetHeader>
             <ScrollView style={{ maxHeight: 300 }}>
               <View className="flex flex-col w-full flex-wrap gap-2">

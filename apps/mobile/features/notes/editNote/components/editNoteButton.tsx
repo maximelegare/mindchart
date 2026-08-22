@@ -1,6 +1,10 @@
 import React from "react";
 import { Button } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
+import {
+  EditNoteEditAccessibilityLabel,
+  EditNoteSaveAccessibilityLabel,
+} from "@/features/notes/noteDetails/noteDetailsLabels";
 
 type EditNoteButtonProps = {
   isEditing: boolean;
@@ -17,7 +21,11 @@ export const EditNoteButton = ({
     <Button
       variant="ghost"
       size="icon"
-      accessibilityLabel={isEditing ? "Save note" : "Edit note"}
+      accessibilityLabel={
+        isEditing
+          ? EditNoteSaveAccessibilityLabel()
+          : EditNoteEditAccessibilityLabel()
+      }
       onPress={onPress}
       disabled={disabled}
     >

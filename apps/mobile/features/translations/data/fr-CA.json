@@ -1408,6 +1408,534 @@
         }
       ],
       "types": []
+    },
+    "0P6d6Cw0xPBS1oreZXfFOA==": {
+      "description": "Person selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter des personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lTM9Hauc9ahGm2uX0JlZTQ==": {
+      "description": "Person selector message when contacts permission denied",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "L'accès aux contacts a été refusé. Ajoutez des personnes avec +.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lfMEGrfE/R8Vl8e+zSNi/A==": {
+      "description": "Person selector search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "mmQK1N6yE7k/ht17mS2erQ==": {
+      "description": "Person selector selected count heading",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sélectionné ({count})",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9g5yzP3WJPxFri5Pzq5OnA==": {
+      "description": "Accessibility label to remove selected person",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Retirer {personName}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Lp+L4yb7HRRDUlw5SHAP1w==": {
+      "description": "Person selector empty list message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucune personne pour l'instant. Appuyez sur + pour en ajouter une.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vkliJL/ZLr9vq21swm4HIQ==": {
+      "description": "Person selector message when all people are selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Plus de personnes à ajouter.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xOHb+QsTLb6GDItxjpwKHQ==": {
+      "description": "Person selector close button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fermer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "EFayYpMOuWpNa+iakkh0Sw==": {
+      "description": "Accessibility label for add person button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter une personne",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ac032lPba4daIA0f+NVpjA==": {
+      "description": "Person selector create contact sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer un contact",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "KmHVg4PbfVSi1QS5YbQXuA==": {
+      "description": "Person selector contact name placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nom",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Z2uo+ovxUxeA/sL87L+40g==": {
+      "description": "Person selector add contact button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "nrIpFcOybe6QLsq8yztx8A==": {
+      "description": "Feeling selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Comment vous sentez-vous?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FN7vFDYF3FBNHeQ1JNDgfQ==": {
+      "description": "Location selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "oj0jchS70ek/NHLrKpUy2A==": {
+      "description": "Location selector search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher ou ajouter un emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sW75tzg2Dxo3HGZPA6LLbA==": {
+      "description": "Location selector add new location row",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter « {name} »",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4foGZOMeHVdmb0wgQxPlwQ==": {
+      "description": "Accessibility label to remove a location",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Retirer {locationName}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "uYYe3s8aCIffuURJtDNRbA==": {
+      "description": "Location selector empty list message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun emplacement pour l'instant. Saisissez un nom pour en ajouter un.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "44GQ0XfP6aspjZf5L/n6oQ==": {
+      "description": "Location selector no search matches message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun emplacement correspondant.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XlgVYL3IaeFTiRJuj6lKlQ==": {
+      "description": "Location delete confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Retirer « {locationName} » de toutes les notes qui l'utilisent?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xc4MzfLtZqK+YL7uNIMMyw==": {
+      "description": "Note details page subtitle",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qdJzNSvQ2Qh5HGcnrsyK8w==": {
+      "description": "Note details menu: delete note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bMKIgWdEulXzI8Bohh0bwQ==": {
+      "description": "Note details menu: settings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Paramètres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Cy+p9lzI/nUGpY7QoGkR5g==": {
+      "description": "Note details view mode: complete",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vue complète",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bO5VKDSiovjViff1BfVvmw==": {
+      "description": "Note details view mode: simplified",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vue simplifiée",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JvycHaOCZS7Fj1S/vHzk5Q==": {
+      "description": "Note details title input placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Saisir un titre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "onO81Pq/litVK/c+e4d7YQ==": {
+      "description": "Note details title validation placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le titre est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "LXFqSbfY/poA1CitfOXO9g==": {
+      "description": "Discard note button: delete preview note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VHA8Vsbl10hmHGZVtjf5Uw==": {
+      "description": "Discard note button: discard editing note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cyhvt9XbkpDta1jPIpAovQ==": {
+      "description": "Accessibility label for delete note button in preview",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZrkcEmKJdkrBwJH+7w7xtg==": {
+      "description": "Accessibility label for discard note button while editing",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JcYearLypkMy+cO78r6UMg==": {
+      "description": "Note details raw text viewer trigger",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Texte brut",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AgS4bOrw6tdkYeUezCSf2Q==": {
+      "description": "Note details raw text sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Texte brut (texte original)",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "RJyoSaVtpU3q7DH/KSTzJg==": {
+      "description": "Alert title when note must be in a folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier requis",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "hvx3VpKfkwfT3ai5Rw/Ntg==": {
+      "description": "Alert message when note must be in a folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les notes doivent être enregistrées dans un dossier. La racine n'est pas autorisée.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JP1PiTQEuCER0J16nj/OBA==": {
+      "description": "Alert title when note attribute update fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la mise à jour",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "wHWDs23g6l0AgY1+v/gO+Q==": {
+      "description": "Accessibility label for save note button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "H69GEweFOHidxU+vxV+S+A==": {
+      "description": "Accessibility label for edit note button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Modifier la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xE1XZYyh9vY8CQCAzEkZuw==": {
+      "description": "Thoughts editor field label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "J5Eve7XfOC1ieVjKXCvBfQ==": {
+      "description": "Thoughts editor clear content button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Effacer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "HNW0gK+C6jgrA3EjJF8N3Q==": {
+      "description": "Thoughts editor show titles toggle",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Titres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bCw5fXRero32WOYmmtX30g==": {
+      "description": "Accessibility label for show thought titles switch",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher les titres des pensées",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "WKEz3QN+mpH02UIioBjhgQ==": {
+      "description": "Thought editor title field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Titre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "jzAhMuvE1etF0mA37ZWyiQ==": {
+      "description": "Thought editor summary field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Résumé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8ho4sEErpEJNDi3wxIIRSg==": {
+      "description": "Thought editor bullet field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Saisir un point",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5PjNEnhkxX8I3heCFD7BGA==": {
+      "description": "Thought editor title required validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le titre est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "oJy97kxcLlEpLDXXiaoPhQ==": {
+      "description": "Thought editor summary required validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le résumé est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ywt2slcsC/WOTeXm978Cng==": {
+      "description": "Thought editor empty content validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajoutez au moins un point",
+          "variations": {}
+        }
+      ],
+      "types": []
     }
   }
 }

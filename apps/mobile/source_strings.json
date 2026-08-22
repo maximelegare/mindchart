@@ -786,6 +786,1108 @@
     },
     {
       "hashToLeaf": {
+        "0P6d6Cw0xPBS1oreZXfFOA==": {
+          "desc": "Person selector sheet title",
+          "text": "Add People"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 84
+        },
+        "end": {
+          "line": 4,
+          "column": 65,
+          "index": 140
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector sheet title",
+          "text": "Add People"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lTM9Hauc9ahGm2uX0JlZTQ==": {
+          "desc": "Person selector message when contacts permission denied",
+          "text": "Contacts access was denied. Add people with +."
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 210
+        },
+        "end": {
+          "line": 11,
+          "column": 3,
+          "index": 334
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector message when contacts permission denied",
+          "text": "Contacts access was denied. Add people with +."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lfMEGrfE/R8Vl8e+zSNi/A==": {
+          "desc": "Person selector search placeholder",
+          "text": "Search people"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 15,
+          "column": 9,
+          "index": 400
+        },
+        "end": {
+          "line": 15,
+          "column": 67,
+          "index": 458
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector search placeholder",
+          "text": "Search people"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "mmQK1N6yE7k/ht17mS2erQ==": {
+          "desc": "Person selector selected count heading",
+          "text": "Selected ({count})"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 4,
+          "index": 562
+        },
+        "end": {
+          "line": 26,
+          "column": 10,
+          "index": 685
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector selected count heading",
+          "text": "Selected ({count})"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "9g5yzP3WJPxFri5Pzq5OnA==": {
+          "desc": "Accessibility label to remove selected person",
+          "text": "Remove {personName}"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 31,
+          "column": 9,
+          "index": 780
+        },
+        "end": {
+          "line": 34,
+          "column": 3,
+          "index": 888
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label to remove selected person",
+          "text": "Remove {personName}"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Lp+L4yb7HRRDUlw5SHAP1w==": {
+          "desc": "Person selector empty list message",
+          "text": "No people yet. Tap + to add someone."
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 38,
+          "column": 9,
+          "index": 953
+        },
+        "end": {
+          "line": 41,
+          "column": 3,
+          "index": 1046
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector empty list message",
+          "text": "No people yet. Tap + to add someone."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "vkliJL/ZLr9vq21swm4HIQ==": {
+          "desc": "Person selector message when all people are selected",
+          "text": "No more people to add."
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 45,
+          "column": 9,
+          "index": 1114
+        },
+        "end": {
+          "line": 48,
+          "column": 3,
+          "index": 1211
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector message when all people are selected",
+          "text": "No more people to add."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xOHb+QsTLb6GDItxjpwKHQ==": {
+          "desc": "Person selector close button",
+          "text": "Close"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 52,
+          "column": 9,
+          "index": 1270
+        },
+        "end": {
+          "line": 52,
+          "column": 61,
+          "index": 1322
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector close button",
+          "text": "Close"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "EFayYpMOuWpNa+iakkh0Sw==": {
+          "desc": "Accessibility label for add person button",
+          "text": "Add person"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 56,
+          "column": 9,
+          "index": 1398
+        },
+        "end": {
+          "line": 56,
+          "column": 71,
+          "index": 1460
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for add person button",
+          "text": "Add person"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ac032lPba4daIA0f+NVpjA==": {
+          "desc": "Person selector create contact sheet title",
+          "text": "Create Contact"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 60,
+          "column": 9,
+          "index": 1527
+        },
+        "end": {
+          "line": 62,
+          "column": 8,
+          "index": 1610
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector create contact sheet title",
+          "text": "Create Contact"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "KmHVg4PbfVSi1QS5YbQXuA==": {
+          "desc": "Person selector contact name placeholder",
+          "text": "Name"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 66,
+          "column": 9,
+          "index": 1681
+        },
+        "end": {
+          "line": 66,
+          "column": 64,
+          "index": 1736
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector contact name placeholder",
+          "text": "Name"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Z2uo+ovxUxeA/sL87L+40g==": {
+          "desc": "Person selector add contact button",
+          "text": "Add"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 70,
+          "column": 9,
+          "index": 1800
+        },
+        "end": {
+          "line": 70,
+          "column": 65,
+          "index": 1856
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Person selector add contact button",
+          "text": "Add"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "nrIpFcOybe6QLsq8yztx8A==": {
+          "desc": "Feeling selector sheet title",
+          "text": "How are you feeling?"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 75,
+          "column": 4,
+          "index": 1922
+        },
+        "end": {
+          "line": 75,
+          "column": 71,
+          "index": 1989
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Feeling selector sheet title",
+          "text": "How are you feeling?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "FN7vFDYF3FBNHeQ1JNDgfQ==": {
+          "desc": "Location selector sheet title",
+          "text": "Location"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 80,
+          "column": 9,
+          "index": 2054
+        },
+        "end": {
+          "line": 80,
+          "column": 65,
+          "index": 2110
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Location selector sheet title",
+          "text": "Location"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "oj0jchS70ek/NHLrKpUy2A==": {
+          "desc": "Location selector search placeholder",
+          "text": "Search or add a location"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 84,
+          "column": 9,
+          "index": 2178
+        },
+        "end": {
+          "line": 87,
+          "column": 3,
+          "index": 2261
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Location selector search placeholder",
+          "text": "Search or add a location"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "sW75tzg2Dxo3HGZPA6LLbA==": {
+          "desc": "Location selector add new location row",
+          "text": "Add “{name}”"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 92,
+          "column": 4,
+          "index": 2355
+        },
+        "end": {
+          "line": 94,
+          "column": 10,
+          "index": 2471
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Location selector add new location row",
+          "text": "Add “{name}”"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4foGZOMeHVdmb0wgQxPlwQ==": {
+          "desc": "Accessibility label to remove a location",
+          "text": "Remove {locationName}"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 99,
+          "column": 9,
+          "index": 2570
+        },
+        "end": {
+          "line": 102,
+          "column": 3,
+          "index": 2675
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label to remove a location",
+          "text": "Remove {locationName}"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "uYYe3s8aCIffuURJtDNRbA==": {
+          "desc": "Location selector empty list message",
+          "text": "No locations yet. Type a name to add one."
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 106,
+          "column": 9,
+          "index": 2742
+        },
+        "end": {
+          "line": 109,
+          "column": 3,
+          "index": 2842
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Location selector empty list message",
+          "text": "No locations yet. Type a name to add one."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "44GQ0XfP6aspjZf5L/n6oQ==": {
+          "desc": "Location selector no search matches message",
+          "text": "No matching locations."
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 113,
+          "column": 9,
+          "index": 2909
+        },
+        "end": {
+          "line": 116,
+          "column": 3,
+          "index": 2997
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Location selector no search matches message",
+          "text": "No matching locations."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "XlgVYL3IaeFTiRJuj6lKlQ==": {
+          "desc": "Location delete confirmation modal description",
+          "text": "Remove \"{locationName}\" from all notes that use it?"
+        }
+      },
+      "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 120,
+          "column": 9,
+          "index": 3081
+        },
+        "end": {
+          "line": 127,
+          "column": 3,
+          "index": 3251
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Location delete confirmation modal description",
+          "text": "Remove \"{locationName}\" from all notes that use it?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xc4MzfLtZqK+YL7uNIMMyw==": {
+          "desc": "Note details page subtitle",
+          "text": "Note"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 9,
+          "index": 123
+        },
+        "end": {
+          "line": 5,
+          "column": 50,
+          "index": 164
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details page subtitle",
+          "text": "Note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "qdJzNSvQ2Qh5HGcnrsyK8w==": {
+          "desc": "Note details menu: delete note",
+          "text": "Delete Note"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 9,
+          "column": 9,
+          "index": 229
+        },
+        "end": {
+          "line": 9,
+          "column": 61,
+          "index": 281
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details menu: delete note",
+          "text": "Delete Note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bMKIgWdEulXzI8Bohh0bwQ==": {
+          "desc": "Note details menu: settings",
+          "text": "Settings"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 13,
+          "column": 9,
+          "index": 344
+        },
+        "end": {
+          "line": 13,
+          "column": 55,
+          "index": 390
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details menu: settings",
+          "text": "Settings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Cy+p9lzI/nUGpY7QoGkR5g==": {
+          "desc": "Note details view mode: complete",
+          "text": "Complete View"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 17,
+          "column": 9,
+          "index": 453
+        },
+        "end": {
+          "line": 17,
+          "column": 73,
+          "index": 517
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details view mode: complete",
+          "text": "Complete View"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bO5VKDSiovjViff1BfVvmw==": {
+          "desc": "Note details view mode: simplified",
+          "text": "Simplified View"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 21,
+          "column": 9,
+          "index": 582
+        },
+        "end": {
+          "line": 21,
+          "column": 77,
+          "index": 650
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details view mode: simplified",
+          "text": "Simplified View"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "JvycHaOCZS7Fj1S/vHzk5Q==": {
+          "desc": "Note details title input placeholder",
+          "text": "Enter a title"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 25,
+          "column": 9,
+          "index": 712
+        },
+        "end": {
+          "line": 25,
+          "column": 69,
+          "index": 772
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details title input placeholder",
+          "text": "Enter a title"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "onO81Pq/litVK/c+e4d7YQ==": {
+          "desc": "Note details title validation placeholder",
+          "text": "Title is required"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 29,
+          "column": 9,
+          "index": 842
+        },
+        "end": {
+          "line": 32,
+          "column": 3,
+          "index": 923
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details title validation placeholder",
+          "text": "Title is required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LXFqSbfY/poA1CitfOXO9g==": {
+          "desc": "Discard note button: delete preview note",
+          "text": "Delete"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 36,
+          "column": 9,
+          "index": 980
+        },
+        "end": {
+          "line": 36,
+          "column": 74,
+          "index": 1045
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Discard note button: delete preview note",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "VHA8Vsbl10hmHGZVtjf5Uw==": {
+          "desc": "Discard note button: discard editing note",
+          "text": "Discard"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 40,
+          "column": 9,
+          "index": 1103
+        },
+        "end": {
+          "line": 40,
+          "column": 76,
+          "index": 1170
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Discard note button: discard editing note",
+          "text": "Discard"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cyhvt9XbkpDta1jPIpAovQ==": {
+          "desc": "Accessibility label for delete note button in preview",
+          "text": "Delete note"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 44,
+          "column": 9,
+          "index": 1244
+        },
+        "end": {
+          "line": 47,
+          "column": 3,
+          "index": 1331
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for delete note button in preview",
+          "text": "Delete note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZrkcEmKJdkrBwJH+7w7xtg==": {
+          "desc": "Accessibility label for discard note button while editing",
+          "text": "Discard note"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 51,
+          "column": 9,
+          "index": 1406
+        },
+        "end": {
+          "line": 54,
+          "column": 3,
+          "index": 1498
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for discard note button while editing",
+          "text": "Discard note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "JcYearLypkMy+cO78r6UMg==": {
+          "desc": "Note details raw text viewer trigger",
+          "text": "Raw Text"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 58,
+          "column": 9,
+          "index": 1551
+        },
+        "end": {
+          "line": 58,
+          "column": 72,
+          "index": 1614
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details raw text viewer trigger",
+          "text": "Raw Text"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "AgS4bOrw6tdkYeUezCSf2Q==": {
+          "desc": "Note details raw text sheet title",
+          "text": "Raw Text (Original text)"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 63,
+          "column": 4,
+          "index": 1672
+        },
+        "end": {
+          "line": 65,
+          "column": 10,
+          "index": 1760
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note details raw text sheet title",
+          "text": "Raw Text (Original text)"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "RJyoSaVtpU3q7DH/KSTzJg==": {
+          "desc": "Alert title when note must be in a folder",
+          "text": "Folder required"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 70,
+          "column": 9,
+          "index": 1834
+        },
+        "end": {
+          "line": 73,
+          "column": 3,
+          "index": 1913
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when note must be in a folder",
+          "text": "Folder required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "hvx3VpKfkwfT3ai5Rw/Ntg==": {
+          "desc": "Alert message when note must be in a folder",
+          "text": "Notes must be saved in a folder. Root is not allowed."
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 77,
+          "column": 9,
+          "index": 1985
+        },
+        "end": {
+          "line": 80,
+          "column": 3,
+          "index": 2104
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert message when note must be in a folder",
+          "text": "Notes must be saved in a folder. Root is not allowed."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "JP1PiTQEuCER0J16nj/OBA==": {
+          "desc": "Alert title when note attribute update fails",
+          "text": "Update failed"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 84,
+          "column": 9,
+          "index": 2172
+        },
+        "end": {
+          "line": 84,
+          "column": 77,
+          "index": 2240
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when note attribute update fails",
+          "text": "Update failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "wHWDs23g6l0AgY1+v/gO+Q==": {
+          "desc": "Accessibility label for save note button",
+          "text": "Save note"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 88,
+          "column": 9,
+          "index": 2305
+        },
+        "end": {
+          "line": 88,
+          "column": 69,
+          "index": 2365
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for save note button",
+          "text": "Save note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "H69GEweFOHidxU+vxV+S+A==": {
+          "desc": "Accessibility label for edit note button",
+          "text": "Edit note"
+        }
+      },
+      "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 92,
+          "column": 9,
+          "index": 2430
+        },
+        "end": {
+          "line": 92,
+          "column": 69,
+          "index": 2490
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for edit note button",
+          "text": "Edit note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "JpGHYAdNQh9+3X0x4ap5iA==": {
           "desc": "Floating create menu: AI generated note",
           "text": "AI Generated..."
@@ -794,14 +1896,14 @@
       "filename": "features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels.tsx",
       "loc": {
         "start": {
-          "line": 4,
-          "column": 9,
-          "index": 88
+          "line": 5,
+          "column": 4,
+          "index": 94
         },
         "end": {
-          "line": 4,
-          "column": 82,
-          "index": 161
+          "line": 5,
+          "column": 77,
+          "index": 167
         }
       },
       "project": "",
@@ -823,14 +1925,14 @@
       "filename": "features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels.tsx",
       "loc": {
         "start": {
-          "line": 8,
+          "line": 10,
           "column": 9,
-          "index": 233
+          "index": 243
         },
         "end": {
-          "line": 11,
+          "line": 13,
           "column": 3,
-          "index": 326
+          "index": 336
         }
       },
       "project": "",
@@ -852,14 +1954,14 @@
       "filename": "features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels.tsx",
       "loc": {
         "start": {
-          "line": 15,
+          "line": 17,
           "column": 9,
-          "index": 397
+          "index": 407
         },
         "end": {
-          "line": 18,
+          "line": 20,
           "column": 3,
-          "index": 484
+          "index": 494
         }
       },
       "project": "",
@@ -881,14 +1983,14 @@
       "filename": "features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels.tsx",
       "loc": {
         "start": {
-          "line": 22,
+          "line": 24,
           "column": 9,
-          "index": 554
+          "index": 564
         },
         "end": {
-          "line": 25,
+          "line": 27,
           "column": 3,
-          "index": 650
+          "index": 660
         }
       },
       "project": "",
@@ -910,14 +2012,14 @@
       "filename": "features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels.tsx",
       "loc": {
         "start": {
-          "line": 29,
+          "line": 31,
           "column": 9,
-          "index": 722
+          "index": 732
         },
         "end": {
-          "line": 32,
+          "line": 34,
           "column": 3,
-          "index": 806
+          "index": 816
         }
       },
       "project": "",
@@ -939,14 +2041,14 @@
       "filename": "features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels.tsx",
       "loc": {
         "start": {
-          "line": 36,
+          "line": 38,
           "column": 9,
-          "index": 880
+          "index": 890
         },
         "end": {
-          "line": 39,
+          "line": 41,
           "column": 3,
-          "index": 968
+          "index": 978
         }
       },
       "project": "",
@@ -968,14 +2070,14 @@
       "filename": "features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels.tsx",
       "loc": {
         "start": {
-          "line": 43,
+          "line": 45,
           "column": 9,
-          "index": 1044
+          "index": 1054
         },
         "end": {
-          "line": 46,
+          "line": 48,
           "column": 3,
-          "index": 1141
+          "index": 1151
         }
       },
       "project": "",
@@ -3043,6 +4145,296 @@
         "t": {
           "desc": "Display mode: categories",
           "text": "Display Categories"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xE1XZYyh9vY8CQCAzEkZuw==": {
+          "desc": "Thoughts editor field label",
+          "text": "Content"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 86
+        },
+        "end": {
+          "line": 4,
+          "column": 62,
+          "index": 139
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thoughts editor field label",
+          "text": "Content"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "J5Eve7XfOC1ieVjKXCvBfQ==": {
+          "desc": "Thoughts editor clear content button",
+          "text": "Clear"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 198
+        },
+        "end": {
+          "line": 8,
+          "column": 69,
+          "index": 258
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thoughts editor clear content button",
+          "text": "Clear"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "HNW0gK+C6jgrA3EjJF8N3Q==": {
+          "desc": "Thoughts editor show titles toggle",
+          "text": "Titles"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 324
+        },
+        "end": {
+          "line": 12,
+          "column": 68,
+          "index": 383
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thoughts editor show titles toggle",
+          "text": "Titles"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bCw5fXRero32WOYmmtX30g==": {
+          "desc": "Accessibility label for show thought titles switch",
+          "text": "Show thought titles"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 460
+        },
+        "end": {
+          "line": 19,
+          "column": 3,
+          "index": 552
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for show thought titles switch",
+          "text": "Show thought titles"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "WKEz3QN+mpH02UIioBjhgQ==": {
+          "desc": "Thought editor title field placeholder",
+          "text": "Title"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 33,
+          "column": 11,
+          "index": 827
+        },
+        "end": {
+          "line": 33,
+          "column": 65,
+          "index": 881
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thought editor title field placeholder",
+          "text": "Title"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "jzAhMuvE1etF0mA37ZWyiQ==": {
+          "desc": "Thought editor summary field placeholder",
+          "text": "Summary"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 34,
+          "column": 13,
+          "index": 896
+        },
+        "end": {
+          "line": 34,
+          "column": 71,
+          "index": 954
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thought editor summary field placeholder",
+          "text": "Summary"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8ho4sEErpEJNDi3wxIIRSg==": {
+          "desc": "Thought editor bullet field placeholder",
+          "text": "Enter a bullet point"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 35,
+          "column": 12,
+          "index": 968
+        },
+        "end": {
+          "line": 38,
+          "column": 5,
+          "index": 1056
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thought editor bullet field placeholder",
+          "text": "Enter a bullet point"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5PjNEnhkxX8I3heCFD7BGA==": {
+          "desc": "Thought editor title required validation",
+          "text": "Title is required"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 39,
+          "column": 19,
+          "index": 1077
+        },
+        "end": {
+          "line": 42,
+          "column": 5,
+          "index": 1163
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thought editor title required validation",
+          "text": "Title is required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "oJy97kxcLlEpLDXXiaoPhQ==": {
+          "desc": "Thought editor summary required validation",
+          "text": "Summary is required"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 43,
+          "column": 21,
+          "index": 1186
+        },
+        "end": {
+          "line": 46,
+          "column": 5,
+          "index": 1276
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thought editor summary required validation",
+          "text": "Summary is required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ywt2slcsC/WOTeXm978Cng==": {
+          "desc": "Thought editor empty content validation",
+          "text": "Add at least one bullet point"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 47,
+          "column": 17,
+          "index": 1295
+        },
+        "end": {
+          "line": 50,
+          "column": 5,
+          "index": 1392
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Thought editor empty content validation",
+          "text": "Add at least one bullet point"
         }
       }
     },
