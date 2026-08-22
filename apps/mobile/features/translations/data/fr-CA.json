@@ -1331,6 +1331,83 @@
         }
       ],
       "types": []
+    },
+    "JpGHYAdNQh9+3X0x4ap5iA==": {
+      "description": "Floating create menu: AI generated note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Généré par IA…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9ur1yDYzHuQ4DzrAGX/A6w==": {
+      "description": "Accessibility label to dismiss floating create menu",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fermer le menu de création",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "GWf6RKxCmR8Uuv2RATgtmg==": {
+      "description": "Accessibility label for floating create button when closed",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "UXuO6kFepSWjbARfJ6gGkA==": {
+      "description": "Accessibility label for floating create button when open",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fermer le menu de création",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4CjVXVB42tMR/EBGbxJx6Q==": {
+      "description": "Accessibility label for floating menu new note action",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvelle note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "3827461mLqDTQSJPk9pnIw==": {
+      "description": "Accessibility label for floating menu new folder action",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9utsaTEU3+q3tNR0uCzgnA==": {
+      "description": "Accessibility label for floating menu AI generated note action",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Généré par IA",
+          "variations": {}
+        }
+      ],
+      "types": []
     }
   }
 }

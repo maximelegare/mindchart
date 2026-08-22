@@ -45,6 +45,19 @@ import { useCreateBlankNote } from "@/features/notes/noteCreation/hooks/useCreat
 import { useFolderActions } from "@/features/contentList/features/folderContents/hooks/useFolderActions";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import { useControllers } from "@/api/controllers/useControllers";
+import {
+  FolderActionsNewFolderLabel,
+  FolderActionsNewNoteLabel,
+} from "@/features/contentList/features/folderContents/components/folderActionsLabels";
+import {
+  FloatingMenuAiGeneratedLabel,
+  floatingMenuAiGeneratedAccessibilityLabel,
+  floatingMenuCloseAccessibilityLabel,
+  floatingMenuCreateAccessibilityLabel,
+  floatingMenuDismissAccessibilityLabel,
+  floatingMenuNewFolderAccessibilityLabel,
+  floatingMenuNewNoteAccessibilityLabel,
+} from "@/features/notes/noteCreation/features/floatingButton/components/floatingButtonLabels";
 
 const BUTTON_SIZE = 72;
 const BORDER_RADIUS = BUTTON_SIZE / 2;
@@ -320,7 +333,8 @@ export const FloatingModal = ({
     () => [
       {
         key: "note",
-        label: "New note",
+        label: <FolderActionsNewNoteLabel />,
+        accessibilityLabel: floatingMenuNewNoteAccessibilityLabel(),
         icon: "notebook-text",
         createAction: "notes",
         onPress: () => {
@@ -329,14 +343,16 @@ export const FloatingModal = ({
       },
       {
         key: "folder",
-        label: "New folder",
+        label: <FolderActionsNewFolderLabel />,
+        accessibilityLabel: floatingMenuNewFolderAccessibilityLabel(),
         icon: "folder",
         createAction: "folders",
         onPress: handleCreateFolder,
       },
       {
         key: "ai",
-        label: "AI Generated...",
+        label: <FloatingMenuAiGeneratedLabel />,
+        accessibilityLabel: floatingMenuAiGeneratedAccessibilityLabel(),
         icon: "sparkles",
         createAction: "aiGenerated",
         onPress: handleGenerateWithAi,
@@ -495,7 +511,7 @@ export const FloatingModal = ({
           style={StyleSheet.absoluteFill}
           onPress={closeMenu}
           accessibilityRole="button"
-          accessibilityLabel="Dismiss create menu"
+          accessibilityLabel={floatingMenuDismissAccessibilityLabel()}
         >
           <Animated.View
             style={[
@@ -537,7 +553,11 @@ export const FloatingModal = ({
                 },
               ]}
               accessibilityRole="button"
-              accessibilityLabel={menuOpen ? "Close create menu" : "Create"}
+              accessibilityLabel={
+                menuOpen
+                  ? floatingMenuCloseAccessibilityLabel()
+                  : floatingMenuCreateAccessibilityLabel()
+              }
             >
               <Animated.View style={[styles.iconLayer, iconStyle]}>
                 <Animated.View style={[styles.iconAbsolute, plusIconStyle]}>
