@@ -11,14 +11,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 41,
+          "line": 39,
           "column": 8,
-          "index": 1166
+          "index": 1164
         },
         "end": {
-          "line": 43,
+          "line": 41,
           "column": 14,
-          "index": 1262
+          "index": 1260
         }
       },
       "project": "",
@@ -40,14 +40,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 46,
+          "line": 44,
           "column": 13,
-          "index": 1302
+          "index": 1300
         },
         "end": {
-          "line": 46,
+          "line": 44,
           "column": 70,
-          "index": 1359
+          "index": 1357
         }
       },
       "project": "",
@@ -69,14 +69,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 48,
+          "line": 46,
           "column": 13,
-          "index": 1392
+          "index": 1390
         },
         "end": {
-          "line": 48,
+          "line": 46,
           "column": 72,
-          "index": 1451
+          "index": 1449
         }
       },
       "project": "",
@@ -98,14 +98,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 56,
+          "line": 54,
           "column": 8,
-          "index": 1591
+          "index": 1589
         },
         "end": {
-          "line": 58,
+          "line": 56,
           "column": 14,
-          "index": 1710
+          "index": 1708
         }
       },
       "project": "",
@@ -127,14 +127,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 62,
+          "line": 60,
           "column": 8,
-          "index": 1760
+          "index": 1758
         },
         "end": {
-          "line": 64,
-          "column": 14,
-          "index": 1851
+          "line": 60,
+          "column": 79,
+          "index": 1829
         }
       },
       "project": "",
@@ -156,14 +156,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 68,
+          "line": 64,
           "column": 8,
-          "index": 1902
+          "index": 1880
         },
         "end": {
-          "line": 70,
+          "line": 66,
           "column": 14,
-          "index": 1995
+          "index": 1973
         }
       },
       "project": "",
@@ -185,14 +185,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 78,
+          "line": 74,
           "column": 13,
-          "index": 2134
+          "index": 2112
         },
         "end": {
-          "line": 78,
+          "line": 74,
           "column": 66,
-          "index": 2187
+          "index": 2165
         }
       },
       "project": "",
@@ -214,14 +214,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 80,
+          "line": 76,
           "column": 13,
-          "index": 2219
+          "index": 2197
         },
         "end": {
-          "line": 80,
+          "line": 76,
           "column": 62,
-          "index": 2268
+          "index": 2246
         }
       },
       "project": "",
@@ -243,14 +243,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 82,
+          "line": 78,
           "column": 13,
-          "index": 2301
+          "index": 2279
         },
         "end": {
-          "line": 82,
+          "line": 78,
           "column": 64,
-          "index": 2352
+          "index": 2330
         }
       },
       "project": "",
@@ -259,6 +259,1717 @@
         "t": {
           "desc": "Selected theme label: light",
           "text": "Light"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZqeIrCSUmcdHaWusaw7G/w==": {
+          "desc": "Folder picker sheet default title",
+          "text": "Move to…"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 86
+        },
+        "end": {
+          "line": 4,
+          "column": 69,
+          "index": 146
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker sheet default title",
+          "text": "Move to…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "mVAPO9KW8F4sju0eaWFYOw==": {
+          "desc": "Folder picker move header prefix",
+          "text": "Move:"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 208
+        },
+        "end": {
+          "line": 8,
+          "column": 65,
+          "index": 264
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker move header prefix",
+          "text": "Move:"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "M9rHIQaoOzkwZD8TlYMxhg==": {
+          "desc": "Folder selector sheet title",
+          "text": "Folders"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 323
+        },
+        "end": {
+          "line": 12,
+          "column": 62,
+          "index": 376
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder selector sheet title",
+          "text": "Folders"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yEg/0EJ1fGFu983Py8j8kA==": {
+          "desc": "Folder picker location panel title",
+          "text": "Location"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 436
+        },
+        "end": {
+          "line": 16,
+          "column": 70,
+          "index": 497
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker location panel title",
+          "text": "Location"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "sCrsv+nPvkLB5rv1IQk71A==": {
+          "desc": "Folder picker content panel title",
+          "text": "Content"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 20,
+          "column": 9,
+          "index": 556
+        },
+        "end": {
+          "line": 20,
+          "column": 68,
+          "index": 615
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker content panel title",
+          "text": "Content"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "pgwj0ZKUicAr6g8K5Q9I4g==": {
+          "desc": "Folder picker empty folder message",
+          "text": "Empty folder"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 9,
+          "index": 678
+        },
+        "end": {
+          "line": 24,
+          "column": 74,
+          "index": 743
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker empty folder message",
+          "text": "Empty folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Dxm8YGVnKlWjVJi+mJh79w==": {
+          "desc": "Folder picker confirm button: from",
+          "text": "from"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 28,
+          "column": 9,
+          "index": 806
+        },
+        "end": {
+          "line": 28,
+          "column": 66,
+          "index": 863
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker confirm button: from",
+          "text": "from"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "owZuwESrjVFwOHRVeJcm1w==": {
+          "desc": "Folder picker confirm button: to",
+          "text": "to"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 32,
+          "column": 9,
+          "index": 924
+        },
+        "end": {
+          "line": 32,
+          "column": 62,
+          "index": 977
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker confirm button: to",
+          "text": "to"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "+TKjv+sqYzwks7ed9oKRfw==": {
+          "desc": "Folder picker option for no folder",
+          "text": "No folder"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 36,
+          "column": 9,
+          "index": 1037
+        },
+        "end": {
+          "line": 36,
+          "column": 63,
+          "index": 1091
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker option for no folder",
+          "text": "No folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "rUrjkwDY6cf0tsOeZS15yA==": {
+          "desc": "Folder picker prompt when root is disabled",
+          "text": "Select a folder"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 40,
+          "column": 9,
+          "index": 1155
+        },
+        "end": {
+          "line": 40,
+          "column": 77,
+          "index": 1223
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker prompt when root is disabled",
+          "text": "Select a folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "E7iTuynPaVUt3xUZ53HYgg==": {
+          "desc": "Folder picker root option when moving folders",
+          "text": "Move to root"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 44,
+          "column": 9,
+          "index": 1285
+        },
+        "end": {
+          "line": 44,
+          "column": 77,
+          "index": 1353
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker root option when moving folders",
+          "text": "Move to root"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "PmCo7DcRNB8GrY5K+mn1pA==": {
+          "desc": "Breadcrumb label for root folder",
+          "text": "Root"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 48,
+          "column": 9,
+          "index": 1413
+        },
+        "end": {
+          "line": 48,
+          "column": 56,
+          "index": 1460
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Breadcrumb label for root folder",
+          "text": "Root"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "TJTFf1gO48rhTor54MVuIw==": {
+          "desc": "Folder picker confirm button verb for selection",
+          "text": "Select"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 52,
+          "column": 9,
+          "index": 1523
+        },
+        "end": {
+          "line": 52,
+          "column": 73,
+          "index": 1587
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker confirm button verb for selection",
+          "text": "Select"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "d92ywM4rAbl0/hdxo6hi9w==": {
+          "desc": "Folder picker confirm button verb for move",
+          "text": "Move into"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 56,
+          "column": 9,
+          "index": 1652
+        },
+        "end": {
+          "line": 56,
+          "column": 71,
+          "index": 1714
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder picker confirm button verb for move",
+          "text": "Move into"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Jb8/9RGVA9NaceYLAdU/bg==": {
+          "desc": "Accessibility label to hide folder picker content panel",
+          "text": "Hide content panel"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 60,
+          "column": 9,
+          "index": 1782
+        },
+        "end": {
+          "line": 63,
+          "column": 3,
+          "index": 1878
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label to hide folder picker content panel",
+          "text": "Hide content panel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "SEJXeQBbi+L2gi7FUs72pg==": {
+          "desc": "Accessibility label to show folder picker content panel",
+          "text": "Show content panel"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 67,
+          "column": 9,
+          "index": 1946
+        },
+        "end": {
+          "line": 70,
+          "column": 3,
+          "index": 2042
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label to show folder picker content panel",
+          "text": "Show content panel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "jSo0zek21J8L84CH8kwx5A==": {
+          "desc": "Fallback title for note in folder picker",
+          "text": "Untitled"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 74,
+          "column": 9,
+          "index": 2106
+        },
+        "end": {
+          "line": 74,
+          "column": 68,
+          "index": 2165
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Fallback title for note in folder picker",
+          "text": "Untitled"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lc9nnXlr3APFXyRQecCvTA==": {
+          "desc": "Noun used in folder picker note accessibility label",
+          "text": "note"
+        }
+      },
+      "filename": "features/notes/shared/ui/folderPickerLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 78,
+          "column": 9,
+          "index": 2225
+        },
+        "end": {
+          "line": 78,
+          "column": 75,
+          "index": 2291
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Noun used in folder picker note accessibility label",
+          "text": "note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "9CGh0wj4YlDbe4qjoBt0EQ==": {
+          "desc": "Note bottom sheet edit view title",
+          "text": "Edit Note"
+        }
+      },
+      "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 78
+        },
+        "end": {
+          "line": 4,
+          "column": 70,
+          "index": 139
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note bottom sheet edit view title",
+          "text": "Edit Note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "BRsd98lnSSo5Dl6iEsLDPg==": {
+          "desc": "Note bottom sheet action: edit note",
+          "text": "Edit note"
+        }
+      },
+      "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 193
+        },
+        "end": {
+          "line": 8,
+          "column": 72,
+          "index": 256
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note bottom sheet action: edit note",
+          "text": "Edit note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "sJTpnfdAgjGKCWGh9Fp8fg==": {
+          "desc": "Note bottom sheet action: move note",
+          "text": "Move note"
+        }
+      },
+      "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 310
+        },
+        "end": {
+          "line": 12,
+          "column": 72,
+          "index": 373
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note bottom sheet action: move note",
+          "text": "Move note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "XpxilWf8KtTc1cxJl42RRA==": {
+          "desc": "Note bottom sheet action: delete note",
+          "text": "Delete note"
+        }
+      },
+      "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 429
+        },
+        "end": {
+          "line": 16,
+          "column": 76,
+          "index": 496
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Note bottom sheet action: delete note",
+          "text": "Delete note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "EMUpaKIFYPGKtqKAotaRqw==": {
+          "desc": "Alert title when moving a note fails",
+          "text": "Move failed"
+        }
+      },
+      "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 20,
+          "column": 9,
+          "index": 555
+        },
+        "end": {
+          "line": 20,
+          "column": 67,
+          "index": 613
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when moving a note fails",
+          "text": "Move failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bUhbxkWrG8OkB/XDndo/4Q==": {
+          "desc": "Alert title when deleting a note fails",
+          "text": "Delete failed"
+        }
+      },
+      "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 9,
+          "index": 674
+        },
+        "end": {
+          "line": 24,
+          "column": 71,
+          "index": 736
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when deleting a note fails",
+          "text": "Delete failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Up0lL+gkyK8UrTuBRUacRA==": {
+          "desc": "Folder form title: new folder",
+          "text": "New folder"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderActionsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 87
+        },
+        "end": {
+          "line": 4,
+          "column": 67,
+          "index": 145
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form title: new folder",
+          "text": "New folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cackJT/hWQOJPbBBDr3UPQ==": {
+          "desc": "Folder actions: create note in folder",
+          "text": "New note"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderActionsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 205
+        },
+        "end": {
+          "line": 8,
+          "column": 73,
+          "index": 269
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder actions: create note in folder",
+          "text": "New note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5sSyXtBiU4lAUVwdKJVKTQ==": {
+          "desc": "Folder actions: rename folder",
+          "text": "Rename"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderActionsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 328
+        },
+        "end": {
+          "line": 12,
+          "column": 63,
+          "index": 382
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder actions: rename folder",
+          "text": "Rename"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "d9mu7qHHorTNp2WH5J3/1Q==": {
+          "desc": "Folder actions: move folder",
+          "text": "Move"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderActionsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 439
+        },
+        "end": {
+          "line": 16,
+          "column": 59,
+          "index": 489
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder actions: move folder",
+          "text": "Move"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "CoCHjymFyEfCvDYYfQBchg==": {
+          "desc": "Folder actions: delete folder",
+          "text": "Delete"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderActionsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 20,
+          "column": 9,
+          "index": 548
+        },
+        "end": {
+          "line": 20,
+          "column": 63,
+          "index": 602
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder actions: delete folder",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Hgw4kXhVnIAkn8YptXmTdA==": {
+          "desc": "Fallback label when folder has no name",
+          "text": "Folder"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderActionsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 9,
+          "index": 669
+        },
+        "end": {
+          "line": 24,
+          "column": 64,
+          "index": 724
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Fallback label when folder has no name",
+          "text": "Folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "TEMskWA+3R/Azqe1jiIGGQ==": {
+          "desc": "Alert title when moving a folder fails",
+          "text": "Move failed"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderActionsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 28,
+          "column": 9,
+          "index": 785
+        },
+        "end": {
+          "line": 28,
+          "column": 69,
+          "index": 845
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when moving a folder fails",
+          "text": "Move failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Up0lL+gkyK8UrTuBRUacRA==": {
+          "desc": "Folder form title: new folder",
+          "text": "New folder"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 7,
+          "column": 11,
+          "index": 189
+        },
+        "end": {
+          "line": 7,
+          "column": 69,
+          "index": 247
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form title: new folder",
+          "text": "New folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "GDRPGdZTxW/FsPlWxzDIBQ==": {
+          "desc": "Folder form title: rename folder",
+          "text": "Rename folder"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 10,
+          "column": 9,
+          "index": 263
+        },
+        "end": {
+          "line": 10,
+          "column": 73,
+          "index": 327
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form title: rename folder",
+          "text": "Rename folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "PmCo7DcRNB8GrY5K+mn1pA==": {
+          "desc": "Breadcrumb label for root folder",
+          "text": "Root"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 14,
+          "column": 9,
+          "index": 387
+        },
+        "end": {
+          "line": 14,
+          "column": 56,
+          "index": 434
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Breadcrumb label for root folder",
+          "text": "Root"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "FyByOpcTuUTsy7cd1dSrcg==": {
+          "desc": "Error when folder nesting exceeds maximum depth",
+          "text": "Folders can only be nested 3 levels deep."
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 18,
+          "column": 9,
+          "index": 499
+        },
+        "end": {
+          "line": 21,
+          "column": 3,
+          "index": 610
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Error when folder nesting exceeds maximum depth",
+          "text": "Folders can only be nested 3 levels deep."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "NJvx4InrEWFl3CAFaZrohA==": {
+          "desc": "Accessibility label for new folder button",
+          "text": "New folder"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBar.tsx",
+      "loc": {
+        "start": {
+          "line": 173,
+          "column": 26,
+          "index": 5961
+        },
+        "end": {
+          "line": 176,
+          "column": 7,
+          "index": 6047
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for new folder button",
+          "text": "New folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "PmCo7DcRNB8GrY5K+mn1pA==": {
+          "desc": "Breadcrumb label for root folder",
+          "text": "Root"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBar.tsx",
+      "loc": {
+        "start": {
+          "line": 249,
+          "column": 30,
+          "index": 8573
+        },
+        "end": {
+          "line": 252,
+          "column": 3,
+          "index": 8632
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Breadcrumb label for root folder",
+          "text": "Root"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "CJrvnzZkWPWG0I2qrcpDKQ==": {
+          "desc": "Options bar sort sheet title",
+          "text": "Sort by"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 236
+        },
+        "end": {
+          "line": 8,
+          "column": 63,
+          "index": 290
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Options bar sort sheet title",
+          "text": "Sort by"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "wJu7FrCmGNfyEYjErK3yVg==": {
+          "desc": "Options bar group sheet title",
+          "text": "Group by"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 340
+        },
+        "end": {
+          "line": 12,
+          "column": 65,
+          "index": 396
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Options bar group sheet title",
+          "text": "Group by"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QyOZ6riGUln/+AKnPLkewA==": {
+          "desc": "Sort option: newest first",
+          "text": "Newest first"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 18,
+          "column": 13,
+          "index": 516
+        },
+        "end": {
+          "line": 18,
+          "column": 69,
+          "index": 572
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort option: newest first",
+          "text": "Newest first"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "OsWHGJzz00FlMWor3o9tsA==": {
+          "desc": "Sort option: oldest first",
+          "text": "Oldest first"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 20,
+          "column": 13,
+          "index": 606
+        },
+        "end": {
+          "line": 20,
+          "column": 69,
+          "index": 662
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort option: oldest first",
+          "text": "Oldest first"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "vanH2Sa5S+5vU6xdQBI1KA==": {
+          "desc": "Sort option: alphabetical A to Z",
+          "text": "Alphabetical"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 22,
+          "column": 13,
+          "index": 692
+        },
+        "end": {
+          "line": 22,
+          "column": 76,
+          "index": 755
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort option: alphabetical A to Z",
+          "text": "Alphabetical"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Whl1CBlv/FpIzcoir/J6jA==": {
+          "desc": "Sort option: alphabetical Z to A",
+          "text": "Z to A order"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 13,
+          "index": 785
+        },
+        "end": {
+          "line": 24,
+          "column": 76,
+          "index": 848
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort option: alphabetical Z to A",
+          "text": "Z to A order"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "X/9dddolhwr78U1MQ22h1A==": {
+          "desc": "Group option: by folder",
+          "text": "By folder"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 31,
+          "column": 13,
+          "index": 975
+        },
+        "end": {
+          "line": 31,
+          "column": 64,
+          "index": 1026
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Group option: by folder",
+          "text": "By folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QoGJN2hCtdHeKvozVZZYhQ==": {
+          "desc": "Group option: by category",
+          "text": "By category"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 33,
+          "column": 13,
+          "index": 1064
+        },
+        "end": {
+          "line": 33,
+          "column": 68,
+          "index": 1119
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Group option: by category",
+          "text": "By category"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/nf5tt88au9U1upzCSn67Q==": {
+          "desc": "Group option: no grouping",
+          "text": "Not grouping"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 35,
+          "column": 13,
+          "index": 1151
+        },
+        "end": {
+          "line": 35,
+          "column": 69,
+          "index": 1207
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Group option: no grouping",
+          "text": "Not grouping"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "dj2Z+Q88MAhzvyylkkrlpw==": {
+          "desc": "Group filter chip with selected grouping option",
+          "text": "Group {option}"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 48,
+          "column": 6,
+          "index": 1362
+        },
+        "end": {
+          "line": 53,
+          "column": 12,
+          "index": 1554
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Group filter chip with selected grouping option",
+          "text": "Group {option}"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Qjla7xzqjiXKKqzitrNM4A==": {
+          "desc": "Folders mode: with folders",
+          "text": "With folders"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 62,
+          "column": 11,
+          "index": 1723
+        },
+        "end": {
+          "line": 62,
+          "column": 68,
+          "index": 1780
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folders mode: with folders",
+          "text": "With folders"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "1BtUN7i5j2Zc3J0q6l0ZNw==": {
+          "desc": "Folders mode: without folders",
+          "text": "Without folders"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 65,
+          "column": 9,
+          "index": 1796
+        },
+        "end": {
+          "line": 65,
+          "column": 72,
+          "index": 1859
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folders mode: without folders",
+          "text": "Without folders"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ECE26zIZieWqQNS8FYRZAQ==": {
+          "desc": "Display mode: notes",
+          "text": "Display Notes"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 70,
+          "column": 11,
+          "index": 1973
+        },
+        "end": {
+          "line": 70,
+          "column": 62,
+          "index": 2024
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Display mode: notes",
+          "text": "Display Notes"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "3Gzhx5ABV97y5rvGm8sKXA==": {
+          "desc": "Display mode: categories",
+          "text": "Display Categories"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 73,
+          "column": 9,
+          "index": 2040
+        },
+        "end": {
+          "line": 73,
+          "column": 70,
+          "index": 2101
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Display mode: categories",
+          "text": "Display Categories"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "swIfGN4YR1iE5oyps0hoxQ==": {
+          "desc": "Delete folder confirmation modal title",
+          "text": "Delete Folder?"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 6,
+          "column": 11,
+          "index": 163
+        },
+        "end": {
+          "line": 6,
+          "column": 74,
+          "index": 226
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete folder confirmation modal title",
+          "text": "Delete Folder?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8qWgLZrrRTt6tJW7Eg79yw==": {
+          "desc": "Delete folder confirmation modal description",
+          "text": "This will permanently delete this folder and all nested folders."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 7,
+          "column": 17,
+          "index": 245
+        },
+        "end": {
+          "line": 10,
+          "column": 5,
+          "index": 382
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete folder confirmation modal description",
+          "text": "This will permanently delete this folder and all nested folders."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "dTRZKdzWHtG81Qv1yDT3yw==": {
+          "desc": "Delete folder confirmation confirm button",
+          "text": "Delete"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 12,
+          "index": 417
+        },
+        "end": {
+          "line": 12,
+          "column": 70,
+          "index": 475
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete folder confirmation confirm button",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "orP/5A0/MTZpQj/P1AnYfw==": {
+          "desc": "Delete folder confirmation cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 12,
+          "index": 546
+        },
+        "end": {
+          "line": 16,
+          "column": 69,
+          "index": 603
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete folder confirmation cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bFZqoAASq5Y2QC/R2b5qXA==": {
+          "desc": "Delete note confirmation modal title",
+          "text": "Are you sure you want to delete this note?"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 11,
+          "index": 732
+        },
+        "end": {
+          "line": 27,
+          "column": 5,
+          "index": 839
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete note confirmation modal title",
+          "text": "Are you sure you want to delete this note?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "hQp+eegeV0fRjfILQYBREQ==": {
+          "desc": "Delete note confirmation modal description",
+          "text": "This will permanently delete this note and all associated thoughts."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 28,
+          "column": 17,
+          "index": 858
+        },
+        "end": {
+          "line": 31,
+          "column": 5,
+          "index": 996
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete note confirmation modal description",
+          "text": "This will permanently delete this note and all associated thoughts."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Whvpb4bHyw5Of//yo3vWiQ==": {
+          "desc": "Delete note confirmation confirm button",
+          "text": "Delete"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 33,
+          "column": 12,
+          "index": 1031
+        },
+        "end": {
+          "line": 33,
+          "column": 68,
+          "index": 1087
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete note confirmation confirm button",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IZ9fDGAJOfSqOmV/pS5iiw==": {
+          "desc": "Delete note confirmation cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 37,
+          "column": 12,
+          "index": 1158
+        },
+        "end": {
+          "line": 37,
+          "column": 67,
+          "index": 1213
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete note confirmation cancel button",
+          "text": "Cancel"
         }
       }
     },

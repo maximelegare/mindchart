@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import { getFolderIdsFromPath, isFolderPathUnder } from "@repo/sqlite";
 import {
@@ -25,6 +25,27 @@ import {
   filterFoldersExcludingPath,
   isDirectChild,
 } from "@/features/contentList/components/folderTree/folderTreeUtils";
+import {
+  FolderPickerConfirmFromLabel,
+  FolderPickerConfirmToLabel,
+  FolderPickerContentLabel,
+  FolderPickerEmptyFolderLabel,
+  FolderPickerFoldersTitle,
+  FolderPickerLocationLabel,
+  FolderPickerMoveHeaderLabel,
+  FolderPickerMoveSheetTitle,
+  folderBreadcrumbRootLabel,
+  folderPickerHideContentPanelLabel,
+  folderPickerMoveIntoActionVerb,
+  folderPickerMoveToRootLabel,
+  folderPickerNoFolderLabel,
+  folderPickerNoteAccessibilityLabel,
+  folderPickerNoteKindLabel,
+  folderPickerNoteUntitledLabel,
+  folderPickerSelectActionVerb,
+  folderPickerSelectFolderLabel,
+  folderPickerShowContentPanelLabel,
+} from "./folderPickerLabels";
 
 export type { FolderSelection };
 
@@ -36,12 +57,14 @@ export type FolderPickerBrowserProps = {
   excludePathPrefix?: string | null;
   /** Label for the root / clear option. */
   rootLabel?: string;
+  /** Confirm-button label when browsing at root (defaults to rootLabel). */
+  rootSelectionLabel?: string;
   /** When false, root selection is hidden (unused today; kept for flexibility). */
   allowRoot?: boolean;
   /** If true, dismiss the hosting bottom sheet after confirm. */
   dismissOnSelect?: boolean;
   /** Prefix for the confirm button, e.g. "Move into" → "Move into Work". */
-  actionVerb?: string;
+  actionVerb?: ReactNode;
   /**
    * When set, confirm button reads `from "source" to "destination"`
    * instead of `{actionVerb} "destination"`.
@@ -85,7 +108,9 @@ export const FolderSelector = ({
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
   const { colorScheme } = useColorScheme();
 
-  const emptyLabel = allowRoot ? "No folder" : "Select a folder";
+  const emptyLabel = allowRoot
+    ? folderPickerNoFolderLabel()
+    : folderPickerSelectFolderLabel();
   const label = selectedFolder?.label ?? emptyLabel;
   const displayName =
     maxChars && label.length > maxChars
@@ -134,7 +159,7 @@ export const FolderSelector = ({
         <BottomSheetView className="flex-1 h-full gap-4 pt-4 px-4 pb-6 bg-background">
           <BottomSheetHeader className="bg-background">
             <Typography className="text-foreground text-xl font-bold pb-1">
-              Folders
+              <FolderPickerFoldersTitle />
             </Typography>
           </BottomSheetHeader>
           <FolderPickerBrowser
@@ -143,7 +168,7 @@ export const FolderSelector = ({
             onSelect={onSelect}
             allowRoot={allowRoot}
             rootLabel={emptyLabel}
-            actionVerb="Select"
+            actionVerb={folderPickerSelectActionVerb()}
           />
         </BottomSheetView>
       </BottomSheetContent>
@@ -152,7 +177,7 @@ export const FolderSelector = ({
 };
 
 type FolderPickerSheetProps = {
-  title?: string;
+  title?: ReactNode;
   /** Structured move header: small "Move" + icon + quoted name. */
   moveTarget?: {
     name: string;
@@ -161,6 +186,7 @@ type FolderPickerSheetProps = {
   selectedFolder: FolderSelection;
   excludePathPrefix?: string | null;
   rootLabel?: string;
+  rootSelectionLabel?: string;
   /** When false, root cannot be chosen as the destination. */
   allowRoot?: boolean;
   onSelect: (folder: FolderSelection) => void;
@@ -168,7 +194,7 @@ type FolderPickerSheetProps = {
   active: boolean;
   onDismiss?: () => void;
   isDestinationEnabled?: (folder: FolderSelection) => boolean;
-  actionVerb?: string;
+  actionVerb?: ReactNode;
   fromLabel?: string | null;
   labelMaxChars?: number;
   showLocationPin?: boolean;
@@ -176,22 +202,26 @@ type FolderPickerSheetProps = {
 
 /** Imperative bottom sheet hosting the folder browser (for Move actions). */
 export const FolderPickerSheet = ({
-  title = "Move to…",
+  title,
   moveTarget,
   selectedFolder,
   excludePathPrefix,
-  rootLabel = "No folder",
+  rootLabel,
+  rootSelectionLabel,
   allowRoot = true,
   onSelect,
   sheet,
   active,
   onDismiss,
   isDestinationEnabled,
-  actionVerb = "Move into",
+  actionVerb,
   fromLabel,
   labelMaxChars,
   showLocationPin = false,
 }: FolderPickerSheetProps) => {
+  const resolvedRootLabel = rootLabel ?? folderPickerNoFolderLabel();
+  const resolvedActionVerb = actionVerb ?? folderPickerMoveIntoActionVerb();
+  const resolvedTitle = title ?? <FolderPickerMoveSheetTitle />;
   const { folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery({
     enabled: active,
@@ -217,7 +247,7 @@ export const FolderPickerSheet = ({
                     variant="h4"
                     // className="shrink-0 text-muted-foreground"
                   >
-                    Move:
+                    <FolderPickerMoveHeaderLabel />
                   </Typography>
                   <View className="flex-row items-center gap-1">
                     <Icon
@@ -240,7 +270,7 @@ export const FolderPickerSheet = ({
                 </View>
               ) : (
                 <Typography variant="h3" numberOfLines={1}>
-                  {title}
+                  {resolvedTitle}
                 </Typography>
               )}
             </BottomSheetHeader>
@@ -248,11 +278,12 @@ export const FolderPickerSheet = ({
               folders={allFolders ?? []}
               selectedFolder={selectedFolder}
               excludePathPrefix={excludePathPrefix}
-              rootLabel={rootLabel}
+              rootLabel={resolvedRootLabel}
+              rootSelectionLabel={rootSelectionLabel}
               allowRoot={allowRoot}
               onSelect={onSelect}
               dismissOnSelect
-              actionVerb={actionVerb}
+              actionVerb={resolvedActionVerb}
               fromLabel={fromLabel}
               labelMaxChars={labelMaxChars}
               showLocationPin={showLocationPin}
@@ -270,15 +301,20 @@ export function FolderPickerBrowser({
   selectedFolder,
   onSelect,
   excludePathPrefix = null,
-  rootLabel = "No folder",
+  rootLabel,
+  rootSelectionLabel,
   allowRoot = true,
   dismissOnSelect = true,
-  actionVerb = "Move into",
+  actionVerb,
   fromLabel = null,
   labelMaxChars = DEFAULT_LABEL_MAX_CHARS,
   showLocationPin = false,
   isDestinationEnabled,
 }: FolderPickerBrowserProps) {
+  const resolvedRootLabel = rootLabel ?? folderPickerNoFolderLabel();
+  const resolvedActionVerb = actionVerb ?? folderPickerMoveIntoActionVerb();
+  const resolvedRootSelectionLabel = rootSelectionLabel ?? resolvedRootLabel;
+  const noteKindLabel = folderPickerNoteKindLabel();
   const { dismiss } = useBottomSheetModal();
   const { colorScheme } = useColorScheme();
   const { notesAndThoughts } = useControllers();
@@ -334,7 +370,8 @@ export function FolderPickerBrowser({
       .filter((note) => (note.folder_id ?? null) === browseFolderId)
       .map((note) => ({
         id: note.id,
-        title: (note.title as string)?.trim() || "Untitled",
+        title:
+          (note.title as string)?.trim() || folderPickerNoteUntitledLabel(),
       }))
       .sort((a, b) => a.title.localeCompare(b.title));
   }, [allNotes, browseFolderId]);
@@ -342,7 +379,7 @@ export function FolderPickerBrowser({
   const contentIsEmpty = childFolders.length === 0 && childFiles.length === 0;
 
   const breadcrumbItems = useMemo(() => {
-    const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
+    const root = { id: FOLDER_TREE_ROOT_ID, name: folderBreadcrumbRootLabel() };
     if (!browseFolder) return [root];
     const ids = getFolderIdsFromPath(browseFolder.path).filter((id) => {
       const folder = foldersById.get(id);
@@ -364,8 +401,7 @@ export function FolderPickerBrowser({
   const canSelectCurrent = allowRoot || browseFolder != null;
   const destinationEnabled = canSelectCurrent && canSelect(browseFolder);
 
-  const destinationLabel =
-    browseFolder?.label ?? (rootLabel === "Move to root" ? "Root" : rootLabel);
+  const destinationLabel = browseFolder?.label ?? resolvedRootSelectionLabel;
   const truncatedDestination = truncateFolderLabel(
     destinationLabel,
     labelMaxChars
@@ -401,7 +437,7 @@ export function FolderPickerBrowser({
       <View className="flex-1 min-h-[280px] overflow-hidden rounded-3xl bg-card">
         <View className="flex-row items-center px-3 py-2 border-b border-border">
           <Typography variant="h5" className="flex-1 opacity-60">
-            Location
+            <FolderPickerLocationLabel />
           </Typography>
           <TouchableOpacity
             onPress={() => setShowContentPanel((prev) => !prev)}
@@ -409,12 +445,14 @@ export function FolderPickerBrowser({
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel={
-              showContentPanel ? "Hide content panel" : "Show content panel"
+              showContentPanel
+                ? folderPickerHideContentPanelLabel()
+                : folderPickerShowContentPanelLabel()
             }
           >
             {showContentPanel ? (
               <Typography variant="h5" className="opacity-60">
-                Content
+                <FolderPickerContentLabel />
               </Typography>
             ) : null}
             <Icon
@@ -432,7 +470,7 @@ export function FolderPickerBrowser({
               selectedFolderId={browseFolderId}
               onSelect={setBrowseFolderId}
               excludePathPrefix={excludePathPrefix}
-              rootLabel="Root"
+              rootLabel={folderBreadcrumbRootLabel()}
               className="flex-1"
               showLocationPin={showLocationPin}
               locationPinFolderId={selectedFolder?.id ?? null}
@@ -460,7 +498,7 @@ export function FolderPickerBrowser({
                       variant="p"
                       className="px-2 py-6 text-muted-foreground text-center"
                     >
-                      Empty folder
+                      <FolderPickerEmptyFolderLabel />
                     </Typography>
                   ) : (
                     <>
@@ -492,7 +530,10 @@ export function FolderPickerBrowser({
                           accessible
                           accessibilityRole="text"
                           accessibilityState={{ disabled: true }}
-                          accessibilityLabel={`${file.title}, note`}
+                          accessibilityLabel={folderPickerNoteAccessibilityLabel(
+                            file.title,
+                            noteKindLabel
+                          )}
                         >
                           <Icon
                             name="notebook-text"
@@ -535,7 +576,7 @@ export function FolderPickerBrowser({
                 style={{ opacity: 0.6 }}
                 numberOfLines={1}
               >
-                from
+                <FolderPickerConfirmFromLabel />
               </Typography>
               <Typography
                 variant="h4"
@@ -549,7 +590,7 @@ export function FolderPickerBrowser({
                 style={{ opacity: 0.6 }}
                 numberOfLines={1}
               >
-                to
+                <FolderPickerConfirmToLabel />
               </Typography>
               <Typography
                 variant="h4"
@@ -566,7 +607,7 @@ export function FolderPickerBrowser({
                 style={{ opacity: 0.6 }}
                 numberOfLines={1}
               >
-                {actionVerb}
+                {resolvedActionVerb}
               </Typography>
               <Typography
                 variant="h4"

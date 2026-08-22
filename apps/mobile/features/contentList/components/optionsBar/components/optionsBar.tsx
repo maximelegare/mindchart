@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
+import { fbs } from "fbtee";
 import { canCreateChildFolder, getFolderIdsFromPath } from "@repo/sqlite";
 import { Typography } from "@/components/ui";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
@@ -37,51 +38,57 @@ import { BreadcrumbLinkToggle } from "@/features/navigation/breadcrumbLinkToggle
 import { NotesFilterSheet } from "@/features/contentList/features/notesFilters/components/notesFilterSheet";
 import { hasActiveAttributeFilters } from "@/features/contentList/utils/filterNotesByAttributes";
 import { PageSizeChip } from "@/features/contentList/features/pagination/components/pageSizeChip";
+import {
+  DisplayModeChipLabel,
+  FoldersModeChipLabel,
+  GroupOptionLabel,
+  GroupSheetTitle,
+  OptionLabelRenderer,
+  renderGroupChipLabel,
+  renderSortChipLabel,
+  SortOptionLabel,
+  SortSheetTitle,
+} from "./optionsBarLabels";
 
 type OptionItem<T extends string> = {
   value: T;
-  label: string;
   icon?: IconName;
 };
 
 const SORT_OPTIONS: OptionItem<OptionsBarType["sortBy"]>[] = [
-  { icon: "arrow-down-wide-narrow", value: "newest", label: "Newest first" },
-  { icon: "arrow-up-narrow-wide", value: "oldest", label: "Oldest first" },
-  { icon: "arrow-down-a-z", value: "az", label: "Alphabetical" },
-  { icon: "arrow-up-a-z", value: "za", label: "Z to A order" },
+  { icon: "arrow-down-wide-narrow", value: "newest" },
+  { icon: "arrow-up-narrow-wide", value: "oldest" },
+  { icon: "arrow-down-a-z", value: "az" },
+  { icon: "arrow-up-a-z", value: "za" },
 ];
 
 const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
-  { icon: "folder", value: "folders", label: "By folder" },
-  { icon: "shapes", value: "categories", label: "By category" },
-  { icon: "circle-off", value: "none", label: "Not grouping" },
+  { icon: "folder", value: "folders" },
+  { icon: "shapes", value: "categories" },
+  { icon: "circle-off", value: "none" },
 ];
 
 type OptionsPickerProps<T extends string> = {
-  title: string;
-  /** Prefix shown on the chip, e.g. "Display:" → "Display: Notes". */
-  chipLabelPrefix?: string;
+  title: React.ReactNode;
   value: T;
   options: OptionItem<T>[];
+  renderOptionLabel: OptionLabelRenderer<T>;
+  renderChipLabel: (value: T) => React.ReactNode;
   onValueChange: (value: T) => void;
-  /** Header-sized chip (outside collapsible) vs compact OptionChip. */
   largeChip?: boolean;
 };
 
 function OptionsSheet<T extends string>({
   title,
-  chipLabelPrefix,
   value,
   options,
+  renderOptionLabel,
+  renderChipLabel,
   onValueChange,
   largeChip = false,
 }: OptionsPickerProps<T>) {
   const sheet = useBottomSheet();
   const selected = options.find((option) => option.value === value);
-  const selectedLabel = selected?.label ?? value;
-  const chipLabel = chipLabelPrefix
-    ? `${chipLabelPrefix} ${selectedLabel}`
-    : selectedLabel;
   const selectedIcon = selected?.icon;
   const Chip = largeChip ? TriggerFilterChip : OptionChip;
 
@@ -89,7 +96,7 @@ function OptionsSheet<T extends string>({
     <View className="shrink-0">
       <Chip
         icon={selectedIcon}
-        label={chipLabel}
+        label={renderChipLabel(value)}
         onPress={() => sheet.open()}
       />
 
@@ -135,7 +142,7 @@ function OptionsSheet<T extends string>({
                         <Icon name={option.icon} color="foreground" size={18} />
                       ) : null}
                       <Typography variant="p" className="text-foreground">
-                        {option.label}
+                        {renderOptionLabel(option.value)}
                       </Typography>
                     </View>
                     {isSelected ? (
@@ -163,7 +170,10 @@ export function NewFolderButton({ onPress }: { onPress: () => void }) {
       className="min-w-10 shrink-0 flex-row items-center gap-1.5 rounded-full border px-3 py-2"
       style={{ backgroundColor, borderColor }}
       accessibilityRole="button"
-      accessibilityLabel="New folder"
+      accessibilityLabel={fbs(
+        "New folder",
+        "Accessibility label for new folder button"
+      )}
     >
       <Icon name="folder" color="muted-foreground" size={16} />
       <Icon name="plus" color="muted-foreground" size={14} />
@@ -236,6 +246,8 @@ export const OptionsBar = () => {
     [allFolders, currentFolderId]
   );
 
+  const breadcrumbRootLabel = fbs("Root", "Breadcrumb label for root folder");
+
   useEffect(() => {
     if (!currentFolderId || !allFolders) return;
     if (!allFolders.some((f) => f.id === currentFolderId)) {
@@ -244,7 +256,7 @@ export const OptionsBar = () => {
   }, [allFolders, currentFolderId, handleCurrentFolderChange]);
 
   const breadcrumbItems = useMemo(() => {
-    const root = { id: "root", name: "Root" };
+    const root = { id: "root", name: breadcrumbRootLabel };
     if (!currentFolder) return [root];
 
     const ids = getFolderIdsFromPath(currentFolder.path);
@@ -256,7 +268,7 @@ export const OptionsBar = () => {
         name: byId.get(id)?.label ?? id,
       })),
     ];
-  }, [allFolders, currentFolder]);
+  }, [allFolders, breadcrumbRootLabel, currentFolder]);
 
   const foldersById = useMemo(
     () => new Map((allFolders ?? []).map((f) => [f.id, f])),
@@ -345,11 +357,7 @@ export const OptionsBar = () => {
             >
               <OptionChip
                 icon="folder"
-                label={
-                  localFoldersMode === "with"
-                    ? "With folders"
-                    : "Without folders"
-                }
+                label={<FoldersModeChipLabel mode={localFoldersMode} />}
                 selected={localFoldersMode === "with"}
                 onPress={() =>
                   onFoldersModeChange(
@@ -359,9 +367,11 @@ export const OptionsBar = () => {
               />
 
               <OptionsSheet
-                title="Sort by"
+                title={<SortSheetTitle />}
                 value={sortBy}
                 options={SORT_OPTIONS}
+                renderOptionLabel={(value) => <SortOptionLabel value={value} />}
+                renderChipLabel={renderSortChipLabel}
                 onValueChange={onSortByChange}
               />
               <NotesFilterSheet />
@@ -406,18 +416,19 @@ export const OptionsBar = () => {
           <View className="shrink-0">{settingsToggle}</View>
           <View className="min-w-0 flex-1 flex-row flex-wrap items-center gap-2">
             <OptionsSheet
-              title="Group by"
-              chipLabelPrefix={groupBy === "none" ? undefined : "Group"}
+              title={<GroupSheetTitle />}
               value={groupBy}
               options={GROUP_OPTIONS}
+              renderOptionLabel={(value) => <GroupOptionLabel value={value} />}
+              renderChipLabel={(value) =>
+                renderGroupChipLabel(value, groupBy !== "none")
+              }
               onValueChange={onGroupByChange}
               largeChip
             />
             <TriggerFilterChip
               icon={displayMode === "notes" ? "notebook-text" : "shapes"}
-              label={
-                displayMode === "notes" ? "Display Notes" : "Display Categories"
-              }
+              label={<DisplayModeChipLabel mode={displayMode} />}
               onPress={() =>
                 onDisplayModeChange(
                   displayMode === "notes" ? "categories" : "notes"

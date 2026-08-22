@@ -1,13 +1,14 @@
 import type { ButtonProps } from "../../button";
+import type { ReactNode } from "react";
 
 export type ModalButtonConfig = {
-  text: string;
+  text: React.ReactNode;
   variant?: NonNullable<ButtonProps["variant"]>;
 };
 
-type ModalPreset = {
-  title: string;
-  description: string;
+export type ModalPreset = {
+  title: React.ReactNode;
+  description: React.ReactNode;
   confirmButton: ModalButtonConfig;
   cancelButton: ModalButtonConfig;
 };

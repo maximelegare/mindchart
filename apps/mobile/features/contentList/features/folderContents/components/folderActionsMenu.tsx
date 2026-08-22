@@ -18,6 +18,19 @@ import {
   FolderPickerSheet,
   FolderSelection,
 } from "@/features/notes/shared/ui/folderSelector";
+import {
+  folderBreadcrumbRootLabel,
+  folderPickerMoveToRootLabel,
+} from "@/features/notes/shared/ui/folderPickerLabels";
+import {
+  FolderActionsDeleteLabel,
+  FolderActionsMoveLabel,
+  FolderActionsNewFolderLabel,
+  FolderActionsNewNoteLabel,
+  FolderActionsRenameLabel,
+  folderActionsFolderFallbackLabel,
+  folderMoveFailedAlertTitle,
+} from "./folderActionsLabels";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useFolderActions } from "../hooks/useFolderActions";
 import { useCreateBlankNote } from "@/features/notes/noteCreation/hooks/useCreateBlankNote";
@@ -67,7 +80,9 @@ export const FolderActionsMenu = ({
   );
 
   const title =
-    target.kind === "root" ? "Root" : target.folder.label || "Folder";
+    target.kind === "root"
+      ? folderBreadcrumbRootLabel()
+      : target.folder.label || folderActionsFolderFallbackLabel();
 
   const closeActions = useCallback(() => {
     actionsSheet.close();
@@ -91,7 +106,7 @@ export const FolderActionsMenu = ({
       try {
         await moveFolderTo(movingFolder, destination);
       } catch (error) {
-        Alert.alert("Move failed", String(error));
+        Alert.alert(folderMoveFailedAlertTitle(), String(error));
       } finally {
         setMoveActive(false);
       }
@@ -115,8 +130,9 @@ export const FolderActionsMenu = ({
     ? getFolderParent(movingFolder)
     : null;
   const movingFolderTitle = (() => {
-    if (!movingFolder) return "Folder";
-    const raw = movingFolder.label?.trim() || "Folder";
+    if (!movingFolder) return folderActionsFolderFallbackLabel();
+    const raw =
+      movingFolder.label?.trim() || folderActionsFolderFallbackLabel();
     return raw.length > 28 ? `${raw.slice(0, 28)}…` : raw;
   })();
 
@@ -168,7 +184,9 @@ export const FolderActionsMenu = ({
               >
                 <View className="flex-row items-center gap-2">
                   <Icon name="folder" color="foreground" size={18} />
-                  <Typography variant="h3">New folder</Typography>
+                  <Typography variant="h3">
+                    <FolderActionsNewFolderLabel />
+                  </Typography>
                 </View>
               </Button>
             ) : null}
@@ -185,7 +203,9 @@ export const FolderActionsMenu = ({
             >
               <View className="flex-row items-center gap-2">
                 <Icon name="notebook-text" color="foreground" size={18} />
-                <Typography variant="h3">New note</Typography>
+                <Typography variant="h3">
+                  <FolderActionsNewNoteLabel />
+                </Typography>
               </View>
             </Button>
 
@@ -201,7 +221,9 @@ export const FolderActionsMenu = ({
                 >
                   <View className="flex-row items-center gap-2">
                     <Icon name="pencil" color="foreground" size={18} />
-                    <Typography variant="h3">Rename</Typography>
+                    <Typography variant="h3">
+                      <FolderActionsRenameLabel />
+                    </Typography>
                   </View>
                 </Button>
                 <Button
@@ -215,7 +237,9 @@ export const FolderActionsMenu = ({
                       color="foreground"
                       size={18}
                     />
-                    <Typography variant="h3">Move</Typography>
+                    <Typography variant="h3">
+                      <FolderActionsMoveLabel />
+                    </Typography>
                   </View>
                 </Button>
                 <Button
@@ -232,7 +256,9 @@ export const FolderActionsMenu = ({
                       color="destructive-foreground"
                       size={18}
                     />
-                    <Typography variant="h3">Delete</Typography>
+                    <Typography variant="h3">
+                      <FolderActionsDeleteLabel />
+                    </Typography>
                   </View>
                 </Button>
               </>
@@ -248,7 +274,8 @@ export const FolderActionsMenu = ({
           active={moveActive}
           selectedFolder={movingFolderParent}
           excludePathPrefix={movingFolder.path}
-          rootLabel="Move to root"
+          rootLabel={folderPickerMoveToRootLabel()}
+          rootSelectionLabel={folderBreadcrumbRootLabel()}
           showLocationPin
           onSelect={handleMoveSelect}
           onDismiss={() => setMoveActive(false)}

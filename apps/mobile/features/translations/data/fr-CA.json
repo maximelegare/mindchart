@@ -39,7 +39,7 @@
       "tokens": [],
       "translations": [
         {
-          "translation": "Utiliser le theme par défaut de l'appareil",
+          "translation": "Utiliser le thème par défaut de l'appareil",
           "variations": {}
         }
       ],
@@ -227,6 +227,622 @@
       "translations": [
         {
           "translation": "{list of items}, {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZqeIrCSUmcdHaWusaw7G/w==": {
+      "description": "Folder picker sheet default title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer vers…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "mVAPO9KW8F4sju0eaWFYOw==": {
+      "description": "Folder picker move header prefix",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer :",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "M9rHIQaoOzkwZD8TlYMxhg==": {
+      "description": "Folder selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yEg/0EJ1fGFu983Py8j8kA==": {
+      "description": "Folder picker location panel title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sCrsv+nPvkLB5rv1IQk71A==": {
+      "description": "Folder picker content panel title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "pgwj0ZKUicAr6g8K5Q9I4g==": {
+      "description": "Folder picker empty folder message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier vide",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Dxm8YGVnKlWjVJi+mJh79w==": {
+      "description": "Folder picker confirm button: from",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "de",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "owZuwESrjVFwOHRVeJcm1w==": {
+      "description": "Folder picker confirm button: to",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "vers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+TKjv+sqYzwks7ed9oKRfw==": {
+      "description": "Folder picker option for no folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "rUrjkwDY6cf0tsOeZS15yA==": {
+      "description": "Folder picker prompt when root is disabled",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisir un dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "E7iTuynPaVUt3xUZ53HYgg==": {
+      "description": "Folder picker root option when moving folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer à la racine",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "PmCo7DcRNB8GrY5K+mn1pA==": {
+      "description": "Breadcrumb label for root folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Racine",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TJTFf1gO48rhTor54MVuIw==": {
+      "description": "Folder picker confirm button verb for selection",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisir",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "d92ywM4rAbl0/hdxo6hi9w==": {
+      "description": "Folder picker confirm button verb for move",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer vers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Jb8/9RGVA9NaceYLAdU/bg==": {
+      "description": "Accessibility label to hide folder picker content panel",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Masquer le panneau de contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "SEJXeQBbi+L2gi7FUs72pg==": {
+      "description": "Accessibility label to show folder picker content panel",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher le panneau de contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "jSo0zek21J8L84CH8kwx5A==": {
+      "description": "Fallback title for note in folder picker",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sans titre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lc9nnXlr3APFXyRQecCvTA==": {
+      "description": "Noun used in folder picker note accessibility label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9CGh0wj4YlDbe4qjoBt0EQ==": {
+      "description": "Note bottom sheet edit view title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Modifier la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "BRsd98lnSSo5Dl6iEsLDPg==": {
+      "description": "Note bottom sheet action: edit note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Modifier la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sJTpnfdAgjGKCWGh9Fp8fg==": {
+      "description": "Note bottom sheet action: move note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XpxilWf8KtTc1cxJl42RRA==": {
+      "description": "Note bottom sheet action: delete note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "EMUpaKIFYPGKtqKAotaRqw==": {
+      "description": "Alert title when moving a note fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec du déplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bUhbxkWrG8OkB/XDndo/4Q==": {
+      "description": "Alert title when deleting a note fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la suppression",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Up0lL+gkyK8UrTuBRUacRA==": {
+      "description": "Folder form title: new folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "GDRPGdZTxW/FsPlWxzDIBQ==": {
+      "description": "Folder form title: rename folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Renommer le dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FyByOpcTuUTsy7cd1dSrcg==": {
+      "description": "Error when folder nesting exceeds maximum depth",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les dossiers ne peuvent être imbriqués que sur 3 niveaux.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "NJvx4InrEWFl3CAFaZrohA==": {
+      "description": "Accessibility label for new folder button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CJrvnzZkWPWG0I2qrcpDKQ==": {
+      "description": "Options bar sort sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Trier par",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "wJu7FrCmGNfyEYjErK3yVg==": {
+      "description": "Options bar group sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Grouper par",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QyOZ6riGUln/+AKnPLkewA==": {
+      "description": "Sort option: newest first",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Plus récent d'abord",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "OsWHGJzz00FlMWor3o9tsA==": {
+      "description": "Sort option: oldest first",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Plus ancien d'abord",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vanH2Sa5S+5vU6xdQBI1KA==": {
+      "description": "Sort option: alphabetical A to Z",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Alphabétique",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Whl1CBlv/FpIzcoir/J6jA==": {
+      "description": "Sort option: alphabetical Z to A",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ordre Z à A",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "X/9dddolhwr78U1MQ22h1A==": {
+      "description": "Group option: by folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Par dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QoGJN2hCtdHeKvozVZZYhQ==": {
+      "description": "Group option: by category",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Par catégorie",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/nf5tt88au9U1upzCSn67Q==": {
+      "description": "Group option: no grouping",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sans regroupement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dj2Z+Q88MAhzvyylkkrlpw==": {
+      "description": "Group filter chip with selected grouping option",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Groupe {option}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Qjla7xzqjiXKKqzitrNM4A==": {
+      "description": "Folders mode: with folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Avec dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "1BtUN7i5j2Zc3J0q6l0ZNw==": {
+      "description": "Folders mode: without folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sans dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ECE26zIZieWqQNS8FYRZAQ==": {
+      "description": "Display mode: notes",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher les notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "3Gzhx5ABV97y5rvGm8sKXA==": {
+      "description": "Display mode: categories",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher les catégories",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bFZqoAASq5Y2QC/R2b5qXA==": {
+      "description": "Delete note confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Voulez-vous vraiment supprimer cette note ?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "hQp+eegeV0fRjfILQYBREQ==": {
+      "description": "Delete note confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cette action supprimera définitivement cette note et toutes les pensées associées.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Whvpb4bHyw5Of//yo3vWiQ==": {
+      "description": "Delete note confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IZ9fDGAJOfSqOmV/pS5iiw==": {
+      "description": "Delete note confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cackJT/hWQOJPbBBDr3UPQ==": {
+      "description": "Folder actions: create note in folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvelle note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5sSyXtBiU4lAUVwdKJVKTQ==": {
+      "description": "Folder actions: rename folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Renommer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "d9mu7qHHorTNp2WH5J3/1Q==": {
+      "description": "Folder actions: move folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CoCHjymFyEfCvDYYfQBchg==": {
+      "description": "Folder actions: delete folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Hgw4kXhVnIAkn8YptXmTdA==": {
+      "description": "Fallback label when folder has no name",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TEMskWA+3R/Azqe1jiIGGQ==": {
+      "description": "Alert title when moving a folder fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec du déplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "swIfGN4YR1iE5oyps0hoxQ==": {
+      "description": "Delete folder confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer le dossier ?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8qWgLZrrRTt6tJW7Eg79yw==": {
+      "description": "Delete folder confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cette action supprimera définitivement ce dossier et tous les dossiers imbriqués.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dTRZKdzWHtG81Qv1yDT3yw==": {
+      "description": "Delete folder confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "orP/5A0/MTZpQj/P1AnYfw==": {
+      "description": "Delete folder confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
           "variations": {}
         }
       ],

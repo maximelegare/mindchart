@@ -4,6 +4,10 @@ import { Icon } from "@/components/ui/icons/icon";
 import { useModal } from "@/components/ui/modal/modal";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { Alert, View } from "react-native";
+import {
+  DeleteNoteActionLabel,
+  noteDeleteFailedAlertTitle,
+} from "../noteBottomSheetLabels";
 
 type DeleteNoteProps = {
   noteId: string;
@@ -19,7 +23,7 @@ export const DeleteNote = ({ noteId }: DeleteNoteProps) => {
       await deleteNoteAction(noteId);
       closeModal();
     } catch (error) {
-      Alert.alert("Delete failed", String(error));
+      Alert.alert(noteDeleteFailedAlertTitle(), String(error));
     }
   };
 
@@ -39,7 +43,9 @@ export const DeleteNote = ({ noteId }: DeleteNoteProps) => {
     >
       <View className="flex-row items-center gap-2">
         <Icon name="trash-2" color="destructive-foreground" size={18} />
-        <Typography variant="h3">Delete note</Typography>
+        <Typography variant="h3">
+          <DeleteNoteActionLabel />
+        </Typography>
       </View>
     </Button>
   );
