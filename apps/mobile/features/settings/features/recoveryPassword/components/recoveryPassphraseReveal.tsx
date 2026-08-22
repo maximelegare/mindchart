@@ -3,6 +3,15 @@ import { Alert, Pressable, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui";
 import { useRecoveryPassphrase } from "../hooks/useRecoveryPassphrase";
+import {
+  SettingsRecoveryPassphraseRevealReminderDescription,
+  SettingsRecoveryPassphraseRevealSavedDescription,
+  settingsRecoveryPassphraseAlertTitle,
+  settingsRecoveryPassphraseAuthenticating,
+  settingsRecoveryPassphraseHideButton,
+  settingsRecoveryPassphraseRevealButton,
+} from "@/features/settings/settingsRecoveryLabels";
+import { settingsCommonUnknownError } from "@/features/settings/settingsLabels";
 
 const MASKED_PASSPHRASE = "••••••••••••••••••••••••••••••••";
 
@@ -22,8 +31,8 @@ export const RecoveryPassphraseReveal = () => {
       setRevealedPassphrase(passphrase);
     } catch (e) {
       Alert.alert(
-        "Recovery passphrase",
-        e instanceof Error ? e.message : "Unknown error"
+        settingsRecoveryPassphraseAlertTitle(),
+        e instanceof Error ? e.message : settingsCommonUnknownError()
       );
     } finally {
       setLoading(false);
@@ -42,11 +51,14 @@ export const RecoveryPassphraseReveal = () => {
     return (
       <View className="gap-2">
         <Typography variant="muted" padding>
-          Save this somewhere safe. Long-press to copy-friendly view.
+          <SettingsRecoveryPassphraseRevealSavedDescription />
         </Typography>
         <Pressable
           onLongPress={() => {
-            Alert.alert("Recovery passphrase", revealedPassphrase);
+            Alert.alert(
+              settingsRecoveryPassphraseAlertTitle(),
+              revealedPassphrase
+            );
           }}
         >
           <View className="rounded-md bg-muted p-3">
@@ -59,7 +71,7 @@ export const RecoveryPassphraseReveal = () => {
           </View>
         </Pressable>
         <Button variant="outline" size="sm" onPress={hidePassphrase}>
-          <Typography>Hide passphrase</Typography>
+          <Typography>{settingsRecoveryPassphraseHideButton()}</Typography>
         </Button>
       </View>
     );
@@ -68,7 +80,7 @@ export const RecoveryPassphraseReveal = () => {
   return (
     <View className="gap-2">
       <Typography variant="muted" padding>
-        Reveal your saved recovery passphrase if you need a reminder.
+        <SettingsRecoveryPassphraseRevealReminderDescription />
       </Typography>
       <View className="rounded-md bg-muted p-3">
         <Typography variant="small" className="font-mono text-muted-foreground">
@@ -84,7 +96,9 @@ export const RecoveryPassphraseReveal = () => {
         }}
       >
         <Typography>
-          {loading ? "Authenticating…" : "Reveal passphrase"}
+          {loading
+            ? settingsRecoveryPassphraseAuthenticating()
+            : settingsRecoveryPassphraseRevealButton()}
         </Typography>
       </Button>
     </View>

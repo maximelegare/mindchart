@@ -1,4 +1,8 @@
 import { Stack } from "expo-router";
+import {
+  settingsDbInspectorPageTitle,
+  settingsDeveloperOptionsPageTitle,
+} from "@/features/settings/settingsLabels";
 
 export default function SettingsLayout() {
   return (
@@ -6,14 +10,18 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Developer Settings",
+          title: settingsDeveloperOptionsPageTitle(),
           headerShown: false,
           header: () => null,
         }}
       />
       <Stack.Screen
         name="inspector"
-        options={{ title: "Inspector", headerShown: false, header: () => null }}
+        options={{
+          title: settingsDbInspectorPageTitle(),
+          headerShown: false,
+          header: () => null,
+        }}
       />
     </Stack>
   );

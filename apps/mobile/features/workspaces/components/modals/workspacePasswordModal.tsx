@@ -5,6 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Typography } from "@/components/ui/typography";
+import { settingsActionCancel } from "@/features/settings/settingsLabels";
+import {
+  workspaceConfirmPasswordLabel,
+  workspaceConfirmPasswordPlaceholder,
+  workspaceExportConfirmLabel,
+  workspaceExportPasswordDescription,
+  workspaceExportPasswordPlaceholder,
+  workspaceExportingButtonLabel,
+  workspaceImportConfirmLabel,
+  workspaceImportPasswordDescription,
+  workspaceImportRecoveryDescription,
+  workspaceImportingButtonLabel,
+  workspacePasswordFieldLabel,
+  workspacePasswordMinLengthError,
+  workspacePasswordMismatchError,
+  workspacePasswordRequiredError,
+  workspaceRecoveryPassphraseFieldLabel,
+  workspaceRecoveryPassphrasePlaceholder,
+  workspaceRecoveryPassphraseRequiredError,
+} from "@/features/workspaces/workspaceModalLabels";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -52,7 +72,9 @@ export const WorkspacePasswordModal = (props: Props) => {
   const {
     mode,
     description,
-    confirmLabel = mode === "export" ? "Export" : "Import",
+    confirmLabel = mode === "export"
+      ? workspaceExportConfirmLabel()
+      : workspaceImportConfirmLabel(),
     onConfirm,
     onCancel,
   } = props;
@@ -98,7 +120,7 @@ export const WorkspacePasswordModal = (props: Props) => {
 };
 
 const ExportPasswordForm = ({
-  description = "Choose a password to protect this export. You will need it to import the workspace later.",
+  description = workspaceExportPasswordDescription(),
   confirmLabel,
   onConfirm,
   onCancel,
@@ -140,11 +162,13 @@ const ExportPasswordForm = ({
         rules={{
           validate: (v) =>
             v.length >= MIN_PASSWORD_LENGTH ||
-            `At least ${MIN_PASSWORD_LENGTH} characters`,
+            workspacePasswordMinLengthError(MIN_PASSWORD_LENGTH),
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="export-password">Password</Label>
+            <Label nativeID="export-password">
+              {workspacePasswordFieldLabel()}
+            </Label>
             <Input
               value={value}
               onChangeText={onChange}
@@ -152,7 +176,7 @@ const ExportPasswordForm = ({
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
-              placeholder="Export password"
+              placeholder={workspaceExportPasswordPlaceholder()}
             />
           </View>
         )}
@@ -162,11 +186,13 @@ const ExportPasswordForm = ({
         control={control}
         name="confirmPassword"
         rules={{
-          validate: (v) => v === password || "Passwords do not match",
+          validate: (v) => v === password || workspacePasswordMismatchError(),
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="export-password-confirm">Confirm password</Label>
+            <Label nativeID="export-password-confirm">
+              {workspaceConfirmPasswordLabel()}
+            </Label>
             <Input
               value={value}
               onChangeText={onChange}
@@ -174,7 +200,7 @@ const ExportPasswordForm = ({
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
-              placeholder="Confirm password"
+              placeholder={workspaceConfirmPasswordPlaceholder()}
               onSubmitEditing={submit}
             />
           </View>
@@ -183,7 +209,7 @@ const ExportPasswordForm = ({
 
       <View className="flex-row justify-end gap-2 mt-2 items-center">
         <Button variant="default" onPress={onCancel} disabled={submitting}>
-          <Typography>Cancel</Typography>
+          <Typography>{settingsActionCancel()}</Typography>
         </Button>
         <Button
           variant="default"
@@ -193,7 +219,7 @@ const ExportPasswordForm = ({
           {submitting ? (
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" />
-              <Typography>Exporting…</Typography>
+              <Typography>{workspaceExportingButtonLabel()}</Typography>
             </View>
           ) : (
             <Typography>{confirmLabel}</Typography>
@@ -205,7 +231,7 @@ const ExportPasswordForm = ({
 };
 
 const ImportPasswordForm = ({
-  description = "Enter the password you used when exporting this workspace.",
+  description = workspaceImportPasswordDescription(),
   confirmLabel,
   errorMessage,
   onPasswordChange,
@@ -252,11 +278,13 @@ const ImportPasswordForm = ({
         control={control}
         name="password"
         rules={{
-          validate: (v) => v.length > 0 || "Password is required",
+          validate: (v) => v.length > 0 || workspacePasswordRequiredError(),
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="import-password">Password</Label>
+            <Label nativeID="import-password">
+              {workspacePasswordFieldLabel()}
+            </Label>
             <Input
               value={value}
               onChangeText={(text) => {
@@ -268,7 +296,7 @@ const ImportPasswordForm = ({
               autoCapitalize="none"
               autoCorrect={false}
               autoFocus
-              placeholder="Export password"
+              placeholder={workspaceExportPasswordPlaceholder()}
               onSubmitEditing={submit}
             />
           </View>
@@ -277,7 +305,7 @@ const ImportPasswordForm = ({
 
       <View className="flex-row justify-end gap-2 mt-2 items-center">
         <Button variant="default" onPress={onCancel} disabled={submitting}>
-          <Typography>Cancel</Typography>
+          <Typography>{settingsActionCancel()}</Typography>
         </Button>
         <Button
           variant="default"
@@ -287,7 +315,7 @@ const ImportPasswordForm = ({
           {submitting ? (
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" />
-              <Typography>Importing…</Typography>
+              <Typography>{workspaceImportingButtonLabel()}</Typography>
             </View>
           ) : (
             <Typography>{confirmLabel}</Typography>
@@ -299,7 +327,7 @@ const ImportPasswordForm = ({
 };
 
 const ImportRecoveryForm = ({
-  description = "Enter the recovery passphrase you chose when you enabled recovery passphrase.",
+  description = workspaceImportRecoveryDescription(),
   confirmLabel,
   errorMessage,
   onPassphraseChange,
@@ -346,12 +374,13 @@ const ImportRecoveryForm = ({
         control={control}
         name="passphrase"
         rules={{
-          validate: (v) => v.length > 0 || "Recovery passphrase is required",
+          validate: (v) =>
+            v.length > 0 || workspaceRecoveryPassphraseRequiredError(),
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
             <Label nativeID="import-recovery-passphrase">
-              Recovery passphrase
+              {workspaceRecoveryPassphraseFieldLabel()}
             </Label>
             <Input
               value={value}
@@ -364,7 +393,7 @@ const ImportRecoveryForm = ({
               autoCapitalize="none"
               autoCorrect={false}
               autoFocus
-              placeholder="Recovery passphrase"
+              placeholder={workspaceRecoveryPassphrasePlaceholder()}
               onSubmitEditing={submit}
             />
           </View>
@@ -373,7 +402,7 @@ const ImportRecoveryForm = ({
 
       <View className="flex-row justify-end gap-2 mt-2 items-center">
         <Button variant="default" onPress={onCancel} disabled={submitting}>
-          <Typography>Cancel</Typography>
+          <Typography>{settingsActionCancel()}</Typography>
         </Button>
         <Button
           variant="default"
@@ -383,7 +412,7 @@ const ImportRecoveryForm = ({
           {submitting ? (
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" />
-              <Typography>Importing…</Typography>
+              <Typography>{workspaceImportingButtonLabel()}</Typography>
             </View>
           ) : (
             <Typography>{confirmLabel}</Typography>

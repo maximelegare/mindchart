@@ -6,6 +6,13 @@ import { Icon } from "@/components/ui/icons/icon";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { authenticateWithDeviceLock } from "@/lib/localAuth";
+import {
+  settingsSystemLockVerifyAuthenticateLabel,
+  settingsSystemLockVerifyDefaultDescription,
+  settingsSystemLockVerifyDefaultTitle,
+  settingsSystemLockVerifySettingsPrompt,
+} from "../lockScreenLabels";
+import { settingsActionCancel } from "@/features/settings/settingsLabels";
 
 type SystemLockVerifyProps = {
   title?: string;
@@ -15,8 +22,8 @@ type SystemLockVerifyProps = {
 };
 
 export function SystemLockVerify({
-  title = "Confirm device lock",
-  description = "Authenticate with your device biometrics or PIN to continue.",
+  title = settingsSystemLockVerifyDefaultTitle(),
+  description = settingsSystemLockVerifyDefaultDescription(),
   onVerify,
   onCancel,
 }: SystemLockVerifyProps) {
@@ -24,8 +31,8 @@ export function SystemLockVerify({
 
   const authenticate = useCallback(async () => {
     const result = await authenticateWithDeviceLock(
-      "Confirm to change lock screen settings",
-      "Cancel"
+      settingsSystemLockVerifySettingsPrompt(),
+      settingsActionCancel()
     );
     if (result.success) {
       onVerify();
@@ -60,10 +67,10 @@ export function SystemLockVerify({
 
       <View className="w-full gap-3">
         <Button onPress={() => void authenticate()} className="w-full">
-          <Typography>Authenticate</Typography>
+          <Typography>{settingsSystemLockVerifyAuthenticateLabel()}</Typography>
         </Button>
         <Button variant="ghost" onPress={onCancel} className="w-full">
-          <Typography>Cancel</Typography>
+          <Typography>{settingsActionCancel()}</Typography>
         </Button>
       </View>
     </View>

@@ -5,6 +5,21 @@ import { hsl } from "@/utils/hsl";
 import { Button } from "@/components/ui";
 import { EMBEDDINGS_MODELS } from "@/features/llama/data/models/embeddings/embeddingsModels";
 import { useColorScheme } from "@/lib/useColorScheme";
+import {
+  SettingsAiActiveContextLabel,
+  SettingsAiAvailableModelsHeading,
+  SettingsAiEngineStatusHeading,
+  SettingsEmbeddingsEngineDescription,
+  settingsAiIdleStatus,
+  settingsAiModelCloudDownloadLabel,
+  settingsAiModelDelete,
+  settingsAiModelDownload,
+  settingsAiModelDownloading,
+  settingsAiModelLoad,
+  settingsAiModelLoaded,
+  settingsAiModelLocalLabel,
+  settingsAiUnloadFromRam,
+} from "@/features/settings/settingsAiLabels";
 
 export type LlamaEmbeddingsSettingsContentProps = {
   currentModelId: string | null;
@@ -40,8 +55,7 @@ export function LlamaEmbeddingsSettingsContent({
     <View className="py-2">
       <View className="pb-4" style={divider}>
         <Typography padding>
-          Local Embeddings Engine responsible for the creation of thoughts
-          embeddings. It helps finding connections between notes.
+          <SettingsEmbeddingsEngineDescription />
         </Typography>
       </View>
 
@@ -51,7 +65,7 @@ export function LlamaEmbeddingsSettingsContent({
           padding
           style={{ color: hsl("muted-foreground", colorScheme) }}
         >
-          Engine Status
+          <SettingsAiEngineStatusHeading />
         </Typography>
         <View className="py-2 flex-row items-center">
           <View className="flex-1">
@@ -62,17 +76,19 @@ export function LlamaEmbeddingsSettingsContent({
                 color: hsl("muted-foreground", colorScheme),
               }}
             >
-              Active Context
+              <SettingsAiActiveContextLabel />
             </Typography>
             <Typography variant="h3" padding>
-              {currentModelId ? currentModelId.replace(/_/g, " ") : "Idle"}
+              {currentModelId
+                ? currentModelId.replace(/_/g, " ")
+                : settingsAiIdleStatus()}
             </Typography>
           </View>
           {isInitializingEmbedding ? (
             <ActivityIndicator color={hsl("foreground", colorScheme)} />
           ) : currentModelId ? (
             <Button onPress={onRelease} variant="destructive" size="sm">
-              <Typography>Unload from RAM</Typography>
+              <Typography>{settingsAiUnloadFromRam()}</Typography>
             </Button>
           ) : null}
         </View>
@@ -84,7 +100,7 @@ export function LlamaEmbeddingsSettingsContent({
           padding
           style={{ color: hsl("muted-foreground", colorScheme) }}
         >
-          Available Models
+          <SettingsAiAvailableModelsHeading />
         </Typography>
         <View className="flex-col">
           {modelEntries.map(([key, model], index) => {
@@ -110,8 +126,8 @@ export function LlamaEmbeddingsSettingsContent({
                   </Typography>
                   <Typography variant="small" className="text-muted-foreground">
                     {isDownloaded
-                      ? `Local · ${model.size}`
-                      : `Cloud · ${model.size} download`}
+                      ? settingsAiModelLocalLabel(model.size)
+                      : settingsAiModelCloudDownloadLabel(model.size)}
                   </Typography>
                 </View>
 
@@ -125,7 +141,7 @@ export function LlamaEmbeddingsSettingsContent({
                       <Typography
                         style={{ color: hsl("muted-foreground", colorScheme) }}
                       >
-                        Delete
+                        {settingsAiModelDelete()}
                       </Typography>
                     </Button>
                   )}
@@ -159,7 +175,7 @@ export function LlamaEmbeddingsSettingsContent({
                       >
                         {progress > 0 && progress < 100
                           ? `${progress.toFixed(0)}%`
-                          : "Downloading..."}
+                          : settingsAiModelDownloading()}
                       </Typography>
                     ) : (
                       <Typography
@@ -171,9 +187,9 @@ export function LlamaEmbeddingsSettingsContent({
                       >
                         {isDownloaded
                           ? isActive
-                            ? "Loaded"
-                            : "Load"
-                          : "Download"}
+                            ? settingsAiModelLoaded()
+                            : settingsAiModelLoad()
+                          : settingsAiModelDownload()}
                       </Typography>
                     )}
                   </Button>

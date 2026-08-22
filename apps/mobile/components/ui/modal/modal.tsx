@@ -25,8 +25,9 @@ import {
   type ModalContent,
 } from "./data/modals";
 import {
-  getDeleteFolderConfirmationModal,
-  getDeleteNoteConfirmationModal,
+  getTranslatedModalPreset,
+  modalDefaultCancelLabel,
+  modalDefaultConfirmLabel,
 } from "./data/modalsLabels";
 import { cn } from "@/lib/cn";
 
@@ -155,15 +156,13 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   } = modalOptions;
 
   const modalPreset = modalName
-    ? modalName === "DELETE_NOTE_CONFIRMATION"
-      ? getDeleteNoteConfirmationModal()
-      : modalName === "DELETE_FOLDER_CONFIRMATION"
-        ? getDeleteFolderConfirmationModal()
-        : MODALS_CONTENT[modalName]
+    ? (getTranslatedModalPreset(modalName) ?? MODALS_CONTENT[modalName])
     : undefined;
   const confirmButton: ModalButtonConfig = {
     text:
-      confirmButtonOption?.text ?? modalPreset?.confirmButton.text ?? "Confirm",
+      confirmButtonOption?.text ??
+      modalPreset?.confirmButton.text ??
+      modalDefaultConfirmLabel(),
     variant:
       confirmButtonOption?.variant ??
       modalPreset?.confirmButton.variant ??
@@ -171,7 +170,9 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   };
   const cancelButton: ModalButtonConfig = {
     text:
-      cancelButtonOption?.text ?? modalPreset?.cancelButton.text ?? "Cancel",
+      cancelButtonOption?.text ??
+      modalPreset?.cancelButton.text ??
+      modalDefaultCancelLabel(),
     variant:
       cancelButtonOption?.variant ??
       modalPreset?.cancelButton.variant ??

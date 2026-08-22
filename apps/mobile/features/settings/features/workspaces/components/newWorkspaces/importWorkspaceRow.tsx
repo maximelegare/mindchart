@@ -4,6 +4,7 @@ import { Button, Typography } from "@/components/ui";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { View } from "react-native";
+import { settingsActionImport } from "@/features/settings/settingsLabels";
 
 type Props = {
   onImported?: () => void;
@@ -28,7 +29,7 @@ export const ImportWorkspaceRow = ({ onImported }: Props) => {
     >
       <View className="flex-row items-center gap-2">
         <Icon name="import" color="foreground" />
-        <Typography>Import</Typography>
+        <Typography>{settingsActionImport()}</Typography>
       </View>
     </Button>
   );

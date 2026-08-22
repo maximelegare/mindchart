@@ -24,6 +24,10 @@ import {
   getLanguageLabel,
   setStoredLocalePreference,
 } from "@/features/translations/lib/localePreference";
+import {
+  SettingsSelectLanguageSheetTitle,
+  settingsLanguageRowLabel,
+} from "@/features/settings/settingsLabels";
 
 type LanguageOptionProps = {
   code: LanguageCode;
@@ -117,7 +121,7 @@ export function LanguagesSheetRow({
         <ListItem
           className={className}
           surface={surface}
-          label="Language"
+          label={settingsLanguageRowLabel()}
           borderBottom={false}
           itemRight={() => (
             <Typography
@@ -138,7 +142,7 @@ export function LanguagesSheetRow({
       >
         <BottomSheetHeader className="bg-background">
           <Typography variant="h3" padding={false}>
-            Select language
+            <SettingsSelectLanguageSheetTitle />
           </Typography>
         </BottomSheetHeader>
         <LanguagePickerBody selected={selected} onSelect={onSelect} />

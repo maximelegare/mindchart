@@ -7,6 +7,13 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { authenticateWithDeviceLock } from "@/lib/localAuth";
 import { useAppLock } from "../context/appLockProvider";
+import {
+  settingsAppLockedTitle,
+  settingsUnlockButton,
+  settingsUnlockMindChartBiometricPrompt,
+  settingsUnlockMindChartSystemDescription,
+} from "../lockScreenLabels";
+import { settingsActionCancel } from "@/features/settings/settingsLabels";
 
 export function SystemLockScreen() {
   const { colorScheme } = useColorScheme();
@@ -14,8 +21,8 @@ export function SystemLockScreen() {
 
   const unlockWithDevice = useCallback(async () => {
     const result = await authenticateWithDeviceLock(
-      "Unlock MindChart",
-      "Cancel"
+      settingsUnlockMindChartBiometricPrompt(),
+      settingsActionCancel()
     );
     if (result.success) {
       unlock();
@@ -39,18 +46,18 @@ export function SystemLockScreen() {
       </View>
 
       <Typography variant="h2" className="text-center mb-2">
-        MindChart is locked
+        {settingsAppLockedTitle()}
       </Typography>
       <Typography
         variant="p"
         className="text-center mb-10"
         style={{ color: hsl("muted-foreground", colorScheme) }}
       >
-        Use your device biometrics or PIN to continue.
+        {settingsUnlockMindChartSystemDescription()}
       </Typography>
 
       <Button onPress={() => void unlockWithDevice()} className="w-full">
-        <Typography>Unlock</Typography>
+        <Typography>{settingsUnlockButton()}</Typography>
       </Button>
     </View>
   );

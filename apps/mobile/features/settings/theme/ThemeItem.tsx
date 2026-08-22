@@ -20,6 +20,10 @@ import type { ThemePreference } from "@/lib/themePreference";
 import { resolveThemePreference } from "@/lib/themePreference";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { hsl } from "@/utils/hsl";
+import {
+  SettingsSelectThemeSheetTitle,
+  settingsThemeRowLabel,
+} from "@/features/settings/settingsLabels";
 
 type ItemData = {
   value: ThemePreference;
@@ -167,7 +171,7 @@ export const ThemeSettingItem = ({
         <ListItem
           className={className}
           surface={surface}
-          label="Theme"
+          label={settingsThemeRowLabel()}
           borderBottom={false}
           itemRight={() => (
             <Typography
@@ -188,7 +192,7 @@ export const ThemeSettingItem = ({
       >
         <BottomSheetHeader className="bg-background">
           <Typography variant="h3" padding={false}>
-            Select Theme
+            <SettingsSelectThemeSheetTitle />
           </Typography>
         </BottomSheetHeader>
         <ThemePickerBody

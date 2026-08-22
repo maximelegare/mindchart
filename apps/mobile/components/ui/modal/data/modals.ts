@@ -1,5 +1,4 @@
 import type { ButtonProps } from "../../button";
-import type { ReactNode } from "react";
 
 export type ModalButtonConfig = {
   text: React.ReactNode;

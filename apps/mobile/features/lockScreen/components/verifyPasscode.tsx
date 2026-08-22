@@ -8,6 +8,12 @@ import { hsl } from "@/utils/hsl";
 import { verifyAppPin } from "../services/passcodeService";
 import { APP_PIN_LENGTH } from "../constants";
 import { PinDots, PinPad } from "./pinPad";
+import {
+  settingsCreatePinCancelButton,
+  settingsIncorrectPinError,
+  settingsVerifyPinConfirmDescription,
+  settingsVerifyPinTitle,
+} from "../lockScreenLabels";
 
 type VerifyPasscodeProps = {
   onVerify: () => void;
@@ -27,7 +33,7 @@ export function VerifyPasscode({ onVerify, onCancel }: VerifyPasscodeProps) {
       } else {
         Vibration.vibrate([0, 50, 100, 150]);
         setPin("");
-        setError("Incorrect PIN. Try again.");
+        setError(settingsIncorrectPinError());
         setTimeout(() => setError(""), 2000);
       }
     },
@@ -64,14 +70,14 @@ export function VerifyPasscode({ onVerify, onCancel }: VerifyPasscodeProps) {
       </View>
 
       <Typography variant="h2" className="text-center mb-2">
-        Enter your PIN
+        {settingsVerifyPinTitle()}
       </Typography>
       <Typography
         variant="p"
         className="text-center mb-8 px-2"
         style={{ color: hsl("muted-foreground", colorScheme) }}
       >
-        Confirm your current PIN to continue.
+        {settingsVerifyPinConfirmDescription()}
       </Typography>
 
       <PinDots filledCount={pin.length} />
@@ -87,7 +93,7 @@ export function VerifyPasscode({ onVerify, onCancel }: VerifyPasscodeProps) {
 
       {onCancel ? (
         <Button variant="ghost" onPress={onCancel} className="mt-8">
-          <Typography>Cancel</Typography>
+          <Typography>{settingsCreatePinCancelButton()}</Typography>
         </Button>
       ) : null}
     </View>

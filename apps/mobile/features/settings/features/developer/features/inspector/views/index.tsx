@@ -20,6 +20,20 @@ import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { Migrator } from "@/features/settings/features/developer/features/inspector/components/migrator";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  settingsDbInspectorActionClear,
+  settingsDbInspectorDeleteDbFileAlertMessage,
+  settingsDbInspectorDeleteDbFileAlertTitle,
+  settingsDbInspectorDeleteDbFileButton,
+  settingsDbInspectorClearTableAlertMessage,
+  settingsDbInspectorClearTableAlertTitle,
+  settingsDbInspectorNoTablesFound,
+  settingsDbInspectorRowsLabel,
+} from "@/features/settings/settingsDeveloperLabels";
+import {
+  settingsActionCancel,
+  settingsActionDelete,
+} from "@/features/settings/settingsLabels";
 
 type TableInfo = {
   name: string;
@@ -67,50 +81,36 @@ export const DatabaseInspectorFeature = () => {
     const tableDef = knownTables.find((t) => t.name === name)?.table;
     if (!tableDef) return;
 
-    Alert.alert("Clear table?", `Remove all rows from "${name}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Clear",
-        style: "destructive",
-        onPress: () => {
-          db.delete(tableDef).execute();
-          loadTables();
+    Alert.alert(
+      settingsDbInspectorClearTableAlertTitle(),
+      settingsDbInspectorClearTableAlertMessage(name),
+      [
+        { text: settingsActionCancel(), style: "cancel" },
+        {
+          text: settingsDbInspectorActionClear(),
+          style: "destructive",
+          onPress: () => {
+            db.delete(tableDef).execute();
+            loadTables();
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
-
-  // const dropTable = (name: string) => {
-  //   Alert.alert('Delete table?', `This will permanently delete "${name}".`, [
-  //     { text: 'Cancel', style: 'cancel' },
-  //     {
-  //       text: 'Delete',
-  //       style: 'destructive',
-  //       onPress: () => {
-  //         db.run(`DROP TABLE IF EXISTS ${name}`);
-  //         loadTables();
-  //       },
-  //     },
-  //   ]);
-  // };
 
   const dropDatabaseFile = () => {
     Alert.alert(
-      "Delete Database File?",
-      `This will permanently delete your database.`,
+      settingsDbInspectorDeleteDbFileAlertTitle(),
+      settingsDbInspectorDeleteDbFileAlertMessage(),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: settingsActionCancel(), style: "cancel" },
         {
-          text: "Delete",
+          text: settingsActionDelete(),
           style: "destructive",
           onPress: async () => {
-            // Close the database connection and reset the cached instance
             await closeOPDatabase();
-            // Delete the database file
             await removeDatabaseFile();
-            // Clear the query client
             queryClient.clear();
-            // Navigate to new database screen
             router.replace("/newDatabase");
           },
         },
@@ -119,13 +119,12 @@ export const DatabaseInspectorFeature = () => {
   };
 
   return (
-    // <ScrollView contentContainerStyle={{ padding: 16 }}>
     <>
       <View className="gap-4 pb-4">
         <View className="flex-row gap-4">
           <Migrator />
           <Button variant="destructive" onPress={dropDatabaseFile}>
-            <Typography>Delete DB File</Typography>
+            <Typography>{settingsDbInspectorDeleteDbFileButton()}</Typography>
           </Button>
         </View>
       </View>
@@ -145,25 +144,26 @@ export const DatabaseInspectorFeature = () => {
             {table.name}
           </Typography>
           <Typography style={{ opacity: 0.6, marginBottom: 8 }}>
-            Rows: {table.count}
+            {settingsDbInspectorRowsLabel(table.count)}
           </Typography>
 
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Button variant="secondary" onPress={() => clearTable(table.name)}>
-              <Typography>Clear</Typography>
+              <Typography>{settingsDbInspectorActionClear()}</Typography>
             </Button>
           </View>
         </View>
       ))}
 
       {tables.length === 0 && (
-        <Typography style={{ opacity: 0.5 }}>No tables found.</Typography>
+        <Typography style={{ opacity: 0.5 }}>
+          {settingsDbInspectorNoTablesFound()}
+        </Typography>
       )}
 
       <SpaceFiller
         sizes={{ marginBottom: ["TAB_BAR_HEIGHT", "HEADER_OVERLAP"] }}
       />
     </>
-    // </ScrollView>
   );
 };

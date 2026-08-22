@@ -3,6 +3,4472 @@
   "phrases": [
     {
       "hashToLeaf": {
+        "4jO0wHrZu5L2k+pVzwS2Dg==": {
+          "desc": "Import workspace flow modal title",
+          "text": "Import Workspace"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 90
+        },
+        "end": {
+          "line": 4,
+          "column": 69,
+          "index": 150
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow modal title",
+          "text": "Import Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "kwBRfqwwtYqjHW05rXyHNQ==": {
+          "desc": "Import workspace flow: new workspace step title",
+          "text": "New Workspace"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 222
+        },
+        "end": {
+          "line": 8,
+          "column": 80,
+          "index": 293
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: new workspace step title",
+          "text": "New Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "FEBxFi6ucFqs2j/kLzcWqA==": {
+          "desc": "Import workspace flow: overwrite confirmation title",
+          "text": "Overwrite workspace?"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 362
+        },
+        "end": {
+          "line": 15,
+          "column": 3,
+          "index": 456
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: overwrite confirmation title",
+          "text": "Overwrite workspace?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/jik0IJCFpNHPgQ2rWWSrg==": {
+          "desc": "Alert title when workspace import fails",
+          "text": "Import failed"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 19,
+          "column": 9,
+          "index": 522
+        },
+        "end": {
+          "line": 19,
+          "column": 72,
+          "index": 585
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when workspace import fails",
+          "text": "Import failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bZXEiMHQ3KQ5HWnN9kU9JQ==": {
+          "desc": "Import workspace flow: reading export loading title",
+          "text": "Reading export..."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 23,
+          "column": 9,
+          "index": 653
+        },
+        "end": {
+          "line": 26,
+          "column": 3,
+          "index": 744
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: reading export loading title",
+          "text": "Reading export..."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0Dn50I+ArtJXmKE98zHBVg==": {
+          "desc": "Import workspace flow: reading export loading description",
+          "text": "Unpacking your workspace file."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 30,
+          "column": 9,
+          "index": 818
+        },
+        "end": {
+          "line": 33,
+          "column": 3,
+          "index": 928
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: reading export loading description",
+          "text": "Unpacking your workspace file."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ggXvkk5Z/JHw5sTFZ0jN8w==": {
+          "desc": "Import workspace flow: decrypting loading title",
+          "text": "Decrypting workspace..."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 37,
+          "column": 9,
+          "index": 993
+        },
+        "end": {
+          "line": 40,
+          "column": 3,
+          "index": 1086
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: decrypting loading title",
+          "text": "Decrypting workspace..."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "aOo59D6Q44jHQXJA5jrsCw==": {
+          "desc": "Import workspace flow: decrypting loading description",
+          "text": "This can take up to a minute. Please keep the app open."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 44,
+          "column": 9,
+          "index": 1157
+        },
+        "end": {
+          "line": 47,
+          "column": 3,
+          "index": 1288
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: decrypting loading description",
+          "text": "This can take up to a minute. Please keep the app open."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "zbLNxLawjrTpPd8fqRyoHA==": {
+          "desc": "Import workspace flow: applying loading title",
+          "text": "Importing workspace..."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 51,
+          "column": 9,
+          "index": 1351
+        },
+        "end": {
+          "line": 54,
+          "column": 3,
+          "index": 1441
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: applying loading title",
+          "text": "Importing workspace..."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "7R6gme6wDnFvbiATbVdMbQ==": {
+          "desc": "Import workspace flow: applying loading description",
+          "text": "Writing database and activating workspace."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 58,
+          "column": 9,
+          "index": 1510
+        },
+        "end": {
+          "line": 61,
+          "column": 3,
+          "index": 1626
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: applying loading description",
+          "text": "Writing database and activating workspace."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "D9IlV4gktNF+zge+C2u3QQ==": {
+          "desc": "Import workspace flow: new workspace form description",
+          "text": "Name your imported workspace and choose an icon and color."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 65,
+          "column": 9,
+          "index": 1699
+        },
+        "end": {
+          "line": 68,
+          "column": 3,
+          "index": 1833
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: new workspace form description",
+          "text": "Name your imported workspace and choose an icon and color."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "2tdhWmFquTYQYhgbgUp3aw==": {
+          "desc": "Import workspace flow: default workspace name",
+          "text": "Imported Workspace"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 72,
+          "column": 9,
+          "index": 1894
+        },
+        "end": {
+          "line": 72,
+          "column": 83,
+          "index": 1968
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: default workspace name",
+          "text": "Imported Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "JqbObEdpzBkrUMEa7etoVQ==": {
+          "desc": "Import workspace flow: fallback active workspace name",
+          "text": "this workspace"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 76,
+          "column": 9,
+          "index": 2045
+        },
+        "end": {
+          "line": 79,
+          "column": 3,
+          "index": 2135
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: fallback active workspace name",
+          "text": "this workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "rNWB39qHz9kYzZG2yDoofg==": {
+          "desc": "Import workspace flow: overwrite confirmation description",
+          "text": "All notes and data in \" {workspaceName}\" will be permanently replaced with the contents of this import. Your current workspace name, icon, and color will stay the same. This cannot be undone."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 88,
+          "column": 4,
+          "index": 2261
+        },
+        "end": {
+          "line": 94,
+          "column": 10,
+          "index": 2618
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: overwrite confirmation description",
+          "text": "All notes and data in \" {workspaceName}\" will be permanently replaced with the contents of this import. Your current workspace name, icon, and color will stay the same. This cannot be undone."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "DBBcj7wHI3Oez4xgzrdBgw==": {
+          "desc": "Import workspace flow: switch to recovery passphrase",
+          "text": "Use recovery passphrase instead"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 99,
+          "column": 9,
+          "index": 2697
+        },
+        "end": {
+          "line": 102,
+          "column": 3,
+          "index": 2803
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: switch to recovery passphrase",
+          "text": "Use recovery passphrase instead"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "NwsrY9CyuGb0/c54qx7erA==": {
+          "desc": "Import workspace flow: switch to export password",
+          "text": "Use export password instead"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 106,
+          "column": 9,
+          "index": 2874
+        },
+        "end": {
+          "line": 109,
+          "column": 3,
+          "index": 2972
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: switch to export password",
+          "text": "Use export password instead"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0b/L2FDmUvmS/gxB18CwMw==": {
+          "desc": "Import workspace flow: import choice description",
+          "text": "Create a new workspace from this file, or overwrite the currently active workspace?"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 113,
+          "column": 9,
+          "index": 3039
+        },
+        "end": {
+          "line": 116,
+          "column": 3,
+          "index": 3193
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: import choice description",
+          "text": "Create a new workspace from this file, or overwrite the currently active workspace?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "upcSBrBOc6+2gWu+FZNUKQ==": {
+          "desc": "Import workspace flow: new workspace button",
+          "text": "New workspace"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 120,
+          "column": 9,
+          "index": 3261
+        },
+        "end": {
+          "line": 120,
+          "column": 76,
+          "index": 3328
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: new workspace button",
+          "text": "New workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "NvUr0QjRSOyG3GLqqVoUSg==": {
+          "desc": "Import workspace flow: overwrite active button",
+          "text": "Overwrite active"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 124,
+          "column": 9,
+          "index": 3399
+        },
+        "end": {
+          "line": 127,
+          "column": 3,
+          "index": 3484
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: overwrite active button",
+          "text": "Overwrite active"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "VYw0dWQSzgzdKpQwxpsnhA==": {
+          "desc": "Import workspace flow: overwrite confirm button",
+          "text": "Overwrite"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 131,
+          "column": 9,
+          "index": 3556
+        },
+        "end": {
+          "line": 131,
+          "column": 76,
+          "index": 3623
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace flow: overwrite confirm button",
+          "text": "Overwrite"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "uuEaPOP5UyVtZzzMjrPYKA==": {
+          "desc": "Export workspace password modal description",
+          "text": "Choose a password to protect this export. You will need it to import the workspace later."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 135,
+          "column": 9,
+          "index": 3692
+        },
+        "end": {
+          "line": 138,
+          "column": 3,
+          "index": 3847
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace password modal description",
+          "text": "Choose a password to protect this export. You will need it to import the workspace later."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "dxdk1LWg6nPMPWfXxC+noQ==": {
+          "desc": "Import workspace password modal description",
+          "text": "Enter the password you used when exporting this workspace."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 142,
+          "column": 9,
+          "index": 3916
+        },
+        "end": {
+          "line": 145,
+          "column": 3,
+          "index": 4040
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace password modal description",
+          "text": "Enter the password you used when exporting this workspace."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "FGN8OnAmjeExgd+/nCM4qA==": {
+          "desc": "Import workspace recovery passphrase modal description",
+          "text": "Enter the recovery passphrase you chose when you enabled recovery passphrase."
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 149,
+          "column": 9,
+          "index": 4109
+        },
+        "end": {
+          "line": 152,
+          "column": 3,
+          "index": 4263
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace recovery passphrase modal description",
+          "text": "Enter the recovery passphrase you chose when you enabled recovery passphrase."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "OTfBskDXlktHMNgT3TzW5w==": {
+          "desc": "Export workspace password modal confirm button",
+          "text": "Export"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 156,
+          "column": 9,
+          "index": 4325
+        },
+        "end": {
+          "line": 156,
+          "column": 72,
+          "index": 4388
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace password modal confirm button",
+          "text": "Export"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "J2yEX0FQiyxm70dJ0sbKIQ==": {
+          "desc": "Import workspace password modal confirm button",
+          "text": "Import"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 160,
+          "column": 9,
+          "index": 4450
+        },
+        "end": {
+          "line": 160,
+          "column": 72,
+          "index": 4513
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace password modal confirm button",
+          "text": "Import"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ebfHtNPvJjPlQhEivquxLw==": {
+          "desc": "Workspace password modal field label",
+          "text": "Password"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 164,
+          "column": 9,
+          "index": 4575
+        },
+        "end": {
+          "line": 164,
+          "column": 64,
+          "index": 4630
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace password modal field label",
+          "text": "Password"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "U2kWNOIawFVpRjzZ5Z2HHQ==": {
+          "desc": "Export workspace password field placeholder",
+          "text": "Export password"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 168,
+          "column": 9,
+          "index": 4699
+        },
+        "end": {
+          "line": 168,
+          "column": 78,
+          "index": 4768
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace password field placeholder",
+          "text": "Export password"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "s2kcryFCMf2WKJz8/xlKWA==": {
+          "desc": "Export workspace confirm password label",
+          "text": "Confirm password"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 172,
+          "column": 9,
+          "index": 4832
+        },
+        "end": {
+          "line": 172,
+          "column": 75,
+          "index": 4898
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace confirm password label",
+          "text": "Confirm password"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "reHQA+AVbwB80TN2RtiV8A==": {
+          "desc": "Export workspace confirm password placeholder",
+          "text": "Confirm password"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 176,
+          "column": 9,
+          "index": 4968
+        },
+        "end": {
+          "line": 179,
+          "column": 3,
+          "index": 5052
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace confirm password placeholder",
+          "text": "Confirm password"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "69S/I0vYVxvrweG9X1D4lg==": {
+          "desc": "Workspace password minimum length validation",
+          "text": "At least {min} characters"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 183,
+          "column": 9,
+          "index": 5129
+        },
+        "end": {
+          "line": 186,
+          "column": 3,
+          "index": 5245
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace password minimum length validation",
+          "text": "At least {min} characters"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "3AmvZsEGSBIvIPFYPaWr1w==": {
+          "desc": "Workspace password mismatch validation",
+          "text": "Passwords do not match"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 190,
+          "column": 9,
+          "index": 5310
+        },
+        "end": {
+          "line": 193,
+          "column": 3,
+          "index": 5393
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace password mismatch validation",
+          "text": "Passwords do not match"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Xzn0R4KDCYBU6ek/I6MYwA==": {
+          "desc": "Import workspace password required validation",
+          "text": "Password is required"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 197,
+          "column": 9,
+          "index": 5458
+        },
+        "end": {
+          "line": 197,
+          "column": 85,
+          "index": 5534
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace password required validation",
+          "text": "Password is required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "EgqOdL0DVPvb6g+Id9z5qQ==": {
+          "desc": "Import workspace recovery passphrase field label",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 201,
+          "column": 9,
+          "index": 5606
+        },
+        "end": {
+          "line": 204,
+          "column": 3,
+          "index": 5696
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace recovery passphrase field label",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IKk/H36JzGTnjIuxSbko3Q==": {
+          "desc": "Import workspace recovery passphrase placeholder",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 208,
+          "column": 9,
+          "index": 5769
+        },
+        "end": {
+          "line": 211,
+          "column": 3,
+          "index": 5859
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace recovery passphrase placeholder",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Cy1zU0FJTxtMaCFhohrq6g==": {
+          "desc": "Import workspace recovery passphrase required validation",
+          "text": "Recovery passphrase is required"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 215,
+          "column": 9,
+          "index": 5934
+        },
+        "end": {
+          "line": 218,
+          "column": 3,
+          "index": 6044
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace recovery passphrase required validation",
+          "text": "Recovery passphrase is required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8Je/YSkJpUmeCMqAo6ygPg==": {
+          "desc": "Export workspace password modal submitting state",
+          "text": "Exporting…"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 222,
+          "column": 9,
+          "index": 6108
+        },
+        "end": {
+          "line": 222,
+          "column": 78,
+          "index": 6177
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace password modal submitting state",
+          "text": "Exporting…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "q+UIVCeXZvyb0FQsKWqQTQ==": {
+          "desc": "Import workspace password modal submitting state",
+          "text": "Importing…"
+        }
+      },
+      "filename": "features/workspaces/workspaceModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 226,
+          "column": 9,
+          "index": 6241
+        },
+        "end": {
+          "line": 226,
+          "column": 78,
+          "index": 6310
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace password modal submitting state",
+          "text": "Importing…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "X0bAmXXm9sSEnSOJ6PXFrA==": {
+          "desc": "Settings section: AI",
+          "text": "AI"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 82
+        },
+        "end": {
+          "line": 4,
+          "column": 50,
+          "index": 123
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: AI",
+          "text": "AI"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "VIp1M5yqYlwtPVElFKpjEw==": {
+          "desc": "Settings AI row: auto connect",
+          "text": "Auto Connect"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 184
+        },
+        "end": {
+          "line": 8,
+          "column": 61,
+          "index": 236
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: auto connect",
+          "text": "Auto Connect"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cwavxQxiHgsSueiyMgxFVw==": {
+          "desc": "Settings AI auto connect description",
+          "text": "Connect Whisper and Llama Chat on launch. Embeddings always connect."
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 303
+        },
+        "end": {
+          "line": 15,
+          "column": 3,
+          "index": 430
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI auto connect description",
+          "text": "Connect Whisper and Llama Chat on launch. Embeddings always connect."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "DEGncCLuxkHNYXTe3kZgig==": {
+          "desc": "Settings AI auto connect switch accessibility label",
+          "text": "Auto Connect"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 19,
+          "column": 9,
+          "index": 504
+        },
+        "end": {
+          "line": 22,
+          "column": 3,
+          "index": 590
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI auto connect switch accessibility label",
+          "text": "Auto Connect"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "z27kGVly2CYdoMVQli4jxg==": {
+          "desc": "Settings AI row: providers",
+          "text": "AI Providers"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 26,
+          "column": 9,
+          "index": 649
+        },
+        "end": {
+          "line": 26,
+          "column": 58,
+          "index": 698
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: providers",
+          "text": "AI Providers"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IhheEnY60K6/JbrxMPwcGg==": {
+          "desc": "Settings AI row: whisper engine",
+          "text": "Whisper Engine"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 30,
+          "column": 9,
+          "index": 761
+        },
+        "end": {
+          "line": 30,
+          "column": 65,
+          "index": 817
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: whisper engine",
+          "text": "Whisper Engine"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0aDawXa5V7LBD+f6mZYi2w==": {
+          "desc": "Settings AI row: llama chat engine",
+          "text": "Llama Chat Engine"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 34,
+          "column": 9,
+          "index": 882
+        },
+        "end": {
+          "line": 34,
+          "column": 71,
+          "index": 944
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: llama chat engine",
+          "text": "Llama Chat Engine"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "NFFO35N8J14AyjcPek93TA==": {
+          "desc": "Settings AI row: embeddings engine",
+          "text": "Embeddings Engine"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 38,
+          "column": 9,
+          "index": 1010
+        },
+        "end": {
+          "line": 38,
+          "column": 71,
+          "index": 1072
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: embeddings engine",
+          "text": "Embeddings Engine"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yXuLpPGflw1h9suJxJwJ+g==": {
+          "desc": "AI provider option: local",
+          "text": "Local"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 42,
+          "column": 9,
+          "index": 1130
+        },
+        "end": {
+          "line": 42,
+          "column": 50,
+          "index": 1171
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider option: local",
+          "text": "Local"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "i8zj5fbcFiNT+pFYijWVAw==": {
+          "desc": "AI provider option: cloud",
+          "text": "Cloud"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 46,
+          "column": 9,
+          "index": 1229
+        },
+        "end": {
+          "line": 46,
+          "column": 50,
+          "index": 1270
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider option: cloud",
+          "text": "Cloud"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5Bfsj72ek8iZXVMxfccDzA==": {
+          "desc": "AI providers summary: mixed",
+          "text": "Mixed"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 50,
+          "column": 9,
+          "index": 1328
+        },
+        "end": {
+          "line": 50,
+          "column": 52,
+          "index": 1371
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI providers summary: mixed",
+          "text": "Mixed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "OjPmLjZc9f/s/ml2PZGvZg==": {
+          "desc": "AI settings: no model selected",
+          "text": "No model"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 54,
+          "column": 9,
+          "index": 1423
+        },
+        "end": {
+          "line": 54,
+          "column": 58,
+          "index": 1472
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI settings: no model selected",
+          "text": "No model"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yF9hN7mq49yhmiCOUGiAKw==": {
+          "desc": "AI providers settings description",
+          "text": "The AI providers are the locations where the AI models are hosted."
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 59,
+          "column": 4,
+          "index": 1543
+        },
+        "end": {
+          "line": 61,
+          "column": 10,
+          "index": 1673
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI providers settings description",
+          "text": "The AI providers are the locations where the AI models are hosted."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "+aqgSD2/9OMXik+EdtbyQA==": {
+          "desc": "AI provider row: whisper",
+          "text": "Whisper"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 66,
+          "column": 9,
+          "index": 1742
+        },
+        "end": {
+          "line": 66,
+          "column": 59,
+          "index": 1792
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider row: whisper",
+          "text": "Whisper"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4bl5cu0L85MojWZlPTS8sA==": {
+          "desc": "AI provider row: llama chat",
+          "text": "Llama Chat"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 70,
+          "column": 9,
+          "index": 1859
+        },
+        "end": {
+          "line": 70,
+          "column": 65,
+          "index": 1915
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider row: llama chat",
+          "text": "Llama Chat"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fVVE0L+p0Eh5Iyi6scAVLA==": {
+          "desc": "AI provider row: embeddings",
+          "text": "Embeddings"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 74,
+          "column": 9,
+          "index": 1983
+        },
+        "end": {
+          "line": 74,
+          "column": 65,
+          "index": 2039
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider row: embeddings",
+          "text": "Embeddings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IwG02Jegqh5juck6XFfjiA==": {
+          "desc": "Whisper engine settings description",
+          "text": "AI Engine responsible for the local transcription of speech. Use Tiny for English and Base for other languages."
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 79,
+          "column": 4,
+          "index": 2112
+        },
+        "end": {
+          "line": 82,
+          "column": 10,
+          "index": 2295
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Whisper engine settings description",
+          "text": "AI Engine responsible for the local transcription of speech. Use Tiny for English and Base for other languages."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "M0Cu+RiPPsE6kXkXeQIErA==": {
+          "desc": "Llama chat engine settings description",
+          "text": "Local Large Language Model responsible for the summarization of notes. Large models require more VRAM and storage but provide better accuracy."
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 88,
+          "column": 4,
+          "index": 2374
+        },
+        "end": {
+          "line": 91,
+          "column": 10,
+          "index": 2591
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Llama chat engine settings description",
+          "text": "Local Large Language Model responsible for the summarization of notes. Large models require more VRAM and storage but provide better accuracy."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "CQnDssZp4TlTiMRQX4oNFA==": {
+          "desc": "Embeddings engine settings description",
+          "text": "Local Embeddings Engine responsible for the creation of thoughts embeddings. It helps finding connections between notes."
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 97,
+          "column": 4,
+          "index": 2671
+        },
+        "end": {
+          "line": 100,
+          "column": 10,
+          "index": 2866
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Embeddings engine settings description",
+          "text": "Local Embeddings Engine responsible for the creation of thoughts embeddings. It helps finding connections between notes."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6DQr2aFZ/xVgYPMXGqY6vA==": {
+          "desc": "AI engine settings: status heading",
+          "text": "Engine Status"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 106,
+          "column": 4,
+          "index": 2940
+        },
+        "end": {
+          "line": 106,
+          "column": 70,
+          "index": 3006
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine settings: status heading",
+          "text": "Engine Status"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cacjfW8TiX14hJ80hfc2Pw==": {
+          "desc": "AI engine settings: active context label",
+          "text": "Active Context"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 112,
+          "column": 4,
+          "index": 3079
+        },
+        "end": {
+          "line": 112,
+          "column": 77,
+          "index": 3152
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine settings: active context label",
+          "text": "Active Context"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cUrYnAXmPRZF/gaNHgwfbg==": {
+          "desc": "AI engine status: idle",
+          "text": "Idle"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 117,
+          "column": 9,
+          "index": 3211
+        },
+        "end": {
+          "line": 117,
+          "column": 46,
+          "index": 3248
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine status: idle",
+          "text": "Idle"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZTkI4ZWouwTHK5e4A7AaQA==": {
+          "desc": "AI engine settings: available models heading",
+          "text": "Available Models"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 122,
+          "column": 4,
+          "index": 3321
+        },
+        "end": {
+          "line": 124,
+          "column": 10,
+          "index": 3412
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine settings: available models heading",
+          "text": "Available Models"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "kUzDiAlqoXVKIFaIJzEPFg==": {
+          "desc": "AI engine action: unload from RAM",
+          "text": "Unload from RAM"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 129,
+          "column": 9,
+          "index": 3474
+        },
+        "end": {
+          "line": 129,
+          "column": 68,
+          "index": 3533
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine action: unload from RAM",
+          "text": "Unload from RAM"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "eHrAkk2EcMriN0AtxP24+w==": {
+          "desc": "AI model action: delete",
+          "text": "Delete"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 133,
+          "column": 9,
+          "index": 3589
+        },
+        "end": {
+          "line": 133,
+          "column": 49,
+          "index": 3629
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: delete",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "eqE6YYJMR4P2W8MBEnpsgw==": {
+          "desc": "AI model action: load",
+          "text": "Load"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 137,
+          "column": 9,
+          "index": 3683
+        },
+        "end": {
+          "line": 137,
+          "column": 45,
+          "index": 3719
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: load",
+          "text": "Load"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "+FkJa0RdClUarH7veXQlbQ==": {
+          "desc": "AI model action: loaded",
+          "text": "Loaded"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 141,
+          "column": 9,
+          "index": 3775
+        },
+        "end": {
+          "line": 141,
+          "column": 49,
+          "index": 3815
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: loaded",
+          "text": "Loaded"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "sALzOUSpY14DpOVsSURcOQ==": {
+          "desc": "AI model action: download",
+          "text": "Download"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 145,
+          "column": 9,
+          "index": 3873
+        },
+        "end": {
+          "line": 145,
+          "column": 53,
+          "index": 3917
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: download",
+          "text": "Download"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lsQV+WP/mfO4S29xIcCrmQ==": {
+          "desc": "AI model action: downloading",
+          "text": "Downloading..."
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 149,
+          "column": 9,
+          "index": 3978
+        },
+        "end": {
+          "line": 149,
+          "column": 62,
+          "index": 4031
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: downloading",
+          "text": "Downloading..."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fUu0gXWmVdMF1eiU/tzEWQ==": {
+          "desc": "AI model storage label: local",
+          "text": "Local · {size}"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 153,
+          "column": 9,
+          "index": 4103
+        },
+        "end": {
+          "line": 156,
+          "column": 3,
+          "index": 4190
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model storage label: local",
+          "text": "Local · {size}"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LxNEsWhDgSdzUvdVb/rX6A==": {
+          "desc": "AI model storage label: cloud download",
+          "text": "Cloud · {size} download"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 160,
+          "column": 9,
+          "index": 4270
+        },
+        "end": {
+          "line": 163,
+          "column": 3,
+          "index": 4379
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model storage label: cloud download",
+          "text": "Cloud · {size} download"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "qmO0qFY3GBS0C9V9OVSVgg==": {
+          "desc": "Auto connect loading title",
+          "text": "Connecting to AI Models"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 167,
+          "column": 9,
+          "index": 4439
+        },
+        "end": {
+          "line": 167,
+          "column": 69,
+          "index": 4499
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Auto connect loading title",
+          "text": "Connecting to AI Models"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "os2vIF5bt1f/nSvOqn/3Ew==": {
+          "desc": "AI setup modal: go to settings button",
+          "text": "Go to Settings"
+        }
+      },
+      "filename": "features/settings/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 171,
+          "column": 9,
+          "index": 4562
+        },
+        "end": {
+          "line": 171,
+          "column": 71,
+          "index": 4624
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI setup modal: go to settings button",
+          "text": "Go to Settings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4MsyCSMOnDaqn94cweoKnQ==": {
+          "desc": "Developer settings: seed database title",
+          "text": "Seed Database"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 85
+        },
+        "end": {
+          "line": 4,
+          "column": 80,
+          "index": 156
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings: seed database title",
+          "text": "Seed Database"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Zq+vgwuMowy2/HWKeSLpnw==": {
+          "desc": "Developer settings: seed database description",
+          "text": "Fill the database with fake data for testing. The maximum number of notes is {maxNotes}."
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 9,
+          "column": 4,
+          "index": 262
+        },
+        "end": {
+          "line": 12,
+          "column": 10,
+          "index": 471
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings: seed database description",
+          "text": "Fill the database with fake data for testing. The maximum number of notes is {maxNotes}."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/1HfJvoCbm4pZDYCOv4WSw==": {
+          "desc": "Developer seed database: number of notes placeholder",
+          "text": "Number of notes"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 17,
+          "column": 9,
+          "index": 546
+        },
+        "end": {
+          "line": 20,
+          "column": 3,
+          "index": 636
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer seed database: number of notes placeholder",
+          "text": "Number of notes"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "r7P1OJt3oYTSN92yWjfp3A==": {
+          "desc": "Developer seed database: missing number alert",
+          "text": "Please enter a number of notes"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 9,
+          "index": 707
+        },
+        "end": {
+          "line": 27,
+          "column": 3,
+          "index": 805
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer seed database: missing number alert",
+          "text": "Please enter a number of notes"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Xpa667FfWn0pz5k6Gp9psQ==": {
+          "desc": "Developer seed database loading title",
+          "text": "Seeding Database"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 31,
+          "column": 9,
+          "index": 872
+        },
+        "end": {
+          "line": 31,
+          "column": 73,
+          "index": 936
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer seed database loading title",
+          "text": "Seeding Database"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "3fNo9TPf0N3moIb7xTcIhA==": {
+          "desc": "DB inspector: clear table alert title",
+          "text": "Clear table?"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 35,
+          "column": 9,
+          "index": 1010
+        },
+        "end": {
+          "line": 35,
+          "column": 69,
+          "index": 1070
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: clear table alert title",
+          "text": "Clear table?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LlzkBbNczTlJfKKD6J34jQ==": {
+          "desc": "DB inspector: clear table alert message",
+          "text": "Remove all rows from \"{tableName}\"?"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 39,
+          "column": 9,
+          "index": 1163
+        },
+        "end": {
+          "line": 42,
+          "column": 3,
+          "index": 1290
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: clear table alert message",
+          "text": "Remove all rows from \"{tableName}\"?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6rDkHbAW2sWxGDq7bKtTaw==": {
+          "desc": "DB inspector: clear table button",
+          "text": "Clear"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 46,
+          "column": 9,
+          "index": 1355
+        },
+        "end": {
+          "line": 46,
+          "column": 57,
+          "index": 1403
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: clear table button",
+          "text": "Clear"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Ia+dIn5Fx+Rsxoi+SCfWhA==": {
+          "desc": "DB inspector: delete database file alert title",
+          "text": "Delete Database File?"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 50,
+          "column": 9,
+          "index": 1479
+        },
+        "end": {
+          "line": 53,
+          "column": 3,
+          "index": 1569
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: delete database file alert title",
+          "text": "Delete Database File?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "TcmuNFkUzH3Na9uT0Zw0jA==": {
+          "desc": "DB inspector: delete database file alert message",
+          "text": "This will permanently delete your database."
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 57,
+          "column": 9,
+          "index": 1647
+        },
+        "end": {
+          "line": 60,
+          "column": 3,
+          "index": 1761
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: delete database file alert message",
+          "text": "This will permanently delete your database."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "AbdXOW0QnDR7CpHQTgLU9w==": {
+          "desc": "DB inspector: delete database file button",
+          "text": "Delete DB File"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 64,
+          "column": 9,
+          "index": 1833
+        },
+        "end": {
+          "line": 64,
+          "column": 75,
+          "index": 1899
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: delete database file button",
+          "text": "Delete DB File"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "mDot1m4T8BOntfH8qjvvJg==": {
+          "desc": "DB inspector: table row count",
+          "text": "Rows: {count}"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 68,
+          "column": 9,
+          "index": 1975
+        },
+        "end": {
+          "line": 71,
+          "column": 3,
+          "index": 2062
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: table row count",
+          "text": "Rows: {count}"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "O/QDggpZcorooEJzZhfOag==": {
+          "desc": "DB inspector: empty state",
+          "text": "No tables found."
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 75,
+          "column": 9,
+          "index": 2129
+        },
+        "end": {
+          "line": 75,
+          "column": 61,
+          "index": 2181
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: empty state",
+          "text": "No tables found."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0H2aT8ocfohC9wEt8Psk7A==": {
+          "desc": "DB inspector: new database button",
+          "text": "New Database"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 79,
+          "column": 9,
+          "index": 2252
+        },
+        "end": {
+          "line": 79,
+          "column": 65,
+          "index": 2308
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: new database button",
+          "text": "New Database"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "f9z05ZJt12NCSN2vUTOelA==": {
+          "desc": "DB inspector: migration failed alert title",
+          "text": "Migration failed"
+        }
+      },
+      "filename": "features/settings/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 83,
+          "column": 9,
+          "index": 2382
+        },
+        "end": {
+          "line": 83,
+          "column": 78,
+          "index": 2451
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: migration failed alert title",
+          "text": "Migration failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "UuScxlLJOap/A5SRolv6vQ==": {
+          "desc": "Settings page title",
+          "text": "Settings"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 77
+        },
+        "end": {
+          "line": 4,
+          "column": 55,
+          "index": 123
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings page title",
+          "text": "Settings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "UuScxlLJOap/A5SRolv6vQ==": {
+          "desc": "Settings page title",
+          "text": "Settings"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 181
+        },
+        "end": {
+          "line": 8,
+          "column": 47,
+          "index": 219
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings page title",
+          "text": "Settings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5JWv+oQ+v86gXfV8984n+A==": {
+          "desc": "Settings section: appearance",
+          "text": "Appearance"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 284
+        },
+        "end": {
+          "line": 12,
+          "column": 66,
+          "index": 341
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: appearance",
+          "text": "Appearance"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "B9dHRGtTHqnocnGyEPGReg==": {
+          "desc": "Settings section: about",
+          "text": "About"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 401
+        },
+        "end": {
+          "line": 16,
+          "column": 56,
+          "index": 448
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: about",
+          "text": "About"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "G2OsQyIa0dG/a4XeWZEIzg==": {
+          "desc": "Settings section: developer",
+          "text": "Developer"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 20,
+          "column": 9,
+          "index": 512
+        },
+        "end": {
+          "line": 20,
+          "column": 64,
+          "index": 567
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: developer",
+          "text": "Developer"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "1dqu3TICQfPB5dYTpTAZZw==": {
+          "desc": "Settings row: developer options",
+          "text": "Developer Options"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 9,
+          "index": 631
+        },
+        "end": {
+          "line": 24,
+          "column": 68,
+          "index": 690
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: developer options",
+          "text": "Developer Options"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bOWom5Zj7FUk5kqlbFWXvQ==": {
+          "desc": "Settings section: language",
+          "text": "Language"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 28,
+          "column": 9,
+          "index": 753
+        },
+        "end": {
+          "line": 28,
+          "column": 62,
+          "index": 806
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: language",
+          "text": "Language"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "JcGsufi8AfXAw/tVb0Jj3g==": {
+          "desc": "Settings row: language",
+          "text": "Language"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 32,
+          "column": 9,
+          "index": 865
+        },
+        "end": {
+          "line": 32,
+          "column": 50,
+          "index": 906
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: language",
+          "text": "Language"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5+mfsbpD1U6zo/fNr77Glw==": {
+          "desc": "Language picker sheet title",
+          "text": "Select language"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 36,
+          "column": 9,
+          "index": 973
+        },
+        "end": {
+          "line": 36,
+          "column": 70,
+          "index": 1034
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Language picker sheet title",
+          "text": "Select language"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "dcCbXhH435U61Z1PrqVOOg==": {
+          "desc": "Settings row: theme",
+          "text": "Theme"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 40,
+          "column": 9,
+          "index": 1090
+        },
+        "end": {
+          "line": 40,
+          "column": 44,
+          "index": 1125
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: theme",
+          "text": "Theme"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "GA0P5rAih6khU5aZfgT1fQ==": {
+          "desc": "Theme picker sheet title",
+          "text": "Select Theme"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 44,
+          "column": 9,
+          "index": 1189
+        },
+        "end": {
+          "line": 44,
+          "column": 64,
+          "index": 1244
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Theme picker sheet title",
+          "text": "Select Theme"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "zKKD74hy0mSHJslCd0WWPA==": {
+          "desc": "Settings row: app version",
+          "text": "App Version"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 48,
+          "column": 9,
+          "index": 1302
+        },
+        "end": {
+          "line": 48,
+          "column": 56,
+          "index": 1349
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: app version",
+          "text": "App Version"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4d1BLZL9Exk5FPBnED1qnw==": {
+          "desc": "Developer settings page title",
+          "text": "Developer Options"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 52,
+          "column": 9,
+          "index": 1417
+        },
+        "end": {
+          "line": 52,
+          "column": 66,
+          "index": 1474
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings page title",
+          "text": "Developer Options"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0i8hrdQXr4mPA5zNflfOjw==": {
+          "desc": "Developer settings page subtitle",
+          "text": "Settings"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 56,
+          "column": 9,
+          "index": 1538
+        },
+        "end": {
+          "line": 56,
+          "column": 60,
+          "index": 1589
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings page subtitle",
+          "text": "Settings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "43Wkwqn5P+B7He+Z+gAMsw==": {
+          "desc": "DB inspector page title",
+          "text": "SQLite Inspector"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 60,
+          "column": 9,
+          "index": 1652
+        },
+        "end": {
+          "line": 60,
+          "column": 59,
+          "index": 1702
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector page title",
+          "text": "SQLite Inspector"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "VwLIdCUwbQf6HI3DI71oVw==": {
+          "desc": "DB inspector page subtitle",
+          "text": "Settings / Developer Options"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 64,
+          "column": 9,
+          "index": 1768
+        },
+        "end": {
+          "line": 67,
+          "column": 3,
+          "index": 1845
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector page subtitle",
+          "text": "Settings / Developer Options"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "hHctlRl+GeLSo2i1ZqH4hw==": {
+          "desc": "Developer settings row: DB inspector",
+          "text": "DB Inspector"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 71,
+          "column": 9,
+          "index": 1907
+        },
+        "end": {
+          "line": 71,
+          "column": 68,
+          "index": 1966
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings row: DB inspector",
+          "text": "DB Inspector"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Mt3K+wCrDKYEJ4gd29L8+Q==": {
+          "desc": "Settings status: model loaded",
+          "text": "Loaded"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 75,
+          "column": 9,
+          "index": 2021
+        },
+        "end": {
+          "line": 75,
+          "column": 55,
+          "index": 2067
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings status: model loaded",
+          "text": "Loaded"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "dSr3+qJDp/vyBOAFoE6Wdw==": {
+          "desc": "Settings status: setup required",
+          "text": "Setup"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 79,
+          "column": 9,
+          "index": 2121
+        },
+        "end": {
+          "line": 79,
+          "column": 56,
+          "index": 2168
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings status: setup required",
+          "text": "Setup"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "eCxcFVo73xV6x18KIf8EYw==": {
+          "desc": "Settings status: setup required emphasis",
+          "text": "*** Setup Required ***"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 83,
+          "column": 9,
+          "index": 2230
+        },
+        "end": {
+          "line": 83,
+          "column": 82,
+          "index": 2303
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings status: setup required emphasis",
+          "text": "*** Setup Required ***"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xcJrsHQwZjAyobdwAscSCA==": {
+          "desc": "Settings status: enabled",
+          "text": "Enabled"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 87,
+          "column": 9,
+          "index": 2359
+        },
+        "end": {
+          "line": 87,
+          "column": 51,
+          "index": 2401
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings status: enabled",
+          "text": "Enabled"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ika4r/TD89FkgKNYd4B9+Q==": {
+          "desc": "Settings status: disabled",
+          "text": "Disabled"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 91,
+          "column": 9,
+          "index": 2458
+        },
+        "end": {
+          "line": 91,
+          "column": 53,
+          "index": 2502
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings status: disabled",
+          "text": "Disabled"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "DKd5WnumatWbU6l/VwRDCQ==": {
+          "desc": "Settings status: none selected",
+          "text": "None"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 95,
+          "column": 9,
+          "index": 2555
+        },
+        "end": {
+          "line": 95,
+          "column": 54,
+          "index": 2600
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings status: none selected",
+          "text": "None"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6olgZWi562IfNTVOXI2MXg==": {
+          "desc": "Settings row: selected option",
+          "text": "Selected"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 99,
+          "column": 9,
+          "index": 2657
+        },
+        "end": {
+          "line": 99,
+          "column": 57,
+          "index": 2705
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: selected option",
+          "text": "Selected"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "7DW+cmDqEa10iiS4VSGRFg==": {
+          "desc": "Settings action: cancel",
+          "text": "Cancel"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 103,
+          "column": 9,
+          "index": 2760
+        },
+        "end": {
+          "line": 103,
+          "column": 49,
+          "index": 2800
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings action: cancel",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "A/LdXsV4xjsZMrQKKUBOgQ==": {
+          "desc": "Settings action: create",
+          "text": "Create"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 107,
+          "column": 9,
+          "index": 2855
+        },
+        "end": {
+          "line": 107,
+          "column": 49,
+          "index": 2895
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings action: create",
+          "text": "Create"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xBDVYY0urXrHnSXXCb03zA==": {
+          "desc": "Settings action: save",
+          "text": "Save"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 111,
+          "column": 9,
+          "index": 2948
+        },
+        "end": {
+          "line": 111,
+          "column": 45,
+          "index": 2984
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings action: save",
+          "text": "Save"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Qf3wwAsxN8lkVTRzXByzWw==": {
+          "desc": "Settings action: enable",
+          "text": "Enable"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 115,
+          "column": 9,
+          "index": 3039
+        },
+        "end": {
+          "line": 115,
+          "column": 49,
+          "index": 3079
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings action: enable",
+          "text": "Enable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "X48h8uPyjyf0nGWIDIc7sw==": {
+          "desc": "Developer settings: seed database button",
+          "text": "Seed"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 119,
+          "column": 9,
+          "index": 3132
+        },
+        "end": {
+          "line": 119,
+          "column": 64,
+          "index": 3187
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings: seed database button",
+          "text": "Seed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "TvgW37FW2I9tuolhtmLI0w==": {
+          "desc": "Settings action: delete",
+          "text": "Delete"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 123,
+          "column": 9,
+          "index": 3242
+        },
+        "end": {
+          "line": 123,
+          "column": 49,
+          "index": 3282
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings action: delete",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yHUepMAmXJZiqdsX2HbUPg==": {
+          "desc": "Workspaces: import button",
+          "text": "Import"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 127,
+          "column": 9,
+          "index": 3337
+        },
+        "end": {
+          "line": 127,
+          "column": 51,
+          "index": 3379
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspaces: import button",
+          "text": "Import"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Di4DF/uJIYVeMFowgR6MNA==": {
+          "desc": "Workspaces: new workspace button",
+          "text": "New"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 131,
+          "column": 9,
+          "index": 3431
+        },
+        "end": {
+          "line": 131,
+          "column": 55,
+          "index": 3477
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspaces: new workspace button",
+          "text": "New"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "UUC4VKIQVtX/w0rGzwdezQ==": {
+          "desc": "Generic unknown error message",
+          "text": "Unknown error"
+        }
+      },
+      "filename": "features/settings/settingsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 135,
+          "column": 9,
+          "index": 3538
+        },
+        "end": {
+          "line": 135,
+          "column": 62,
+          "index": 3591
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Generic unknown error message",
+          "text": "Unknown error"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "tmNyvz86BLRs0mpLSFPUBg==": {
+          "desc": "Recovery passphrase alert title",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 96
+        },
+        "end": {
+          "line": 4,
+          "column": 70,
+          "index": 157
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase alert title",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "MbCmrhTHDxYU//qlOX7p6Q==": {
+          "desc": "Recovery passphrase switch title",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 229
+        },
+        "end": {
+          "line": 8,
+          "column": 71,
+          "index": 291
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase switch title",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "7ox75ga7swhBB+uRm0tN3g==": {
+          "desc": "Recovery passphrase switch description",
+          "text": "Add a recovery passphrase as a second unlock option for exported workspaces."
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 369
+        },
+        "end": {
+          "line": 15,
+          "column": 3,
+          "index": 506
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase switch description",
+          "text": "Add a recovery passphrase as a second unlock option for exported workspaces."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "++x5S662RpcY01dXzpwvKw==": {
+          "desc": "Recovery passphrase switch accessibility label",
+          "text": "Enable recovery passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 19,
+          "column": 9,
+          "index": 591
+        },
+        "end": {
+          "line": 22,
+          "column": 3,
+          "index": 686
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase switch accessibility label",
+          "text": "Enable recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ib9hVm6EkixtCVhNAfKLVw==": {
+          "desc": "Recovery passphrase setup form description",
+          "text": "Choose a passphrase. You'll need it to import exported workspaces if you forget the export password."
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 27,
+          "column": 4,
+          "index": 769
+        },
+        "end": {
+          "line": 30,
+          "column": 10,
+          "index": 948
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase setup form description",
+          "text": "Choose a passphrase. You'll need it to import exported workspaces if you forget the export password."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QEOCdeAHUCPOZc89ttu4Vw==": {
+          "desc": "Recovery passphrase field label",
+          "text": "Passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 35,
+          "column": 9,
+          "index": 1023
+        },
+        "end": {
+          "line": 35,
+          "column": 61,
+          "index": 1075
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase field label",
+          "text": "Passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "x/+WFfVZX4VFmQPINTR3+w==": {
+          "desc": "Recovery passphrase field placeholder",
+          "text": "Passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 39,
+          "column": 9,
+          "index": 1152
+        },
+        "end": {
+          "line": 39,
+          "column": 67,
+          "index": 1210
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase field placeholder",
+          "text": "Passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4GkEZuwFjsoIFD5raDfpYA==": {
+          "desc": "Recovery passphrase confirm field label",
+          "text": "Confirm"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 43,
+          "column": 9,
+          "index": 1283
+        },
+        "end": {
+          "line": 43,
+          "column": 66,
+          "index": 1340
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase confirm field label",
+          "text": "Confirm"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "f0NmcxHYR+CSuq1ZCNRiSA==": {
+          "desc": "Recovery passphrase confirm field placeholder",
+          "text": "Confirm passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 47,
+          "column": 9,
+          "index": 1419
+        },
+        "end": {
+          "line": 50,
+          "column": 3,
+          "index": 1505
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase confirm field placeholder",
+          "text": "Confirm passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "rZ+wH4tnUlg/N7ojSezILA==": {
+          "desc": "Recovery passphrase minimum length validation",
+          "text": "At least {min} characters"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 54,
+          "column": 9,
+          "index": 1591
+        },
+        "end": {
+          "line": 57,
+          "column": 3,
+          "index": 1716
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase minimum length validation",
+          "text": "At least {min} characters"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xmm3BqkoMVu+CjKU6YjNvQ==": {
+          "desc": "Recovery passphrase mismatch validation",
+          "text": "Passphrases do not match"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 61,
+          "column": 9,
+          "index": 1790
+        },
+        "end": {
+          "line": 64,
+          "column": 3,
+          "index": 1876
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase mismatch validation",
+          "text": "Passphrases do not match"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/1hwe9pdWv2JUUWM2Yqm3A==": {
+          "desc": "Recovery passphrase enabling button state",
+          "text": "Enabling…"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 68,
+          "column": 9,
+          "index": 1945
+        },
+        "end": {
+          "line": 68,
+          "column": 70,
+          "index": 2006
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase enabling button state",
+          "text": "Enabling…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "DXj6yBhM/2N2jRC3+DvvAg==": {
+          "desc": "Recovery passphrase reveal: saved description",
+          "text": "Save this somewhere safe. Long-press to copy-friendly view."
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 73,
+          "column": 4,
+          "index": 2095
+        },
+        "end": {
+          "line": 75,
+          "column": 10,
+          "index": 2230
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase reveal: saved description",
+          "text": "Save this somewhere safe. Long-press to copy-friendly view."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZGSV8IC6gDr86ITuCh1nnQ==": {
+          "desc": "Recovery passphrase reveal: reminder description",
+          "text": "Reveal your saved recovery passphrase if you need a reminder."
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 81,
+          "column": 4,
+          "index": 2326
+        },
+        "end": {
+          "line": 83,
+          "column": 10,
+          "index": 2466
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase reveal: reminder description",
+          "text": "Reveal your saved recovery passphrase if you need a reminder."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "z8PJPhUeOUCJzVHKKAQgHQ==": {
+          "desc": "Recovery passphrase hide button",
+          "text": "Hide passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 88,
+          "column": 9,
+          "index": 2541
+        },
+        "end": {
+          "line": 88,
+          "column": 66,
+          "index": 2598
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase hide button",
+          "text": "Hide passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yl/huv7hITvCDmR4GWqCOg==": {
+          "desc": "Recovery passphrase authenticating state",
+          "text": "Authenticating…"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 92,
+          "column": 9,
+          "index": 2673
+        },
+        "end": {
+          "line": 92,
+          "column": 75,
+          "index": 2739
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase authenticating state",
+          "text": "Authenticating…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fLAXso32oaDl9fcbDVvf9Q==": {
+          "desc": "Recovery passphrase reveal button",
+          "text": "Reveal passphrase"
+        }
+      },
+      "filename": "features/settings/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 96,
+          "column": 9,
+          "index": 2812
+        },
+        "end": {
+          "line": 96,
+          "column": 70,
+          "index": 2873
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase reveal button",
+          "text": "Reveal passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZjeWuqnPRNVLPSMuDpa+ng==": {
+          "desc": "Settings section: workspaces",
+          "text": "Workspaces"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 90
+        },
+        "end": {
+          "line": 4,
+          "column": 66,
+          "index": 147
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: workspaces",
+          "text": "Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0eUW1msrDlPd9ojSPCewzQ==": {
+          "desc": "Settings row: workspaces",
+          "text": "Workspaces"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 208
+        },
+        "end": {
+          "line": 8,
+          "column": 54,
+          "index": 253
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: workspaces",
+          "text": "Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "86ktrw4LJxXQ9XNlf/0vXA==": {
+          "desc": "Settings row: recovery passphrase",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 322
+        },
+        "end": {
+          "line": 12,
+          "column": 72,
+          "index": 385
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: recovery passphrase",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IqtkwKD0quxscXKDNd3M9g==": {
+          "desc": "Create workspace sheet description",
+          "text": "Each workspace has its own isolated database."
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 454
+        },
+        "end": {
+          "line": 19,
+          "column": 3,
+          "index": 556
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Create workspace sheet description",
+          "text": "Each workspace has its own isolated database."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LTdzZij9hfTJC5QiCJHnHQ==": {
+          "desc": "Manage workspaces sheet title",
+          "text": "Manage Workspaces"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 4,
+          "index": 626
+        },
+        "end": {
+          "line": 24,
+          "column": 69,
+          "index": 691
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Manage workspaces sheet title",
+          "text": "Manage Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fnkys6jRAM+rwFAk0M3PLg==": {
+          "desc": "Manage workspaces sheet description",
+          "text": "Manage your workspaces here. Each workspace has its seperate database."
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 30,
+          "column": 4,
+          "index": 771
+        },
+        "end": {
+          "line": 32,
+          "column": 10,
+          "index": 907
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Manage workspaces sheet description",
+          "text": "Manage your workspaces here. Each workspace has its seperate database."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "XLbX6Wl6u9avXELpAtBzrQ==": {
+          "desc": "Workspaces settings: active workspace heading",
+          "text": "Active Workspace"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 38,
+          "column": 4,
+          "index": 982
+        },
+        "end": {
+          "line": 40,
+          "column": 10,
+          "index": 1074
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspaces settings: active workspace heading",
+          "text": "Active Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "spCQ1j5f/mT+f8l6FZfgdw==": {
+          "desc": "Workspaces settings: available workspaces heading",
+          "text": "Available Workspaces"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 46,
+          "column": 4,
+          "index": 1153
+        },
+        "end": {
+          "line": 48,
+          "column": 10,
+          "index": 1253
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspaces settings: available workspaces heading",
+          "text": "Available Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8UAvIUOeGrPGCzi20mYGlw==": {
+          "desc": "Workspace status: active",
+          "text": "Active"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 53,
+          "column": 9,
+          "index": 1321
+        },
+        "end": {
+          "line": 53,
+          "column": 50,
+          "index": 1362
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace status: active",
+          "text": "Active"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "SToJJnQG6LmkzRJk1miJbQ==": {
+          "desc": "Workspace status: load",
+          "text": "Load"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 57,
+          "column": 9,
+          "index": 1424
+        },
+        "end": {
+          "line": 57,
+          "column": 46,
+          "index": 1461
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace status: load",
+          "text": "Load"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "v+e567bLuwzddht5BcChKA==": {
+          "desc": "Workspace status: encryption key missing",
+          "text": "Key missing"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 61,
+          "column": 9,
+          "index": 1529
+        },
+        "end": {
+          "line": 61,
+          "column": 71,
+          "index": 1591
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace status: encryption key missing",
+          "text": "Key missing"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cEZDYt6tfrKkWyz1en7ptg==": {
+          "desc": "Workspace action: switch",
+          "text": "Switch"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 65,
+          "column": 9,
+          "index": 1655
+        },
+        "end": {
+          "line": 65,
+          "column": 50,
+          "index": 1696
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace action: switch",
+          "text": "Switch"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "92BstEzRu3t2FsaYk0UM5Q==": {
+          "desc": "Workspace action: unavailable",
+          "text": "Unavailable"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 69,
+          "column": 9,
+          "index": 1765
+        },
+        "end": {
+          "line": 69,
+          "column": 60,
+          "index": 1816
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace action: unavailable",
+          "text": "Unavailable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "HFI83AHCPXOWNl063yGgGA==": {
+          "desc": "Alert title when workspace key is missing",
+          "text": "Workspace unavailable"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 73,
+          "column": 9,
+          "index": 1889
+        },
+        "end": {
+          "line": 76,
+          "column": 3,
+          "index": 1974
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when workspace key is missing",
+          "text": "Workspace unavailable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LPMpN8uAdr9Gj5JR+326CA==": {
+          "desc": "Alert message when workspace key is missing",
+          "text": "This workspace has no encryption key on this device."
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 80,
+          "column": 9,
+          "index": 2049
+        },
+        "end": {
+          "line": 83,
+          "column": 3,
+          "index": 2167
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert message when workspace key is missing",
+          "text": "This workspace has no encryption key on this device."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "zKUA7Nk+m468MjZ3YEnvGg==": {
+          "desc": "Edit workspace sheet description",
+          "text": "Choose a new name, color, and icon for this workspace."
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 87,
+          "column": 9,
+          "index": 2234
+        },
+        "end": {
+          "line": 90,
+          "column": 3,
+          "index": 2343
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Edit workspace sheet description",
+          "text": "Choose a new name, color, and icon for this workspace."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/OubdScpYt+a0lhvDl2fxQ==": {
+          "desc": "Export workspace modal title",
+          "text": "Export Workspace"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 94,
+          "column": 9,
+          "index": 2411
+        },
+        "end": {
+          "line": 94,
+          "column": 64,
+          "index": 2466
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace modal title",
+          "text": "Export Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "9ugI7q3qBMg05lIwrFosCQ==": {
+          "desc": "Alert title when workspace export fails",
+          "text": "Export failed"
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 98,
+          "column": 9,
+          "index": 2531
+        },
+        "end": {
+          "line": 98,
+          "column": 72,
+          "index": 2594
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when workspace export fails",
+          "text": "Export failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8pk2tJnTP/444Ls3ZAOzMQ==": {
+          "desc": "Alert message when workspace export fails",
+          "text": "Could not export this workspace. Please try again."
+        }
+      },
+      "filename": "features/settings/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 102,
+          "column": 9,
+          "index": 2661
+        },
+        "end": {
+          "line": 105,
+          "column": 3,
+          "index": 2775
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert message when workspace export fails",
+          "text": "Could not export this workspace. Please try again."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "NeTBiNqqkwFJTDXwzsP4XQ==": {
           "desc": "Theme option title: follow device settings",
           "text": "Device settings"
@@ -11,14 +4477,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 39,
+          "line": 43,
           "column": 8,
-          "index": 1164
+          "index": 1276
         },
         "end": {
-          "line": 41,
+          "line": 45,
           "column": 14,
-          "index": 1260
+          "index": 1372
         }
       },
       "project": "",
@@ -40,14 +4506,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 44,
+          "line": 48,
           "column": 13,
-          "index": 1300
+          "index": 1412
         },
         "end": {
-          "line": 44,
+          "line": 48,
           "column": 70,
-          "index": 1357
+          "index": 1469
         }
       },
       "project": "",
@@ -69,14 +4535,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 46,
+          "line": 50,
           "column": 13,
-          "index": 1390
+          "index": 1502
         },
         "end": {
-          "line": 46,
+          "line": 50,
           "column": 72,
-          "index": 1449
+          "index": 1561
         }
       },
       "project": "",
@@ -98,14 +4564,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 54,
+          "line": 58,
           "column": 8,
-          "index": 1589
+          "index": 1701
         },
         "end": {
-          "line": 56,
+          "line": 60,
           "column": 14,
-          "index": 1708
+          "index": 1820
         }
       },
       "project": "",
@@ -127,14 +4593,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 60,
+          "line": 64,
           "column": 8,
-          "index": 1758
+          "index": 1870
         },
         "end": {
-          "line": 60,
+          "line": 64,
           "column": 79,
-          "index": 1829
+          "index": 1941
         }
       },
       "project": "",
@@ -156,14 +4622,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 64,
+          "line": 68,
           "column": 8,
-          "index": 1880
+          "index": 1992
         },
         "end": {
-          "line": 66,
+          "line": 70,
           "column": 14,
-          "index": 1973
+          "index": 2085
         }
       },
       "project": "",
@@ -185,14 +4651,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 74,
+          "line": 78,
           "column": 13,
-          "index": 2112
+          "index": 2224
         },
         "end": {
-          "line": 74,
+          "line": 78,
           "column": 66,
-          "index": 2165
+          "index": 2277
         }
       },
       "project": "",
@@ -214,14 +4680,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 76,
+          "line": 80,
           "column": 13,
-          "index": 2197
+          "index": 2309
         },
         "end": {
-          "line": 76,
+          "line": 80,
           "column": 62,
-          "index": 2246
+          "index": 2358
         }
       },
       "project": "",
@@ -243,14 +4709,14 @@
       "filename": "features/settings/theme/ThemeItem.tsx",
       "loc": {
         "start": {
-          "line": 78,
+          "line": 82,
           "column": 13,
-          "index": 2279
+          "index": 2391
         },
         "end": {
-          "line": 78,
+          "line": 82,
           "column": 64,
-          "index": 2330
+          "index": 2442
         }
       },
       "project": "",
@@ -881,14 +5347,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 24,
+          "line": 20,
           "column": 4,
-          "index": 562
+          "index": 556
         },
         "end": {
-          "line": 26,
+          "line": 22,
           "column": 10,
-          "index": 685
+          "index": 679
         }
       },
       "project": "",
@@ -910,14 +5376,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 31,
+          "line": 27,
           "column": 9,
-          "index": 780
+          "index": 774
         },
         "end": {
-          "line": 34,
+          "line": 30,
           "column": 3,
-          "index": 888
+          "index": 882
         }
       },
       "project": "",
@@ -939,14 +5405,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 38,
+          "line": 34,
           "column": 9,
-          "index": 953
+          "index": 947
         },
         "end": {
-          "line": 41,
+          "line": 37,
           "column": 3,
-          "index": 1046
+          "index": 1040
         }
       },
       "project": "",
@@ -968,14 +5434,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 45,
+          "line": 41,
           "column": 9,
-          "index": 1114
+          "index": 1108
         },
         "end": {
-          "line": 48,
+          "line": 44,
           "column": 3,
-          "index": 1211
+          "index": 1205
         }
       },
       "project": "",
@@ -997,14 +5463,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 52,
+          "line": 48,
           "column": 9,
-          "index": 1270
+          "index": 1264
         },
         "end": {
-          "line": 52,
+          "line": 48,
           "column": 61,
-          "index": 1322
+          "index": 1316
         }
       },
       "project": "",
@@ -1026,14 +5492,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 56,
+          "line": 52,
           "column": 9,
-          "index": 1398
+          "index": 1392
         },
         "end": {
-          "line": 56,
+          "line": 52,
           "column": 71,
-          "index": 1460
+          "index": 1454
         }
       },
       "project": "",
@@ -1055,14 +5521,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 60,
-          "column": 9,
+          "line": 57,
+          "column": 4,
           "index": 1527
         },
         "end": {
-          "line": 62,
-          "column": 8,
-          "index": 1610
+          "line": 57,
+          "column": 79,
+          "index": 1602
         }
       },
       "project": "",
@@ -1084,14 +5550,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 66,
+          "line": 62,
           "column": 9,
-          "index": 1681
+          "index": 1677
         },
         "end": {
-          "line": 66,
+          "line": 62,
           "column": 64,
-          "index": 1736
+          "index": 1732
         }
       },
       "project": "",
@@ -1113,14 +5579,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 70,
+          "line": 66,
           "column": 9,
-          "index": 1800
+          "index": 1796
         },
         "end": {
-          "line": 70,
+          "line": 66,
           "column": 65,
-          "index": 1856
+          "index": 1852
         }
       },
       "project": "",
@@ -1142,14 +5608,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 75,
-          "column": 4,
-          "index": 1922
+          "line": 70,
+          "column": 9,
+          "index": 1912
         },
         "end": {
-          "line": 75,
-          "column": 71,
-          "index": 1989
+          "line": 70,
+          "column": 76,
+          "index": 1979
         }
       },
       "project": "",
@@ -1171,14 +5637,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 80,
+          "line": 74,
           "column": 9,
-          "index": 2054
+          "index": 2040
         },
         "end": {
-          "line": 80,
+          "line": 74,
           "column": 65,
-          "index": 2110
+          "index": 2096
         }
       },
       "project": "",
@@ -1200,14 +5666,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 84,
+          "line": 78,
           "column": 9,
-          "index": 2178
+          "index": 2164
         },
         "end": {
-          "line": 87,
+          "line": 81,
           "column": 3,
-          "index": 2261
+          "index": 2247
         }
       },
       "project": "",
@@ -1229,14 +5695,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 92,
+          "line": 86,
           "column": 4,
-          "index": 2355
+          "index": 2341
         },
         "end": {
-          "line": 94,
+          "line": 88,
           "column": 10,
-          "index": 2471
+          "index": 2457
         }
       },
       "project": "",
@@ -1258,14 +5724,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 99,
+          "line": 93,
           "column": 9,
-          "index": 2570
+          "index": 2556
         },
         "end": {
-          "line": 102,
+          "line": 96,
           "column": 3,
-          "index": 2675
+          "index": 2661
         }
       },
       "project": "",
@@ -1287,14 +5753,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 106,
+          "line": 100,
           "column": 9,
-          "index": 2742
+          "index": 2728
         },
         "end": {
-          "line": 109,
+          "line": 103,
           "column": 3,
-          "index": 2842
+          "index": 2828
         }
       },
       "project": "",
@@ -1316,14 +5782,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 113,
+          "line": 107,
           "column": 9,
-          "index": 2909
+          "index": 2895
         },
         "end": {
-          "line": 116,
+          "line": 110,
           "column": 3,
-          "index": 2997
+          "index": 2983
         }
       },
       "project": "",
@@ -1345,14 +5811,14 @@
       "filename": "features/notes/shared/ui/noteAttributeSelectorLabels.tsx",
       "loc": {
         "start": {
-          "line": 120,
+          "line": 114,
           "column": 9,
-          "index": 3081
+          "index": 3067
         },
         "end": {
-          "line": 127,
+          "line": 121,
           "column": 3,
-          "index": 3251
+          "index": 3237
         }
       },
       "project": "",
@@ -1374,14 +5840,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 5,
+          "line": 4,
           "column": 9,
-          "index": 123
+          "index": 83
         },
         "end": {
-          "line": 5,
+          "line": 4,
           "column": 50,
-          "index": 164
+          "index": 124
         }
       },
       "project": "",
@@ -1403,14 +5869,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 9,
+          "line": 8,
           "column": 9,
-          "index": 229
+          "index": 189
         },
         "end": {
-          "line": 9,
+          "line": 8,
           "column": 61,
-          "index": 281
+          "index": 241
         }
       },
       "project": "",
@@ -1432,14 +5898,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 13,
+          "line": 12,
           "column": 9,
-          "index": 344
+          "index": 304
         },
         "end": {
-          "line": 13,
+          "line": 12,
           "column": 55,
-          "index": 390
+          "index": 350
         }
       },
       "project": "",
@@ -1461,14 +5927,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 17,
+          "line": 16,
           "column": 9,
-          "index": 453
+          "index": 413
         },
         "end": {
-          "line": 17,
+          "line": 16,
           "column": 73,
-          "index": 517
+          "index": 477
         }
       },
       "project": "",
@@ -1490,14 +5956,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 21,
+          "line": 20,
           "column": 9,
-          "index": 582
+          "index": 542
         },
         "end": {
-          "line": 21,
+          "line": 20,
           "column": 77,
-          "index": 650
+          "index": 610
         }
       },
       "project": "",
@@ -1519,14 +5985,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 25,
+          "line": 24,
           "column": 9,
-          "index": 712
+          "index": 672
         },
         "end": {
-          "line": 25,
+          "line": 24,
           "column": 69,
-          "index": 772
+          "index": 732
         }
       },
       "project": "",
@@ -1548,14 +6014,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 29,
+          "line": 28,
           "column": 9,
-          "index": 842
+          "index": 802
         },
         "end": {
-          "line": 32,
-          "column": 3,
-          "index": 923
+          "line": 28,
+          "column": 78,
+          "index": 871
         }
       },
       "project": "",
@@ -1577,14 +6043,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 36,
+          "line": 32,
           "column": 9,
-          "index": 980
+          "index": 928
         },
         "end": {
-          "line": 36,
+          "line": 32,
           "column": 74,
-          "index": 1045
+          "index": 993
         }
       },
       "project": "",
@@ -1606,14 +6072,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 40,
+          "line": 36,
           "column": 9,
-          "index": 1103
+          "index": 1051
         },
         "end": {
-          "line": 40,
+          "line": 36,
           "column": 76,
-          "index": 1170
+          "index": 1118
         }
       },
       "project": "",
@@ -1635,14 +6101,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 44,
+          "line": 40,
           "column": 9,
-          "index": 1244
+          "index": 1192
         },
         "end": {
-          "line": 47,
+          "line": 43,
           "column": 3,
-          "index": 1331
+          "index": 1279
         }
       },
       "project": "",
@@ -1664,14 +6130,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 51,
+          "line": 47,
           "column": 9,
-          "index": 1406
+          "index": 1354
         },
         "end": {
-          "line": 54,
+          "line": 50,
           "column": 3,
-          "index": 1498
+          "index": 1446
         }
       },
       "project": "",
@@ -1693,14 +6159,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 58,
+          "line": 54,
           "column": 9,
-          "index": 1551
+          "index": 1499
         },
         "end": {
-          "line": 58,
+          "line": 54,
           "column": 72,
-          "index": 1614
+          "index": 1562
         }
       },
       "project": "",
@@ -1722,14 +6188,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 63,
+          "line": 59,
           "column": 4,
-          "index": 1672
+          "index": 1620
         },
         "end": {
-          "line": 65,
-          "column": 10,
-          "index": 1760
+          "line": 59,
+          "column": 80,
+          "index": 1696
         }
       },
       "project": "",
@@ -1751,14 +6217,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 70,
+          "line": 64,
           "column": 9,
-          "index": 1834
+          "index": 1770
         },
         "end": {
-          "line": 73,
-          "column": 3,
-          "index": 1913
+          "line": 64,
+          "column": 76,
+          "index": 1837
         }
       },
       "project": "",
@@ -1780,14 +6246,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 77,
+          "line": 68,
           "column": 9,
-          "index": 1985
+          "index": 1909
         },
         "end": {
-          "line": 80,
+          "line": 71,
           "column": 3,
-          "index": 2104
+          "index": 2028
         }
       },
       "project": "",
@@ -1809,14 +6275,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 84,
+          "line": 75,
           "column": 9,
-          "index": 2172
+          "index": 2096
         },
         "end": {
-          "line": 84,
+          "line": 75,
           "column": 77,
-          "index": 2240
+          "index": 2164
         }
       },
       "project": "",
@@ -1838,14 +6304,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 88,
+          "line": 79,
           "column": 9,
-          "index": 2305
+          "index": 2229
         },
         "end": {
-          "line": 88,
+          "line": 79,
           "column": 69,
-          "index": 2365
+          "index": 2289
         }
       },
       "project": "",
@@ -1867,14 +6333,14 @@
       "filename": "features/notes/noteDetails/noteDetailsLabels.tsx",
       "loc": {
         "start": {
-          "line": 92,
+          "line": 83,
           "column": 9,
-          "index": 2430
+          "index": 2354
         },
         "end": {
-          "line": 92,
+          "line": 83,
           "column": 69,
-          "index": 2490
+          "index": 2414
         }
       },
       "project": "",
@@ -2347,6 +6813,1398 @@
         "t": {
           "desc": "Accessibility label: link notes and graph breadcrumbs",
           "text": "Link breadcrumbs"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "f9IGXKmZUYEtJl1cT56WwQ==": {
+          "desc": "Settings section: lock screen",
+          "text": "Lock screen"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 9,
+          "index": 137
+        },
+        "end": {
+          "line": 5,
+          "column": 68,
+          "index": 196
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: lock screen",
+          "text": "Lock screen"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "38hZR+TVYVjA/OehHhVK3w==": {
+          "desc": "Settings row: lock screen",
+          "text": "Lock screen"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 9,
+          "column": 9,
+          "index": 257
+        },
+        "end": {
+          "line": 9,
+          "column": 56,
+          "index": 304
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: lock screen",
+          "text": "Lock screen"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "kEjTuIjbUqhlgDVwpJl4gw==": {
+          "desc": "Custom PIN setup sheet title",
+          "text": "Custom PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 13,
+          "column": 9,
+          "index": 366
+        },
+        "end": {
+          "line": 13,
+          "column": 66,
+          "index": 423
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Custom PIN setup sheet title",
+          "text": "Custom PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "outji+r9K+o0mp9L22GXEA==": {
+          "desc": "Lock screen mode: off",
+          "text": "Off"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 17,
+          "column": 9,
+          "index": 483
+        },
+        "end": {
+          "line": 17,
+          "column": 44,
+          "index": 518
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen mode: off",
+          "text": "Off"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "PbvIvFi6h2LekzJ1eHu8Pw==": {
+          "desc": "Lock screen mode: system",
+          "text": "Device lock"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 21,
+          "column": 9,
+          "index": 581
+        },
+        "end": {
+          "line": 21,
+          "column": 55,
+          "index": 627
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen mode: system",
+          "text": "Device lock"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "vpXX0HeY7aWgFZaEROADrg==": {
+          "desc": "Lock screen mode: custom PIN",
+          "text": "Custom PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 25,
+          "column": 9,
+          "index": 693
+        },
+        "end": {
+          "line": 25,
+          "column": 58,
+          "index": 742
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen mode: custom PIN",
+          "text": "Custom PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "3WboIXuRgtahgZvojlxYBA==": {
+          "desc": "Lock screen mode off description",
+          "text": "No lock screen"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 40,
+          "column": 9,
+          "index": 1101
+        },
+        "end": {
+          "line": 40,
+          "column": 66,
+          "index": 1158
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen mode off description",
+          "text": "No lock screen"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "iiDwfH18Q7fIYSWO8Q7tLA==": {
+          "desc": "Lock screen mode system description",
+          "text": "Device biometrics or system PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 44,
+          "column": 9,
+          "index": 1232
+        },
+        "end": {
+          "line": 47,
+          "column": 3,
+          "index": 1321
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen mode system description",
+          "text": "Device biometrics or system PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "nC49GA7IKxAratR2fxOuIA==": {
+          "desc": "Lock screen mode custom PIN description",
+          "text": "Your own 6-digit app PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 51,
+          "column": 9,
+          "index": 1398
+        },
+        "end": {
+          "line": 54,
+          "column": 3,
+          "index": 1484
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen mode custom PIN description",
+          "text": "Your own 6-digit app PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "InOXPB93qNLaqHZUdmISww==": {
+          "desc": "Lock screen settings intro",
+          "text": "Choose how MindChart locks when you leave the app."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 70,
+          "column": 4,
+          "index": 1875
+        },
+        "end": {
+          "line": 72,
+          "column": 10,
+          "index": 1982
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen settings intro",
+          "text": "Choose how MindChart locks when you leave the app."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QPkeKI7cIIxKL908tsv0UA==": {
+          "desc": "Lock screen verify: confirm device lock title",
+          "text": "Confirm device lock"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 77,
+          "column": 9,
+          "index": 2061
+        },
+        "end": {
+          "line": 80,
+          "column": 3,
+          "index": 2148
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen verify: confirm device lock title",
+          "text": "Confirm device lock"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QDuxjn712/IWIL0ZQEKQmQ==": {
+          "desc": "Lock screen verify: confirm device lock description",
+          "text": "Authenticate to change or turn off your lock screen."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 84,
+          "column": 9,
+          "index": 2229
+        },
+        "end": {
+          "line": 87,
+          "column": 3,
+          "index": 2355
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen verify: confirm device lock description",
+          "text": "Authenticate to change or turn off your lock screen."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "uwBIPkipqeEoi4ZGKAq1Pw==": {
+          "desc": "Lock screen verify: enable device lock title",
+          "text": "Enable device lock"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 91,
+          "column": 9,
+          "index": 2429
+        },
+        "end": {
+          "line": 94,
+          "column": 3,
+          "index": 2514
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen verify: enable device lock title",
+          "text": "Enable device lock"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/QOX7+P7WNn2VlZKoJ5Oww==": {
+          "desc": "Lock screen verify: enable device lock description",
+          "text": "Authenticate with your device biometrics or PIN to enable this lock screen."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 98,
+          "column": 9,
+          "index": 2594
+        },
+        "end": {
+          "line": 101,
+          "column": 3,
+          "index": 2742
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen verify: enable device lock description",
+          "text": "Authenticate with your device biometrics or PIN to enable this lock screen."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4h2mxGqhDgBTlDdoLZANWw==": {
+          "desc": "Lock screen biometrics shortcut switch title",
+          "text": "Unlock with biometrics"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 105,
+          "column": 9,
+          "index": 2816
+        },
+        "end": {
+          "line": 108,
+          "column": 3,
+          "index": 2905
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen biometrics shortcut switch title",
+          "text": "Unlock with biometrics"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "HsQ15zOU+YopzJ6p4pvw8g==": {
+          "desc": "Lock screen biometrics shortcut switch description",
+          "text": "Use Face ID, fingerprint, or device PIN as a shortcut when a custom PIN is enabled."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 112,
+          "column": 9,
+          "index": 2985
+        },
+        "end": {
+          "line": 115,
+          "column": 3,
+          "index": 3141
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen biometrics shortcut switch description",
+          "text": "Use Face ID, fingerprint, or device PIN as a shortcut when a custom PIN is enabled."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "VeZ+RoC9OZUxiIZv9pJepA==": {
+          "desc": "Lock screen biometrics switch accessibility label",
+          "text": "Unlock with biometrics"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 119,
+          "column": 9,
+          "index": 3222
+        },
+        "end": {
+          "line": 122,
+          "column": 3,
+          "index": 3316
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Lock screen biometrics switch accessibility label",
+          "text": "Unlock with biometrics"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "1Bvle0MCxJ8SLgdBM+Z3XA==": {
+          "desc": "Custom PIN manage: active description",
+          "text": "Your custom PIN is active."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 127,
+          "column": 4,
+          "index": 3391
+        },
+        "end": {
+          "line": 129,
+          "column": 10,
+          "index": 3485
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Custom PIN manage: active description",
+          "text": "Your custom PIN is active."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xhCwyb0TsHKJwwgfue2q4g==": {
+          "desc": "Custom PIN manage: change button",
+          "text": "Change PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 134,
+          "column": 9,
+          "index": 3553
+        },
+        "end": {
+          "line": 134,
+          "column": 62,
+          "index": 3606
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Custom PIN manage: change button",
+          "text": "Change PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "F5mh5xq1wACKpiqwkrGRKg==": {
+          "desc": "Custom PIN manage: remove button",
+          "text": "Remove PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 138,
+          "column": 9,
+          "index": 3670
+        },
+        "end": {
+          "line": 138,
+          "column": 62,
+          "index": 3723
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Custom PIN manage: remove button",
+          "text": "Remove PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0lqZpYn5XdQCU3s42WP3HQ==": {
+          "desc": "Create PIN screen title",
+          "text": "Create a PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 142,
+          "column": 9,
+          "index": 3780
+        },
+        "end": {
+          "line": 142,
+          "column": 55,
+          "index": 3826
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Create PIN screen title",
+          "text": "Create a PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Q4A83/eXA7MQYHyQbwhtJA==": {
+          "desc": "Confirm PIN screen title",
+          "text": "Confirm your PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 146,
+          "column": 9,
+          "index": 3884
+        },
+        "end": {
+          "line": 146,
+          "column": 60,
+          "index": 3935
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Confirm PIN screen title",
+          "text": "Confirm your PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/RUEiVWlniThHISfijeifA==": {
+          "desc": "Change PIN: new PIN title",
+          "text": "New PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 150,
+          "column": 9,
+          "index": 3989
+        },
+        "end": {
+          "line": 150,
+          "column": 52,
+          "index": 4032
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Change PIN: new PIN title",
+          "text": "New PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ibTtl31CQk8puhG3nA42tg==": {
+          "desc": "Change PIN: confirm new PIN title",
+          "text": "Confirm new PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 154,
+          "column": 9,
+          "index": 4093
+        },
+        "end": {
+          "line": 154,
+          "column": 68,
+          "index": 4152
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Change PIN: confirm new PIN title",
+          "text": "Confirm new PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "F8CScJ+c/mq0Ib2z7mxBHA==": {
+          "desc": "Verify PIN screen title",
+          "text": "Enter your PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 158,
+          "column": 9,
+          "index": 4209
+        },
+        "end": {
+          "line": 158,
+          "column": 57,
+          "index": 4257
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Verify PIN screen title",
+          "text": "Enter your PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "gPsQXgj2ik2h0WMsht4NrQ==": {
+          "desc": "Create PIN screen description",
+          "text": "Choose a 6-digit PIN to unlock MindChart."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 162,
+          "column": 9,
+          "index": 4320
+        },
+        "end": {
+          "line": 165,
+          "column": 3,
+          "index": 4413
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Create PIN screen description",
+          "text": "Choose a 6-digit PIN to unlock MindChart."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "G3cmUjtFJnjO0AvwZIrVWA==": {
+          "desc": "Confirm PIN screen description",
+          "text": "Re-enter the same PIN to confirm."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 169,
+          "column": 9,
+          "index": 4477
+        },
+        "end": {
+          "line": 172,
+          "column": 3,
+          "index": 4563
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Confirm PIN screen description",
+          "text": "Re-enter the same PIN to confirm."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Few72ldV3dwVFd+ygua2yQ==": {
+          "desc": "Change PIN screen description",
+          "text": "Choose a new 6-digit PIN."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 176,
+          "column": 9,
+          "index": 4626
+        },
+        "end": {
+          "line": 179,
+          "column": 3,
+          "index": 4703
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Change PIN screen description",
+          "text": "Choose a new 6-digit PIN."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "a0I8QFzi8sryAO/jl8spHw==": {
+          "desc": "Verify PIN screen description",
+          "text": "Enter your current PIN to continue."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 183,
+          "column": 9,
+          "index": 4766
+        },
+        "end": {
+          "line": 186,
+          "column": 3,
+          "index": 4853
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Verify PIN screen description",
+          "text": "Enter your current PIN to continue."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "FXYpEWT1gf3lEFqkkYy/bw==": {
+          "desc": "PIN setup mismatch error",
+          "text": "PINs do not match. Try again."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 190,
+          "column": 9,
+          "index": 4912
+        },
+        "end": {
+          "line": 193,
+          "column": 3,
+          "index": 4988
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "PIN setup mismatch error",
+          "text": "PINs do not match. Try again."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "7DpwyCcW9WL/FuFyiDVVmw==": {
+          "desc": "PIN verification incorrect error",
+          "text": "Incorrect PIN. Try again."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 197,
+          "column": 9,
+          "index": 5048
+        },
+        "end": {
+          "line": 200,
+          "column": 3,
+          "index": 5128
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "PIN verification incorrect error",
+          "text": "Incorrect PIN. Try again."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lfD1g4PndggYnOWw5y14jQ==": {
+          "desc": "App lock screen title",
+          "text": "Unlock MindChart"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 204,
+          "column": 9,
+          "index": 5191
+        },
+        "end": {
+          "line": 204,
+          "column": 57,
+          "index": 5239
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "App lock screen title",
+          "text": "Unlock MindChart"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "m8cuJyTAo++YcQiT3vTwNQ==": {
+          "desc": "System lock screen description",
+          "text": "Use your device biometrics or PIN to unlock."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 208,
+          "column": 9,
+          "index": 5314
+        },
+        "end": {
+          "line": 211,
+          "column": 3,
+          "index": 5411
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock screen description",
+          "text": "Use your device biometrics or PIN to unlock."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "a2maJXH7SAJ3t0J0NrDGEg==": {
+          "desc": "Enter passcode: custom PIN with biometrics description",
+          "text": "Use your custom PIN or device lock"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 215,
+          "column": 9,
+          "index": 5486
+        },
+        "end": {
+          "line": 218,
+          "column": 3,
+          "index": 5597
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Enter passcode: custom PIN with biometrics description",
+          "text": "Use your custom PIN or device lock"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bqeRzbsJTVIfxc06oph35w==": {
+          "desc": "Enter passcode: PIN only description",
+          "text": "Enter your custom PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 222,
+          "column": 9,
+          "index": 5673
+        },
+        "end": {
+          "line": 225,
+          "column": 3,
+          "index": 5753
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Enter passcode: PIN only description",
+          "text": "Enter your custom PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0KoG+dG6ocrHRaHinZ4t8g==": {
+          "desc": "Biometric unlock prompt title",
+          "text": "Unlock MindChart"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 229,
+          "column": 9,
+          "index": 5826
+        },
+        "end": {
+          "line": 229,
+          "column": 65,
+          "index": 5882
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Biometric unlock prompt title",
+          "text": "Unlock MindChart"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "AvpDM4ZFiY5Mwww9OmUYKw==": {
+          "desc": "Biometric unlock fallback button",
+          "text": "Use PIN"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 233,
+          "column": 9,
+          "index": 5951
+        },
+        "end": {
+          "line": 233,
+          "column": 59,
+          "index": 6001
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Biometric unlock fallback button",
+          "text": "Use PIN"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "RnoxV7RrLfMRnUM3tTZNAA==": {
+          "desc": "System lock verify default title",
+          "text": "Confirm device lock"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 237,
+          "column": 9,
+          "index": 6072
+        },
+        "end": {
+          "line": 240,
+          "column": 3,
+          "index": 6146
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock verify default title",
+          "text": "Confirm device lock"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cfnSBuS9O3G21NnKqo7G9w==": {
+          "desc": "System lock verify default description",
+          "text": "Authenticate with your device biometrics or PIN to continue."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 244,
+          "column": 9,
+          "index": 6223
+        },
+        "end": {
+          "line": 247,
+          "column": 3,
+          "index": 6344
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock verify default description",
+          "text": "Authenticate with your device biometrics or PIN to continue."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4fuD5w/APvyloKgjsMiHPg==": {
+          "desc": "System lock verify cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 251,
+          "column": 9,
+          "index": 6414
+        },
+        "end": {
+          "line": 251,
+          "column": 58,
+          "index": 6463
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock verify cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "vJrLw3drifom/7gQsYtZLg==": {
+          "desc": "System lock verify continue button",
+          "text": "Continue"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 255,
+          "column": 9,
+          "index": 6535
+        },
+        "end": {
+          "line": 255,
+          "column": 62,
+          "index": 6588
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock verify continue button",
+          "text": "Continue"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "MtxL3YaXSkzBKzGb2z96MQ==": {
+          "desc": "System lock verify settings prompt",
+          "text": "Confirm to change lock screen settings"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 259,
+          "column": 9,
+          "index": 6661
+        },
+        "end": {
+          "line": 262,
+          "column": 3,
+          "index": 6756
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock verify settings prompt",
+          "text": "Confirm to change lock screen settings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "oxPouuSKGhmTCC5NPgYRZQ==": {
+          "desc": "System lock screen title",
+          "text": "MindChart is locked"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 266,
+          "column": 9,
+          "index": 6813
+        },
+        "end": {
+          "line": 266,
+          "column": 63,
+          "index": 6867
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock screen title",
+          "text": "MindChart is locked"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "BoraTlk7298+q0Wuzs5XRg==": {
+          "desc": "App lock unlock button",
+          "text": "Unlock"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 270,
+          "column": 9,
+          "index": 6922
+        },
+        "end": {
+          "line": 270,
+          "column": 48,
+          "index": 6961
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "App lock unlock button",
+          "text": "Unlock"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Zh72r1O4PmDkGsPqeGVR9g==": {
+          "desc": "Verify PIN screen description",
+          "text": "Confirm your current PIN to continue."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 274,
+          "column": 9,
+          "index": 7031
+        },
+        "end": {
+          "line": 277,
+          "column": 3,
+          "index": 7120
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Verify PIN screen description",
+          "text": "Confirm your current PIN to continue."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "hfh0CHmcZ8DWongQDis41g==": {
+          "desc": "Change PIN screen description",
+          "text": "Enter a new 6-digit PIN for MindChart."
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 281,
+          "column": 9,
+          "index": 7186
+        },
+        "end": {
+          "line": 284,
+          "column": 3,
+          "index": 7276
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Change PIN screen description",
+          "text": "Enter a new 6-digit PIN for MindChart."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "x+sy6xO8/wneg10BprSfmQ==": {
+          "desc": "System lock verify authenticate button",
+          "text": "Authenticate"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 288,
+          "column": 9,
+          "index": 7352
+        },
+        "end": {
+          "line": 288,
+          "column": 70,
+          "index": 7413
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "System lock verify authenticate button",
+          "text": "Authenticate"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "n4aiY5eTW57fHDm4LPfnSg==": {
+          "desc": "Create PIN cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "features/lockScreen/lockScreenLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 292,
+          "column": 9,
+          "index": 7477
+        },
+        "end": {
+          "line": 292,
+          "column": 50,
+          "index": 7518
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Create PIN cancel button",
+          "text": "Cancel"
         }
       }
     },
@@ -4440,6 +10298,209 @@
     },
     {
       "hashToLeaf": {
+        "vyZrfJwy5abLKQJtHmZ+vw==": {
+          "desc": "Loading modal: saving note title",
+          "text": "Saving Your Note"
+        }
+      },
+      "filename": "components/ui/modal/data/loadingModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 87
+        },
+        "end": {
+          "line": 4,
+          "column": 68,
+          "index": 146
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Loading modal: saving note title",
+          "text": "Saving Your Note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/kK9PUBWCYmGS4wlhEexfw==": {
+          "desc": "Loading modal: generating note title",
+          "text": "Generating Your Note"
+        }
+      },
+      "filename": "components/ui/modal/data/loadingModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 212
+        },
+        "end": {
+          "line": 8,
+          "column": 76,
+          "index": 279
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Loading modal: generating note title",
+          "text": "Generating Your Note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "l396IjpYkBuQxiTbi3K0FA==": {
+          "desc": "Loading modal: saving short title",
+          "text": "Saving..."
+        }
+      },
+      "filename": "components/ui/modal/data/loadingModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 337
+        },
+        "end": {
+          "line": 12,
+          "column": 62,
+          "index": 390
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Loading modal: saving short title",
+          "text": "Saving..."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "k+FvvGgV1EN6x7ZyKjqcPQ==": {
+          "desc": "Loading modal: saving note title variant",
+          "text": "Saving your Note"
+        }
+      },
+      "filename": "components/ui/modal/data/loadingModalLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 459
+        },
+        "end": {
+          "line": 16,
+          "column": 76,
+          "index": 526
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Loading modal: saving note title variant",
+          "text": "Saving your Note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fRVhti/ALo/UVN8BvEVE+Q==": {
+          "desc": "Modal default confirm button",
+          "text": "Confirm"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 6,
+          "column": 9,
+          "index": 175
+        },
+        "end": {
+          "line": 6,
+          "column": 55,
+          "index": 221
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Modal default confirm button",
+          "text": "Confirm"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "VMqBiE5p5vWxZz0P/Z4Oaw==": {
+          "desc": "Modal default cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 10,
+          "column": 9,
+          "index": 279
+        },
+        "end": {
+          "line": 10,
+          "column": 53,
+          "index": 323
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Modal default cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "qJWh2mwW/79c0SYsgPugbg==": {
+          "desc": "Modal OK button",
+          "text": "Ok"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 14,
+          "column": 9,
+          "index": 370
+        },
+        "end": {
+          "line": 14,
+          "column": 37,
+          "index": 398
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Modal OK button",
+          "text": "Ok"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "swIfGN4YR1iE5oyps0hoxQ==": {
           "desc": "Delete folder confirmation modal title",
           "text": "Delete Folder?"
@@ -4448,14 +10509,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 6,
+          "line": 19,
           "column": 11,
-          "index": 163
+          "index": 491
         },
         "end": {
-          "line": 6,
+          "line": 19,
           "column": 74,
-          "index": 226
+          "index": 554
         }
       },
       "project": "",
@@ -4477,14 +10538,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 7,
+          "line": 20,
           "column": 17,
-          "index": 245
+          "index": 573
         },
         "end": {
-          "line": 10,
+          "line": 23,
           "column": 5,
-          "index": 382
+          "index": 710
         }
       },
       "project": "",
@@ -4506,14 +10567,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 12,
+          "line": 25,
           "column": 12,
-          "index": 417
+          "index": 745
         },
         "end": {
-          "line": 12,
+          "line": 25,
           "column": 70,
-          "index": 475
+          "index": 803
         }
       },
       "project": "",
@@ -4535,14 +10596,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 16,
+          "line": 29,
           "column": 12,
-          "index": 546
+          "index": 874
         },
         "end": {
-          "line": 16,
+          "line": 29,
           "column": 69,
-          "index": 603
+          "index": 931
         }
       },
       "project": "",
@@ -4564,14 +10625,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 24,
+          "line": 37,
           "column": 11,
-          "index": 732
+          "index": 1060
         },
         "end": {
-          "line": 27,
+          "line": 40,
           "column": 5,
-          "index": 839
+          "index": 1167
         }
       },
       "project": "",
@@ -4593,14 +10654,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 28,
+          "line": 41,
           "column": 17,
-          "index": 858
+          "index": 1186
         },
         "end": {
-          "line": 31,
+          "line": 44,
           "column": 5,
-          "index": 996
+          "index": 1324
         }
       },
       "project": "",
@@ -4622,14 +10683,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 33,
+          "line": 46,
           "column": 12,
-          "index": 1031
+          "index": 1359
         },
         "end": {
-          "line": 33,
+          "line": 46,
           "column": 68,
-          "index": 1087
+          "index": 1415
         }
       },
       "project": "",
@@ -4651,14 +10712,14 @@
       "filename": "components/ui/modal/data/modalsLabels.tsx",
       "loc": {
         "start": {
-          "line": 37,
+          "line": 50,
           "column": 12,
-          "index": 1158
+          "index": 1486
         },
         "end": {
-          "line": 37,
+          "line": 50,
           "column": 67,
-          "index": 1213
+          "index": 1541
         }
       },
       "project": "",
@@ -4666,6 +10727,1108 @@
         "m": [],
         "t": {
           "desc": "Delete note confirmation cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Qq3v4R+YYyfotkJybeOyjw==": {
+          "desc": "Delete workspace confirmation modal title",
+          "text": "Delete Workspace?"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 58,
+          "column": 11,
+          "index": 1675
+        },
+        "end": {
+          "line": 58,
+          "column": 80,
+          "index": 1744
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete workspace confirmation modal title",
+          "text": "Delete Workspace?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "b8EKMXQJKWvcFuNQOE4q4A==": {
+          "desc": "Delete workspace confirmation modal description",
+          "text": "This will permanently delete this workspace's database. You can always re-import it later."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 59,
+          "column": 17,
+          "index": 1763
+        },
+        "end": {
+          "line": 62,
+          "column": 5,
+          "index": 1929
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete workspace confirmation modal description",
+          "text": "This will permanently delete this workspace's database. You can always re-import it later."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "uHedX1g+6zU+7E3OeTL8bA==": {
+          "desc": "Delete workspace confirmation confirm button",
+          "text": "Delete"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 64,
+          "column": 12,
+          "index": 1964
+        },
+        "end": {
+          "line": 64,
+          "column": 73,
+          "index": 2025
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete workspace confirmation confirm button",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "FkNHPqUzG5d7RCMmAODa8Q==": {
+          "desc": "Delete workspace confirmation cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 68,
+          "column": 12,
+          "index": 2096
+        },
+        "end": {
+          "line": 68,
+          "column": 72,
+          "index": 2156
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete workspace confirmation cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "tQHNZNPojsLUpsmPYCVEKA==": {
+          "desc": "Import workspace choice modal title",
+          "text": "Import Workspace"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 76,
+          "column": 11,
+          "index": 2284
+        },
+        "end": {
+          "line": 76,
+          "column": 73,
+          "index": 2346
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace choice modal title",
+          "text": "Import Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "H2kkZisEc9lTZJBpvO/bIw==": {
+          "desc": "Import workspace choice modal description",
+          "text": "Create a new workspace from this file, or overwrite the currently active workspace?"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 77,
+          "column": 17,
+          "index": 2365
+        },
+        "end": {
+          "line": 80,
+          "column": 5,
+          "index": 2518
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace choice modal description",
+          "text": "Create a new workspace from this file, or overwrite the currently active workspace?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "9MZiM1z14u6fBffpAI9n0g==": {
+          "desc": "Import workspace choice confirm button",
+          "text": "New workspace"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 82,
+          "column": 12,
+          "index": 2553
+        },
+        "end": {
+          "line": 82,
+          "column": 74,
+          "index": 2615
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace choice confirm button",
+          "text": "New workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bmNZ/iWNb80sIb1Biw46zg==": {
+          "desc": "Import workspace choice cancel button",
+          "text": "Overwrite active"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 86,
+          "column": 12,
+          "index": 2682
+        },
+        "end": {
+          "line": 86,
+          "column": 76,
+          "index": 2746
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Import workspace choice cancel button",
+          "text": "Overwrite active"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "GQhoG19UbkzBNmWUvSJDBA==": {
+          "desc": "Initialize model error modal title",
+          "text": "Failed to initialize LLM."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 94,
+          "column": 11,
+          "index": 2877
+        },
+        "end": {
+          "line": 97,
+          "column": 5,
+          "index": 2965
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Initialize model error modal title",
+          "text": "Failed to initialize LLM."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "b63P60NEf+7j32fz8zLvqQ==": {
+          "desc": "Initialize model error modal description",
+          "text": "You will need to download it again to use it."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 98,
+          "column": 17,
+          "index": 2984
+        },
+        "end": {
+          "line": 101,
+          "column": 5,
+          "index": 3098
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Initialize model error modal description",
+          "text": "You will need to download it again to use it."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8YIvwJSIj1iasOqRj5+ZMQ==": {
+          "desc": "Initialize model error modal cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 104,
+          "column": 12,
+          "index": 3177
+        },
+        "end": {
+          "line": 104,
+          "column": 71,
+          "index": 3236
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Initialize model error modal cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "NOmFPsnhgeTgCuyroTkjQw==": {
+          "desc": "Delete model error modal title",
+          "text": "Failed to delete model entirely."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 111,
+          "column": 11,
+          "index": 3333
+        },
+        "end": {
+          "line": 114,
+          "column": 5,
+          "index": 3424
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model error modal title",
+          "text": "Failed to delete model entirely."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "qr7hp+F7j/fwNxb0EJ2E/w==": {
+          "desc": "Delete model error modal description",
+          "text": "You will need to download it again to use it."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 115,
+          "column": 17,
+          "index": 3443
+        },
+        "end": {
+          "line": 118,
+          "column": 5,
+          "index": 3553
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model error modal description",
+          "text": "You will need to download it again to use it."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6YXuMZXisUZkcg484SUeuA==": {
+          "desc": "Delete model error modal confirm button",
+          "text": "Delete"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 120,
+          "column": 12,
+          "index": 3588
+        },
+        "end": {
+          "line": 120,
+          "column": 68,
+          "index": 3644
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model error modal confirm button",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Pv523z2RLjcc9/2pcn8hEQ==": {
+          "desc": "Delete model error modal cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 123,
+          "column": 12,
+          "index": 3685
+        },
+        "end": {
+          "line": 123,
+          "column": 67,
+          "index": 3740
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model error modal cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "50nEgu0tbUOmBwpdZcb6rQ==": {
+          "desc": "Delete model action modal title",
+          "text": "Are you sure you want to remove this model?"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 130,
+          "column": 11,
+          "index": 3838
+        },
+        "end": {
+          "line": 133,
+          "column": 5,
+          "index": 3941
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model action modal title",
+          "text": "Are you sure you want to remove this model?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "RFXp+Qliq6l73xEidAAGkw==": {
+          "desc": "Delete model action modal description",
+          "text": "You will need to download it again to use it."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 134,
+          "column": 17,
+          "index": 3960
+        },
+        "end": {
+          "line": 137,
+          "column": 5,
+          "index": 4071
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model action modal description",
+          "text": "You will need to download it again to use it."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "JnP5vVsHnEknys10ZIujSw==": {
+          "desc": "Delete model action modal confirm button",
+          "text": "Delete"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 139,
+          "column": 12,
+          "index": 4106
+        },
+        "end": {
+          "line": 139,
+          "column": 69,
+          "index": 4163
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model action modal confirm button",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ucS+3z+iZ2fZ1jGUz8xr2Q==": {
+          "desc": "Delete model action modal cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 143,
+          "column": 12,
+          "index": 4234
+        },
+        "end": {
+          "line": 143,
+          "column": 68,
+          "index": 4290
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete model action modal cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QmLijO2kD8JgrZJSdiqcng==": {
+          "desc": "AI setup required modal title",
+          "text": "AI Setup Required"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 151,
+          "column": 11,
+          "index": 4412
+        },
+        "end": {
+          "line": 151,
+          "column": 68,
+          "index": 4469
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI setup required modal title",
+          "text": "AI Setup Required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LKI4UAZOBekMyp66bCeZEg==": {
+          "desc": "AI setup required modal description",
+          "text": "You will need to download an embeddings model to use local AI features. Go to Settings to set it up."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 152,
+          "column": 17,
+          "index": 4488
+        },
+        "end": {
+          "line": 155,
+          "column": 5,
+          "index": 4652
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI setup required modal description",
+          "text": "You will need to download an embeddings model to use local AI features. Go to Settings to set it up."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "NTmTE085WuoOEE5BY8smpg==": {
+          "desc": "AI setup required modal confirm button",
+          "text": "Go to Settings"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 157,
+          "column": 12,
+          "index": 4687
+        },
+        "end": {
+          "line": 157,
+          "column": 75,
+          "index": 4750
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI setup required modal confirm button",
+          "text": "Go to Settings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "b7pAuOzNNZovoVkzULUwOw==": {
+          "desc": "AI setup required modal cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 160,
+          "column": 12,
+          "index": 4791
+        },
+        "end": {
+          "line": 160,
+          "column": 66,
+          "index": 4845
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI setup required modal cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "2HKCyuY93KTKpjFdGBROvQ==": {
+          "desc": "Disable recovery passphrase modal title",
+          "text": "Disable recovery passphrase"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 167,
+          "column": 11,
+          "index": 4949
+        },
+        "end": {
+          "line": 170,
+          "column": 5,
+          "index": 5044
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Disable recovery passphrase modal title",
+          "text": "Disable recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "P5TBCnGelYIBYvNpLQhUeA==": {
+          "desc": "Disable recovery passphrase modal description",
+          "text": "This deletes your recovery passphrase. Exports made with recovery enabled won't unlock with recovery unless you remember the passphrase you chose."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 171,
+          "column": 17,
+          "index": 5063
+        },
+        "end": {
+          "line": 174,
+          "column": 5,
+          "index": 5283
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Disable recovery passphrase modal description",
+          "text": "This deletes your recovery passphrase. Exports made with recovery enabled won't unlock with recovery unless you remember the passphrase you chose."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6IPQQUQPJ/bwfC0e0dRzVw==": {
+          "desc": "Disable recovery passphrase modal confirm button",
+          "text": "Disable"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 176,
+          "column": 12,
+          "index": 5318
+        },
+        "end": {
+          "line": 176,
+          "column": 78,
+          "index": 5384
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Disable recovery passphrase modal confirm button",
+          "text": "Disable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "38rEzwEn+ZNLajlLEa2ewQ==": {
+          "desc": "Disable recovery passphrase modal cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 180,
+          "column": 12,
+          "index": 5455
+        },
+        "end": {
+          "line": 180,
+          "column": 76,
+          "index": 5519
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Disable recovery passphrase modal cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6UQwR62erOctZCZ1I3kDGw==": {
+          "desc": "Biometrics unavailable modal title",
+          "text": "Biometrics unavailable"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 188,
+          "column": 11,
+          "index": 5647
+        },
+        "end": {
+          "line": 188,
+          "column": 78,
+          "index": 5714
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Biometrics unavailable modal title",
+          "text": "Biometrics unavailable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "vgeQNU0SORLBYKvXrkPv6w==": {
+          "desc": "Biometrics unavailable modal description",
+          "text": "Use a device with Face ID or fingerprint enrolled, and a development build (not Expo Go)."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 189,
+          "column": 17,
+          "index": 5733
+        },
+        "end": {
+          "line": 192,
+          "column": 5,
+          "index": 5891
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Biometrics unavailable modal description",
+          "text": "Use a device with Face ID or fingerprint enrolled, and a development build (not Expo Go)."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "raaCrtpVSuqIHexjZThgkg==": {
+          "desc": "Biometrics unavailable modal cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 198,
+          "column": 12,
+          "index": 6007
+        },
+        "end": {
+          "line": 198,
+          "column": 71,
+          "index": 6066
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Biometrics unavailable modal cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Uhaant9BZmHZ2Obi8xPHQQ==": {
+          "desc": "Delete location confirmation modal title",
+          "text": "Remove Location?"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 206,
+          "column": 11,
+          "index": 6199
+        },
+        "end": {
+          "line": 206,
+          "column": 78,
+          "index": 6266
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete location confirmation modal title",
+          "text": "Remove Location?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "+wAnBT4eEHRhKOy8DHKqAQ==": {
+          "desc": "Delete location confirmation modal description",
+          "text": "This will remove this location from all notes that use it."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 207,
+          "column": 17,
+          "index": 6285
+        },
+        "end": {
+          "line": 210,
+          "column": 5,
+          "index": 6418
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete location confirmation modal description",
+          "text": "This will remove this location from all notes that use it."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "sVCB26l3gs+mK56bns5eqg==": {
+          "desc": "Delete location confirmation confirm button",
+          "text": "Remove"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 212,
+          "column": 12,
+          "index": 6453
+        },
+        "end": {
+          "line": 212,
+          "column": 72,
+          "index": 6513
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete location confirmation confirm button",
+          "text": "Remove"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "CtFNIVAM6i+qJp8XIS0xbA==": {
+          "desc": "Delete location confirmation cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 216,
+          "column": 12,
+          "index": 6584
+        },
+        "end": {
+          "line": 216,
+          "column": 71,
+          "index": 6643
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete location confirmation cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QHsFZZy/c1NHBc9e6slNiQ==": {
+          "desc": "Delete database file modal title",
+          "text": "Delete Workspace?"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 224,
+          "column": 11,
+          "index": 6768
+        },
+        "end": {
+          "line": 224,
+          "column": 71,
+          "index": 6828
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete database file modal title",
+          "text": "Delete Workspace?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Sgv0gyfvXX5itXhgPmb3BA==": {
+          "desc": "Delete database file modal description",
+          "text": "This will permanently delete your database. You can always re-import it later."
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 225,
+          "column": 17,
+          "index": 6847
+        },
+        "end": {
+          "line": 228,
+          "column": 5,
+          "index": 6992
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete database file modal description",
+          "text": "This will permanently delete your database. You can always re-import it later."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "I3Oms4b0hLUZiwX/VciebA==": {
+          "desc": "Delete database file modal confirm button",
+          "text": "Delete"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 230,
+          "column": 12,
+          "index": 7027
+        },
+        "end": {
+          "line": 230,
+          "column": 70,
+          "index": 7085
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete database file modal confirm button",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "AGpgdh03NVhkXgaoJoRtVQ==": {
+          "desc": "Delete database file modal cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "components/ui/modal/data/modalsLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 234,
+          "column": 12,
+          "index": 7156
+        },
+        "end": {
+          "line": 234,
+          "column": 69,
+          "index": 7213
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Delete database file modal cancel button",
           "text": "Cancel"
         }
       }

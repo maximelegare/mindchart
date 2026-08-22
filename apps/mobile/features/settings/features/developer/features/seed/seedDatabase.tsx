@@ -1,5 +1,5 @@
 import { useNotesAndThoughtsController } from "@/api/controllers/useNotesAndThoughtsController";
-import { Button, Span, Typography } from "@/components/ui";
+import { Button, Typography } from "@/components/ui";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { useModal } from "@/components/ui/modal/modal";
@@ -11,6 +11,14 @@ import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 import { cn } from "@/lib/cn";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
+import {
+  SettingsSeedDatabaseDescription,
+  SettingsSeedDatabaseTitle,
+  settingsSeedDatabaseEnterNumberAlert,
+  settingsSeedDatabaseLoadingTitle,
+  settingsSeedDatabaseNotesPlaceholder,
+} from "@/features/settings/settingsDeveloperLabels";
+import { settingsActionSeed } from "@/features/settings/settingsLabels";
 
 export const SeedDatabaseFeature = ({
   className,
@@ -29,13 +37,13 @@ export const SeedDatabaseFeature = ({
   const { isReady: isLlamaReady } = useLlamaEmbeddings();
   const seedDatabase = async () => {
     if (numberOfNotes === "") {
-      Alert.alert("Please enter a number of notes");
+      Alert.alert(settingsSeedDatabaseEnterNumberAlert());
       return;
     }
     openModal({
       dismissOnBackgroundPress: false,
       customContent: () => (
-        <LoadingState title="Seeding Database" size="large" />
+        <LoadingState title={settingsSeedDatabaseLoadingTitle()} size="large" />
       ),
     });
     try {
@@ -51,11 +59,10 @@ export const SeedDatabaseFeature = ({
     <Card className={cn(className)} style={style}>
       <Gutter size="md" className="py-2">
         <Typography variant="h3" padding>
-          Seed Database
+          <SettingsSeedDatabaseTitle />
         </Typography>
         <Typography variant="p" padding className="mb-2">
-          Fill the database with fake data for testing. The maximum number of
-          notes is <Span className="font-bold">{fakeData.length}</Span>.
+          <SettingsSeedDatabaseDescription maxNotes={fakeData.length} />
         </Typography>
         <View className="flex-row gap-2">
           <Button
@@ -63,11 +70,11 @@ export const SeedDatabaseFeature = ({
             onPress={() => seedDatabase()}
             disabled={!isLlamaReady}
           >
-            <Typography>Seed</Typography>
+            <Typography>{settingsActionSeed()}</Typography>
           </Button>
           <Input
             style={{ width: 100 }}
-            placeholder="Number of notes"
+            placeholder={settingsSeedDatabaseNotesPlaceholder()}
             keyboardType="number-pad"
             value={numberOfNotes}
             onChangeText={setNumberOfNotes}

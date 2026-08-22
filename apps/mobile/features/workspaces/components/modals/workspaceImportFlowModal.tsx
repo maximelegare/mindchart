@@ -23,6 +23,29 @@ import {
   type WorkspaceFormValues,
 } from "../manageWorkspaces/workspaceEdit";
 import { ModalTitle } from "@/components/ui/modal/components/modalTitle";
+import { settingsActionCancel } from "@/features/settings/settingsLabels";
+import {
+  WorkspaceImportOverwriteDescription,
+  workspaceImportApplyingDescription,
+  workspaceImportApplyingTitle,
+  workspaceImportChoiceDescription,
+  workspaceImportConfirmLabel,
+  workspaceImportDecryptingDescription,
+  workspaceImportDecryptingTitle,
+  workspaceImportDefaultName,
+  workspaceImportFailedAlertTitle,
+  workspaceImportModalTitle,
+  workspaceImportNewWorkspaceButton,
+  workspaceImportNewWorkspaceDescription,
+  workspaceImportNewWorkspaceModalTitle,
+  workspaceImportOverwriteActiveButton,
+  workspaceImportOverwriteConfirmButton,
+  workspaceImportOverwriteModalTitle,
+  workspaceImportReadingExportDescription,
+  workspaceImportReadingExportTitle,
+  workspaceImportUseExportPasswordLink,
+  workspaceImportUseRecoveryPassphraseLink,
+} from "@/features/workspaces/workspaceModalLabels";
 
 export type ImportPayload = {
   dbBytes: Uint8Array;
@@ -69,7 +92,7 @@ const ImportLoadingStep = ({
   description?: string;
 }) => (
   <View className="flex-col gap-2">
-    <ModalTitle title="Import Workspace" />
+    <ModalTitle title={workspaceImportModalTitle()} />
     <LoadingState title={title} description={description} size="large" />
   </View>
 );
@@ -185,7 +208,7 @@ export const ImportWorkspaceFlowModal = ({
       onComplete({ success: true, workspace });
     } catch (error) {
       console.error("Workspace import apply failed:", error);
-      Alert.alert("Import failed", importErrorMessage(error));
+      Alert.alert(workspaceImportFailedAlertTitle(), importErrorMessage(error));
       onComplete({ success: false, error });
     }
   };
@@ -198,7 +221,7 @@ export const ImportWorkspaceFlowModal = ({
       onComplete({ success: true, workspace });
     } catch (error) {
       console.error("Workspace import apply failed:", error);
-      Alert.alert("Import failed", importErrorMessage(error));
+      Alert.alert(workspaceImportFailedAlertTitle(), importErrorMessage(error));
       setStep("choice");
       onComplete({ success: false, error });
     }
@@ -207,8 +230,8 @@ export const ImportWorkspaceFlowModal = ({
   if (step === "extracting" && !extractError) {
     return (
       <ImportLoadingStep
-        title="Reading export..."
-        description="Unpacking your workspace file."
+        title={workspaceImportReadingExportTitle()}
+        description={workspaceImportReadingExportDescription()}
       />
     );
   }
@@ -216,13 +239,13 @@ export const ImportWorkspaceFlowModal = ({
   if (extractError) {
     return (
       <View className="flex-col gap-4">
-        <ModalTitle title="Import Workspace" />
+        <ModalTitle title={workspaceImportModalTitle()} />
         <Typography className="text-foreground-errors" variant="p">
           {extractError}
         </Typography>
         <View className="flex-row justify-end gap-2 mt-2">
           <Button variant="default" onPress={onCancel}>
-            <Typography>Cancel</Typography>
+            <Typography>{settingsActionCancel()}</Typography>
           </Button>
         </View>
       </View>
@@ -232,7 +255,7 @@ export const ImportWorkspaceFlowModal = ({
   if (step === "password") {
     return (
       <View className="flex-col gap-4">
-        <ModalTitle title="Import Workspace" />
+        <ModalTitle title={workspaceImportModalTitle()} />
         {unlockMode === "password" ? (
           <WorkspacePasswordModal
             mode="import"
@@ -261,8 +284,8 @@ export const ImportWorkspaceFlowModal = ({
           >
             <Typography>
               {unlockMode === "password"
-                ? "Use recovery passphrase instead"
-                : "Use export password instead"}
+                ? workspaceImportUseRecoveryPassphraseLink()
+                : workspaceImportUseExportPasswordLink()}
             </Typography>
           </Button>
         ) : null}
@@ -273,8 +296,8 @@ export const ImportWorkspaceFlowModal = ({
   if (step === "decrypting") {
     return (
       <ImportLoadingStep
-        title="Decrypting workspace..."
-        description="This can take up to a minute. Please keep the app open."
+        title={workspaceImportDecryptingTitle()}
+        description={workspaceImportDecryptingDescription()}
       />
     );
   }
@@ -282,8 +305,8 @@ export const ImportWorkspaceFlowModal = ({
   if (step === "applying") {
     return (
       <ImportLoadingStep
-        title="Importing workspace..."
-        description="Writing database and activating workspace."
+        title={workspaceImportApplyingTitle()}
+        description={workspaceImportApplyingDescription()}
       />
     );
   }
@@ -291,11 +314,11 @@ export const ImportWorkspaceFlowModal = ({
   if (step === "newWorkspace" && payload) {
     return (
       <View className="flex-col gap-4">
-        <ModalTitle title="New Workspace" />
+        <ModalTitle title={workspaceImportNewWorkspaceModalTitle()} />
         <WorkspaceEdit
-          initialName="Imported Workspace"
-          confirmLabel="Import"
-          description="Name your imported workspace and choose an icon and color."
+          initialName={workspaceImportDefaultName()}
+          confirmLabel={workspaceImportConfirmLabel()}
+          description={workspaceImportNewWorkspaceDescription()}
           onCancel={() => {
             if (hasActiveWorkspace) {
               setStep("choice");
@@ -312,22 +335,21 @@ export const ImportWorkspaceFlowModal = ({
   if (step === "confirmOverwrite" && payload) {
     return (
       <View className="flex-col gap-4">
-        <ModalTitle title="Overwrite workspace?" />
+        <ModalTitle title={workspaceImportOverwriteModalTitle()} />
         <Typography variant="p">
-          All notes and data in &quot;{activeWorkspaceName}&quot; will be
-          permanently replaced with the contents of this import. Your current
-          workspace name, icon, and color will stay the same. This cannot be
-          undone.
+          <WorkspaceImportOverwriteDescription
+            workspaceName={activeWorkspaceName}
+          />
         </Typography>
         <View className="flex-row justify-end gap-2 mt-2">
           <Button variant="default" onPress={() => setStep("choice")}>
-            <Typography>Cancel</Typography>
+            <Typography>{settingsActionCancel()}</Typography>
           </Button>
           <Button
             variant="destructive"
             onPress={() => void runApplyOverwrite()}
           >
-            <Typography>Overwrite</Typography>
+            <Typography>{workspaceImportOverwriteConfirmButton()}</Typography>
           </Button>
         </View>
       </View>
@@ -337,23 +359,22 @@ export const ImportWorkspaceFlowModal = ({
   if (step === "choice" && payload) {
     return (
       <View className="flex-col gap-4">
-        <ModalTitle title="Import Workspace" />
+        <ModalTitle title={workspaceImportModalTitle()} />
         <Typography variant="p">
-          Create a new workspace from this file, or overwrite the currently
-          active workspace?
+          {workspaceImportChoiceDescription()}
         </Typography>
         <View className="flex-col gap-2">
           <Button onPress={() => setStep("newWorkspace")}>
-            <Typography>New workspace</Typography>
+            <Typography>{workspaceImportNewWorkspaceButton()}</Typography>
           </Button>
           <Button
             variant="destructive"
             onPress={() => setStep("confirmOverwrite")}
           >
-            <Typography>Overwrite active</Typography>
+            <Typography>{workspaceImportOverwriteActiveButton()}</Typography>
           </Button>
           <Button variant="outline" onPress={onCancel}>
-            <Typography>Cancel</Typography>
+            <Typography>{settingsActionCancel()}</Typography>
           </Button>
         </View>
       </View>

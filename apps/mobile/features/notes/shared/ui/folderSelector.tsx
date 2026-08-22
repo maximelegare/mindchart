@@ -37,7 +37,6 @@ import {
   folderBreadcrumbRootLabel,
   folderPickerHideContentPanelLabel,
   folderPickerMoveIntoActionVerb,
-  folderPickerMoveToRootLabel,
   folderPickerNoFolderLabel,
   folderPickerNoteAccessibilityLabel,
   folderPickerNoteKindLabel,

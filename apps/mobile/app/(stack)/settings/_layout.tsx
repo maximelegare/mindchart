@@ -1,6 +1,10 @@
 import { Stack } from "expo-router";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import {
+  settingsDeveloperOptionsPageTitle,
+  settingsPageTitleString,
+} from "@/features/settings/settingsLabels";
 
 export default function SettingsLayout() {
   const { colorScheme } = useColorScheme();
@@ -15,12 +19,12 @@ export default function SettingsLayout() {
     >
       <Stack.Screen
         name="index"
-        options={{ title: "Settings", headerShown: false }}
+        options={{ title: settingsPageTitleString(), headerShown: false }}
       />
       <Stack.Screen
         name="developer"
         options={{
-          title: "Developer Options",
+          title: settingsDeveloperOptionsPageTitle(),
           header: () => null,
         }}
       />

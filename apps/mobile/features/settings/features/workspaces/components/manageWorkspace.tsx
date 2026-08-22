@@ -16,6 +16,27 @@ import { hasKeyForWorkspace } from "@/features/workspaces/services/workspaceKeyS
 import { WorkspaceKeyMissingError } from "@/features/workspaces/services/workspaceKeyErrors";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import {
+  SettingsActiveWorkspaceHeading,
+  SettingsAvailableWorkspacesHeading,
+  SettingsManageWorkspacesDescription,
+  SettingsManageWorkspacesTitle,
+  settingsExportFailedAlertMessage,
+  settingsExportFailedAlertTitle,
+  settingsExportWorkspaceModalTitle,
+  settingsWorkspaceActionSwitch,
+  settingsWorkspaceActionUnavailable,
+  settingsWorkspaceEditDescription,
+  settingsWorkspaceStatusActive,
+  settingsWorkspaceStatusKeyMissing,
+  settingsWorkspaceStatusLoad,
+  settingsWorkspaceUnavailableAlertMessage,
+  settingsWorkspaceUnavailableAlertTitle,
+} from "@/features/settings/settingsWorkspacesLabels";
+import {
+  settingsActionSave,
+  settingsStatusNone,
+} from "@/features/settings/settingsLabels";
 
 export const ManageWorkspaceLayout = () => {
   const {
@@ -61,8 +82,8 @@ export const ManageWorkspaceLayout = () => {
     } catch (error) {
       if (error instanceof WorkspaceKeyMissingError) {
         Alert.alert(
-          "Workspace unavailable",
-          "This workspace has no encryption key on this device."
+          settingsWorkspaceUnavailableAlertTitle(),
+          settingsWorkspaceUnavailableAlertMessage()
         );
         return;
       }
@@ -76,8 +97,8 @@ export const ManageWorkspaceLayout = () => {
       initialName: workspace.name,
       initialColor: workspace.color,
       initialIcon: workspace.icon as IconName | undefined,
-      confirmLabel: "Save",
-      description: "Choose a new name, color, and icon for this workspace.",
+      confirmLabel: settingsActionSave(),
+      description: settingsWorkspaceEditDescription(),
       onConfirm: async ({ name, color, icon }) => {
         await renameWorkspace(workspace.id, name, { color, icon });
         closeWorkspaceEditSheet();
@@ -87,7 +108,7 @@ export const ManageWorkspaceLayout = () => {
 
   const openExportPasswordModal = (workspace: Workspace) => {
     openModal({
-      title: "Export Workspace",
+      title: settingsExportWorkspaceModalTitle(),
       aboveBottomSheet: true,
       customContent: () => (
         <WorkspacePasswordModal
@@ -100,17 +121,16 @@ export const ManageWorkspaceLayout = () => {
                 const detail =
                   result.error instanceof Error
                     ? result.error.message
-                    : "Could not export this workspace. Please try again.";
-                Alert.alert("Export failed", detail);
+                    : settingsExportFailedAlertMessage();
+                Alert.alert(settingsExportFailedAlertTitle(), detail);
                 return;
               }
               closeModal();
             } catch (error) {
               const err = error as Error;
               Alert.alert(
-                "Export failed",
-                err?.message ||
-                  "Could not export this workspace. Please try again."
+                settingsExportFailedAlertTitle(),
+                err?.message || settingsExportFailedAlertMessage()
               );
             }
           }}
@@ -154,11 +174,10 @@ export const ManageWorkspaceLayout = () => {
       <Gutter size="none" className="py-2">
         <View className="flex-col pb-4" style={divider}>
           <Typography variant="h3" padding>
-            Manage Workspaces
+            <SettingsManageWorkspacesTitle />
           </Typography>
           <Typography variant="p" padding>
-            Manage your workspaces here. Each workspace has its seperate
-            database.
+            <SettingsManageWorkspacesDescription />
           </Typography>
         </View>
 
@@ -168,13 +187,13 @@ export const ManageWorkspaceLayout = () => {
             padding
             style={{ color: hsl("muted-foreground", colorScheme) }}
           >
-            Active Workspace
+            <SettingsActiveWorkspaceHeading />
           </Typography>
           <View className="py-2 flex-row items-center">
             <View className="flex-row items-center gap-2">
               <WorkspaceAvatar />
               <Typography variant="h3">
-                {activeWorkspace?.name ?? "None"}
+                {activeWorkspace?.name ?? settingsStatusNone()}
               </Typography>
             </View>
           </View>
@@ -186,7 +205,7 @@ export const ManageWorkspaceLayout = () => {
             padding
             style={{ color: hsl("muted-foreground", colorScheme) }}
           >
-            Available Workspaces
+            <SettingsAvailableWorkspacesHeading />
           </Typography>
           <View className="flex-col">
             {workspaces.map((workspace, index) => {
@@ -212,7 +231,11 @@ export const ManageWorkspaceLayout = () => {
                         variant="small"
                         className="text-muted-foreground"
                       >
-                        {isActive ? "Active" : hasKey ? "Load" : "Key missing"}
+                        {isActive
+                          ? settingsWorkspaceStatusActive()
+                          : hasKey
+                            ? settingsWorkspaceStatusLoad()
+                            : settingsWorkspaceStatusKeyMissing()}
                       </Typography>
                     </View>
                   </View>
@@ -227,10 +250,10 @@ export const ManageWorkspaceLayout = () => {
                     >
                       <Typography>
                         {isActive
-                          ? "Active"
+                          ? settingsWorkspaceStatusActive()
                           : hasKey
-                            ? "Switch"
-                            : "Unavailable"}
+                            ? settingsWorkspaceActionSwitch()
+                            : settingsWorkspaceActionUnavailable()}
                       </Typography>
                       {!isActive && hasKey && (
                         <Icon

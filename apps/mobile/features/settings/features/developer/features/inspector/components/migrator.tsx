@@ -3,6 +3,10 @@ import { Alert } from "react-native";
 import { Button, Typography, type ButtonProps } from "@/components/ui";
 import { useMigrationHelper } from "@repo/sqlite";
 import { useRouter } from "expo-router";
+import {
+  settingsDbInspectorMigrationFailedTitle,
+  settingsDbInspectorNewDatabaseButton,
+} from "@/features/settings/settingsDeveloperLabels";
 
 /* -------------------------------------------------- */
 /* Migrator */
@@ -23,7 +27,9 @@ export const Migrator = ({ button, children }: MigratorProps) => {
         onPress={() => setStartMigration(true)}
         {...button}
       >
-        {children || <Typography>New Database</Typography>}
+        {children || (
+          <Typography>{settingsDbInspectorNewDatabaseButton()}</Typography>
+        )}
       </Button>
 
       {startMigration && <MigrationRunner />}
@@ -43,7 +49,7 @@ const MigrationRunner = () => {
       router.replace("/(tabs)");
     }
     if (error) {
-      Alert.alert("Migration failed", String(error));
+      Alert.alert(settingsDbInspectorMigrationFailedTitle(), String(error));
       console.error(error);
     }
   }, [success, error, router]);

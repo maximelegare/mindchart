@@ -5,6 +5,20 @@ import { Typography } from "@/components/ui/typography";
 import { hsl } from "@/utils/hsl";
 import { Button } from "@/components/ui";
 import { useColorScheme } from "@/lib/useColorScheme";
+import {
+  SettingsAiActiveContextLabel,
+  SettingsAiAvailableModelsHeading,
+  SettingsAiEngineStatusHeading,
+  SettingsWhisperEngineDescription,
+  settingsAiIdleStatus,
+  settingsAiModelCloudDownloadLabel,
+  settingsAiModelDelete,
+  settingsAiModelDownload,
+  settingsAiModelLoad,
+  settingsAiModelLoaded,
+  settingsAiModelLocalLabel,
+  settingsAiUnloadFromRam,
+} from "@/features/settings/settingsAiLabels";
 
 export type WhisperSettingsContentProps = {
   currentModelId: string | null;
@@ -37,8 +51,7 @@ export function WhisperSettingsContent({
     <View className="py-2">
       <View className="pb-4" style={divider}>
         <Typography padding>
-          AI Engine responsible for the local transcription of speech. Use Tiny
-          for English and Base for other languages.
+          <SettingsWhisperEngineDescription />
         </Typography>
       </View>
 
@@ -48,7 +61,7 @@ export function WhisperSettingsContent({
           padding
           style={{ color: hsl("muted-foreground", colorScheme) }}
         >
-          Engine Status
+          <SettingsAiEngineStatusHeading />
         </Typography>
         <View className="py-2 flex-row items-center">
           <View className="flex-1">
@@ -59,17 +72,19 @@ export function WhisperSettingsContent({
                 color: hsl("muted-foreground", colorScheme),
               }}
             >
-              Active Context
+              <SettingsAiActiveContextLabel />
             </Typography>
             <Typography variant="h3" padding>
-              {currentModelId ? currentModelId.toUpperCase() : "Idle"}
+              {currentModelId
+                ? currentModelId.toUpperCase()
+                : settingsAiIdleStatus()}
             </Typography>
           </View>
           {isInitializing ? (
             <ActivityIndicator color={hsl("foreground", colorScheme)} />
           ) : currentModelId ? (
             <Button onPress={onRelease} variant="destructive" size="sm">
-              <Typography>Unload from RAM</Typography>
+              <Typography>{settingsAiUnloadFromRam()}</Typography>
             </Button>
           ) : null}
         </View>
@@ -81,7 +96,7 @@ export function WhisperSettingsContent({
           padding
           style={{ color: hsl("muted-foreground", colorScheme) }}
         >
-          Available Models
+          <SettingsAiAvailableModelsHeading />
         </Typography>
         <View className="flex-col">
           {WHISPER_MODELS.map((model, index) => {
@@ -107,8 +122,8 @@ export function WhisperSettingsContent({
                   </Typography>
                   <Typography variant="small" className="text-muted-foreground">
                     {isDownloaded
-                      ? `Local · ${model.size}`
-                      : `Cloud · ${model.size} download`}
+                      ? settingsAiModelLocalLabel(model.size)
+                      : settingsAiModelCloudDownloadLabel(model.size)}
                   </Typography>
                 </View>
 
@@ -122,7 +137,7 @@ export function WhisperSettingsContent({
                       <Typography
                         style={{ color: hsl("muted-foreground", colorScheme) }}
                       >
-                        Delete
+                        {settingsAiModelDelete()}
                       </Typography>
                     </Button>
                   )}
@@ -162,9 +177,9 @@ export function WhisperSettingsContent({
                       >
                         {isDownloaded
                           ? isActive
-                            ? "Loaded"
-                            : "Load"
-                          : "Download"}
+                            ? settingsAiModelLoaded()
+                            : settingsAiModelLoad()
+                          : settingsAiModelDownload()}
                       </Typography>
                     )}
                   </Button>

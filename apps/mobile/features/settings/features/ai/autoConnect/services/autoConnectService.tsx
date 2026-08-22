@@ -1,5 +1,6 @@
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import { settingsAiConnectingTitle } from "@/features/settings/settingsAiLabels";
 import { useAiAutoConnect } from "@/features/settings/features/ai/autoConnect/hooks/useAutoConnect";
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
@@ -22,7 +23,7 @@ export const AutoConnectService = ({
       openModal({
         dismissOnBackgroundPress: false,
         customContent: () => (
-          <LoadingState title="Connecting to AI Models" size="large" />
+          <LoadingState title={settingsAiConnectingTitle()} size="large" />
         ),
       });
       return;
@@ -45,7 +46,6 @@ export const AutoConnectService = ({
         timer = setTimeout(() => {
           openModal({
             modalName: "AI_SETUP_REQUIRED",
-            confirmButton: { text: "Go to Settings" },
             onConfirm: () => {
               router.push("/settings");
               closeModal();
