@@ -960,6 +960,818 @@
     },
     {
       "hashToLeaf": {
+        "fS4SCujBVx2pULroXMcYDA==": {
+          "desc": "Breadcrumb link toggle chip",
+          "text": "Breadcrumbs"
+        }
+      },
+      "filename": "features/navigation/breadcrumbLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 85
+        },
+        "end": {
+          "line": 4,
+          "column": 66,
+          "index": 142
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Breadcrumb link toggle chip",
+          "text": "Breadcrumbs"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "h0T5nt5AD2tP/8lYY4ZzoQ==": {
+          "desc": "Accessibility label: unlink notes and graph breadcrumbs",
+          "text": "Unlink breadcrumbs"
+        }
+      },
+      "filename": "features/navigation/breadcrumbLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 9,
+          "column": 11,
+          "index": 242
+        },
+        "end": {
+          "line": 12,
+          "column": 5,
+          "index": 344
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label: unlink notes and graph breadcrumbs",
+          "text": "Unlink breadcrumbs"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "XPa3nlrKCHfQQQS+ktEiKQ==": {
+          "desc": "Accessibility label: link notes and graph breadcrumbs",
+          "text": "Link breadcrumbs"
+        }
+      },
+      "filename": "features/navigation/breadcrumbLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 15,
+          "column": 9,
+          "index": 360
+        },
+        "end": {
+          "line": 18,
+          "column": 3,
+          "index": 452
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label: link notes and graph breadcrumbs",
+          "text": "Link breadcrumbs"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "jvMV7mOdaj5lt1SyWnIvWg==": {
+          "desc": "Notes filter chip with active filter count",
+          "text": "Filters ({count})"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 7,
+          "column": 6,
+          "index": 191
+        },
+        "end": {
+          "line": 9,
+          "column": 12,
+          "index": 327
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter chip with active filter count",
+          "text": "Filters ({count})"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "gWKseVDWpr1Dz7xilDqlvg==": {
+          "desc": "Notes filter chip",
+          "text": "Filters"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 13,
+          "column": 9,
+          "index": 349
+        },
+        "end": {
+          "line": 13,
+          "column": 52,
+          "index": 392
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter chip",
+          "text": "Filters"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "EfZDsROgqJtKvf3MmyP9KQ==": {
+          "desc": "Notes filter sheet title",
+          "text": "Filters"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 17,
+          "column": 9,
+          "index": 444
+        },
+        "end": {
+          "line": 17,
+          "column": 59,
+          "index": 494
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter sheet title",
+          "text": "Filters"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5MsbrpAgi9FhrdtXkZORcQ==": {
+          "desc": "Notes filter row: folder",
+          "text": "Folder"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 21,
+          "column": 9,
+          "index": 546
+        },
+        "end": {
+          "line": 21,
+          "column": 58,
+          "index": 595
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter row: folder",
+          "text": "Folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5B8x4lbB1CwpKVRY6sxroA==": {
+          "desc": "Notes filter row: people",
+          "text": "People"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 25,
+          "column": 9,
+          "index": 647
+        },
+        "end": {
+          "line": 25,
+          "column": 58,
+          "index": 696
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter row: people",
+          "text": "People"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "7s2q6ZTv5hhnjmzFofKfQg==": {
+          "desc": "Notes filter row: feeling",
+          "text": "Feeling"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 29,
+          "column": 9,
+          "index": 749
+        },
+        "end": {
+          "line": 29,
+          "column": 60,
+          "index": 800
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter row: feeling",
+          "text": "Feeling"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "vLAblzpkHgAKFmJxTS6SMA==": {
+          "desc": "Notes filter row: location",
+          "text": "Location"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 33,
+          "column": 9,
+          "index": 854
+        },
+        "end": {
+          "line": 33,
+          "column": 62,
+          "index": 907
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter row: location",
+          "text": "Location"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "UA9sF+pJM1ymDcbQ0puBaA==": {
+          "desc": "Notes filter sheet: clear all filters",
+          "text": "Clear filters"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 37,
+          "column": 9,
+          "index": 959
+        },
+        "end": {
+          "line": 37,
+          "column": 78,
+          "index": 1028
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter sheet: clear all filters",
+          "text": "Clear filters"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5A8rUlB/CiuNxFkl8SuuGQ==": {
+          "desc": "Notes filter picker: done button",
+          "text": "Done"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 41,
+          "column": 9,
+          "index": 1084
+        },
+        "end": {
+          "line": 41,
+          "column": 64,
+          "index": 1139
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter picker: done button",
+          "text": "Done"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "TIy32EhDn1fg7Uk6HqZCtQ==": {
+          "desc": "Notes filter summary: no restriction",
+          "text": "Any"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 45,
+          "column": 9,
+          "index": 1195
+        },
+        "end": {
+          "line": 45,
+          "column": 67,
+          "index": 1253
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter summary: no restriction",
+          "text": "Any"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "91fVXmCBweeZTYgN5mXktg==": {
+          "desc": "Notes filter summary: one item selected",
+          "text": "1 selected"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 49,
+          "column": 9,
+          "index": 1312
+        },
+        "end": {
+          "line": 49,
+          "column": 77,
+          "index": 1380
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter summary: one item selected",
+          "text": "1 selected"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "csSviBw1tbDyqfbl4CVdTg==": {
+          "desc": "Notes filter summary: multiple items selected",
+          "text": "{count} selected"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 54,
+          "column": 4,
+          "index": 1475
+        },
+        "end": {
+          "line": 56,
+          "column": 10,
+          "index": 1603
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter summary: multiple items selected",
+          "text": "{count} selected"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "PwI+DY9sWB9L5yh/Dr+t+g==": {
+          "desc": "Notes filter modal title: folder",
+          "text": "Folder"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 61,
+          "column": 9,
+          "index": 1664
+        },
+        "end": {
+          "line": 61,
+          "column": 58,
+          "index": 1713
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter modal title: folder",
+          "text": "Folder"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "CZ5DKpEmMx9njjUSIOv6Ew==": {
+          "desc": "Notes filter modal title: people",
+          "text": "People"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 65,
+          "column": 9,
+          "index": 1770
+        },
+        "end": {
+          "line": 65,
+          "column": 58,
+          "index": 1819
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter modal title: people",
+          "text": "People"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8q+StOlY2JFcOU68x5Ee+g==": {
+          "desc": "Notes filter modal title: feeling",
+          "text": "Feeling"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 69,
+          "column": 9,
+          "index": 1877
+        },
+        "end": {
+          "line": 69,
+          "column": 60,
+          "index": 1928
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter modal title: feeling",
+          "text": "Feeling"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/OBC+Gpxe1kXHEsdmk4+vQ==": {
+          "desc": "Notes filter modal title: location",
+          "text": "Location"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 73,
+          "column": 9,
+          "index": 1987
+        },
+        "end": {
+          "line": 73,
+          "column": 62,
+          "index": 2040
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter modal title: location",
+          "text": "Location"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/KTbGgs6iAacQWRCjC3Xsw==": {
+          "desc": "Notes filter folder search placeholder",
+          "text": "Search folders…"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 77,
+          "column": 9,
+          "index": 2105
+        },
+        "end": {
+          "line": 77,
+          "column": 73,
+          "index": 2169
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter folder search placeholder",
+          "text": "Search folders…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ChLAmAMapxvWHrEQQZydkQ==": {
+          "desc": "Notes filter people search placeholder",
+          "text": "Search people…"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 81,
+          "column": 9,
+          "index": 2233
+        },
+        "end": {
+          "line": 81,
+          "column": 72,
+          "index": 2296
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter people search placeholder",
+          "text": "Search people…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "00Ve358FcH0+mhq8Hfd4OQ==": {
+          "desc": "Notes filter location search placeholder",
+          "text": "Search locations…"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 85,
+          "column": 9,
+          "index": 2363
+        },
+        "end": {
+          "line": 85,
+          "column": 77,
+          "index": 2431
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter location search placeholder",
+          "text": "Search locations…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "etZkQANuY2fitwvgRiwt1w==": {
+          "desc": "Notes filter default search placeholder",
+          "text": "Search…"
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 89,
+          "column": 9,
+          "index": 2496
+        },
+        "end": {
+          "line": 89,
+          "column": 66,
+          "index": 2553
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter default search placeholder",
+          "text": "Search…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "qPiqn/K1DUAbzYPnN3jSCg==": {
+          "desc": "Notes filter empty state: folders",
+          "text": "No folders with notes yet."
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 93,
+          "column": 9,
+          "index": 2611
+        },
+        "end": {
+          "line": 96,
+          "column": 3,
+          "index": 2693
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter empty state: folders",
+          "text": "No folders with notes yet."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "9T6+W113iXcn8huRzwRJ2Q==": {
+          "desc": "Notes filter empty state: people",
+          "text": "No people yet."
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 100,
+          "column": 9,
+          "index": 2750
+        },
+        "end": {
+          "line": 100,
+          "column": 66,
+          "index": 2807
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter empty state: people",
+          "text": "No people yet."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "2oFRzZoW+Wl+qjAcfKYkxA==": {
+          "desc": "Notes filter empty state: feelings",
+          "text": "No feelings available."
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 104,
+          "column": 9,
+          "index": 2866
+        },
+        "end": {
+          "line": 107,
+          "column": 3,
+          "index": 2945
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter empty state: feelings",
+          "text": "No feelings available."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "m8hHHWEsByJ5w4ssluM08w==": {
+          "desc": "Notes filter empty state: locations",
+          "text": "No locations yet."
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 111,
+          "column": 9,
+          "index": 3005
+        },
+        "end": {
+          "line": 111,
+          "column": 72,
+          "index": 3068
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter empty state: locations",
+          "text": "No locations yet."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "gG7OwPSrFFYDX5TD3+Pukw==": {
+          "desc": "Notes filter default empty state",
+          "text": "Nothing to filter by yet."
+        }
+      },
+      "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 115,
+          "column": 9,
+          "index": 3126
+        },
+        "end": {
+          "line": 118,
+          "column": 3,
+          "index": 3206
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Notes filter default empty state",
+          "text": "Nothing to filter by yet."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "Up0lL+gkyK8UrTuBRUacRA==": {
           "desc": "Folder form title: new folder",
           "text": "New folder"
@@ -1287,14 +2099,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBar.tsx",
       "loc": {
         "start": {
-          "line": 173,
+          "line": 174,
           "column": 26,
-          "index": 5961
+          "index": 6052
         },
         "end": {
-          "line": 176,
+          "line": 177,
           "column": 7,
-          "index": 6047
+          "index": 6138
         }
       },
       "project": "",
@@ -1303,35 +2115,6 @@
         "t": {
           "desc": "Accessibility label for new folder button",
           "text": "New folder"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "PmCo7DcRNB8GrY5K+mn1pA==": {
-          "desc": "Breadcrumb label for root folder",
-          "text": "Root"
-        }
-      },
-      "filename": "features/contentList/components/optionsBar/components/optionsBar.tsx",
-      "loc": {
-        "start": {
-          "line": 249,
-          "column": 30,
-          "index": 8573
-        },
-        "end": {
-          "line": 252,
-          "column": 3,
-          "index": 8632
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Breadcrumb label for root folder",
-          "text": "Root"
         }
       }
     },
@@ -1970,6 +2753,151 @@
         "t": {
           "desc": "Delete note confirmation cancel button",
           "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "AV9JAj/zwiwz1h4wPy8bEw==": {
+          "desc": "Tab bar label: notes",
+          "text": "Notes"
+        }
+      },
+      "filename": "components/layout/tabs/tabLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 9,
+          "index": 113
+        },
+        "end": {
+          "line": 5,
+          "column": 53,
+          "index": 157
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Tab bar label: notes",
+          "text": "Notes"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yqF37X6Mh8qPOQtgR1ZMqQ==": {
+          "desc": "Tab bar label: graph",
+          "text": "Graph"
+        }
+      },
+      "filename": "components/layout/tabs/tabLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 9,
+          "column": 9,
+          "index": 205
+        },
+        "end": {
+          "line": 9,
+          "column": 53,
+          "index": 249
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Tab bar label: graph",
+          "text": "Graph"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Km9mJUQFUh9lyaJGilH2XA==": {
+          "desc": "Tab bar accessibility label: notes",
+          "text": "Notes"
+        }
+      },
+      "filename": "components/layout/tabs/tabLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 26,
+          "column": 13,
+          "index": 605
+        },
+        "end": {
+          "line": 26,
+          "column": 63,
+          "index": 655
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Tab bar accessibility label: notes",
+          "text": "Notes"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "rtswYlrjyx2kjbMELMQ2BA==": {
+          "desc": "Tab bar accessibility label: graph",
+          "text": "Graph"
+        }
+      },
+      "filename": "components/layout/tabs/tabLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 28,
+          "column": 13,
+          "index": 688
+        },
+        "end": {
+          "line": 28,
+          "column": 63,
+          "index": 738
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Tab bar accessibility label: graph",
+          "text": "Graph"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "40D+kL0If9IT/e9fFQvSow==": {
+          "desc": "Tab header fallback title",
+          "text": "Page"
+        }
+      },
+      "filename": "components/layout/tabs/tabLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 35,
+          "column": 9,
+          "index": 834
+        },
+        "end": {
+          "line": 35,
+          "column": 49,
+          "index": 874
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Tab header fallback title",
+          "text": "Page"
         }
       }
     },

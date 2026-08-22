@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useState, type ReactNode } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+import { Typography } from "@/components/ui/typography";
 import { tabIconMap } from "./icons.map";
 import { Icon } from "@/components/ui/icons/icon";
 import Animated, {
@@ -22,7 +23,8 @@ type TabBarButtonProps = {
   routeName: string;
   onPress: () => void;
   isFocused: boolean;
-  label: string;
+  label: ReactNode;
+  accessibilityLabel: string;
   bottomInset: number;
 };
 
@@ -31,6 +33,7 @@ export const TabBarButton = ({
   onPress,
   isFocused,
   label,
+  accessibilityLabel,
   bottomInset,
 }: TabBarButtonProps) => {
   const { colorScheme } = useColorScheme();
@@ -90,7 +93,7 @@ export const TabBarButton = ({
       ]}
       accessibilityRole="button"
       accessibilityState={{ selected: isFocused }}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel}
     >
       <View style={styles.rippleHost} pointerEvents="none">
         <Animated.View
@@ -111,14 +114,15 @@ export const TabBarButton = ({
           color={isFocused ? "text" : "muted-foreground"}
           hslColor={isFocused ? "#ffffff" : undefined}
         />
-        <Text
+        <Typography
+          variant="p"
           className={
             isFocused ? "text-xs text-white" : "text-xs text-muted-foreground"
           }
           style={{ fontFamily: "QuicksandRegular" }}
         >
           {label}
-        </Text>
+        </Typography>
       </View>
     </Pressable>
   );

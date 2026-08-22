@@ -847,6 +847,369 @@
         }
       ],
       "types": []
+    },
+    "AV9JAj/zwiwz1h4wPy8bEw==": {
+      "description": "Tab bar label: notes",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yqF37X6Mh8qPOQtgR1ZMqQ==": {
+      "description": "Tab bar label: graph",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Graphe",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Km9mJUQFUh9lyaJGilH2XA==": {
+      "description": "Tab bar accessibility label: notes",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "rtswYlrjyx2kjbMELMQ2BA==": {
+      "description": "Tab bar accessibility label: graph",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Graphe",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "40D+kL0If9IT/e9fFQvSow==": {
+      "description": "Tab header fallback title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Page",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fS4SCujBVx2pULroXMcYDA==": {
+      "description": "Breadcrumb link toggle chip",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fil d'Ariane",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "h0T5nt5AD2tP/8lYY4ZzoQ==": {
+      "description": "Accessibility label: unlink notes and graph breadcrumbs",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dissocier le fil d'Ariane",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XPa3nlrKCHfQQQS+ktEiKQ==": {
+      "description": "Accessibility label: link notes and graph breadcrumbs",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Associer le fil d'Ariane",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "jvMV7mOdaj5lt1SyWnIvWg==": {
+      "description": "Notes filter chip with active filter count",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Filtres ({count})",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "gWKseVDWpr1Dz7xilDqlvg==": {
+      "description": "Notes filter chip",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Filtres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "EfZDsROgqJtKvf3MmyP9KQ==": {
+      "description": "Notes filter sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Filtres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5MsbrpAgi9FhrdtXkZORcQ==": {
+      "description": "Notes filter row: folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5B8x4lbB1CwpKVRY6sxroA==": {
+      "description": "Notes filter row: people",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "7s2q6ZTv5hhnjmzFofKfQg==": {
+      "description": "Notes filter row: feeling",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sentiment",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vLAblzpkHgAKFmJxTS6SMA==": {
+      "description": "Notes filter row: location",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "UA9sF+pJM1ymDcbQ0puBaA==": {
+      "description": "Notes filter sheet: clear all filters",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Effacer les filtres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5A8rUlB/CiuNxFkl8SuuGQ==": {
+      "description": "Notes filter picker: done button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Terminé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TIy32EhDn1fg7Uk6HqZCtQ==": {
+      "description": "Notes filter summary: no restriction",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Tout",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "91fVXmCBweeZTYgN5mXktg==": {
+      "description": "Notes filter summary: one item selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "1 sélection",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "csSviBw1tbDyqfbl4CVdTg==": {
+      "description": "Notes filter summary: multiple items selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{count} sélections",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "PwI+DY9sWB9L5yh/Dr+t+g==": {
+      "description": "Notes filter modal title: folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CZ5DKpEmMx9njjUSIOv6Ew==": {
+      "description": "Notes filter modal title: people",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8q+StOlY2JFcOU68x5Ee+g==": {
+      "description": "Notes filter modal title: feeling",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sentiment",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/OBC+Gpxe1kXHEsdmk4+vQ==": {
+      "description": "Notes filter modal title: location",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/KTbGgs6iAacQWRCjC3Xsw==": {
+      "description": "Notes filter folder search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des dossiers…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ChLAmAMapxvWHrEQQZydkQ==": {
+      "description": "Notes filter people search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des personnes…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "00Ve358FcH0+mhq8Hfd4OQ==": {
+      "description": "Notes filter location search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des emplacements…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "etZkQANuY2fitwvgRiwt1w==": {
+      "description": "Notes filter default search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qPiqn/K1DUAbzYPnN3jSCg==": {
+      "description": "Notes filter empty state: folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun dossier contenant des notes.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9T6+W113iXcn8huRzwRJ2Q==": {
+      "description": "Notes filter empty state: people",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucune personne pour l'instant.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "2oFRzZoW+Wl+qjAcfKYkxA==": {
+      "description": "Notes filter empty state: feelings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun sentiment disponible.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "m8hHHWEsByJ5w4ssluM08w==": {
+      "description": "Notes filter empty state: locations",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun emplacement pour l'instant.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "gG7OwPSrFFYDX5TD3+Pukw==": {
+      "description": "Notes filter default empty state",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rien à filtrer pour l'instant.",
+          "variations": {}
+        }
+      ],
+      "types": []
     }
   }
 }

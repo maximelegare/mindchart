@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, type ReactNode } from "react";
 import { View } from "react-native";
 import { FEELINGS_DEFINITIONS } from "@repo/sqlite";
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
@@ -22,6 +22,28 @@ import {
   FilterAttributePicker,
   type FilterAttributeOption,
 } from "./filterAttributePicker";
+import {
+  ClearFiltersLabel,
+  FilterFeelingLabel,
+  FilterFolderLabel,
+  FilterLocationLabel,
+  FilterOneSelectedSummary,
+  FilterPeopleLabel,
+  FiltersChipLabel,
+  FiltersSheetTitle,
+  filterEmptyFeelingsLabel,
+  filterEmptyFoldersLabel,
+  filterEmptyLocationsLabel,
+  filterEmptyPeopleLabel,
+  filterModalFeelingTitle,
+  filterModalFolderTitle,
+  filterModalLocationTitle,
+  filterModalPeopleTitle,
+  filterSearchFoldersPlaceholder,
+  filterSearchLocationsPlaceholder,
+  filterSearchPeoplePlaceholder,
+  renderFilterSelectedSummary,
+} from "./notesFilterLabels";
 
 export const NotesFilterSheet = () => {
   const sheet = useBottomSheet();
@@ -61,7 +83,7 @@ export const NotesFilterSheet = () => {
 
   const openFolderPicker = useCallback(() => {
     openModal({
-      title: "Folder",
+      title: filterModalFolderTitle(),
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
@@ -72,7 +94,7 @@ export const NotesFilterSheet = () => {
 
   const openPeoplePicker = useCallback(() => {
     openModal({
-      title: "People",
+      title: filterModalPeopleTitle(),
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
@@ -83,7 +105,7 @@ export const NotesFilterSheet = () => {
 
   const openFeelingPicker = useCallback(() => {
     openModal({
-      title: "Feeling",
+      title: filterModalFeelingTitle(),
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
@@ -94,7 +116,7 @@ export const NotesFilterSheet = () => {
 
   const openLocationPicker = useCallback(() => {
     openModal({
-      title: "Location",
+      title: filterModalLocationTitle(),
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
@@ -103,36 +125,39 @@ export const NotesFilterSheet = () => {
     });
   }, [openModal, setFilterLocationIds]);
 
-  const folderSummary = useMemo(() => {
-    if (!selectedFolderId) return "Any";
-    return (
-      allFolders.find((folder) => folder.id === selectedFolderId)?.label ??
-      "1 selected"
-    );
+  const folderSummary = useMemo((): ReactNode => {
+    if (!selectedFolderId) {
+      return renderFilterSelectedSummary(0);
+    }
+    const label = allFolders.find(
+      (folder) => folder.id === selectedFolderId
+    )?.label;
+    if (label) return label;
+    return <FilterOneSelectedSummary />;
   }, [allFolders, selectedFolderId]);
 
-  const peopleSummary =
-    filterPersonIds.length === 0 ? "Any" : `${filterPersonIds.length} selected`;
-  const feelingSummary =
-    filterFeelings.length === 0
-      ? "Any"
-      : filterFeelings
-          .map(
-            (value) =>
-              FEELINGS_DEFINITIONS.find((feeling) => feeling.value === value)
-                ?.emoji ?? String(value)
-          )
-          .join(" ");
-  const locationSummary =
-    filterLocationIds.length === 0
-      ? "Any"
-      : `${filterLocationIds.length} selected`;
+  const peopleSummary = renderFilterSelectedSummary(filterPersonIds.length);
+
+  const feelingSummary = useMemo((): ReactNode => {
+    if (filterFeelings.length === 0) {
+      return renderFilterSelectedSummary(0);
+    }
+    return filterFeelings
+      .map(
+        (value) =>
+          FEELINGS_DEFINITIONS.find((feeling) => feeling.value === value)
+            ?.emoji ?? String(value)
+      )
+      .join(" ");
+  }, [filterFeelings]);
+
+  const locationSummary = renderFilterSelectedSummary(filterLocationIds.length);
 
   return (
     <View className="shrink-0">
       <OptionChip
         icon="funnel"
-        label={hasFilters ? `Filters (${activeCount})` : "Filters"}
+        label={<FiltersChipLabel activeCount={activeCount} />}
         selected={hasFilters}
         onPress={() => sheet.open()}
       />
@@ -159,31 +184,33 @@ export const NotesFilterSheet = () => {
             >
               <View className="flex-row items-center gap-2">
                 <Icon name="funnel" color="foreground" size={18} />
-                <Typography variant="h3">Filters</Typography>
+                <Typography variant="h3">
+                  <FiltersSheetTitle />
+                </Typography>
               </View>
             </BottomSheetHeader>
 
             <FilterRow
               icon="folder"
-              label="Folder"
+              label={<FilterFolderLabel />}
               summary={folderSummary}
               onPress={openFolderPicker}
             />
             <FilterRow
               icon="user-round"
-              label="People"
+              label={<FilterPeopleLabel />}
               summary={peopleSummary}
               onPress={openPeoplePicker}
             />
             <FilterRow
               icon="heart"
-              label="Feeling"
+              label={<FilterFeelingLabel />}
               summary={feelingSummary}
               onPress={openFeelingPicker}
             />
             <FilterRow
               icon="map-pin"
-              label="Location"
+              label={<FilterLocationLabel />}
               summary={locationSummary}
               onPress={openLocationPicker}
             />
@@ -194,7 +221,9 @@ export const NotesFilterSheet = () => {
                 size="default"
                 onPress={clearAttributeFilters}
               >
-                <Typography variant="h3">Clear filters</Typography>
+                <Typography variant="h3">
+                  <ClearFiltersLabel />
+                </Typography>
               </Button>
             ) : null}
           </BottomSheetView>
@@ -211,11 +240,10 @@ function FilterRow({
   onPress,
 }: {
   icon: IconName;
-  label: string;
-  summary: string;
+  label: ReactNode;
+  summary: ReactNode;
   onPress: () => void;
 }) {
-  // Match long-press folder action buttons (outline + h3 inside Button → text-base).
   return (
     <Button variant="outline" size="default" onPress={onPress}>
       <View className="w-full flex-row items-center justify-between gap-2">
@@ -257,8 +285,8 @@ function FolderFilterModalContent({
       onChange={(ids) => onChange(ids[0] ?? null)}
       selectionMode="single"
       searchable
-      searchPlaceholder="Search folders…"
-      emptyLabel="No folders with notes yet."
+      searchPlaceholder={filterSearchFoldersPlaceholder()}
+      emptyLabel={filterEmptyFoldersLabel()}
     />
   );
 }
@@ -286,8 +314,8 @@ function PeopleFilterModalContent({
       selectedIds={selectedIds}
       onChange={onChange}
       searchable
-      searchPlaceholder="Search people…"
-      emptyLabel="No people yet."
+      searchPlaceholder={filterSearchPeoplePlaceholder()}
+      emptyLabel={filterEmptyPeopleLabel()}
     />
   );
 }
@@ -313,7 +341,7 @@ function FeelingFilterModalContent({
       options={options}
       selectedIds={selectedFeelings.map(String)}
       onChange={(ids) => onChange(ids.map((id) => Number(id) as FeelingValue))}
-      emptyLabel="No feelings available."
+      emptyLabel={filterEmptyFeelingsLabel()}
     />
   );
 }
@@ -341,8 +369,8 @@ function LocationFilterModalContent({
       selectedIds={selectedIds}
       onChange={onChange}
       searchable
-      searchPlaceholder="Search locations…"
-      emptyLabel="No locations yet."
+      searchPlaceholder={filterSearchLocationsPlaceholder()}
+      emptyLabel={filterEmptyLocationsLabel()}
     />
   );
 }

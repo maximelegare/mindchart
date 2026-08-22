@@ -6,6 +6,7 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FolderBreadcrumbCrumb } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
+import { folderBreadcrumbRootLabel } from "@/features/notes/shared/ui/folderPickerLabels";
 import {
   folderIdFromGraphTarget,
   onGraphBreadcrumbNavigate,
@@ -42,8 +43,10 @@ export const GraphBreadcrumbs = () => {
     [allFolders]
   );
 
+  const rootLabel = folderBreadcrumbRootLabel();
+
   const breadcrumbs = useMemo(() => {
-    if (!hierarchy) return [{ id: "root", name: "Root" }];
+    if (!hierarchy) return [{ id: "root", name: rootLabel }];
     const targetId = activeId ?? hierarchy.id ?? "root";
     const path = findNodePath(hierarchy, targetId).map((node, index) => {
       const isSynthetic =
@@ -51,11 +54,11 @@ export const GraphBreadcrumbs = () => {
         (node.id === "root" || node.name?.toLowerCase() === "root");
       return {
         id: isSynthetic ? "root" : node.id,
-        name: isSynthetic ? "Root" : formatBreadcrumbLabel(node),
+        name: isSynthetic ? rootLabel : formatBreadcrumbLabel(node),
       };
     });
-    return path.length > 0 ? path : [{ id: "root", name: "Root" }];
-  }, [activeId, hierarchy]);
+    return path.length > 0 ? path : [{ id: "root", name: rootLabel }];
+  }, [activeId, hierarchy, rootLabel]);
 
   const updateGraphParams = (targetId: string) => {
     setParams({

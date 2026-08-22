@@ -35,6 +35,7 @@ import { TriggerFilterChip } from "./triggerFilterChip";
 import { OptionChip } from "./options/optionChip";
 import { Gutter } from "@/components/ui/gutter";
 import { BreadcrumbLinkToggle } from "@/features/navigation/breadcrumbLinkToggle";
+import { folderBreadcrumbRootLabel } from "@/features/notes/shared/ui/folderPickerLabels";
 import { NotesFilterSheet } from "@/features/contentList/features/notesFilters/components/notesFilterSheet";
 import { hasActiveAttributeFilters } from "@/features/contentList/utils/filterNotesByAttributes";
 import { PageSizeChip } from "@/features/contentList/features/pagination/components/pageSizeChip";
@@ -246,7 +247,7 @@ export const OptionsBar = () => {
     [allFolders, currentFolderId]
   );
 
-  const breadcrumbRootLabel = fbs("Root", "Breadcrumb label for root folder");
+  const breadcrumbRootLabel = folderBreadcrumbRootLabel();
 
   useEffect(() => {
     if (!currentFolderId || !allFolders) return;
