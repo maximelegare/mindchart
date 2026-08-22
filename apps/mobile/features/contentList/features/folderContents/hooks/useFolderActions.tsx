@@ -17,6 +17,10 @@ import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs
 import { useOptionsBar } from "../../../components/optionsBar/context/optionBarContext";
 import { FolderFormModalContent } from "../components/folderFormModalContent";
 import { useFolderFormSheet } from "../components/folderFormSheet";
+import {
+  folderFormMaximumDepthAlertTitle,
+  folderNestingLimitErrorMessage,
+} from "../components/folderFormLabels";
 import { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 
 type FolderTarget = { kind: "root" } | { kind: "folder"; folder: Folder };
@@ -67,8 +71,8 @@ export const useFolderActions = () => {
       const parentPath = target.kind === "root" ? null : target.folder.path;
       if (!canCreateChildFolder(parentPath)) {
         Alert.alert(
-          "Maximum depth",
-          "Folders can only be nested 3 levels deep."
+          folderFormMaximumDepthAlertTitle(),
+          folderNestingLimitErrorMessage()
         );
         return;
       }

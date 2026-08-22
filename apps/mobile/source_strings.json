@@ -1640,9 +1640,9 @@
           "index": 2611
         },
         "end": {
-          "line": 96,
-          "column": 3,
-          "index": 2693
+          "line": 93,
+          "column": 79,
+          "index": 2681
         }
       },
       "project": "",
@@ -1664,14 +1664,14 @@
       "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
       "loc": {
         "start": {
-          "line": 100,
+          "line": 97,
           "column": 9,
-          "index": 2750
+          "index": 2738
         },
         "end": {
-          "line": 100,
+          "line": 97,
           "column": 66,
-          "index": 2807
+          "index": 2795
         }
       },
       "project": "",
@@ -1693,14 +1693,14 @@
       "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
       "loc": {
         "start": {
-          "line": 104,
+          "line": 101,
           "column": 9,
-          "index": 2866
+          "index": 2854
         },
         "end": {
-          "line": 107,
-          "column": 3,
-          "index": 2945
+          "line": 101,
+          "column": 76,
+          "index": 2921
         }
       },
       "project": "",
@@ -1722,14 +1722,14 @@
       "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
       "loc": {
         "start": {
-          "line": 111,
+          "line": 105,
           "column": 9,
-          "index": 3005
+          "index": 2981
         },
         "end": {
-          "line": 111,
+          "line": 105,
           "column": 72,
-          "index": 3068
+          "index": 3044
         }
       },
       "project": "",
@@ -1751,14 +1751,14 @@
       "filename": "features/contentList/features/notesFilters/components/notesFilterLabels.tsx",
       "loc": {
         "start": {
-          "line": 115,
+          "line": 109,
           "column": 9,
-          "index": 3126
+          "index": 3102
         },
         "end": {
-          "line": 118,
-          "column": 3,
-          "index": 3206
+          "line": 109,
+          "column": 77,
+          "index": 3170
         }
       },
       "project": "",
@@ -2086,6 +2086,325 @@
         "t": {
           "desc": "Error when folder nesting exceeds maximum depth",
           "text": "Folders can only be nested 3 levels deep."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "g4IoQo5mXsCzvD0vN+4ndw==": {
+          "desc": "Alert title when folder nesting limit reached",
+          "text": "Maximum depth"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 25,
+          "column": 9,
+          "index": 677
+        },
+        "end": {
+          "line": 28,
+          "column": 3,
+          "index": 758
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when folder nesting limit reached",
+          "text": "Maximum depth"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "iL15pwyAI+M5vmygZarEcw==": {
+          "desc": "Folder form field label: name",
+          "text": "Name"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 32,
+          "column": 9,
+          "index": 812
+        },
+        "end": {
+          "line": 32,
+          "column": 61,
+          "index": 864
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form field label: name",
+          "text": "Name"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "s+E2TgYftrwzihqoj68bMg==": {
+          "desc": "Folder form name input placeholder",
+          "text": "Folder name"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 36,
+          "column": 9,
+          "index": 924
+        },
+        "end": {
+          "line": 36,
+          "column": 65,
+          "index": 980
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form name input placeholder",
+          "text": "Folder name"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "tkkh6aJtk2EGviLg6VaIjg==": {
+          "desc": "Folder form validation: name required",
+          "text": "Name is required"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 40,
+          "column": 9,
+          "index": 1042
+        },
+        "end": {
+          "line": 40,
+          "column": 73,
+          "index": 1106
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form validation: name required",
+          "text": "Name is required"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "exjpxNbhkSOUdxJJCHEFFQ==": {
+          "desc": "Folder form cancel button",
+          "text": "Cancel"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 44,
+          "column": 9,
+          "index": 1162
+        },
+        "end": {
+          "line": 44,
+          "column": 59,
+          "index": 1212
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form cancel button",
+          "text": "Cancel"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "It59nCO4099lAkvhmoUj4w==": {
+          "desc": "Folder form create button",
+          "text": "Create"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 48,
+          "column": 9,
+          "index": 1274
+        },
+        "end": {
+          "line": 48,
+          "column": 59,
+          "index": 1324
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form create button",
+          "text": "Create"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "bdrIRoAhNrFZd/H/a/vllA==": {
+          "desc": "Folder form save button",
+          "text": "Save"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 52,
+          "column": 9,
+          "index": 1384
+        },
+        "end": {
+          "line": 52,
+          "column": 55,
+          "index": 1430
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form save button",
+          "text": "Save"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Ab1vsBXUuGuptaHFDAjtMQ==": {
+          "desc": "Folder form creating in progress",
+          "text": "Creating…"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 56,
+          "column": 9,
+          "index": 1494
+        },
+        "end": {
+          "line": 56,
+          "column": 69,
+          "index": 1554
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form creating in progress",
+          "text": "Creating…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cwPym7TnGjKCB/a20yvTbA==": {
+          "desc": "Folder form saving in progress",
+          "text": "Saving…"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 60,
+          "column": 9,
+          "index": 1616
+        },
+        "end": {
+          "line": 60,
+          "column": 65,
+          "index": 1672
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Folder form saving in progress",
+          "text": "Saving…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "KL/UKN+h4QKLEbv0yXdobA==": {
+          "desc": "Alert title when folder creation fails",
+          "text": "Create failed"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 64,
+          "column": 9,
+          "index": 1739
+        },
+        "end": {
+          "line": 64,
+          "column": 71,
+          "index": 1801
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when folder creation fails",
+          "text": "Create failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "m4QHdlxgQmEZZzVTNG2fNA==": {
+          "desc": "Alert title when folder rename fails",
+          "text": "Rename failed"
+        }
+      },
+      "filename": "features/contentList/features/folderContents/components/folderFormLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 68,
+          "column": 9,
+          "index": 1868
+        },
+        "end": {
+          "line": 68,
+          "column": 69,
+          "index": 1928
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when folder rename fails",
+          "text": "Rename failed"
         }
       }
     },

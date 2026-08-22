@@ -1210,6 +1210,127 @@
         }
       ],
       "types": []
+    },
+    "g4IoQo5mXsCzvD0vN+4ndw==": {
+      "description": "Alert title when folder nesting limit reached",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Profondeur maximale",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "iL15pwyAI+M5vmygZarEcw==": {
+      "description": "Folder form field label: name",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nom",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "s+E2TgYftrwzihqoj68bMg==": {
+      "description": "Folder form name input placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nom du dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "tkkh6aJtk2EGviLg6VaIjg==": {
+      "description": "Folder form validation: name required",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le nom est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "exjpxNbhkSOUdxJJCHEFFQ==": {
+      "description": "Folder form cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "It59nCO4099lAkvhmoUj4w==": {
+      "description": "Folder form create button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bdrIRoAhNrFZd/H/a/vllA==": {
+      "description": "Folder form save button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Ab1vsBXUuGuptaHFDAjtMQ==": {
+      "description": "Folder form creating in progress",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Création…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cwPym7TnGjKCB/a20yvTbA==": {
+      "description": "Folder form saving in progress",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrement…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "KL/UKN+h4QKLEbv0yXdobA==": {
+      "description": "Alert title when folder creation fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la création",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "m4QHdlxgQmEZZzVTNG2fNA==": {
+      "description": "Alert title when folder rename fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec du renommage",
+          "variations": {}
+        }
+      ],
+      "types": []
     }
   }
 }
