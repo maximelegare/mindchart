@@ -11,7 +11,7 @@ import {
   SettingsAiProvidersDescription,
   settingsAiProviderCloud,
   settingsAiProviderLocal,
-} from "@/features/settings/settingsAiLabels";
+} from "@/features/settings/features/ai/labels/settingsAiLabels";
 
 export type AiProvidersSettingsContentProps = {
   aiProviders: AIProviders;

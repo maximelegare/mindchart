@@ -17,7 +17,7 @@ import {
   settingsSeedDatabaseEnterNumberAlert,
   settingsSeedDatabaseLoadingTitle,
   settingsSeedDatabaseNotesPlaceholder,
-} from "@/features/settings/settingsDeveloperLabels";
+} from "@/features/settings/features/developer/labels/settingsDeveloperLabels";
 import { settingsActionSeed } from "@/features/settings/settingsLabels";
 
 export const SeedDatabaseFeature = ({

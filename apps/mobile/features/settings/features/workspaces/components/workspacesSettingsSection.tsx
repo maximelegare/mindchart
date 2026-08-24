@@ -8,7 +8,7 @@ import {
   SettingsWorkspacesSectionTitle,
   settingsRecoveryPassphraseRowLabel,
   settingsWorkspacesRowLabel,
-} from "@/features/settings/settingsWorkspacesLabels";
+} from "@/features/settings/features/workspaces/labels/settingsWorkspacesLabels";
 import {
   settingsStatusDisabled,
   settingsStatusEnabled,

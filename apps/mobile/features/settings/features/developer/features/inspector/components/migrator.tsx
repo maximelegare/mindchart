@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import {
   settingsDbInspectorMigrationFailedTitle,
   settingsDbInspectorNewDatabaseButton,
-} from "@/features/settings/settingsDeveloperLabels";
+} from "@/features/settings/features/developer/labels/settingsDeveloperLabels";
 
 /* -------------------------------------------------- */
 /* Migrator */

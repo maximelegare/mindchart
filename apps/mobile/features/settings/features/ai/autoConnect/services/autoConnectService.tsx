@@ -1,6 +1,6 @@
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import { settingsAiConnectingTitle } from "@/features/settings/settingsAiLabels";
+import { settingsAiConnectingTitle } from "@/features/settings/features/ai/labels/settingsAiLabels";
 import { useAiAutoConnect } from "@/features/settings/features/ai/autoConnect/hooks/useAutoConnect";
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";

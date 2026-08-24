@@ -29,7 +29,7 @@ import {
   settingsAiProviderMixed,
   settingsAiProvidersLabel,
   settingsAiWhisperEngineLabel,
-} from "@/features/settings/settingsAiLabels";
+} from "@/features/settings/features/ai/labels/settingsAiLabels";
 import {
   settingsStatusLoaded,
   settingsStatusSetup,

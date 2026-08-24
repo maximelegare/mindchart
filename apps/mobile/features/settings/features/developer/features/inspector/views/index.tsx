@@ -29,7 +29,7 @@ import {
   settingsDbInspectorClearTableAlertTitle,
   settingsDbInspectorNoTablesFound,
   settingsDbInspectorRowsLabel,
-} from "@/features/settings/settingsDeveloperLabels";
+} from "@/features/settings/features/developer/labels/settingsDeveloperLabels";
 import {
   settingsActionCancel,
   settingsActionDelete,

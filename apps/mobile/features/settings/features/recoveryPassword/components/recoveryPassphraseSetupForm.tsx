@@ -14,7 +14,7 @@ import {
   settingsRecoveryPassphraseFieldPlaceholder,
   settingsRecoveryPassphraseMinLengthError,
   settingsRecoveryPassphraseMismatchError,
-} from "@/features/settings/settingsRecoveryLabels";
+} from "@/features/settings/features/recoveryPassword/labels/settingsRecoveryLabels";
 import {
   settingsActionCancel,
   settingsActionEnable,

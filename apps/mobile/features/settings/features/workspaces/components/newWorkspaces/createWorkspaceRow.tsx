@@ -7,7 +7,7 @@ import {
   settingsActionCreate,
   settingsActionNew,
 } from "@/features/settings/settingsLabels";
-import { settingsWorkspaceCreateDescription } from "@/features/settings/settingsWorkspacesLabels";
+import { settingsWorkspaceCreateDescription } from "@/features/settings/features/workspaces/labels/settingsWorkspacesLabels";
 
 type Props = {
   onCreated?: () => void;

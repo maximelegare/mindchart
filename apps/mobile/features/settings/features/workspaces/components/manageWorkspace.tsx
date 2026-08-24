@@ -32,7 +32,7 @@ import {
   settingsWorkspaceStatusLoad,
   settingsWorkspaceUnavailableAlertMessage,
   settingsWorkspaceUnavailableAlertTitle,
-} from "@/features/settings/settingsWorkspacesLabels";
+} from "@/features/settings/features/workspaces/labels/settingsWorkspacesLabels";
 import {
   settingsActionSave,
   settingsStatusNone,

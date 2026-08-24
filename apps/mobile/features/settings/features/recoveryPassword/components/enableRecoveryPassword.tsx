@@ -10,7 +10,7 @@ import {
   settingsRecoveryPassphraseSwitchAccessibilityLabel,
   settingsRecoveryPassphraseSwitchDescription,
   settingsRecoveryPassphraseSwitchTitle,
-} from "@/features/settings/settingsRecoveryLabels";
+} from "@/features/settings/features/recoveryPassword/labels/settingsRecoveryLabels";
 import { settingsCommonUnknownError } from "@/features/settings/settingsLabels";
 
 export const EnableRecoveryPassphrase = () => {

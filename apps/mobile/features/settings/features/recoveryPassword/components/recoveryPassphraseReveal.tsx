@@ -10,7 +10,7 @@ import {
   settingsRecoveryPassphraseAuthenticating,
   settingsRecoveryPassphraseHideButton,
   settingsRecoveryPassphraseRevealButton,
-} from "@/features/settings/settingsRecoveryLabels";
+} from "@/features/settings/features/recoveryPassword/labels/settingsRecoveryLabels";
 import { settingsCommonUnknownError } from "@/features/settings/settingsLabels";
 
 const MASKED_PASSPHRASE = "••••••••••••••••••••••••••••••••";

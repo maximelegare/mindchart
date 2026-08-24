@@ -19,7 +19,7 @@ import {
   settingsAiModelLoaded,
   settingsAiModelLocalLabel,
   settingsAiUnloadFromRam,
-} from "@/features/settings/settingsAiLabels";
+} from "@/features/settings/features/ai/labels/settingsAiLabels";
 
 export type LlamaChatSettingsContentProps = {
   currentModelId: string | null;
