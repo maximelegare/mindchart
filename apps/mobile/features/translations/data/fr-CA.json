@@ -4291,17 +4291,6 @@
       ],
       "types": []
     },
-    "rNWB39qHz9kYzZG2yDoofg==": {
-      "description": "Import workspace flow: overwrite confirmation description",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Toutes les notes et données de « {workspaceName} » seront remplacées de façon permanente par le contenu de cette importation. Le nom, l'icône et la couleur de l'espace de travail actuel resteront les mêmes. Cette action est irréversible.",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
     "DBBcj7wHI3Oez4xgzrdBgw==": {
       "description": "Import workspace flow: switch to recovery passphrase",
       "tokens": [],
@@ -4638,6 +4627,18 @@
       "translations": [
         {
           "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xD2IIaGAT6zQ7Il4R8+bIQ==": {
+      "description": "Import workspace flow: overwrite confirmation description",
+      "status": "new",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "All notes and data in \" {workspaceName} \" will be permanently replaced with the contents of this import. Your current workspace name, icon, and color will stay the same. This cannot be undone.",
           "variations": {}
         }
       ],
