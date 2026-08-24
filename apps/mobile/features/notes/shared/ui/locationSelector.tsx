@@ -26,6 +26,15 @@ import { X } from "@/lib/icons/Times";
 import { generateID } from "@/utils/genrateID";
 import { useModal } from "@/components/ui/modal/modal";
 import type { Location } from "@repo/zod-schemas/src/schemas";
+import {
+  LocationSelectorAddRowLabel,
+  LocationSelectorSheetTitle,
+  locationDeleteConfirmationDescription,
+  locationSelectorEmptyListMessage,
+  locationSelectorNoMatchesMessage,
+  locationSelectorRemoveLocationAccessibilityLabel,
+  locationSelectorSearchPlaceholder,
+} from "./noteAttributeSelectorLabels";
 
 export const LocationSelector = ({
   selectedLocationId,
@@ -103,7 +112,7 @@ export const LocationSelector = ({
   const handleDelete = (location: Location) => {
     openModal({
       modalName: "DELETE_LOCATION_CONFIRMATION",
-      description: `Remove "${location.name}" from all notes that use it?`,
+      description: locationDeleteConfirmationDescription(location.name),
       aboveBottomSheet: true,
       onConfirm: async () => {
         await deleteLocation({ locationId: location.id });
@@ -144,14 +153,14 @@ export const LocationSelector = ({
         <BottomSheetView className="h-full flex-1 gap-4 bg-background px-4 pb-6 pt-4">
           <BottomSheetHeader className="bg-background">
             <Typography variant="h3" className="pb-1 text-foreground">
-              Location
+              <LocationSelectorSheetTitle />
             </Typography>
           </BottomSheetHeader>
 
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Search or add a location"
+            placeholder={locationSelectorSearchPlaceholder()}
             placeholderTextColor={hsl("muted-foreground", colorScheme)}
             className="rounded-full border border-input bg-card px-4 py-2 text-foreground"
             onSubmitEditing={() => {
@@ -189,8 +198,8 @@ export const LocationSelector = ({
               {!canCreate && filteredLocations.length === 0 ? (
                 <Typography className="py-4 text-center text-muted-foreground">
                   {allLocations.length === 0
-                    ? "No locations yet. Type a name to add one."
-                    : "No matching locations."}
+                    ? locationSelectorEmptyListMessage()
+                    : locationSelectorNoMatchesMessage()}
                 </Typography>
               ) : null}
             </View>
@@ -218,7 +227,9 @@ function CreateLocationRow({
         dismiss();
       }}
     >
-      <Typography>Add “{name}”</Typography>
+      <Typography>
+        <LocationSelectorAddRowLabel name={name} />
+      </Typography>
     </Pressable>
   );
 }
@@ -259,7 +270,9 @@ function LocationItem({
         variant="ghost"
         size="sm"
         accessibilityRole="button"
-        accessibilityLabel={`Remove ${item.name}`}
+        accessibilityLabel={locationSelectorRemoveLocationAccessibilityLabel(
+          item.name
+        )}
         onPress={onDelete}
       >
         <X className="text-muted-foreground" size={20} />

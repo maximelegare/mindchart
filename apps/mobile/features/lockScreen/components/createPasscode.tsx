@@ -8,6 +8,14 @@ import { hsl } from "@/utils/hsl";
 import { setAppPin } from "../services/passcodeService";
 import { APP_PIN_LENGTH } from "../constants";
 import { PinDots, PinPad } from "./pinPad";
+import {
+  settingsConfirmPinDescription,
+  settingsConfirmPinTitle,
+  settingsCreatePinCancelButton,
+  settingsCreatePinDescription,
+  settingsCreatePinTitle,
+  settingsPinMismatchError,
+} from "../lockScreenLabels";
 
 type CreatePasscodeProps = {
   onDone: () => void;
@@ -45,7 +53,7 @@ export function CreatePasscode({ onDone, onCancel }: CreatePasscodeProps) {
             void save();
           } else {
             setConfirmPin("");
-            setError("PINs do not match. Try again.");
+            setError(settingsPinMismatchError());
             setTimeout(() => setError(""), 2000);
           }
         }
@@ -75,7 +83,9 @@ export function CreatePasscode({ onDone, onCancel }: CreatePasscodeProps) {
       </View>
 
       <Typography variant="h2" className="text-center mb-2">
-        {step === "create" ? "Create a PIN" : "Confirm your PIN"}
+        {step === "create"
+          ? settingsCreatePinTitle()
+          : settingsConfirmPinTitle()}
       </Typography>
       <Typography
         variant="p"
@@ -83,8 +93,8 @@ export function CreatePasscode({ onDone, onCancel }: CreatePasscodeProps) {
         style={{ color: hsl("muted-foreground", colorScheme) }}
       >
         {step === "create"
-          ? "Choose a 6-digit PIN to unlock MindChart."
-          : "Re-enter the same PIN to confirm."}
+          ? settingsCreatePinDescription()
+          : settingsConfirmPinDescription()}
       </Typography>
 
       <PinDots filledCount={currentPin.length} />
@@ -100,7 +110,7 @@ export function CreatePasscode({ onDone, onCancel }: CreatePasscodeProps) {
 
       {onCancel ? (
         <Button variant="ghost" onPress={onCancel} className="mt-8">
-          <Typography>Cancel</Typography>
+          <Typography>{settingsCreatePinCancelButton()}</Typography>
         </Button>
       ) : null}
     </View>

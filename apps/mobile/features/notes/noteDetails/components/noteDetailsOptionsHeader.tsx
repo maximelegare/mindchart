@@ -14,6 +14,10 @@ import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/
 import { Icon } from "@/components/ui/icons/icon";
 import { Person } from "@repo/zod-schemas";
 import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
+import {
+  NoteDetailsCompleteViewLabel,
+  NoteDetailsSimplifiedViewLabel,
+} from "@/features/notes/noteDetails/noteDetailsLabels";
 
 type NoteDetailsOptionsHeaderProps = {
   folder: FolderSelection;
@@ -62,7 +66,11 @@ export function NoteDetailsOptionsHeader({
                 className="text-sm text-muted-foreground"
                 numberOfLines={1}
               >
-                {simplified ? "Complete View" : "Simplified View"}
+                {simplified ? (
+                  <NoteDetailsCompleteViewLabel />
+                ) : (
+                  <NoteDetailsSimplifiedViewLabel />
+                )}
               </Typography>
             </Button>
           </View>

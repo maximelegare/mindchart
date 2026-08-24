@@ -4,6 +4,16 @@ import { WorkspacesSheetContent } from "./workspacesSheetContent";
 import { RecoveryPassphraseFeature } from "@/features/settings/features/recoveryPassword/views/recoveryPassword";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
+import {
+  SettingsWorkspacesSectionTitle,
+  settingsRecoveryPassphraseRowLabel,
+  settingsWorkspacesRowLabel,
+} from "@/features/settings/features/workspaces/labels/settingsWorkspacesLabels";
+import {
+  settingsStatusDisabled,
+  settingsStatusEnabled,
+  settingsStatusNone,
+} from "@/features/settings/settingsLabels";
 
 export function WorkspacesSettingsSection() {
   const { activeWorkspace } = useWorkSpaces();
@@ -12,19 +22,24 @@ export function WorkspacesSettingsSection() {
   );
 
   return (
-    <SettingsSection title="Workspaces" icon="layers">
+    <SettingsSection title={<SettingsWorkspacesSectionTitle />} icon="layers">
       <SettingsSheetRow
-        label="Workspaces"
-        subtitle={activeWorkspace?.name ?? "None"}
-        sheetTitle="Workspaces"
+        label={settingsWorkspacesRowLabel()}
+        subtitle={activeWorkspace?.name ?? settingsStatusNone()}
+        sheetTitle={settingsWorkspacesRowLabel()}
       >
         <WorkspacesSheetContent />
       </SettingsSheetRow>
 
       <SettingsSheetRow
-        label="Recovery passphrase"
-        status={recoveryPassphraseEnabled ? "Enabled" : "Disabled"}
-        sheetTitle="Recovery passphrase"
+        label={settingsRecoveryPassphraseRowLabel()}
+        status={
+          recoveryPassphraseEnabled
+            ? settingsStatusEnabled()
+            : settingsStatusDisabled()
+        }
+        statusTone={recoveryPassphraseEnabled ? "success" : "warning"}
+        sheetTitle={settingsRecoveryPassphraseRowLabel()}
         snapPoints={["100%"]}
         borderBottom={false}
       >

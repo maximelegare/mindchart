@@ -7,6 +7,7 @@ import { useOptionsBar } from "@/features/contentList/components/optionsBar/cont
 import { areBreadcrumbsLinked } from "@/features/navigation/breadcrumbLinkStore";
 import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { SearchFeature } from "@/features/search/views";
+import { settingsPageTitleString } from "@/features/settings/settingsLabels";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -52,7 +53,13 @@ export const GraphThoughIdPage = () => {
       buttons={[<SearchFeature />]}
       optionsHeader={<GraphModeToggle />}
       moreOptionsMenu={{
-        links: [{ label: "Settings", icon: "settings", href: "/settings" }],
+        links: [
+          {
+            label: settingsPageTitleString(),
+            icon: "settings",
+            href: "/settings",
+          },
+        ],
         state: { open, setOpen },
       }}
     >

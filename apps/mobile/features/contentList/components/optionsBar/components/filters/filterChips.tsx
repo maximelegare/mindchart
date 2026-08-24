@@ -19,7 +19,7 @@ type ChipItem = {
 
 export type FilterChipProps = {
   icon?: IconName;
-  label?: string;
+  label?: ReactNode;
   selected?: boolean;
   colorBadge?: string;
   onPress?: () => void;

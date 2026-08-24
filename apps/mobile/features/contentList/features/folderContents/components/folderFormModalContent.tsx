@@ -7,6 +7,19 @@ import { BottomSheetTextInput } from "@/components/primitives/bottomSheet/bottom
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ActivityIndicator, Alert, View } from "react-native";
+import {
+  FolderFormCancelLabel,
+  FolderFormCreateButtonLabel,
+  FolderFormCreatingButtonLabel,
+  FolderFormNameLabel,
+  FolderFormSaveButtonLabel,
+  FolderFormSavingButtonLabel,
+  FolderFormTitle,
+  folderFormCreateFailedAlertTitle,
+  folderFormNamePlaceholder,
+  folderFormNameRequiredError,
+  folderFormRenameFailedAlertTitle,
+} from "./folderFormLabels";
 
 type FolderFormModalContentProps = {
   mode: "create" | "rename";
@@ -60,7 +73,9 @@ export const FolderFormModalContent = ({
       const message = error instanceof Error ? error.message : String(error);
       setErrorMessage(message);
       Alert.alert(
-        mode === "create" ? "Create failed" : "Rename failed",
+        mode === "create"
+          ? folderFormCreateFailedAlertTitle()
+          : folderFormRenameFailedAlertTitle(),
         message
       );
     } finally {
@@ -71,9 +86,7 @@ export const FolderFormModalContent = ({
   return (
     <View className="flex-col gap-4">
       {!inBottomSheet ? (
-        <ModalTitle
-          title={mode === "create" ? "New folder" : "Rename folder"}
-        />
+        <ModalTitle title={<FolderFormTitle mode={mode} />} />
       ) : null}
 
       {errorMessage ? (
@@ -85,16 +98,20 @@ export const FolderFormModalContent = ({
       <Controller
         control={control}
         name="label"
-        rules={{ validate: (v) => v.trim().length > 0 || "Name is required" }}
+        rules={{
+          validate: (v) => v.trim().length > 0 || folderFormNameRequiredError(),
+        }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="folder-label">Name</Label>
+            <Label nativeID="folder-label">
+              <FolderFormNameLabel />
+            </Label>
             {inBottomSheet ? (
               <BottomSheetTextInput
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
-                placeholder="Folder name"
+                placeholder={folderFormNamePlaceholder()}
                 autoFocus
                 autoCapitalize="words"
                 returnKeyType="done"
@@ -105,7 +122,7 @@ export const FolderFormModalContent = ({
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
-                placeholder="Folder name"
+                placeholder={folderFormNamePlaceholder()}
                 autoFocus
                 autoCapitalize="words"
                 returnKeyType="done"
@@ -118,7 +135,9 @@ export const FolderFormModalContent = ({
 
       <View className="flex-row justify-end gap-2 mt-2 items-center">
         <Button variant="default" onPress={close} disabled={isPending}>
-          <Typography>Cancel</Typography>
+          <Typography>
+            <FolderFormCancelLabel />
+          </Typography>
         </Button>
         <Button
           variant="default"
@@ -134,11 +153,21 @@ export const FolderFormModalContent = ({
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" />
               <Typography>
-                {mode === "create" ? "Creating…" : "Saving…"}
+                {mode === "create" ? (
+                  <FolderFormCreatingButtonLabel />
+                ) : (
+                  <FolderFormSavingButtonLabel />
+                )}
               </Typography>
             </View>
           ) : (
-            <Typography>{mode === "create" ? "Create" : "Save"}</Typography>
+            <Typography>
+              {mode === "create" ? (
+                <FolderFormCreateButtonLabel />
+              ) : (
+                <FolderFormSaveButtonLabel />
+              )}
+            </Typography>
           )}
         </Button>
       </View>

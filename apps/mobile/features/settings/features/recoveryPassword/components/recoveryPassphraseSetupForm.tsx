@@ -5,6 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Typography } from "@/components/ui/typography";
 import { BottomSheetTextInput } from "@/components/primitives/bottomSheet/bottom-sheet.native";
+import {
+  SettingsRecoveryPassphraseSetupDescription,
+  settingsRecoveryPassphraseConfirmLabel,
+  settingsRecoveryPassphraseConfirmPlaceholder,
+  settingsRecoveryPassphraseEnabling,
+  settingsRecoveryPassphraseFieldLabel,
+  settingsRecoveryPassphraseFieldPlaceholder,
+  settingsRecoveryPassphraseMinLengthError,
+  settingsRecoveryPassphraseMismatchError,
+} from "@/features/settings/features/recoveryPassword/labels/settingsRecoveryLabels";
+import {
+  settingsActionCancel,
+  settingsActionEnable,
+} from "@/features/settings/settingsLabels";
 
 const MIN_PASSPHRASE_LENGTH = 8;
 
@@ -44,8 +58,7 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
   return (
     <View className="flex-col gap-4">
       <Typography variant="muted">
-        Choose a passphrase. You’ll need it to import exported workspaces if you
-        forget the export password.
+        <SettingsRecoveryPassphraseSetupDescription />
       </Typography>
 
       <Controller
@@ -54,11 +67,13 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
         rules={{
           validate: (v) =>
             v.length >= MIN_PASSPHRASE_LENGTH ||
-            `At least ${MIN_PASSPHRASE_LENGTH} characters`,
+            settingsRecoveryPassphraseMinLengthError(MIN_PASSPHRASE_LENGTH),
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="recovery-passphrase">Passphrase</Label>
+            <Label nativeID="recovery-passphrase">
+              {settingsRecoveryPassphraseFieldLabel()}
+            </Label>
             <BottomSheetTextInput
               value={value}
               onChangeText={onChange}
@@ -67,7 +82,7 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
               autoCapitalize="none"
               autoCorrect={false}
               autoFocus
-              placeholder="Passphrase"
+              placeholder={settingsRecoveryPassphraseFieldPlaceholder()}
             />
           </View>
         )}
@@ -77,11 +92,14 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
         control={control}
         name="confirmPassphrase"
         rules={{
-          validate: (v) => v === passphrase || "Passphrases do not match",
+          validate: (v) =>
+            v === passphrase || settingsRecoveryPassphraseMismatchError(),
         }}
         render={({ field: { value, onChange, onBlur } }) => (
           <View className="flex-col gap-1">
-            <Label nativeID="recovery-passphrase-confirm">Confirm</Label>
+            <Label nativeID="recovery-passphrase-confirm">
+              {settingsRecoveryPassphraseConfirmLabel()}
+            </Label>
             <BottomSheetTextInput
               value={value}
               onChangeText={onChange}
@@ -89,7 +107,7 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
-              placeholder="Confirm passphrase"
+              placeholder={settingsRecoveryPassphraseConfirmPlaceholder()}
               onSubmitEditing={submit}
             />
           </View>
@@ -98,7 +116,7 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
 
       <View className="flex-row justify-end gap-2 mt-2 items-center">
         <Button variant="default" onPress={onCancel} disabled={submitting}>
-          <Typography>Cancel</Typography>
+          <Typography>{settingsActionCancel()}</Typography>
         </Button>
         <Button
           variant="default"
@@ -108,10 +126,10 @@ export const RecoveryPassphraseSetupForm = ({ onConfirm, onCancel }: Props) => {
           {submitting ? (
             <View className="flex-row items-center gap-2">
               <ActivityIndicator size="small" />
-              <Typography>Enabling…</Typography>
+              <Typography>{settingsRecoveryPassphraseEnabling()}</Typography>
             </View>
           ) : (
-            <Typography>Enable</Typography>
+            <Typography>{settingsActionEnable()}</Typography>
           )}
         </Button>
       </View>

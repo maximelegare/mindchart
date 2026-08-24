@@ -19,15 +19,24 @@ import {
 import { Modal, Portal } from "react-native-paper";
 import { Typography } from "../typography";
 import { Button } from "../button";
-import { MODALS_CONTENT, type ModalButtonConfig } from "./data/modals";
+import {
+  MODALS_CONTENT,
+  type ModalButtonConfig,
+  type ModalContent,
+} from "./data/modals";
+import {
+  getTranslatedModalPreset,
+  modalDefaultCancelLabel,
+  modalDefaultConfirmLabel,
+} from "./data/modalsLabels";
 import { cn } from "@/lib/cn";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 type ModalOptions = {
-  modalName?: keyof typeof MODALS_CONTENT;
-  title?: string;
-  description?: string;
+  modalName?: ModalContent;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
   onCancel?: () => void;
   cancelButton?: Partial<ModalButtonConfig>;
   confirmButton?: Partial<ModalButtonConfig>;
@@ -146,10 +155,14 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     aboveBottomSheet = false,
   } = modalOptions;
 
-  const modalPreset = modalName ? MODALS_CONTENT[modalName] : undefined;
+  const modalPreset = modalName
+    ? (getTranslatedModalPreset(modalName) ?? MODALS_CONTENT[modalName])
+    : undefined;
   const confirmButton: ModalButtonConfig = {
     text:
-      confirmButtonOption?.text ?? modalPreset?.confirmButton.text ?? "Confirm",
+      confirmButtonOption?.text ??
+      modalPreset?.confirmButton.text ??
+      modalDefaultConfirmLabel(),
     variant:
       confirmButtonOption?.variant ??
       modalPreset?.confirmButton.variant ??
@@ -157,14 +170,16 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
   };
   const cancelButton: ModalButtonConfig = {
     text:
-      cancelButtonOption?.text ?? modalPreset?.cancelButton.text ?? "Cancel",
+      cancelButtonOption?.text ??
+      modalPreset?.cancelButton.text ??
+      modalDefaultCancelLabel(),
     variant:
       cancelButtonOption?.variant ??
       modalPreset?.cancelButton.variant ??
       "destructive",
   };
 
-  const hasTitle = title || (modalName && MODALS_CONTENT[modalName]?.title);
+  const hasTitle = title || modalPreset?.title;
 
   const handleBackgroundDismiss = () => {
     if (!dismissOnBackgroundPress) return;
@@ -188,7 +203,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
         {hasTitle && (
           <View className="-mx-3 -mt-3 bg-border px-3 pt-3 pb-2.5">
             <Typography variant="h3" className="shrink">
-              {title || (modalName && MODALS_CONTENT[modalName]?.title)}
+              {title || modalPreset?.title}
             </Typography>
           </View>
         )}
@@ -198,8 +213,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
         ) : (
           <View>
             <Typography variant="p">
-              {description ||
-                (modalName && MODALS_CONTENT[modalName]?.description)}
+              {description || modalPreset?.description}
             </Typography>
           </View>
         )}

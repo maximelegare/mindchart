@@ -1,25 +1,30 @@
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui";
+import {
+  DiscardNoteDeleteLabel,
+  DiscardNoteDiscardLabel,
+  getDiscardNoteAccessibilityLabel,
+} from "@/features/notes/noteDetails/noteDetailsLabels";
 
 type DiscardNoteButtonProps = {
   onPress: () => void;
   disabled?: boolean;
-  /** Preview uses "Delete"; editing an existing note uses "Discard". */
-  label?: "Delete" | "Discard";
+  /** Preview uses delete; editing an existing note uses discard. */
+  variant?: "delete" | "discard";
 };
 
 export function DiscardNoteButton({
   onPress,
   disabled,
-  label = "Discard",
+  variant = "discard",
 }: DiscardNoteButtonProps) {
   return (
     <Button
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
-      accessibilityLabel={label === "Delete" ? "Delete note" : "Discard note"}
+      accessibilityLabel={getDiscardNoteAccessibilityLabel(variant)}
       className="h-7 flex-row items-center gap-1"
       variant="destructive"
       size="sm"
@@ -31,7 +36,11 @@ export function DiscardNoteButton({
         className="text-xs font-semibold text-destructive-foreground"
         padding={false}
       >
-        {label}
+        {variant === "delete" ? (
+          <DiscardNoteDeleteLabel />
+        ) : (
+          <DiscardNoteDiscardLabel />
+        )}
       </Typography>
     </Button>
   );

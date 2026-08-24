@@ -6,12 +6,19 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 import { useAppLock } from "../context/appLockProvider";
-import type { PinSheetSession } from "../context/lockScreenSettingsUiContext";
+import {
+  useLockScreenSettingsUi,
+  type PinSheetSession,
+} from "../context/lockScreenSettingsUiContext";
 import { clearAppPin, hasAppPin } from "../services/passcodeService";
 import { CreatePasscode } from "../components/createPasscode";
 import { ChangePasscode } from "../components/changePasscode";
 import { VerifyPasscode } from "../components/verifyPasscode";
-import { useLockScreenSettingsUi } from "../context/lockScreenSettingsUiContext";
+import {
+  SettingsCustomPinActiveDescription,
+  settingsCustomPinChangeButton,
+  settingsCustomPinRemoveButton,
+} from "../lockScreenLabels";
 
 type SetupMode = "create" | "change" | "remove" | "manage" | "verify-activate";
 
@@ -125,14 +132,14 @@ export function LockScreenPinSetupFeature({
         className="text-center mb-2"
         style={{ color: hsl("muted-foreground", colorScheme) }}
       >
-        Your custom PIN is active.
+        <SettingsCustomPinActiveDescription />
       </Typography>
 
       <Button variant="secondary" onPress={() => setMode("change")}>
-        <Typography>Change PIN</Typography>
+        <Typography>{settingsCustomPinChangeButton()}</Typography>
       </Button>
       <Button variant="destructive" onPress={() => setMode("remove")}>
-        <Typography>Remove PIN</Typography>
+        <Typography>{settingsCustomPinRemoveButton()}</Typography>
       </Button>
     </View>
   );

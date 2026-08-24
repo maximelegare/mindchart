@@ -3,6 +3,7 @@ import { Note, Thought } from "@repo/zod-schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import { loadingModalSavingNoteTitle } from "@/components/ui/modal/data/loadingModalLabels";
 
 export const useSaveManualNote = (onSuccess?: () => void) => {
   const { openModal, closeModal } = useModal();
@@ -24,7 +25,7 @@ export const useSaveManualNote = (onSuccess?: () => void) => {
       openModal({
         dismissOnBackgroundPress: false,
         customContent: () => (
-          <LoadingState title="Saving Your Note" size="large" />
+          <LoadingState title={loadingModalSavingNoteTitle()} size="large" />
         ),
       });
 

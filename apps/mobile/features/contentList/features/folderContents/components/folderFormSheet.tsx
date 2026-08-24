@@ -24,6 +24,11 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FOLDER_TREE_ROOT_ID } from "@/features/contentList/components/folderTree/folderTreeUtils";
+import {
+  FolderFormTitle,
+  folderBreadcrumbRootLabel,
+  folderNestingLimitErrorMessage,
+} from "./folderFormLabels";
 import { FolderFormModalContent } from "./folderFormModalContent";
 
 type FolderFormSheetOptions = {
@@ -58,8 +63,10 @@ function LocationBreadcrumbs({
     [allFolders]
   );
 
+  const breadcrumbRootLabel = folderBreadcrumbRootLabel();
+
   const items = useMemo(() => {
-    const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
+    const root = { id: FOLDER_TREE_ROOT_ID, name: breadcrumbRootLabel };
     if (!parentFolder) return [root];
     const ids = getFolderIdsFromPath(parentFolder.path);
     return [
@@ -69,7 +76,7 @@ function LocationBreadcrumbs({
         name: foldersById.get(id)?.label ?? id,
       })),
     ];
-  }, [foldersById, parentFolder]);
+  }, [breadcrumbRootLabel, foldersById, parentFolder]);
 
   return (
     <View
@@ -130,7 +137,6 @@ export const FolderFormSheetProvider = ({
   }, []);
 
   const current = options ?? optionsRef.current;
-  const title = current?.mode === "rename" ? "Rename folder" : "New folder";
   const isCreate = current?.mode === "create";
   const canCreateHere = canCreateChildFolder(parentFolder?.path ?? null);
 
@@ -157,7 +163,9 @@ export const FolderFormSheetProvider = ({
               >
                 <View className="flex-row items-center gap-2">
                   <Icon name="folder" color="foreground" size={18} />
-                  <Typography variant="h3">{title}</Typography>
+                  <Typography variant="h3">
+                    <FolderFormTitle mode={current.mode} />
+                  </Typography>
                 </View>
               </BottomSheetHeader>
               {isCreate ? (
@@ -170,9 +178,7 @@ export const FolderFormSheetProvider = ({
                   if (current.mode === "create") {
                     const parent = parentFolderRef.current;
                     if (!canCreateChildFolder(parent?.path ?? null)) {
-                      throw new Error(
-                        "Folders can only be nested 3 levels deep."
-                      );
+                      throw new Error(folderNestingLimitErrorMessage());
                     }
                     await current.onSave(label, parent);
                     return;

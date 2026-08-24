@@ -20,10 +20,12 @@ import type { ThemePreference } from "@/lib/themePreference";
 import { resolveThemePreference } from "@/lib/themePreference";
 import { setAndroidNavigationBar } from "@/lib/android-navigation-bar";
 import { hsl } from "@/utils/hsl";
+import {
+  SettingsSelectThemeSheetTitle,
+  settingsThemeRowLabel,
+} from "@/features/settings/settingsLabels";
 
 type ItemData = {
-  title: string;
-  subtitle: string;
   value: ThemePreference;
   icon: React.ReactElement;
 };
@@ -34,11 +36,52 @@ type ItemProps = {
   selected: boolean;
 };
 
-const THEME_LABELS: Record<ThemePreference, string> = {
-  system: "System",
-  dark: "Dark",
-  light: "Light",
-};
+function ThemeOptionTitle({ value }: { value: ThemePreference }) {
+  switch (value) {
+    case "system":
+      return (
+        <fbt desc="Theme option title: follow device settings">
+          Device settings
+        </fbt>
+      );
+    case "dark":
+      return <fbt desc="Theme option title: dark mode">Dark mode</fbt>;
+    case "light":
+      return <fbt desc="Theme option title: light mode">Light mode</fbt>;
+  }
+}
+
+function ThemeOptionSubtitle({ value }: { value: ThemePreference }) {
+  switch (value) {
+    case "system":
+      return (
+        <fbt desc="Theme option subtitle: follow device settings">
+          Default to your device's appearance
+        </fbt>
+      );
+    case "dark":
+      return (
+        <fbt desc="Theme option subtitle: dark mode">Always use Dark mode</fbt>
+      );
+    case "light":
+      return (
+        <fbt desc="Theme option subtitle: light mode">
+          Always use Light mode
+        </fbt>
+      );
+  }
+}
+
+function ThemePreferenceLabel({ value }: { value: ThemePreference }) {
+  switch (value) {
+    case "system":
+      return <fbt desc="Selected theme label: system">System</fbt>;
+    case "dark":
+      return <fbt desc="Selected theme label: dark">Dark</fbt>;
+    case "light":
+      return <fbt desc="Selected theme label: light">Light</fbt>;
+  }
+}
 
 function ThemeOption({ item, onPress, selected }: ItemProps) {
   return (
@@ -46,9 +89,11 @@ function ThemeOption({ item, onPress, selected }: ItemProps) {
       <View className="flex flex-row justify-between">
         <View className="pr-4 pt-1">{item.icon}</View>
         <View className="flex-1">
-          <H4>{item.title}</H4>
+          <H4>
+            <ThemeOptionTitle value={item.value} />
+          </H4>
           <Typography className="text-sm text-muted-foreground">
-            {item.subtitle}
+            <ThemeOptionSubtitle value={item.value} />
           </Typography>
         </View>
         <View>{selected && <Check className="text-primary" />}</View>
@@ -72,7 +117,7 @@ function ThemePickerBody({
     <BottomSheetView className="gap-5 pt-6 bg-background px-4 pb-6">
       {themes.map((theme) => (
         <ThemeOption
-          key={theme.title}
+          key={theme.value}
           item={theme}
           onPress={() => {
             onSelect(theme.value);
@@ -97,20 +142,14 @@ export const ThemeSettingItem = ({
   const themes: ItemData[] = useMemo(
     () => [
       {
-        title: "Device settings",
-        subtitle: "Default to your device's appearance",
         value: "system",
         icon: <Smartphone className="text-foreground" />,
       },
       {
-        title: "Dark mode",
-        subtitle: "Always use Dark mode",
         value: "dark",
         icon: <Moon className="text-foreground" />,
       },
       {
-        title: "Light mode",
-        subtitle: "Always use Light mode",
         value: "light",
         icon: <Sun className="text-foreground" />,
       },
@@ -132,7 +171,7 @@ export const ThemeSettingItem = ({
         <ListItem
           className={className}
           surface={surface}
-          label="Theme"
+          label={settingsThemeRowLabel()}
           borderBottom={false}
           itemRight={() => (
             <Typography
@@ -143,7 +182,7 @@ export const ThemeSettingItem = ({
                 marginRight: 4,
               }}
             >
-              {THEME_LABELS[themePreference]}
+              <ThemePreferenceLabel value={themePreference} />
             </Typography>
           )}
         />
@@ -153,7 +192,7 @@ export const ThemeSettingItem = ({
       >
         <BottomSheetHeader className="bg-background">
           <Typography variant="h3" padding={false}>
-            Select Theme
+            <SettingsSelectThemeSheetTitle />
           </Typography>
         </BottomSheetHeader>
         <ThemePickerBody

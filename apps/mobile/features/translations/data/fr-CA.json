@@ -1,0 +1,4648 @@
+{
+  "fb-locale": "fr-CA",
+  "translations": {
+    "NeTBiNqqkwFJTDXwzsP4XQ==": {
+      "description": "Theme option title: follow device settings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Réglages de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "I/w36TnVlm9Y6wsoAv7RTA==": {
+      "description": "Theme option title: dark mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Mode sombre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "z7p6sN1fN0om/uIgO6eQtA==": {
+      "description": "Theme option title: light mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Mode clair",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "1PIA0oeQ3AJ4MTmRwBkUYQ==": {
+      "description": "Theme option subtitle: follow device settings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utiliser le thème par défaut de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "iYrYR4/1yU6OmtlhVDFefA==": {
+      "description": "Theme option subtitle: dark mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Toujours utiliser le mode sombre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "pQmX4nywEmYjlK2j38unQg==": {
+      "description": "Theme option subtitle: light mode",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Toujours utiliser le mode clair",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZIea05BAUtOVIeKtuAJcrQ==": {
+      "description": "Selected theme label: system",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Système",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5jXzrpo4FuX2Fy0FtUH6aw==": {
+      "description": "Selected theme label: dark",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sombre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "O8iHEmWBTj/c4ezmzk67tg==": {
+      "description": "Selected theme label: light",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Clair",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IYUmtYxQtGdt1MucjXrsVA==": {
+      "description": "Label with meaning 'at least number'",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{number}+",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZIF1WhVQwt7WZJvFTEbMWw==": {
+      "description": "Label with meaning 'less than number'",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "<{number}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Oc/9PrbjfyLHS60BXceD1A==": {
+      "description": "A list of items of various types, for example: \"San Francisco; London; Tokyo\". {previous items} and {following items} are themselves lists that contain one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items}; {following items}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AXXbKEUZuc0ji1IClRrOOw==": {
+      "description": "A list of items of various types separated by bullets, for example: \"San Francisco \\u2022 London \\u2022 Tokyo\". {previous items} and {following items} are themselves lists that contain one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items} • {following items}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "89ACgPMtnwlLDSeqhLBx2Q==": {
+      "description": "A list of items of various types separated by commas, for example: \"San Francisco, London, Tokyo\". {previous items} and {following items} are themselves lists that contain one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items}, {following items}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5hL7VXOBVnetm46YAjpX0g==": {
+      "description": "A list of items of various types with a serial comma, for example: \"item1, item2, and item3\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items}, et {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "icNetEL/crQv/PS6yhySVQ==": {
+      "description": "A list of items of various types, for example: \"item1, item2, item3 and item4\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items} et {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8kLAQ3ffiiFnQ/bWPqXfuQ==": {
+      "description": "A list of items of various types with a serial comma, for example: \"item1, item2, or item3\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items}, ou {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8eSaAzrWtAqn9ktNKfkaEg==": {
+      "description": "A list of items of various types, for example: \"item1, item2, item3 or item4\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items} ou {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+IBI7kr/mMKdzp+3stDvkw==": {
+      "description": "A list of items of various types, for example: \"San Francisco; London; Tokyo\". {previous items} itself contains one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{previous items}; {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "55IeE8c0qqtjTU0lo7q9AA==": {
+      "description": "A list of items of various types separated by bullets, for example: \"San Francisco \\u2022 London \\u2022 Tokyo\". {previous items} contains one or more items.",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items} • {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6PRJS0QalZfvaN8CkKCUCw==": {
+      "description": "A list of items of various types, for example: \"item1, item2, item3, item4\"",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{list of items}, {last item}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZqeIrCSUmcdHaWusaw7G/w==": {
+      "description": "Folder picker sheet default title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer vers…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "mVAPO9KW8F4sju0eaWFYOw==": {
+      "description": "Folder picker move header prefix",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer :",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "M9rHIQaoOzkwZD8TlYMxhg==": {
+      "description": "Folder selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yEg/0EJ1fGFu983Py8j8kA==": {
+      "description": "Folder picker location panel title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sCrsv+nPvkLB5rv1IQk71A==": {
+      "description": "Folder picker content panel title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "pgwj0ZKUicAr6g8K5Q9I4g==": {
+      "description": "Folder picker empty folder message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier vide",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Dxm8YGVnKlWjVJi+mJh79w==": {
+      "description": "Folder picker confirm button: from",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "de",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "owZuwESrjVFwOHRVeJcm1w==": {
+      "description": "Folder picker confirm button: to",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "vers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+TKjv+sqYzwks7ed9oKRfw==": {
+      "description": "Folder picker option for no folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "rUrjkwDY6cf0tsOeZS15yA==": {
+      "description": "Folder picker prompt when root is disabled",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisir un dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "E7iTuynPaVUt3xUZ53HYgg==": {
+      "description": "Folder picker root option when moving folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer à la racine",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "PmCo7DcRNB8GrY5K+mn1pA==": {
+      "description": "Breadcrumb label for root folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Racine",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TJTFf1gO48rhTor54MVuIw==": {
+      "description": "Folder picker confirm button verb for selection",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisir",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "d92ywM4rAbl0/hdxo6hi9w==": {
+      "description": "Folder picker confirm button verb for move",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer vers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Jb8/9RGVA9NaceYLAdU/bg==": {
+      "description": "Accessibility label to hide folder picker content panel",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Masquer le panneau de contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "SEJXeQBbi+L2gi7FUs72pg==": {
+      "description": "Accessibility label to show folder picker content panel",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher le panneau de contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "jSo0zek21J8L84CH8kwx5A==": {
+      "description": "Fallback title for note in folder picker",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sans titre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lc9nnXlr3APFXyRQecCvTA==": {
+      "description": "Noun used in folder picker note accessibility label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9CGh0wj4YlDbe4qjoBt0EQ==": {
+      "description": "Note bottom sheet edit view title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Modifier la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "BRsd98lnSSo5Dl6iEsLDPg==": {
+      "description": "Note bottom sheet action: edit note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Modifier la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sJTpnfdAgjGKCWGh9Fp8fg==": {
+      "description": "Note bottom sheet action: move note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XpxilWf8KtTc1cxJl42RRA==": {
+      "description": "Note bottom sheet action: delete note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "EMUpaKIFYPGKtqKAotaRqw==": {
+      "description": "Alert title when moving a note fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec du déplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bUhbxkWrG8OkB/XDndo/4Q==": {
+      "description": "Alert title when deleting a note fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la suppression",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Up0lL+gkyK8UrTuBRUacRA==": {
+      "description": "Folder form title: new folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "GDRPGdZTxW/FsPlWxzDIBQ==": {
+      "description": "Folder form title: rename folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Renommer le dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FyByOpcTuUTsy7cd1dSrcg==": {
+      "description": "Error when folder nesting exceeds maximum depth",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les dossiers ne peuvent être imbriqués que sur 3 niveaux.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "NJvx4InrEWFl3CAFaZrohA==": {
+      "description": "Accessibility label for new folder button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CJrvnzZkWPWG0I2qrcpDKQ==": {
+      "description": "Options bar sort sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Trier par",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "wJu7FrCmGNfyEYjErK3yVg==": {
+      "description": "Options bar group sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Grouper par",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QyOZ6riGUln/+AKnPLkewA==": {
+      "description": "Sort option: newest first",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Plus récent d'abord",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "OsWHGJzz00FlMWor3o9tsA==": {
+      "description": "Sort option: oldest first",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Plus ancien d'abord",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vanH2Sa5S+5vU6xdQBI1KA==": {
+      "description": "Sort option: alphabetical A to Z",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Alphabétique",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Whl1CBlv/FpIzcoir/J6jA==": {
+      "description": "Sort option: alphabetical Z to A",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ordre Z à A",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "X/9dddolhwr78U1MQ22h1A==": {
+      "description": "Group option: by folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Par dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QoGJN2hCtdHeKvozVZZYhQ==": {
+      "description": "Group option: by category",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Par catégorie",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/nf5tt88au9U1upzCSn67Q==": {
+      "description": "Group option: no grouping",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sans regroupement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dj2Z+Q88MAhzvyylkkrlpw==": {
+      "description": "Group filter chip with selected grouping option",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Groupe {option}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Qjla7xzqjiXKKqzitrNM4A==": {
+      "description": "Folders mode: with folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Avec dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "1BtUN7i5j2Zc3J0q6l0ZNw==": {
+      "description": "Folders mode: without folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sans dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ECE26zIZieWqQNS8FYRZAQ==": {
+      "description": "Display mode: notes",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher les notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "3Gzhx5ABV97y5rvGm8sKXA==": {
+      "description": "Display mode: categories",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher les catégories",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bFZqoAASq5Y2QC/R2b5qXA==": {
+      "description": "Delete note confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Voulez-vous vraiment supprimer cette note ?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "hQp+eegeV0fRjfILQYBREQ==": {
+      "description": "Delete note confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cette action supprimera définitivement cette note et toutes les pensées associées.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Whvpb4bHyw5Of//yo3vWiQ==": {
+      "description": "Delete note confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IZ9fDGAJOfSqOmV/pS5iiw==": {
+      "description": "Delete note confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cackJT/hWQOJPbBBDr3UPQ==": {
+      "description": "Folder actions: create note in folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvelle note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5sSyXtBiU4lAUVwdKJVKTQ==": {
+      "description": "Folder actions: rename folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Renommer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "d9mu7qHHorTNp2WH5J3/1Q==": {
+      "description": "Folder actions: move folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déplacer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CoCHjymFyEfCvDYYfQBchg==": {
+      "description": "Folder actions: delete folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Hgw4kXhVnIAkn8YptXmTdA==": {
+      "description": "Fallback label when folder has no name",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TEMskWA+3R/Azqe1jiIGGQ==": {
+      "description": "Alert title when moving a folder fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec du déplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "swIfGN4YR1iE5oyps0hoxQ==": {
+      "description": "Delete folder confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer le dossier ?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8qWgLZrrRTt6tJW7Eg79yw==": {
+      "description": "Delete folder confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cette action supprimera définitivement ce dossier et tous les dossiers imbriqués.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dTRZKdzWHtG81Qv1yDT3yw==": {
+      "description": "Delete folder confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "orP/5A0/MTZpQj/P1AnYfw==": {
+      "description": "Delete folder confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AV9JAj/zwiwz1h4wPy8bEw==": {
+      "description": "Tab bar label: notes",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yqF37X6Mh8qPOQtgR1ZMqQ==": {
+      "description": "Tab bar label: graph",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Graphe",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Km9mJUQFUh9lyaJGilH2XA==": {
+      "description": "Tab bar accessibility label: notes",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "rtswYlrjyx2kjbMELMQ2BA==": {
+      "description": "Tab bar accessibility label: graph",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Graphe",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "40D+kL0If9IT/e9fFQvSow==": {
+      "description": "Tab header fallback title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Page",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fS4SCujBVx2pULroXMcYDA==": {
+      "description": "Breadcrumb link toggle chip",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fil d'Ariane",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "h0T5nt5AD2tP/8lYY4ZzoQ==": {
+      "description": "Accessibility label: unlink notes and graph breadcrumbs",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dissocier le fil d'Ariane",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XPa3nlrKCHfQQQS+ktEiKQ==": {
+      "description": "Accessibility label: link notes and graph breadcrumbs",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Associer le fil d'Ariane",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "jvMV7mOdaj5lt1SyWnIvWg==": {
+      "description": "Notes filter chip with active filter count",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Filtres ({count})",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "gWKseVDWpr1Dz7xilDqlvg==": {
+      "description": "Notes filter chip",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Filtres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "EfZDsROgqJtKvf3MmyP9KQ==": {
+      "description": "Notes filter sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Filtres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5MsbrpAgi9FhrdtXkZORcQ==": {
+      "description": "Notes filter row: folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5B8x4lbB1CwpKVRY6sxroA==": {
+      "description": "Notes filter row: people",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "7s2q6ZTv5hhnjmzFofKfQg==": {
+      "description": "Notes filter row: feeling",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sentiment",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vLAblzpkHgAKFmJxTS6SMA==": {
+      "description": "Notes filter row: location",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "UA9sF+pJM1ymDcbQ0puBaA==": {
+      "description": "Notes filter sheet: clear all filters",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Effacer les filtres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5A8rUlB/CiuNxFkl8SuuGQ==": {
+      "description": "Notes filter picker: done button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Terminé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TIy32EhDn1fg7Uk6HqZCtQ==": {
+      "description": "Notes filter summary: no restriction",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Tout",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "91fVXmCBweeZTYgN5mXktg==": {
+      "description": "Notes filter summary: one item selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "1 sélection",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "csSviBw1tbDyqfbl4CVdTg==": {
+      "description": "Notes filter summary: multiple items selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{count} sélections",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "PwI+DY9sWB9L5yh/Dr+t+g==": {
+      "description": "Notes filter modal title: folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CZ5DKpEmMx9njjUSIOv6Ew==": {
+      "description": "Notes filter modal title: people",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8q+StOlY2JFcOU68x5Ee+g==": {
+      "description": "Notes filter modal title: feeling",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sentiment",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/OBC+Gpxe1kXHEsdmk4+vQ==": {
+      "description": "Notes filter modal title: location",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/KTbGgs6iAacQWRCjC3Xsw==": {
+      "description": "Notes filter folder search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des dossiers…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ChLAmAMapxvWHrEQQZydkQ==": {
+      "description": "Notes filter people search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des personnes…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "00Ve358FcH0+mhq8Hfd4OQ==": {
+      "description": "Notes filter location search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des emplacements…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "etZkQANuY2fitwvgRiwt1w==": {
+      "description": "Notes filter default search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qPiqn/K1DUAbzYPnN3jSCg==": {
+      "description": "Notes filter empty state: folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun dossier contenant des notes.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9T6+W113iXcn8huRzwRJ2Q==": {
+      "description": "Notes filter empty state: people",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucune personne pour l'instant.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "2oFRzZoW+Wl+qjAcfKYkxA==": {
+      "description": "Notes filter empty state: feelings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun sentiment disponible.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "m8hHHWEsByJ5w4ssluM08w==": {
+      "description": "Notes filter empty state: locations",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun emplacement pour l'instant.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "gG7OwPSrFFYDX5TD3+Pukw==": {
+      "description": "Notes filter default empty state",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rien à filtrer pour l'instant.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "g4IoQo5mXsCzvD0vN+4ndw==": {
+      "description": "Alert title when folder nesting limit reached",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Profondeur maximale",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "iL15pwyAI+M5vmygZarEcw==": {
+      "description": "Folder form field label: name",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nom",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "s+E2TgYftrwzihqoj68bMg==": {
+      "description": "Folder form name input placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nom du dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "tkkh6aJtk2EGviLg6VaIjg==": {
+      "description": "Folder form validation: name required",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le nom est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "exjpxNbhkSOUdxJJCHEFFQ==": {
+      "description": "Folder form cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "It59nCO4099lAkvhmoUj4w==": {
+      "description": "Folder form create button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bdrIRoAhNrFZd/H/a/vllA==": {
+      "description": "Folder form save button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Ab1vsBXUuGuptaHFDAjtMQ==": {
+      "description": "Folder form creating in progress",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Création…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cwPym7TnGjKCB/a20yvTbA==": {
+      "description": "Folder form saving in progress",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrement…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "KL/UKN+h4QKLEbv0yXdobA==": {
+      "description": "Alert title when folder creation fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la création",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "m4QHdlxgQmEZZzVTNG2fNA==": {
+      "description": "Alert title when folder rename fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec du renommage",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JpGHYAdNQh9+3X0x4ap5iA==": {
+      "description": "Floating create menu: AI generated note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Généré par IA…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9ur1yDYzHuQ4DzrAGX/A6w==": {
+      "description": "Accessibility label to dismiss floating create menu",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fermer le menu de création",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "GWf6RKxCmR8Uuv2RATgtmg==": {
+      "description": "Accessibility label for floating create button when closed",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "UXuO6kFepSWjbARfJ6gGkA==": {
+      "description": "Accessibility label for floating create button when open",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fermer le menu de création",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4CjVXVB42tMR/EBGbxJx6Q==": {
+      "description": "Accessibility label for floating menu new note action",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvelle note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "3827461mLqDTQSJPk9pnIw==": {
+      "description": "Accessibility label for floating menu new folder action",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau dossier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9utsaTEU3+q3tNR0uCzgnA==": {
+      "description": "Accessibility label for floating menu AI generated note action",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Généré par IA",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0P6d6Cw0xPBS1oreZXfFOA==": {
+      "description": "Person selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter des personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lTM9Hauc9ahGm2uX0JlZTQ==": {
+      "description": "Person selector message when contacts permission denied",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "L'accès aux contacts a été refusé. Ajoutez des personnes avec +.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lfMEGrfE/R8Vl8e+zSNi/A==": {
+      "description": "Person selector search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher des personnes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "mmQK1N6yE7k/ht17mS2erQ==": {
+      "description": "Person selector selected count heading",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sélectionné ({count})",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9g5yzP3WJPxFri5Pzq5OnA==": {
+      "description": "Accessibility label to remove selected person",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Retirer {personName}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Lp+L4yb7HRRDUlw5SHAP1w==": {
+      "description": "Person selector empty list message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucune personne pour l'instant. Appuyez sur + pour en ajouter une.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vkliJL/ZLr9vq21swm4HIQ==": {
+      "description": "Person selector message when all people are selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Plus de personnes à ajouter.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xOHb+QsTLb6GDItxjpwKHQ==": {
+      "description": "Person selector close button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fermer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "EFayYpMOuWpNa+iakkh0Sw==": {
+      "description": "Accessibility label for add person button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter une personne",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ac032lPba4daIA0f+NVpjA==": {
+      "description": "Person selector create contact sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer un contact",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "KmHVg4PbfVSi1QS5YbQXuA==": {
+      "description": "Person selector contact name placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nom",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Z2uo+ovxUxeA/sL87L+40g==": {
+      "description": "Person selector add contact button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "nrIpFcOybe6QLsq8yztx8A==": {
+      "description": "Feeling selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Comment vous sentez-vous?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FN7vFDYF3FBNHeQ1JNDgfQ==": {
+      "description": "Location selector sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "oj0jchS70ek/NHLrKpUy2A==": {
+      "description": "Location selector search placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher ou ajouter un emplacement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sW75tzg2Dxo3HGZPA6LLbA==": {
+      "description": "Location selector add new location row",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajouter « {name} »",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4foGZOMeHVdmb0wgQxPlwQ==": {
+      "description": "Accessibility label to remove a location",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Retirer {locationName}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "uYYe3s8aCIffuURJtDNRbA==": {
+      "description": "Location selector empty list message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun emplacement pour l'instant. Saisissez un nom pour en ajouter un.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "44GQ0XfP6aspjZf5L/n6oQ==": {
+      "description": "Location selector no search matches message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun emplacement correspondant.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XlgVYL3IaeFTiRJuj6lKlQ==": {
+      "description": "Location delete confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Retirer « {locationName} » de toutes les notes qui l'utilisent?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xc4MzfLtZqK+YL7uNIMMyw==": {
+      "description": "Note details page subtitle",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qdJzNSvQ2Qh5HGcnrsyK8w==": {
+      "description": "Note details menu: delete note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bMKIgWdEulXzI8Bohh0bwQ==": {
+      "description": "Note details menu: settings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Paramètres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Cy+p9lzI/nUGpY7QoGkR5g==": {
+      "description": "Note details view mode: complete",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vue complète",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bO5VKDSiovjViff1BfVvmw==": {
+      "description": "Note details view mode: simplified",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vue simplifiée",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JvycHaOCZS7Fj1S/vHzk5Q==": {
+      "description": "Note details title input placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Saisir un titre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "onO81Pq/litVK/c+e4d7YQ==": {
+      "description": "Note details title validation placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le titre est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "LXFqSbfY/poA1CitfOXO9g==": {
+      "description": "Discard note button: delete preview note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VHA8Vsbl10hmHGZVtjf5Uw==": {
+      "description": "Discard note button: discard editing note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cyhvt9XbkpDta1jPIpAovQ==": {
+      "description": "Accessibility label for delete note button in preview",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZrkcEmKJdkrBwJH+7w7xtg==": {
+      "description": "Accessibility label for discard note button while editing",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JcYearLypkMy+cO78r6UMg==": {
+      "description": "Note details raw text viewer trigger",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Texte brut",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AgS4bOrw6tdkYeUezCSf2Q==": {
+      "description": "Note details raw text sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Texte brut (texte original)",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "RJyoSaVtpU3q7DH/KSTzJg==": {
+      "description": "Alert title when note must be in a folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossier requis",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "hvx3VpKfkwfT3ai5Rw/Ntg==": {
+      "description": "Alert message when note must be in a folder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les notes doivent être enregistrées dans un dossier. La racine n'est pas autorisée.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JP1PiTQEuCER0J16nj/OBA==": {
+      "description": "Alert title when note attribute update fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la mise à jour",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "wHWDs23g6l0AgY1+v/gO+Q==": {
+      "description": "Accessibility label for save note button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "H69GEweFOHidxU+vxV+S+A==": {
+      "description": "Accessibility label for edit note button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Modifier la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xE1XZYyh9vY8CQCAzEkZuw==": {
+      "description": "Thoughts editor field label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Contenu",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "J5Eve7XfOC1ieVjKXCvBfQ==": {
+      "description": "Thoughts editor clear content button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Effacer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "HNW0gK+C6jgrA3EjJF8N3Q==": {
+      "description": "Thoughts editor show titles toggle",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Titres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bCw5fXRero32WOYmmtX30g==": {
+      "description": "Accessibility label for show thought titles switch",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher les titres des pensées",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "WKEz3QN+mpH02UIioBjhgQ==": {
+      "description": "Thought editor title field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Titre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "jzAhMuvE1etF0mA37ZWyiQ==": {
+      "description": "Thought editor summary field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Résumé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8ho4sEErpEJNDi3wxIIRSg==": {
+      "description": "Thought editor bullet field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Saisir un point",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5PjNEnhkxX8I3heCFD7BGA==": {
+      "description": "Thought editor title required validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le titre est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "oJy97kxcLlEpLDXXiaoPhQ==": {
+      "description": "Thought editor summary required validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le résumé est obligatoire",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ywt2slcsC/WOTeXm978Cng==": {
+      "description": "Thought editor empty content validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajoutez au moins un point",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "X0bAmXXm9sSEnSOJ6PXFrA==": {
+      "description": "Settings section: AI",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "IA",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VIp1M5yqYlwtPVElFKpjEw==": {
+      "description": "Settings AI row: auto connect",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Connexion automatique",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cwavxQxiHgsSueiyMgxFVw==": {
+      "description": "Settings AI auto connect description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Connecter Whisper et Llama Chat au lancement. Les embeddings se connectent toujours.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "DEGncCLuxkHNYXTe3kZgig==": {
+      "description": "Settings AI auto connect switch accessibility label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Connexion automatique",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "z27kGVly2CYdoMVQli4jxg==": {
+      "description": "Settings AI row: providers",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fournisseurs IA",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IhheEnY60K6/JbrxMPwcGg==": {
+      "description": "Settings AI row: whisper engine",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Moteur Whisper",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0aDawXa5V7LBD+f6mZYi2w==": {
+      "description": "Settings AI row: llama chat engine",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Moteur Llama Chat",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "NFFO35N8J14AyjcPek93TA==": {
+      "description": "Settings AI row: embeddings engine",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Moteur d'embeddings",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yXuLpPGflw1h9suJxJwJ+g==": {
+      "description": "AI provider option: local",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Local",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "i8zj5fbcFiNT+pFYijWVAw==": {
+      "description": "AI provider option: cloud",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nuage",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5Bfsj72ek8iZXVMxfccDzA==": {
+      "description": "AI providers summary: mixed",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Mixte",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "OjPmLjZc9f/s/ml2PZGvZg==": {
+      "description": "AI settings: no model selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun modèle",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yF9hN7mq49yhmiCOUGiAKw==": {
+      "description": "AI providers settings description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les fournisseurs IA indiquent où les modèles IA sont hébergés.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+aqgSD2/9OMXik+EdtbyQA==": {
+      "description": "AI provider row: whisper",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Whisper",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4bl5cu0L85MojWZlPTS8sA==": {
+      "description": "AI provider row: llama chat",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Llama Chat",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fVVE0L+p0Eh5Iyi6scAVLA==": {
+      "description": "AI provider row: embeddings",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Embeddings",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IwG02Jegqh5juck6XFfjiA==": {
+      "description": "Whisper engine settings description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Moteur IA responsable de la transcription vocale locale. Utilisez Tiny pour l'anglais et Base pour les autres langues.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "M0Cu+RiPPsE6kXkXeQIErA==": {
+      "description": "Llama chat engine settings description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Grand modèle de langage local responsable de la synthèse des notes. Les grands modèles demandent plus de VRAM et d'espace, mais offrent une meilleure précision.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CQnDssZp4TlTiMRQX4oNFA==": {
+      "description": "Embeddings engine settings description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Moteur d'embeddings local responsable de la création d'embeddings pour les pensées. Il aide à trouver des liens entre les notes.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6DQr2aFZ/xVgYPMXGqY6vA==": {
+      "description": "AI engine settings: status heading",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "État du moteur",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cacjfW8TiX14hJ80hfc2Pw==": {
+      "description": "AI engine settings: active context label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Contexte actif",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cUrYnAXmPRZF/gaNHgwfbg==": {
+      "description": "AI engine status: idle",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Inactif",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZTkI4ZWouwTHK5e4A7AaQA==": {
+      "description": "AI engine settings: available models heading",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Modèles disponibles",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "kUzDiAlqoXVKIFaIJzEPFg==": {
+      "description": "AI engine action: unload from RAM",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Décharger de la RAM",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "eHrAkk2EcMriN0AtxP24+w==": {
+      "description": "AI model action: delete",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "eqE6YYJMR4P2W8MBEnpsgw==": {
+      "description": "AI model action: load",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Charger",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+FkJa0RdClUarH7veXQlbQ==": {
+      "description": "AI model action: loaded",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Chargé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sALzOUSpY14DpOVsSURcOQ==": {
+      "description": "AI model action: download",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Télécharger",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lsQV+WP/mfO4S29xIcCrmQ==": {
+      "description": "AI model action: downloading",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Téléchargement…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fUu0gXWmVdMF1eiU/tzEWQ==": {
+      "description": "AI model storage label: local",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Local · {size}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "LxNEsWhDgSdzUvdVb/rX6A==": {
+      "description": "AI model storage label: cloud download",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nuage · téléchargement de {size}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qmO0qFY3GBS0C9V9OVSVgg==": {
+      "description": "Auto connect loading title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Connexion aux modèles IA",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "os2vIF5bt1f/nSvOqn/3Ew==": {
+      "description": "AI setup modal: go to settings button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aller aux paramètres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4MsyCSMOnDaqn94cweoKnQ==": {
+      "description": "Developer settings: seed database title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Peupler la base de données",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Zq+vgwuMowy2/HWKeSLpnw==": {
+      "description": "Developer settings: seed database description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Remplir la base de données avec des données fictives pour les tests. Le nombre maximal de notes est {maxNotes}.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/1HfJvoCbm4pZDYCOv4WSw==": {
+      "description": "Developer seed database: number of notes placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nombre de notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "r7P1OJt3oYTSN92yWjfp3A==": {
+      "description": "Developer seed database: missing number alert",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Veuillez entrer un nombre de notes",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Xpa667FfWn0pz5k6Gp9psQ==": {
+      "description": "Developer seed database loading title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Peuplement de la base de données",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "UuScxlLJOap/A5SRolv6vQ==": {
+      "description": "Settings page title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Paramètres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5JWv+oQ+v86gXfV8984n+A==": {
+      "description": "Settings section: appearance",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Apparence",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "B9dHRGtTHqnocnGyEPGReg==": {
+      "description": "Settings section: about",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "À propos",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "G2OsQyIa0dG/a4XeWZEIzg==": {
+      "description": "Settings section: developer",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Développeur",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "1dqu3TICQfPB5dYTpTAZZw==": {
+      "description": "Settings row: developer options",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Options développeur",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bOWom5Zj7FUk5kqlbFWXvQ==": {
+      "description": "Settings section: language",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Langue",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JcGsufi8AfXAw/tVb0Jj3g==": {
+      "description": "Settings row: language",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Langue",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5+mfsbpD1U6zo/fNr77Glw==": {
+      "description": "Language picker sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisir la langue",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dcCbXhH435U61Z1PrqVOOg==": {
+      "description": "Settings row: theme",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Thème",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "GA0P5rAih6khU5aZfgT1fQ==": {
+      "description": "Theme picker sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisir le thème",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "zKKD74hy0mSHJslCd0WWPA==": {
+      "description": "Settings row: app version",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Version de l'application",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4d1BLZL9Exk5FPBnED1qnw==": {
+      "description": "Developer settings page title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Options développeur",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0i8hrdQXr4mPA5zNflfOjw==": {
+      "description": "Developer settings page subtitle",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Paramètres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "43Wkwqn5P+B7He+Z+gAMsw==": {
+      "description": "DB inspector page title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Inspecteur SQLite",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VwLIdCUwbQf6HI3DI71oVw==": {
+      "description": "DB inspector page subtitle",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Paramètres / Options développeur",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "hHctlRl+GeLSo2i1ZqH4hw==": {
+      "description": "Developer settings row: DB inspector",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Inspecteur BD",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Mt3K+wCrDKYEJ4gd29L8+Q==": {
+      "description": "Settings status: model loaded",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Chargé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dSr3+qJDp/vyBOAFoE6Wdw==": {
+      "description": "Settings status: setup required",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Configuration",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "eCxcFVo73xV6x18KIf8EYw==": {
+      "description": "Settings status: setup required emphasis",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "*** Configuration requise ***",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xcJrsHQwZjAyobdwAscSCA==": {
+      "description": "Settings status: enabled",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Activé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ika4r/TD89FkgKNYd4B9+Q==": {
+      "description": "Settings status: disabled",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Désactivé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "DKd5WnumatWbU6l/VwRDCQ==": {
+      "description": "Settings status: none selected",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6olgZWi562IfNTVOXI2MXg==": {
+      "description": "Settings row: selected option",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sélectionné",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "7DW+cmDqEa10iiS4VSGRFg==": {
+      "description": "Settings action: cancel",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "A/LdXsV4xjsZMrQKKUBOgQ==": {
+      "description": "Settings action: create",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xBDVYY0urXrHnSXXCb03zA==": {
+      "description": "Settings action: save",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Qf3wwAsxN8lkVTRzXByzWw==": {
+      "description": "Settings action: enable",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Activer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "X48h8uPyjyf0nGWIDIc7sw==": {
+      "description": "Developer settings: seed database button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Peupler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yHUepMAmXJZiqdsX2HbUPg==": {
+      "description": "Workspaces: import button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Importer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Di4DF/uJIYVeMFowgR6MNA==": {
+      "description": "Workspaces: new workspace button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "UUC4VKIQVtX/w0rGzwdezQ==": {
+      "description": "Generic unknown error message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Erreur inconnue",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "tmNyvz86BLRs0mpLSFPUBg==": {
+      "description": "Recovery passphrase alert title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "MbCmrhTHDxYU//qlOX7p6Q==": {
+      "description": "Recovery passphrase switch title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "7ox75ga7swhBB+uRm0tN3g==": {
+      "description": "Recovery passphrase switch description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ajoutez une phrase secrète de récupération comme deuxième option de déverrouillage pour les espaces de travail exportés.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "++x5S662RpcY01dXzpwvKw==": {
+      "description": "Recovery passphrase switch accessibility label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Activer la phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ib9hVm6EkixtCVhNAfKLVw==": {
+      "description": "Recovery passphrase setup form description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisissez une phrase secrète. Vous en aurez besoin pour importer des espaces de travail exportés si vous oubliez le mot de passe d'exportation.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QEOCdeAHUCPOZc89ttu4Vw==": {
+      "description": "Recovery passphrase field label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Phrase secrète",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "x/+WFfVZX4VFmQPINTR3+w==": {
+      "description": "Recovery passphrase field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Phrase secrète",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4GkEZuwFjsoIFD5raDfpYA==": {
+      "description": "Recovery passphrase confirm field label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "f0NmcxHYR+CSuq1ZCNRiSA==": {
+      "description": "Recovery passphrase confirm field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer la phrase secrète",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "rZ+wH4tnUlg/N7ojSezILA==": {
+      "description": "Recovery passphrase minimum length validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Au moins {min} caractères",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xmm3BqkoMVu+CjKU6YjNvQ==": {
+      "description": "Recovery passphrase mismatch validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les phrases secrètes ne correspondent pas",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/1hwe9pdWv2JUUWM2Yqm3A==": {
+      "description": "Recovery passphrase enabling button state",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Activation…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "DXj6yBhM/2N2jRC3+DvvAg==": {
+      "description": "Recovery passphrase reveal: saved description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Conservez-la en lieu sûr. Appui long pour une vue facile à copier.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZGSV8IC6gDr86ITuCh1nnQ==": {
+      "description": "Recovery passphrase reveal: reminder description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Affichez votre phrase secrète de récupération enregistrée si vous avez besoin d'un rappel.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "z8PJPhUeOUCJzVHKKAQgHQ==": {
+      "description": "Recovery passphrase hide button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Masquer la phrase secrète",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yl/huv7hITvCDmR4GWqCOg==": {
+      "description": "Recovery passphrase authenticating state",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Authentification…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fLAXso32oaDl9fcbDVvf9Q==": {
+      "description": "Recovery passphrase reveal button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Afficher la phrase secrète",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZjeWuqnPRNVLPSMuDpa+ng==": {
+      "description": "Settings section: workspaces",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Espaces de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0eUW1msrDlPd9ojSPCewzQ==": {
+      "description": "Settings row: workspaces",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Espaces de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "86ktrw4LJxXQ9XNlf/0vXA==": {
+      "description": "Settings row: recovery passphrase",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IqtkwKD0quxscXKDNd3M9g==": {
+      "description": "Create workspace sheet description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Chaque espace de travail possède sa propre base de données isolée.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "LTdzZij9hfTJC5QiCJHnHQ==": {
+      "description": "Manage workspaces sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Gérer les espaces de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fnkys6jRAM+rwFAk0M3PLg==": {
+      "description": "Manage workspaces sheet description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Gérez vos espaces de travail ici. Chaque espace de travail possède sa propre base de données.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XLbX6Wl6u9avXELpAtBzrQ==": {
+      "description": "Workspaces settings: active workspace heading",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Espace de travail actif",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "spCQ1j5f/mT+f8l6FZfgdw==": {
+      "description": "Workspaces settings: available workspaces heading",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Espaces de travail disponibles",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8UAvIUOeGrPGCzi20mYGlw==": {
+      "description": "Workspace status: active",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Actif",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "SToJJnQG6LmkzRJk1miJbQ==": {
+      "description": "Workspace status: load",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Charger",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "v+e567bLuwzddht5BcChKA==": {
+      "description": "Workspace status: encryption key missing",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Clé manquante",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cEZDYt6tfrKkWyz1en7ptg==": {
+      "description": "Workspace action: switch",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Changer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "92BstEzRu3t2FsaYk0UM5Q==": {
+      "description": "Workspace action: unavailable",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Indisponible",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "HFI83AHCPXOWNl063yGgGA==": {
+      "description": "Alert title when workspace key is missing",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Espace de travail indisponible",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "LPMpN8uAdr9Gj5JR+326CA==": {
+      "description": "Alert message when workspace key is missing",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cet espace de travail n'a pas de clé de chiffrement sur cet appareil.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "zKUA7Nk+m468MjZ3YEnvGg==": {
+      "description": "Edit workspace sheet description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisissez un nouveau nom, une couleur et une icône pour cet espace de travail.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/OubdScpYt+a0lhvDl2fxQ==": {
+      "description": "Export workspace modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Exporter l'espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9ugI7q3qBMg05lIwrFosCQ==": {
+      "description": "Alert title when workspace export fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de l'exportation",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8pk2tJnTP/444Ls3ZAOzMQ==": {
+      "description": "Alert message when workspace export fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Impossible d'exporter cet espace de travail. Veuillez réessayer.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "f9IGXKmZUYEtJl1cT56WwQ==": {
+      "description": "Settings section: lock screen",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Écran de verrouillage",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "38hZR+TVYVjA/OehHhVK3w==": {
+      "description": "Settings row: lock screen",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Écran de verrouillage",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "kEjTuIjbUqhlgDVwpJl4gw==": {
+      "description": "Custom PIN setup sheet title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "NIP personnalisé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "outji+r9K+o0mp9L22GXEA==": {
+      "description": "Lock screen mode: off",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Désactivé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "PbvIvFi6h2LekzJ1eHu8Pw==": {
+      "description": "Lock screen mode: system",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Verrouillage de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vpXX0HeY7aWgFZaEROADrg==": {
+      "description": "Lock screen mode: custom PIN",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "NIP personnalisé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "3WboIXuRgtahgZvojlxYBA==": {
+      "description": "Lock screen mode off description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucun écran de verrouillage",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "iiDwfH18Q7fIYSWO8Q7tLA==": {
+      "description": "Lock screen mode system description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Biométrie de l'appareil ou NIP système",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "nC49GA7IKxAratR2fxOuIA==": {
+      "description": "Lock screen mode custom PIN description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Votre propre NIP à 6 chiffres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "InOXPB93qNLaqHZUdmISww==": {
+      "description": "Lock screen settings intro",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisissez comment MindChart se verrouille lorsque vous quittez l'application.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QPkeKI7cIIxKL908tsv0UA==": {
+      "description": "Lock screen verify: confirm device lock title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer le verrouillage de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QDuxjn712/IWIL0ZQEKQmQ==": {
+      "description": "Lock screen verify: confirm device lock description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Authentifiez-vous pour modifier ou désactiver votre écran de verrouillage.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "uwBIPkipqeEoi4ZGKAq1Pw==": {
+      "description": "Lock screen verify: enable device lock title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Activer le verrouillage de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/QOX7+P7WNn2VlZKoJ5Oww==": {
+      "description": "Lock screen verify: enable device lock description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Authentifiez-vous avec la biométrie ou le NIP de votre appareil pour activer cet écran de verrouillage.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4h2mxGqhDgBTlDdoLZANWw==": {
+      "description": "Lock screen biometrics shortcut switch title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déverrouiller avec la biométrie",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "HsQ15zOU+YopzJ6p4pvw8g==": {
+      "description": "Lock screen biometrics shortcut switch description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utilisez Face ID, l'empreinte digitale ou le NIP de l'appareil comme raccourci lorsqu'un NIP personnalisé est activé.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VeZ+RoC9OZUxiIZv9pJepA==": {
+      "description": "Lock screen biometrics switch accessibility label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déverrouiller avec la biométrie",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "1Bvle0MCxJ8SLgdBM+Z3XA==": {
+      "description": "Custom PIN manage: active description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Votre NIP personnalisé est actif.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xhCwyb0TsHKJwwgfue2q4g==": {
+      "description": "Custom PIN manage: change button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Changer le NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "F5mh5xq1wACKpiqwkrGRKg==": {
+      "description": "Custom PIN manage: remove button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer le NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0lqZpYn5XdQCU3s42WP3HQ==": {
+      "description": "Create PIN screen title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer un NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Q4A83/eXA7MQYHyQbwhtJA==": {
+      "description": "Confirm PIN screen title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmez votre NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/RUEiVWlniThHISfijeifA==": {
+      "description": "Change PIN: new PIN title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouveau NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ibTtl31CQk8puhG3nA42tg==": {
+      "description": "Change PIN: confirm new PIN title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer le nouveau NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "F8CScJ+c/mq0Ib2z7mxBHA==": {
+      "description": "Verify PIN screen title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Entrez votre NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "gPsQXgj2ik2h0WMsht4NrQ==": {
+      "description": "Create PIN screen description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisissez un NIP à 6 chiffres pour déverrouiller MindChart.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "G3cmUjtFJnjO0AvwZIrVWA==": {
+      "description": "Confirm PIN screen description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Saisissez de nouveau le même NIP pour confirmer.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Few72ldV3dwVFd+ygua2yQ==": {
+      "description": "Change PIN screen description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisissez un nouveau NIP à 6 chiffres.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "a0I8QFzi8sryAO/jl8spHw==": {
+      "description": "Verify PIN screen description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Entrez votre NIP actuel pour continuer.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FXYpEWT1gf3lEFqkkYy/bw==": {
+      "description": "PIN setup mismatch error",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les NIP ne correspondent pas. Réessayez.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "7DpwyCcW9WL/FuFyiDVVmw==": {
+      "description": "PIN verification incorrect error",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "NIP incorrect. Réessayez.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lfD1g4PndggYnOWw5y14jQ==": {
+      "description": "App lock screen title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déverrouiller MindChart",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "m8cuJyTAo++YcQiT3vTwNQ==": {
+      "description": "System lock screen description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utilisez la biométrie ou le NIP de votre appareil pour déverrouiller.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "a2maJXH7SAJ3t0J0NrDGEg==": {
+      "description": "Enter passcode: custom PIN with biometrics description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utilisez votre NIP personnalisé ou le verrouillage de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bqeRzbsJTVIfxc06oph35w==": {
+      "description": "Enter passcode: PIN only description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Entrez votre NIP personnalisé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0KoG+dG6ocrHRaHinZ4t8g==": {
+      "description": "Biometric unlock prompt title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déverrouiller MindChart",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AvpDM4ZFiY5Mwww9OmUYKw==": {
+      "description": "Biometric unlock fallback button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utiliser le NIP",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "RnoxV7RrLfMRnUM3tTZNAA==": {
+      "description": "System lock verify default title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer le verrouillage de l'appareil",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cfnSBuS9O3G21NnKqo7G9w==": {
+      "description": "System lock verify default description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Authentifiez-vous avec la biométrie ou le NIP de votre appareil pour continuer.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4fuD5w/APvyloKgjsMiHPg==": {
+      "description": "System lock verify cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vJrLw3drifom/7gQsYtZLg==": {
+      "description": "System lock verify continue button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Continuer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "MtxL3YaXSkzBKzGb2z96MQ==": {
+      "description": "System lock verify settings prompt",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmez pour modifier les paramètres de verrouillage",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "oxPouuSKGhmTCC5NPgYRZQ==": {
+      "description": "System lock screen title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "MindChart est verrouillé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "BoraTlk7298+q0Wuzs5XRg==": {
+      "description": "App lock unlock button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déverrouiller",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Zh72r1O4PmDkGsPqeGVR9g==": {
+      "description": "Verify PIN screen description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmez votre NIP actuel pour continuer.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "hfh0CHmcZ8DWongQDis41g==": {
+      "description": "Change PIN screen description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Entrez un nouveau NIP à 6 chiffres pour MindChart.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "x+sy6xO8/wneg10BprSfmQ==": {
+      "description": "System lock verify authenticate button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "S'authentifier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "n4aiY5eTW57fHDm4LPfnSg==": {
+      "description": "Create PIN cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fRVhti/ALo/UVN8BvEVE+Q==": {
+      "description": "Modal default confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VMqBiE5p5vWxZz0P/Z4Oaw==": {
+      "description": "Modal default cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qJWh2mwW/79c0SYsgPugbg==": {
+      "description": "Modal OK button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "OK",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Qq3v4R+YYyfotkJybeOyjw==": {
+      "description": "Delete workspace confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer l'espace de travail?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "b8EKMXQJKWvcFuNQOE4q4A==": {
+      "description": "Delete workspace confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cela supprimera définitivement la base de données de cet espace de travail. Vous pourrez toujours la réimporter plus tard.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "uHedX1g+6zU+7E3OeTL8bA==": {
+      "description": "Delete workspace confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FkNHPqUzG5d7RCMmAODa8Q==": {
+      "description": "Delete workspace confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "tQHNZNPojsLUpsmPYCVEKA==": {
+      "description": "Import workspace choice modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Importer un espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "H2kkZisEc9lTZJBpvO/bIw==": {
+      "description": "Import workspace choice modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer un nouvel espace de travail à partir de ce fichier, ou écraser l'espace de travail actif?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9MZiM1z14u6fBffpAI9n0g==": {
+      "description": "Import workspace choice confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvel espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bmNZ/iWNb80sIb1Biw46zg==": {
+      "description": "Import workspace choice cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Écraser l'actif",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "GQhoG19UbkzBNmWUvSJDBA==": {
+      "description": "Initialize model error modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de l'initialisation du LLM.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "b63P60NEf+7j32fz8zLvqQ==": {
+      "description": "Initialize model error modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vous devrez le télécharger à nouveau pour l'utiliser.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8YIvwJSIj1iasOqRj5+ZMQ==": {
+      "description": "Initialize model error modal cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "NOmFPsnhgeTgCuyroTkjQw==": {
+      "description": "Delete model error modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la suppression complète du modèle.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qr7hp+F7j/fwNxb0EJ2E/w==": {
+      "description": "Delete model error modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vous devrez le télécharger à nouveau pour l'utiliser.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6YXuMZXisUZkcg484SUeuA==": {
+      "description": "Delete model error modal confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Pv523z2RLjcc9/2pcn8hEQ==": {
+      "description": "Delete model error modal cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "50nEgu0tbUOmBwpdZcb6rQ==": {
+      "description": "Delete model action modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Voulez-vous vraiment supprimer ce modèle?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "RFXp+Qliq6l73xEidAAGkw==": {
+      "description": "Delete model action modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vous devrez le télécharger à nouveau pour l'utiliser.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JnP5vVsHnEknys10ZIujSw==": {
+      "description": "Delete model action modal confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ucS+3z+iZ2fZ1jGUz8xr2Q==": {
+      "description": "Delete model action modal cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QmLijO2kD8JgrZJSdiqcng==": {
+      "description": "AI setup required modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Configuration IA requise",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "LKI4UAZOBekMyp66bCeZEg==": {
+      "description": "AI setup required modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vous devrez télécharger un modèle d'embeddings pour utiliser les fonctionnalités IA locales. Allez dans Paramètres pour le configurer.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "NTmTE085WuoOEE5BY8smpg==": {
+      "description": "AI setup required modal confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aller aux paramètres",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "b7pAuOzNNZovoVkzULUwOw==": {
+      "description": "AI setup required modal cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "2HKCyuY93KTKpjFdGBROvQ==": {
+      "description": "Disable recovery passphrase modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Désactiver la phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "P5TBCnGelYIBYvNpLQhUeA==": {
+      "description": "Disable recovery passphrase modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cela supprime votre phrase secrète de récupération. Les exportations créées avec la récupération activée ne pourront plus être déverrouillées ainsi, sauf si vous vous souvenez de la phrase choisie.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6IPQQUQPJ/bwfC0e0dRzVw==": {
+      "description": "Disable recovery passphrase modal confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Désactiver",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "38rEzwEn+ZNLajlLEa2ewQ==": {
+      "description": "Disable recovery passphrase modal cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6UQwR62erOctZCZ1I3kDGw==": {
+      "description": "Biometrics unavailable modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Biométrie indisponible",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vgeQNU0SORLBYKvXrkPv6w==": {
+      "description": "Biometrics unavailable modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utilisez un appareil avec Face ID ou une empreinte digitale configurée, et une build de développement (pas Expo Go).",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "raaCrtpVSuqIHexjZThgkg==": {
+      "description": "Biometrics unavailable modal cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "QHsFZZy/c1NHBc9e6slNiQ==": {
+      "description": "Delete database file modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer l'espace de travail?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Sgv0gyfvXX5itXhgPmb3BA==": {
+      "description": "Delete database file modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cela supprimera définitivement votre base de données. Vous pourrez toujours la réimporter plus tard.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "I3Oms4b0hLUZiwX/VciebA==": {
+      "description": "Delete database file modal confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AGpgdh03NVhkXgaoJoRtVQ==": {
+      "description": "Delete database file modal cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "3fNo9TPf0N3moIb7xTcIhA==": {
+      "description": "DB inspector: clear table alert title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vider la table?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "LlzkBbNczTlJfKKD6J34jQ==": {
+      "description": "DB inspector: clear table alert message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer toutes les lignes de « {tableName} »?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6rDkHbAW2sWxGDq7bKtTaw==": {
+      "description": "DB inspector: clear table button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vider",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Ia+dIn5Fx+Rsxoi+SCfWhA==": {
+      "description": "DB inspector: delete database file alert title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer le fichier de base de données?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TcmuNFkUzH3Na9uT0Zw0jA==": {
+      "description": "DB inspector: delete database file alert message",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cela supprimera définitivement votre base de données.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "AbdXOW0QnDR7CpHQTgLU9w==": {
+      "description": "DB inspector: delete database file button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer le fichier BD",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "mDot1m4T8BOntfH8qjvvJg==": {
+      "description": "DB inspector: table row count",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Lignes : {count}",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "O/QDggpZcorooEJzZhfOag==": {
+      "description": "DB inspector: empty state",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aucune table trouvée.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0H2aT8ocfohC9wEt8Psk7A==": {
+      "description": "DB inspector: new database button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvelle base de données",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "f9z05ZJt12NCSN2vUTOelA==": {
+      "description": "DB inspector: migration failed alert title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de la migration",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TvgW37FW2I9tuolhtmLI0w==": {
+      "description": "Settings action: delete",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4jO0wHrZu5L2k+pVzwS2Dg==": {
+      "description": "Import workspace flow modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Importer un espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "kwBRfqwwtYqjHW05rXyHNQ==": {
+      "description": "Import workspace flow: new workspace step title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvel espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FEBxFi6ucFqs2j/kLzcWqA==": {
+      "description": "Import workspace flow: overwrite confirmation title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Écraser l'espace de travail?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/jik0IJCFpNHPgQ2rWWSrg==": {
+      "description": "Alert title when workspace import fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec de l'importation",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "bZXEiMHQ3KQ5HWnN9kU9JQ==": {
+      "description": "Import workspace flow: reading export loading title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Lecture de l'exportation…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0Dn50I+ArtJXmKE98zHBVg==": {
+      "description": "Import workspace flow: reading export loading description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Décompression de votre fichier d'espace de travail.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ggXvkk5Z/JHw5sTFZ0jN8w==": {
+      "description": "Import workspace flow: decrypting loading title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Déchiffrement de l'espace de travail…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "aOo59D6Q44jHQXJA5jrsCw==": {
+      "description": "Import workspace flow: decrypting loading description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cela peut prendre jusqu'à une minute. Veuillez garder l'application ouverte.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "zbLNxLawjrTpPd8fqRyoHA==": {
+      "description": "Import workspace flow: applying loading title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Importation de l'espace de travail…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "7R6gme6wDnFvbiATbVdMbQ==": {
+      "description": "Import workspace flow: applying loading description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Écriture de la base de données et activation de l'espace de travail.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "D9IlV4gktNF+zge+C2u3QQ==": {
+      "description": "Import workspace flow: new workspace form description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nommez votre espace de travail importé et choisissez une icône et une couleur.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "2tdhWmFquTYQYhgbgUp3aw==": {
+      "description": "Import workspace flow: default workspace name",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Espace de travail importé",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "JqbObEdpzBkrUMEa7etoVQ==": {
+      "description": "Import workspace flow: fallback active workspace name",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "cet espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "DBBcj7wHI3Oez4xgzrdBgw==": {
+      "description": "Import workspace flow: switch to recovery passphrase",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utiliser la phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "NwsrY9CyuGb0/c54qx7erA==": {
+      "description": "Import workspace flow: switch to export password",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utiliser le mot de passe d'exportation",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0b/L2FDmUvmS/gxB18CwMw==": {
+      "description": "Import workspace flow: import choice description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Créer un nouvel espace de travail à partir de ce fichier, ou écraser l'espace de travail actif?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "upcSBrBOc6+2gWu+FZNUKQ==": {
+      "description": "Import workspace flow: new workspace button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Nouvel espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "NvUr0QjRSOyG3GLqqVoUSg==": {
+      "description": "Import workspace flow: overwrite active button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Écraser l'actif",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VYw0dWQSzgzdKpQwxpsnhA==": {
+      "description": "Import workspace flow: overwrite confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Écraser",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "uuEaPOP5UyVtZzzMjrPYKA==": {
+      "description": "Export workspace password modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Choisissez un mot de passe pour protéger cette exportation. Vous en aurez besoin pour importer l'espace de travail plus tard.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dxdk1LWg6nPMPWfXxC+noQ==": {
+      "description": "Import workspace password modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Entrez le mot de passe utilisé lors de l'exportation de cet espace de travail.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FGN8OnAmjeExgd+/nCM4qA==": {
+      "description": "Import workspace recovery passphrase modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Entrez la phrase secrète de récupération choisie lors de l'activation de la récupération.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "OTfBskDXlktHMNgT3TzW5w==": {
+      "description": "Export workspace password modal confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Exporter",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "J2yEX0FQiyxm70dJ0sbKIQ==": {
+      "description": "Import workspace password modal confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Importer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ebfHtNPvJjPlQhEivquxLw==": {
+      "description": "Workspace password modal field label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Mot de passe",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "U2kWNOIawFVpRjzZ5Z2HHQ==": {
+      "description": "Export workspace password field placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Mot de passe d'exportation",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "s2kcryFCMf2WKJz8/xlKWA==": {
+      "description": "Export workspace confirm password label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer le mot de passe",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "reHQA+AVbwB80TN2RtiV8A==": {
+      "description": "Export workspace confirm password placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Confirmer le mot de passe",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "69S/I0vYVxvrweG9X1D4lg==": {
+      "description": "Workspace password minimum length validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Au moins {min} caractères",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "3AmvZsEGSBIvIPFYPaWr1w==": {
+      "description": "Workspace password mismatch validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Les mots de passe ne correspondent pas",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Xzn0R4KDCYBU6ek/I6MYwA==": {
+      "description": "Import workspace password required validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Le mot de passe est requis",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "EgqOdL0DVPvb6g+Id9z5qQ==": {
+      "description": "Import workspace recovery passphrase field label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "IKk/H36JzGTnjIuxSbko3Q==": {
+      "description": "Import workspace recovery passphrase placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Phrase secrète de récupération",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Cy1zU0FJTxtMaCFhohrq6g==": {
+      "description": "Import workspace recovery passphrase required validation",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "La phrase secrète de récupération est requise",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "8Je/YSkJpUmeCMqAo6ygPg==": {
+      "description": "Export workspace password modal submitting state",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Exportation…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "q+UIVCeXZvyb0FQsKWqQTQ==": {
+      "description": "Import workspace password modal submitting state",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Importation…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "vyZrfJwy5abLKQJtHmZ+vw==": {
+      "description": "Loading modal: saving note title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrement de votre note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "/kK9PUBWCYmGS4wlhEexfw==": {
+      "description": "Loading modal: generating note title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Génération de votre note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "l396IjpYkBuQxiTbi3K0FA==": {
+      "description": "Loading modal: saving short title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrement…",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "k+FvvGgV1EN6x7ZyKjqcPQ==": {
+      "description": "Loading modal: saving note title variant",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Enregistrement de votre note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Uhaant9BZmHZ2Obi8xPHQQ==": {
+      "description": "Delete location confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer l'emplacement?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+wAnBT4eEHRhKOy8DHKqAQ==": {
+      "description": "Delete location confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cela supprimera cet emplacement de toutes les notes qui l'utilisent.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "sVCB26l3gs+mK56bns5eqg==": {
+      "description": "Delete location confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Supprimer",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "CtFNIVAM6i+qJp8XIS0xbA==": {
+      "description": "Delete location confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xD2IIaGAT6zQ7Il4R8+bIQ==": {
+      "description": "Import workspace flow: overwrite confirmation description",
+      "status": "new",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "All notes and data in \" {workspaceName} \" will be permanently replaced with the contents of this import. Your current workspace name, icon, and color will stay the same. This cannot be undone.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    }
+  }
+}

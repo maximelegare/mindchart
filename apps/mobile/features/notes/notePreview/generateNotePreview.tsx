@@ -11,6 +11,10 @@ import { useModal } from "@/components/ui/modal/modal";
 import { Icon } from "@/components/ui/icons/icon";
 import { CategorySelector } from "../shared/ui/categoriesSelector";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import {
+  loadingModalSavingNoteTitleVariant,
+  loadingModalSavingTitle,
+} from "@/components/ui/modal/data/loadingModalLabels";
 import { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
 import { PersonSelector } from "../shared/ui/personSelector";
 import { FeelingSelector } from "../shared/ui/feelingSelector";
@@ -86,8 +90,10 @@ export const GenerateNotePreview = ({
     const { title, summary, persons, feeling, location } = data;
     try {
       setModalContent({
-        title: "Saving your Note",
-        customContent: () => <LoadingState title="Saving..." size="large" />,
+        title: loadingModalSavingNoteTitleVariant(),
+        customContent: () => (
+          <LoadingState title={loadingModalSavingTitle()} size="large" />
+        ),
       });
 
       const noteData: Note = {

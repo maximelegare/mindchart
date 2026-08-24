@@ -27,6 +27,20 @@ import { Icon } from "@/components/ui/icons/icon";
 import { X } from "@/lib/icons/Times";
 import { useSyncContacts } from "@/features/persons/hooks/useSyncContacts";
 import { generateID } from "@/utils/genrateID";
+import {
+  PersonSelectorAddContactLabel,
+  PersonSelectorCloseLabel,
+  PersonSelectorCreateContactTitle,
+  PersonSelectorSelectedHeading,
+  PersonSelectorSheetTitle,
+  personSelectorAddPersonAccessibilityLabel,
+  personSelectorContactNamePlaceholder,
+  personSelectorContactsDeniedMessage,
+  personSelectorEmptyListMessage,
+  personSelectorNoMorePeopleMessage,
+  personSelectorRemovePersonAccessibilityLabel,
+  personSelectorSearchPlaceholder,
+} from "./noteAttributeSelectorLabels";
 
 export const PersonSelector = ({
   selectedPersons,
@@ -134,13 +148,13 @@ export const PersonSelector = ({
         <BottomSheetView className="h-full flex-1 gap-4 bg-background px-4 pb-6 pt-4">
           <BottomSheetHeader className="bg-background">
             <Typography variant="h3" className="pb-1 text-foreground">
-              Add People
+              <PersonSelectorSheetTitle />
             </Typography>
           </BottomSheetHeader>
 
           {contactsGranted === false ? (
             <Typography className="text-sm text-muted-foreground">
-              Contacts access was denied. Add people with +.
+              {personSelectorContactsDeniedMessage()}
             </Typography>
           ) : null}
 
@@ -148,7 +162,7 @@ export const PersonSelector = ({
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Search people"
+              placeholder={personSelectorSearchPlaceholder()}
               placeholderTextColor={hsl("muted-foreground", colorScheme)}
               className="min-w-0 flex-1 rounded-full border border-input bg-card px-4 py-2 text-foreground"
             />
@@ -158,7 +172,7 @@ export const PersonSelector = ({
           {selectedPersons.length > 0 ? (
             <View className="gap-1">
               <Typography variant="small" className="text-muted-foreground">
-                Selected ({selectedPersons.length})
+                <PersonSelectorSelectedHeading count={selectedPersons.length} />
               </Typography>
               <ScrollView
                 nestedScrollEnabled
@@ -177,7 +191,9 @@ export const PersonSelector = ({
                           variant="ghost"
                           size="sm"
                           accessibilityRole="button"
-                          accessibilityLabel={`Remove ${person.name}`}
+                          accessibilityLabel={personSelectorRemovePersonAccessibilityLabel(
+                            person.name
+                          )}
                           onPress={() => togglePerson(person)}
                         >
                           <X className="text-muted-foreground" size={20} />
@@ -203,8 +219,8 @@ export const PersonSelector = ({
               {!syncing && filteredPersons.length === 0 ? (
                 <Typography className="py-4 text-center text-muted-foreground">
                   {persons.length === 0
-                    ? "No people yet. Tap + to add someone."
-                    : "No more people to add."}
+                    ? personSelectorEmptyListMessage()
+                    : personSelectorNoMorePeopleMessage()}
                 </Typography>
               ) : null}
             </View>
@@ -213,7 +229,9 @@ export const PersonSelector = ({
           <View className="items-center justify-center">
             <BottomSheetCloseTrigger asChild>
               <Button variant="ghost" className="bg-popover">
-                <Typography className="text-background">Close</Typography>
+                <Typography className="text-background">
+                  <PersonSelectorCloseLabel />
+                </Typography>
               </Button>
             </BottomSheetCloseTrigger>
           </View>
@@ -259,7 +277,7 @@ function AddPersonSheet({
           variant="ghost"
           size="icon"
           accessibilityRole="button"
-          accessibilityLabel="Add person"
+          accessibilityLabel={personSelectorAddPersonAccessibilityLabel()}
         >
           <Icon name="plus" color="foreground" size={20} />
         </Button>
@@ -274,13 +292,13 @@ function AddPersonSheet({
         <BottomSheetView className="gap-4 h-full bg-background">
           <BottomSheetHeader className="bg-background">
             <Typography variant="h3" className="pb-1 text-foreground">
-              Create Contact
+              <PersonSelectorCreateContactTitle />
             </Typography>
           </BottomSheetHeader>
           <TextInput
             value={name}
             onChangeText={setName}
-            placeholder="Name"
+            placeholder={personSelectorContactNamePlaceholder()}
             autoFocus
             placeholderTextColor={hsl("muted-foreground", colorScheme)}
             className="rounded-lg border border-input bg-card px-3 py-2 text-foreground"
@@ -294,7 +312,7 @@ function AddPersonSheet({
             disabled={!name.trim() || saving}
           >
             <Typography className="font-semibold text-primary-foreground">
-              Add
+              <PersonSelectorAddContactLabel />
             </Typography>
           </Button>
         </BottomSheetView>

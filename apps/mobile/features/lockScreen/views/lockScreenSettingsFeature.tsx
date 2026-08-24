@@ -7,13 +7,25 @@ import { Typography } from "@/components/ui/typography";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import type { LockScreenMode } from "../types";
-import { LOCK_SCREEN_MODE_LABELS } from "../types";
 import { useAppLock } from "../context/appLockProvider";
 import { useLockScreenSettingsUi } from "../context/lockScreenSettingsUiContext";
 import { checkBiometricAvailability } from "@/lib/localAuth";
 import { clearAppPin } from "../services/passcodeService";
 import { VerifyPasscode } from "../components/verifyPasscode";
 import { SystemLockVerify } from "../components/systemLockVerify";
+import {
+  SettingsLockScreenIntro,
+  getLockScreenModeDescription,
+  getLockScreenModeLabel,
+  settingsLockScreenBiometricsAccessibilityLabel,
+  settingsLockScreenBiometricsSwitchDescription,
+  settingsLockScreenBiometricsSwitchTitle,
+  settingsLockScreenConfirmDeviceLockDescription,
+  settingsLockScreenConfirmDeviceLockTitle,
+  settingsLockScreenEnableDeviceLockDescription,
+  settingsLockScreenEnableDeviceLockTitle,
+} from "../lockScreenLabels";
+import { settingsStatusSelected } from "@/features/settings/settingsLabels";
 
 const MODE_OPTIONS: LockScreenMode[] = ["off", "system", "customPin"];
 
@@ -145,8 +157,8 @@ export function LockScreenSettingsFeature({
   if (pendingAction?.type === "disable" && lockScreenMode === "system") {
     return (
       <SystemLockVerify
-        title="Confirm device lock"
-        description="Authenticate to change or turn off your lock screen."
+        title={settingsLockScreenConfirmDeviceLockTitle()}
+        description={settingsLockScreenConfirmDeviceLockDescription()}
         onVerify={onDisableVerified}
         onCancel={cancelPending}
       />
@@ -156,8 +168,8 @@ export function LockScreenSettingsFeature({
   if (pendingAction?.type === "enableSystem") {
     return (
       <SystemLockVerify
-        title="Enable device lock"
-        description="Authenticate with your device biometrics or PIN to enable this lock screen."
+        title={settingsLockScreenEnableDeviceLockTitle()}
+        description={settingsLockScreenEnableDeviceLockDescription()}
         onVerify={onEnableSystemVerified}
         onCancel={cancelPending}
       />
@@ -167,21 +179,15 @@ export function LockScreenSettingsFeature({
   return (
     <View style={{ gap: 12 }}>
       <Typography variant="p" padding={false}>
-        Choose how MindChart locks when you leave the app.
+        <SettingsLockScreenIntro />
       </Typography>
 
       {MODE_OPTIONS.map((mode, index) => (
         <ListItem
           key={mode}
           surface="none"
-          label={LOCK_SCREEN_MODE_LABELS[mode]}
-          description={
-            mode === "off"
-              ? "No lock screen"
-              : mode === "system"
-                ? "Device biometrics or system PIN"
-                : "Your own 6-digit app PIN"
-          }
+          label={getLockScreenModeLabel(mode)}
+          description={getLockScreenModeDescription(mode)}
           borderBottom={index < MODE_OPTIONS.length - 1}
           noChevron
           onPress={() => selectMode(mode)}
@@ -195,7 +201,7 @@ export function LockScreenSettingsFeature({
                     : hsl("muted-foreground", colorScheme),
               }}
             >
-              {lockScreenMode === mode ? "Selected" : ""}
+              {lockScreenMode === mode ? settingsStatusSelected() : ""}
             </Typography>
           )}
         />
@@ -203,11 +209,11 @@ export function LockScreenSettingsFeature({
 
       {lockScreenMode === "customPin" && biometricAvailable ? (
         <SwitchSetting
-          title="Unlock with biometrics"
-          description="Use Face ID, fingerprint, or device PIN as a shortcut when a custom PIN is enabled."
+          title={settingsLockScreenBiometricsSwitchTitle()}
+          description={settingsLockScreenBiometricsSwitchDescription()}
           checked={customPinBiometricEnabled}
           onCheckedChange={setCustomPinBiometricEnabled}
-          accessibilityLabel="Unlock with biometrics"
+          accessibilityLabel={settingsLockScreenBiometricsAccessibilityLabel()}
         />
       ) : null}
     </View>

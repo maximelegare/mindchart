@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, type ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -47,7 +47,8 @@ function toHsl(channels: string) {
 
 export type FabSpeedDialAction = {
   key: string;
-  label: string;
+  label: ReactNode;
+  accessibilityLabel: string;
   icon: IconName;
   onPress: () => void;
   /** Maps to CREATE_ACTION_COLORS for icon + label accents. */
@@ -143,7 +144,7 @@ const FabSpeedDialItem = ({
         onPress={action.onPress}
         style={styles.row}
         accessibilityRole="button"
-        accessibilityLabel={action.label}
+        accessibilityLabel={action.accessibilityLabel}
       >
         <View
           style={[

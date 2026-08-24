@@ -2,11 +2,12 @@ import React from "react";
 import { cn } from "@/lib/cn";
 import { View } from "react-native";
 import { Typography } from "@/components/ui";
+import { useLocaleContext } from "@/features/translations/context/translations";
+import { DEFAULT_LANGUAGE } from "@/features/translations/constants/lang";
 import { Icon } from "./icons/icon";
 
 type DateProps = {
   date?: string | Date | null;
-  lang?: "en" | "fr";
   showCalendarIcon?: boolean;
   className?: string;
   showYear?: boolean;
@@ -20,12 +21,14 @@ export const DisplayDate: React.FC<DateProps> = ({
   className,
   size = "sm",
 }) => {
+  const { locale } = useLocaleContext();
+
   if (!date) return;
 
   const dateObj = new Date(date);
   if (isNaN(dateObj.getTime())) return;
 
-  const formatted = new Intl.DateTimeFormat(`en-CA`, {
+  const formatted = new Intl.DateTimeFormat(locale || DEFAULT_LANGUAGE, {
     month: "short",
     year: showYear ? "numeric" : undefined,
     day: "2-digit",

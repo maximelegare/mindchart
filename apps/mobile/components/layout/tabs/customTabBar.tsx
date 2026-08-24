@@ -9,6 +9,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { TabBarButton } from "./tabBarButton";
+import { getTabAccessibilityLabel, getTabLabel } from "./tabLabels";
 import { useTabChromeStore } from "./tabChromeStore";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
@@ -18,11 +19,7 @@ const SIDE_GUTTER = 4;
 const TAB_TOP_RADIUS = 24;
 const FADE_MS = 220;
 
-export function CustomTabBar({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) {
+export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const hidden = useTabChromeStore((s) => s.hidden);
@@ -90,9 +87,9 @@ export function CustomTabBar({
               // Home (`index`) is a redirect-only route — never show it in the tab bar.
               if (route.name === "index") return null;
 
-              const { options } = descriptors[route.key];
               const isFocused = state.routes[state.index].key === route.key;
-              const label = options.tabBarLabel ?? options.title ?? route.name;
+              const label = getTabLabel(route.name);
+              const accessibilityLabel = getTabAccessibilityLabel(route.name);
 
               const onPress = () => {
                 const event = navigation.emit({
@@ -112,7 +109,8 @@ export function CustomTabBar({
                   routeName={route.name}
                   onPress={onPress}
                   isFocused={isFocused}
-                  label={label as string}
+                  label={label}
+                  accessibilityLabel={accessibilityLabel}
                   bottomInset={insets.bottom}
                 />
               );

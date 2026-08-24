@@ -5,6 +5,11 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
 
+  function mcPh(key, fallback) {
+    var p = window.__mcPlaceholders;
+    return (p && p[key]) || fallback;
+  }
+
   if (!window.__mcBulletGuardInstalled) {
     window.__mcBulletGuardInstalled = true;
     // Preserve a flag set by setShowTitlesScript; only default when unset.
@@ -16,14 +21,20 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function emptyTitledFieldsHtml() {
       return (
-        '<div class="thought-title is-placeholder" data-placeholder="Title"><br></div>' +
-        '<div class="thought-summary is-placeholder" data-placeholder="Summary"><br></div>'
+        '<div class="thought-title is-placeholder" data-placeholder="' +
+        mcPh("title", "Title") +
+        '"><br></div>' +
+        '<div class="thought-summary is-placeholder" data-placeholder="' +
+        mcPh("summary", "Summary") +
+        '"><br></div>'
       );
     }
 
     function emptyUntitledFieldHtml() {
       return (
-        '<div class="thought-summary is-placeholder" data-placeholder="Enter a bullet point"><br></div>'
+        '<div class="thought-summary is-placeholder" data-placeholder="' +
+        mcPh("bullet", "Enter a bullet point") +
+        '"><br></div>'
       );
     }
 
@@ -744,9 +755,9 @@ export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;
 }
 
-const EMPTY_BULLET_ERROR = "Add at least one bullet point";
-const TITLE_REQUIRED_ERROR = "Title is required";
-const SUMMARY_REQUIRED_ERROR = "Summary is required";
+const DEFAULT_EMPTY_BULLET_ERROR = "Add at least one bullet point";
+const DEFAULT_TITLE_REQUIRED_ERROR = "Title is required";
+const DEFAULT_SUMMARY_REQUIRED_ERROR = "Summary is required";
 
 export type ThoughtValidationIncomplete = {
   index: number;
@@ -758,7 +769,22 @@ export type ThoughtValidationIncomplete = {
 export function setThoughtValidationErrorsScript(options: {
   emptyContent: boolean;
   incomplete: ThoughtValidationIncomplete[];
+  messages?: {
+    titleRequired?: string;
+    summaryRequired?: string;
+    emptyBullet?: string;
+  };
 }): string {
+  const titleMsg = JSON.stringify(
+    options.messages?.titleRequired ?? DEFAULT_TITLE_REQUIRED_ERROR
+  );
+  const summaryMsg = JSON.stringify(
+    options.messages?.summaryRequired ?? DEFAULT_SUMMARY_REQUIRED_ERROR
+  );
+  const emptyMsg = JSON.stringify(
+    options.messages?.emptyBullet ?? DEFAULT_EMPTY_BULLET_ERROR
+  );
+
   return `
 (function () {
   var content =
@@ -790,9 +816,9 @@ export function setThoughtValidationErrorsScript(options: {
   var lis = content.querySelectorAll("ul > li.thought-item, ul > li");
   var emptyContent = ${options.emptyContent ? "true" : "false"};
   var incomplete = ${JSON.stringify(options.incomplete)};
-  var titleMsg = ${JSON.stringify(TITLE_REQUIRED_ERROR)};
-  var summaryMsg = ${JSON.stringify(SUMMARY_REQUIRED_ERROR)};
-  var emptyMsg = ${JSON.stringify(EMPTY_BULLET_ERROR)};
+  var titleMsg = ${titleMsg};
+  var summaryMsg = ${summaryMsg};
+  var emptyMsg = ${emptyMsg};
   var _nonce = ${Date.now()};
   void _nonce;
 

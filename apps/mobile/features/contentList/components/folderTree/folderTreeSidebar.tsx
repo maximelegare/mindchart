@@ -11,6 +11,10 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import { graphIdFromFolderId } from "@/features/navigation/syncLinkedBreadcrumbs";
+import {
+  folderBreadcrumbRootLabel,
+  folderPickerNoteUntitledLabel,
+} from "@/features/notes/shared/ui/folderPickerLabels";
 import { useFolderActions } from "../../features/folderContents/hooks/useFolderActions";
 import { useOptionsBar } from "../optionsBar/context/optionBarContext";
 import { FolderBreadcrumbCrumb } from "../../features/folderContents/components/folderActionsMenu";
@@ -51,7 +55,7 @@ export function FolderTreeSidebar() {
   const isGraphFocused = (segments as string[]).includes("graph");
 
   const breadcrumbItems = useMemo(() => {
-    const root = { id: FOLDER_TREE_ROOT_ID, name: "Root" };
+    const root = { id: FOLDER_TREE_ROOT_ID, name: folderBreadcrumbRootLabel() };
     if (!currentFolder) return [root];
     const ids = getFolderIdsFromPath(currentFolder.path);
     const byId = new Map(allFolders.map((folder) => [folder.id, folder]));
@@ -73,7 +77,7 @@ export function FolderTreeSidebar() {
     () =>
       (allNotes ?? []).map((note) => ({
         id: note.id,
-        title: note.title || "Untitled",
+        title: note.title || folderPickerNoteUntitledLabel(),
         folderId: note.folder_id ?? null,
       })),
     [allNotes]

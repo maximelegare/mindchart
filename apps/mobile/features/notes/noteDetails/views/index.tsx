@@ -13,6 +13,10 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import {
+  noteDetailsTitleRequiredPlaceholder,
+  NoteDetailsTitlePlaceholder,
+} from "@/features/notes/noteDetails/noteDetailsLabels";
 
 type NoteDetailsFeatureProps = {
   isPending: boolean;
@@ -279,7 +283,9 @@ function NoteDetailsContent({
                     onChange(next);
                   }}
                   placeholder={
-                    titleRequiredError ? "Title is required" : "Enter a title"
+                    titleRequiredError
+                      ? noteDetailsTitleRequiredPlaceholder()
+                      : NoteDetailsTitlePlaceholder()
                   }
                   placeholderTextColor={
                     titleRequiredError

@@ -11,11 +11,16 @@ import { Typography } from "@/components/ui/typography";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { LOCK_SCREEN_MODE_LABELS } from "@/features/lockScreen/types";
 import { useLockScreenSettingsUi } from "@/features/lockScreen/context/lockScreenSettingsUiContext";
 import { LockScreenSettingsFeature } from "@/features/lockScreen/views/lockScreenSettingsFeature";
 import { LockScreenPinSetupFeature } from "@/features/lockScreen/views/lockScreenPinSetupFeature";
 import { hasAppPin } from "@/features/lockScreen/services/passcodeService";
+import {
+  SettingsCustomPinSheetTitle,
+  SettingsLockScreenSectionTitle,
+  getLockScreenModeLabel,
+  settingsLockScreenRowLabel,
+} from "@/features/lockScreen/lockScreenLabels";
 
 function LockScreenPinSheet({
   onPinConfigured,
@@ -41,7 +46,7 @@ function LockScreenPinSheet({
       >
         <BottomSheetHeader className="bg-background">
           <Typography variant="h3" padding={false}>
-            Custom PIN
+            <SettingsCustomPinSheetTitle />
           </Typography>
         </BottomSheetHeader>
         <BottomSheetView
@@ -76,10 +81,7 @@ export function LockScreenSettingsSection() {
     void refreshPinStatus();
   }, [lockScreenMode, pinSheetSession, refreshPinStatus]);
 
-  const lockScreenStatus =
-    lockScreenMode === "customPin"
-      ? LOCK_SCREEN_MODE_LABELS.customPin
-      : LOCK_SCREEN_MODE_LABELS[lockScreenMode];
+  const lockScreenStatus = getLockScreenModeLabel(lockScreenMode);
 
   const needsAttention =
     lockScreenMode === "off" ||
@@ -87,11 +89,14 @@ export function LockScreenSettingsSection() {
 
   return (
     <>
-      <SettingsSection title="Lock screen" icon="lock-keyhole">
+      <SettingsSection
+        title={<SettingsLockScreenSectionTitle />}
+        icon="lock-keyhole"
+      >
         <SettingsSheetRow
-          label="Lock screen"
+          label={settingsLockScreenRowLabel()}
           status={lockScreenStatus}
-          sheetTitle="Lock screen"
+          sheetTitle={settingsLockScreenRowLabel()}
           snapPoints={["100%"]}
           borderBottom={false}
           dangerChevron={needsAttention}

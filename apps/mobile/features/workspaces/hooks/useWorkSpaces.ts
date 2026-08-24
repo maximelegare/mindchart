@@ -37,6 +37,10 @@ import {
 } from "../services/workspaceExportZip";
 import { getWorkspaceImportErrorMessage } from "../services/workspaceExportErrors";
 import {
+  workspaceImportActiveWorkspaceFallbackName,
+  workspaceImportDefaultName,
+} from "@/features/workspaces/workspaceModalLabels";
+import {
   deleteWorkspaceDatabaseFiles,
   toFileUri,
   toNativePath,
@@ -359,7 +363,9 @@ export const useWorkSpaces = () => {
             React.createElement(ImportWorkspaceFlowModal, {
               zipUri,
               hasActiveWorkspace: hasActive,
-              activeWorkspaceName: activeForOverwrite?.name ?? "this workspace",
+              activeWorkspaceName:
+                activeForOverwrite?.name ??
+                workspaceImportActiveWorkspaceFallbackName(),
               importErrorMessage: getWorkspaceImportErrorMessage,
               onCancel: () => {
                 closeModal();
@@ -378,7 +384,7 @@ export const useWorkSpaces = () => {
                 const id = generateWorkspaceId();
                 const newWorkspace: Workspace = {
                   id,
-                  name: name.trim() || "Imported Workspace",
+                  name: name.trim() || workspaceImportDefaultName(),
                   icon,
                   color,
                   dbFileName: workspaceDbFileName(id),

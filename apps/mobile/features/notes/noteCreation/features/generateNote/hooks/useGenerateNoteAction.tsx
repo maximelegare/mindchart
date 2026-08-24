@@ -3,6 +3,10 @@ import { Keyboard } from "react-native";
 import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import {
+  loadingModalGeneratingNoteTitle,
+  loadingModalSavingNoteTitle,
+} from "@/components/ui/modal/data/loadingModalLabels";
 import { CategoryKey } from "@repo/sqlite";
 import { useSaveGeneratedNote } from "@/features/notes/noteCreation/features/generateNote/hooks/useSaveGeneratedNote";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
@@ -47,7 +51,7 @@ export const useGenerateNoteAction = ({
     openModal({
       dismissOnBackgroundPress: false,
       customContent: () => (
-        <LoadingState title="Generating Your Note" size="large" />
+        <LoadingState title={loadingModalGeneratingNoteTitle()} size="large" />
       ),
     });
 
@@ -89,7 +93,7 @@ export const useGenerateNoteAction = ({
 
       setModalContent({
         customContent: () => (
-          <LoadingState title="Saving Your Note" size="large" />
+          <LoadingState title={loadingModalSavingNoteTitle()} size="large" />
         ),
       });
 

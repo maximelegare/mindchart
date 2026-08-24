@@ -8,6 +8,13 @@ import { hsl } from "@/utils/hsl";
 import { changeAppPin } from "../services/passcodeService";
 import { APP_PIN_LENGTH } from "../constants";
 import { PinDots, PinPad } from "./pinPad";
+import {
+  settingsChangePinNewDescription,
+  settingsConfirmNewPinTitle,
+  settingsCreatePinCancelButton,
+  settingsNewPinTitle,
+  settingsPinMismatchError,
+} from "../lockScreenLabels";
 
 type ChangePasscodeProps = {
   onDone: () => void;
@@ -45,7 +52,7 @@ export function ChangePasscode({ onDone, onCancel }: ChangePasscodeProps) {
             void save();
           } else {
             setConfirmPin("");
-            setError("PINs do not match. Try again.");
+            setError(settingsPinMismatchError());
             setTimeout(() => setError(""), 2000);
           }
         }
@@ -75,14 +82,16 @@ export function ChangePasscode({ onDone, onCancel }: ChangePasscodeProps) {
       </View>
 
       <Typography variant="h2" className="text-center mb-2">
-        {step === "create" ? "New PIN" : "Confirm new PIN"}
+        {step === "create"
+          ? settingsNewPinTitle()
+          : settingsConfirmNewPinTitle()}
       </Typography>
       <Typography
         variant="p"
         className="text-center mb-8 px-2"
         style={{ color: hsl("muted-foreground", colorScheme) }}
       >
-        Enter a new 6-digit PIN for MindChart.
+        {settingsChangePinNewDescription()}
       </Typography>
 
       <PinDots filledCount={currentPin.length} />
@@ -98,7 +107,7 @@ export function ChangePasscode({ onDone, onCancel }: ChangePasscodeProps) {
 
       {onCancel ? (
         <Button variant="ghost" onPress={onCancel} className="mt-8">
-          <Typography>Cancel</Typography>
+          <Typography>{settingsCreatePinCancelButton()}</Typography>
         </Button>
       ) : null}
     </View>

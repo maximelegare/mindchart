@@ -9,7 +9,7 @@ import { cn } from "@/lib/cn";
 
 export type OptionsChipProps = {
   icon?: IconName;
-  label?: string;
+  label?: React.ReactNode;
   selected?: boolean;
   /** Greys out icon + label (e.g. toggle off). */
   muted?: boolean;

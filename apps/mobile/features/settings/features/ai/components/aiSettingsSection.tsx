@@ -16,9 +16,28 @@ import { AiProvidersSettingsContent } from "../aiProvidersSettings/aiProvidersSe
 import { EMBEDDINGS_MODELS } from "@/features/llama/data/models/embeddings/embeddingsModels";
 import { CHAT_MODELS } from "@/features/llama/data/models/chat/chatModels";
 import { WHISPER_MODELS } from "@/features/whisper/data/whisperModels";
+import {
+  SettingsAiSectionTitle,
+  settingsAiAutoConnectAccessibilityLabel,
+  settingsAiAutoConnectDescription,
+  settingsAiAutoConnectLabel,
+  settingsAiEmbeddingsEngineLabel,
+  settingsAiLlamaChatEngineLabel,
+  settingsAiNoModel,
+  settingsAiProviderCloud,
+  settingsAiProviderLocal,
+  settingsAiProviderMixed,
+  settingsAiProvidersLabel,
+  settingsAiWhisperEngineLabel,
+} from "@/features/settings/features/ai/labels/settingsAiLabels";
+import {
+  settingsStatusLoaded,
+  settingsStatusSetup,
+  settingsStatusSetupRequired,
+} from "@/features/settings/settingsLabels";
 
 function formatModelLabel(modelId: string | null | undefined) {
-  if (!modelId) return "No model";
+  if (!modelId) return settingsAiNoModel();
   return modelId.replace(/_/g, " ");
 }
 
@@ -34,10 +53,10 @@ export function AiSettingsSection() {
   const providersValue = useMemo(() => {
     const values = Object.values(aiProviders);
     const allLocal = values.every((v) => v === "local");
-    if (allLocal) return "Local";
+    if (allLocal) return settingsAiProviderLocal();
     const allCloud = values.every((v) => v === "cloud");
-    if (allCloud) return "Cloud";
-    return "Mixed";
+    if (allCloud) return settingsAiProviderCloud();
+    return settingsAiProviderMixed();
   }, [aiProviders]);
 
   const handleWhisperInitialize = useCallback(
@@ -138,10 +157,10 @@ export function AiSettingsSection() {
   );
 
   return (
-    <SettingsSection title="AI" icon="brain">
+    <SettingsSection title={<SettingsAiSectionTitle />} icon="brain">
       <ListItem
-        label="Auto Connect"
-        description="Connect Whisper and Llama Chat on launch. Embeddings always connect."
+        label={settingsAiAutoConnectLabel()}
+        description={settingsAiAutoConnectDescription()}
         noChevron
         detail={false}
         itemRight={() => (
@@ -149,16 +168,16 @@ export function AiSettingsSection() {
             <Switch
               checked={autoConnect}
               onCheckedChange={setAutoConnect}
-              accessibilityLabel="Auto Connect"
+              accessibilityLabel={settingsAiAutoConnectAccessibilityLabel()}
             />
           </View>
         )}
       />
 
       <SettingsSheetRow
-        label="AI Providers"
+        label={settingsAiProvidersLabel()}
         value={providersValue}
-        sheetTitle="AI Providers"
+        sheetTitle={settingsAiProvidersLabel()}
       >
         <AiProvidersSettingsContent
           aiProviders={aiProviders}
@@ -167,13 +186,16 @@ export function AiSettingsSection() {
       </SettingsSheetRow>
 
       <SettingsSheetRow
-        label="Whisper Engine"
+        label={settingsAiWhisperEngineLabel()}
         subtitle={
           WHISPER_MODELS.find((m) => m.id === whisper.currentModelId)?.label ??
           formatModelLabel(whisper.currentModelId)
         }
-        status={whisper.isReady ? "Loaded" : "Setup"}
-        sheetTitle="Whisper Engine"
+        status={
+          whisper.isReady ? settingsStatusLoaded() : settingsStatusSetup()
+        }
+        statusTone={whisper.isReady ? "success" : "warning"}
+        sheetTitle={settingsAiWhisperEngineLabel()}
       >
         <WhisperSettingsContent
           currentModelId={whisper.currentModelId}
@@ -188,15 +210,18 @@ export function AiSettingsSection() {
       </SettingsSheetRow>
 
       <SettingsSheetRow
-        label="Llama Chat Engine"
+        label={settingsAiLlamaChatEngineLabel()}
         subtitle={
           (llamaChat.currentModelId &&
             CHAT_MODELS[llamaChat.currentModelId as keyof typeof CHAT_MODELS]
               ?.name) ||
           formatModelLabel(llamaChat.currentModelId)
         }
-        status={llamaChat.isReady ? "Loaded" : "Setup"}
-        sheetTitle="Llama Chat Engine"
+        status={
+          llamaChat.isReady ? settingsStatusLoaded() : settingsStatusSetup()
+        }
+        statusTone={llamaChat.isReady ? "success" : "warning"}
+        sheetTitle={settingsAiLlamaChatEngineLabel()}
       >
         <LlamaChatSettingsContent
           currentModelId={llamaChat.currentModelId}
@@ -212,7 +237,7 @@ export function AiSettingsSection() {
       </SettingsSheetRow>
 
       <SettingsSheetRow
-        label="Embeddings Engine"
+        label={settingsAiEmbeddingsEngineLabel()}
         subtitle={
           (llamaEmbeddings.currentModelId &&
             EMBEDDINGS_MODELS[
@@ -220,8 +245,13 @@ export function AiSettingsSection() {
             ]?.name) ||
           formatModelLabel(llamaEmbeddings.currentModelId)
         }
-        status={llamaEmbeddings.isReady ? "Loaded" : "*** Setup Required ***"}
-        sheetTitle="Embeddings Engine"
+        status={
+          llamaEmbeddings.isReady
+            ? settingsStatusLoaded()
+            : settingsStatusSetupRequired()
+        }
+        statusTone={llamaEmbeddings.isReady ? "success" : "warning"}
+        sheetTitle={settingsAiEmbeddingsEngineLabel()}
         borderBottom={false}
       >
         <LlamaEmbeddingsSettingsContent

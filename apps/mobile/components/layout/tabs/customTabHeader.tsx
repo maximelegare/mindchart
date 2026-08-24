@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { HeaderContent } from "@/components/layout/shared/headerContent";
 import type { BottomTabHeaderProps } from "@react-navigation/bottom-tabs";
 import { Typography } from "@/components/ui/typography";
+import { tabPageFallbackTitle } from "./tabLabels";
 
 type CustomTabBarProps = {
   route: BottomTabHeaderProps["route"];
@@ -20,7 +21,7 @@ export const CustomTabHeader = ({ options }: CustomTabBarProps) => {
       <Gutter size="sm">
         <View className="w-full flex-row justify-between">
           <HeaderContent
-            title={options.title || "Page"}
+            title={options.title || tabPageFallbackTitle()}
             hideBackButton
             buttons={[
               <Button

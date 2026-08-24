@@ -25,9 +25,7 @@ type BreadcrumbsProps = {
 };
 
 const isRootItem = (item: BreadcrumbItem) =>
-  item.id === "root" ||
-  item.id === "Root" ||
-  item.name.toLowerCase() === "root";
+  item.id === "root" || item.id === "Root";
 
 /** Default crumb — matches notes `FolderBreadcrumbCrumb` visuals. */
 export function BreadcrumbCrumb({

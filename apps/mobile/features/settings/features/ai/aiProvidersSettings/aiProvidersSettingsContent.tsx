@@ -4,6 +4,14 @@ import { Typography } from "@/components/ui/typography";
 import { AIProviderKeys, AIProviders, AIProviderType } from "../types/ai";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/cn";
+import {
+  SettingsAiProviderEmbeddingsLabel,
+  SettingsAiProviderLlamaChatLabel,
+  SettingsAiProviderWhisperLabel,
+  SettingsAiProvidersDescription,
+  settingsAiProviderCloud,
+  settingsAiProviderLocal,
+} from "@/features/settings/features/ai/labels/settingsAiLabels";
 
 export type AiProvidersSettingsContentProps = {
   aiProviders: AIProviders;
@@ -14,17 +22,26 @@ export type AiProvidersSettingsContentProps = {
   ) => void;
 };
 
-const PROVIDER_ROWS: Array<
-  { key: AIProviderKeys; label: string } & { disabled: boolean }
-> = [
-  { key: "whisper", label: "Whisper", disabled: true },
-  { key: "llamaChat", label: "Llama Chat", disabled: true },
-  { key: "embeddings", label: "Embeddings", disabled: true },
-];
-
-const PROVIDER_OPTIONS: Array<{ label: string; value: AIProviderType }> = [
-  { label: "Local", value: "local" },
-  { label: "Cloud", value: "cloud" },
+const PROVIDER_ROWS: Array<{
+  key: AIProviderKeys;
+  label: React.ReactNode;
+  disabled: boolean;
+}> = [
+  {
+    key: "whisper",
+    label: <SettingsAiProviderWhisperLabel />,
+    disabled: true,
+  },
+  {
+    key: "llamaChat",
+    label: <SettingsAiProviderLlamaChatLabel />,
+    disabled: true,
+  },
+  {
+    key: "embeddings",
+    label: <SettingsAiProviderEmbeddingsLabel />,
+    disabled: true,
+  },
 ];
 
 export function AiProvidersSettingsContent({
@@ -34,7 +51,7 @@ export function AiProvidersSettingsContent({
   return (
     <View className="gap-3 py-2">
       <Typography variant="p" padding>
-        The AI providers are the locations where the AI models are hosted.
+        <SettingsAiProvidersDescription />
       </Typography>
 
       {PROVIDER_ROWS.map((row) => (
@@ -52,7 +69,10 @@ export function AiProvidersSettingsContent({
               onChangeProviders({ [row.key]: value as AIProviderType })
             }
           >
-            {PROVIDER_OPTIONS.map((option) => {
+            {[
+              { label: settingsAiProviderLocal(), value: "local" as const },
+              { label: settingsAiProviderCloud(), value: "cloud" as const },
+            ].map((option) => {
               const labelId = `${row.key}-${option.value}`;
               return (
                 <View

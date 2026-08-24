@@ -14,6 +14,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import { cn } from "@/lib/cn";
 import { FEELINGS_DEFINITIONS } from "@repo/sqlite";
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import { FeelingSelectorSheetTitle } from "./noteAttributeSelectorLabels";
 
 export const FeelingSelector = ({
   selectedFeeling,
@@ -59,7 +60,7 @@ export const FeelingSelector = ({
         <BottomSheetView className="h-full flex-1 gap-4 bg-background px-4 pb-6 pt-4">
           <BottomSheetHeader className="bg-background">
             <Typography variant="h3" className="pb-1 text-foreground">
-              How are you feeling?
+              <FeelingSelectorSheetTitle />
             </Typography>
           </BottomSheetHeader>
 

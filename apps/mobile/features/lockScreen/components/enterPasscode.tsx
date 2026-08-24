@@ -13,6 +13,13 @@ import { verifyAppPin } from "../services/passcodeService";
 import { APP_PIN_LENGTH } from "../constants";
 import { PinDots, PinPad } from "./pinPad";
 import { useSecuritySettingsPreferences } from "@/features/settings/context/security";
+import {
+  settingsUnlockMindChartBiometricPrompt,
+  settingsUnlockMindChartCustomDescription,
+  settingsUnlockMindChartPinOnlyDescription,
+  settingsUnlockMindChartUsePinLabel,
+  settingsVerifyPinTitle,
+} from "../lockScreenLabels";
 
 export function EnterPasscode() {
   const { colorScheme } = useColorScheme();
@@ -67,8 +74,8 @@ export function EnterPasscode() {
 
   const authenticateWithBiometric = useCallback(async () => {
     const result = await authenticateWithDeviceLock(
-      "Unlock MindChart",
-      "Use PIN"
+      settingsUnlockMindChartBiometricPrompt(),
+      settingsUnlockMindChartUsePinLabel()
     );
     if (result.success) {
       unlock();
@@ -90,7 +97,7 @@ export function EnterPasscode() {
       </View>
 
       <Typography variant="h2" className="text-center mb-1">
-        Enter your PIN
+        {settingsVerifyPinTitle()}
       </Typography>
       <Typography
         variant="p"
@@ -98,8 +105,8 @@ export function EnterPasscode() {
         style={{ color: hsl("muted-foreground", colorScheme) }}
       >
         {showBiometric
-          ? "Use your custom PIN or device lock"
-          : "Enter your custom PIN"}
+          ? settingsUnlockMindChartCustomDescription()
+          : settingsUnlockMindChartPinOnlyDescription()}
       </Typography>
 
       <PinDots filledCount={pin.length} variant="circle" />

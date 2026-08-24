@@ -7,6 +7,11 @@ import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useModal } from "@/components/ui/modal/modal";
+import {
+  FilterPickerDoneLabel,
+  filterDefaultEmptyLabel,
+  filterDefaultSearchPlaceholder,
+} from "./notesFilterLabels";
 
 export type FilterAttributeOption = {
   id: string;
@@ -31,8 +36,8 @@ export const FilterAttributePicker = ({
   onChange,
   selectionMode = "multiple",
   searchable = false,
-  searchPlaceholder = "Search…",
-  emptyLabel = "Nothing to filter by yet.",
+  searchPlaceholder = filterDefaultSearchPlaceholder(),
+  emptyLabel = filterDefaultEmptyLabel(),
 }: FilterAttributePickerProps) => {
   const { closeModal } = useModal();
   const { colorScheme } = useColorScheme();
@@ -120,7 +125,9 @@ export const FilterAttributePicker = ({
 
       <View className="flex-row justify-end">
         <Button variant="default" onPress={closeModal}>
-          <Typography>Done</Typography>
+          <Typography>
+            <FilterPickerDoneLabel />
+          </Typography>
         </Button>
       </View>
     </View>

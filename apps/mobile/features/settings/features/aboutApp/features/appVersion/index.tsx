@@ -3,6 +3,7 @@ import { Typography } from "@/components/ui/typography";
 import Constants from "expo-constants";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import { settingsAppVersionLabel } from "@/features/settings/settingsLabels";
 
 export const AppVersionFeature = () => {
   const version = Constants.expoConfig?.extra?.version;
@@ -10,7 +11,7 @@ export const AppVersionFeature = () => {
 
   return (
     <ListItem
-      label="App Version"
+      label={settingsAppVersionLabel()}
       borderBottom={false}
       noChevron
       detail={false}

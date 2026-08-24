@@ -10,6 +10,14 @@ import {
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui";
+import {
+  EditNoteSheetTitle,
+  noteMoveFailedAlertTitle,
+} from "./noteBottomSheetLabels";
+import {
+  folderPickerNoFolderLabel,
+  folderPickerNoteUntitledLabel,
+} from "@/features/notes/shared/ui/folderPickerLabels";
 import { EditNoteFeature } from "@/features/notes/editNote/views";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { useControllers } from "@/api/controllers/useControllers";
@@ -51,7 +59,7 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
   }, [allFolders, parsedNote]);
 
   const noteTitle = useMemo(() => {
-    const raw = parsedNote?.title?.trim() || "Untitled";
+    const raw = parsedNote?.title?.trim() || folderPickerNoteUntitledLabel();
     return raw.length > 28 ? `${raw.slice(0, 28)}…` : raw;
   }, [parsedNote]);
 
@@ -77,7 +85,7 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
           folderId: folder?.id ?? null,
         });
       } catch (error) {
-        Alert.alert("Move failed", String(error));
+        Alert.alert(noteMoveFailedAlertTitle(), String(error));
       } finally {
         setMoveActive(false);
       }
@@ -122,7 +130,9 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
               >
                 <View className="flex-row justify-start items-center gap-2">
                   <Icon name="pencil" color="foreground" />
-                  <Typography variant="h3">Edit Note</Typography>
+                  <Typography variant="h3">
+                    <EditNoteSheetTitle />
+                  </Typography>
                 </View>
               </BottomSheetHeader>
               <EditNoteFeature
@@ -140,7 +150,7 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
         sheet={moveSheet}
         active={moveActive}
         selectedFolder={currentFolder}
-        rootLabel="No folder"
+        rootLabel={folderPickerNoFolderLabel()}
         showLocationPin
         onSelect={handleMoveSelect}
         onDismiss={() => setMoveActive(false)}

@@ -8,6 +8,15 @@ import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/component
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
+import {
+  noteDetailsDeleteNoteMenuLabel,
+  noteDetailsFolderRequiredAlertMessage,
+  noteDetailsFolderRequiredAlertTitle,
+  noteDetailsNoteSubtitle,
+  noteDetailsSettingsMenuLabel,
+  noteDetailsUpdateFailedAlertTitle,
+} from "@/features/notes/noteDetails/noteDetailsLabels";
+import { noteMoveFailedAlertTitle } from "@/features/notes/noteBottomSheet/noteBottomSheetLabels";
 import type { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
 import { Person } from "@repo/zod-schemas";
 import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
@@ -68,7 +77,7 @@ export const NoteDetailsPage = () => {
 
   const isPreviewMode = editorMode === "preview";
   const showHeaderDeleteAction = isPreviewMode || isEditing;
-  const headerDeleteLabel = isPreviewMode ? "Delete" : "Discard";
+  const headerDeleteVariant = isPreviewMode ? "delete" : "discard";
 
   const leaveAfterDelete = useCallback(() => {
     if (openedFromGraph) {
@@ -181,8 +190,8 @@ export const NoteDetailsPage = () => {
     async (folder: FolderSelection) => {
       if (!folder) {
         Alert.alert(
-          "Folder required",
-          "Notes must be saved in a folder. Root is not allowed."
+          noteDetailsFolderRequiredAlertTitle(),
+          noteDetailsFolderRequiredAlertMessage()
         );
         return;
       }
@@ -197,7 +206,7 @@ export const NoteDetailsPage = () => {
         });
       } catch (error) {
         setHeaderFolder(noteFolder);
-        Alert.alert("Move failed", String(error));
+        Alert.alert(noteMoveFailedAlertTitle(), String(error));
       }
     },
     [note, noteFolder, noteId, updateNoteFolderId]
@@ -211,7 +220,7 @@ export const NoteDetailsPage = () => {
         await updateNotePersons({ noteId, persons });
       } catch (error) {
         setHeaderPersons(note?.[0]?.persons ?? []);
-        Alert.alert("Update failed", String(error));
+        Alert.alert(noteDetailsUpdateFailedAlertTitle(), String(error));
       }
     },
     [note, noteId, updateNotePersons]
@@ -225,7 +234,7 @@ export const NoteDetailsPage = () => {
         await updateNoteFeeling({ noteId, feeling });
       } catch (error) {
         setHeaderFeeling(note?.[0]?.feeling ?? null);
-        Alert.alert("Update failed", String(error));
+        Alert.alert(noteDetailsUpdateFailedAlertTitle(), String(error));
       }
     },
     [note, noteId, updateNoteFeeling]
@@ -244,7 +253,7 @@ export const NoteDetailsPage = () => {
       } catch (error) {
         setHeaderLocationId(note?.[0]?.locationId ?? null);
         setHeaderLocationName(note?.[0]?.locationName ?? null);
-        Alert.alert("Update failed", String(error));
+        Alert.alert(noteDetailsUpdateFailedAlertTitle(), String(error));
       }
     },
     [note, noteId, updateNoteLocation]
@@ -258,14 +267,14 @@ export const NoteDetailsPage = () => {
         showHeaderDeleteAction
           ? undefined
           : {
-              text: "Note",
+              text: noteDetailsNoteSubtitle(),
               icon: "notebook-text",
             }
       }
       subtitleContent={
         showHeaderDeleteAction ? (
           <DiscardNoteButton
-            label={headerDeleteLabel}
+            variant={headerDeleteVariant}
             onPress={handleDiscardNote}
             disabled={isDiscarding || !noteId}
           />
@@ -305,11 +314,15 @@ export const NoteDetailsPage = () => {
       moreOptionsMenu={{
         links: [
           {
-            label: "Delete Note",
+            label: noteDetailsDeleteNoteMenuLabel(),
             icon: "trash-2",
             action: handleDeleteNote,
           },
-          { label: "Settings", icon: "settings", href: "/settings" },
+          {
+            label: noteDetailsSettingsMenuLabel(),
+            icon: "settings",
+            href: "/settings",
+          },
         ],
         state: { open, setOpen },
         trigger: "ellipsis",

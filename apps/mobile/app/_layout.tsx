@@ -56,6 +56,7 @@ import type { Workspace } from "@/features/workspaces/context/workspacesContext"
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { AppLockProvider } from "@/features/lockScreen/context/appLockProvider";
 import { AppLockOverlay } from "@/features/lockScreen/components/appLockOverlay";
+import { LocaleContext } from "@/features/translations/context/translations";
 import { LockScreenSettingsUiProvider } from "@/features/lockScreen/context/lockScreenSettingsUiContext";
 
 import { Buffer } from "buffer";
@@ -235,48 +236,50 @@ export default function RootLayout() {
               className={cn("flex-1", colorScheme === "dark" ? "dark" : "")}
             >
               <AppLockProvider>
-                <LockScreenSettingsUiProvider>
-                  <BottomSheetModalProvider>
-                    <PaperProvider>
-                      <ModalProvider>
-                        <FolderFormSheetProvider>
-                          <WorkspaceEditSheetProvider>
-                            <WorkspaceActionsSheetProvider>
-                              <LlamaProvider>
-                                <StatusBar
-                                  style={
-                                    colorScheme === "dark" ? "light" : "dark"
-                                  }
-                                />
+                <LocaleContext>
+                  <LockScreenSettingsUiProvider>
+                    <BottomSheetModalProvider>
+                      <PaperProvider>
+                        <ModalProvider>
+                          <FolderFormSheetProvider>
+                            <WorkspaceEditSheetProvider>
+                              <WorkspaceActionsSheetProvider>
+                                <LlamaProvider>
+                                  <StatusBar
+                                    style={
+                                      colorScheme === "dark" ? "light" : "dark"
+                                    }
+                                  />
 
-                                <WhisperProvider>
-                                  <AutoConnectService>
-                                    <Stack
-                                      screenOptions={{
-                                        headerShown: false,
-                                        contentStyle: {
-                                          backgroundColor: hsl(
-                                            "background",
-                                            colorScheme
-                                          ),
-                                        },
-                                      }}
-                                    >
-                                      <Stack.Screen name="(tabs)" />
-                                      <Stack.Screen name="(stack)" />
-                                    </Stack>
-                                  </AutoConnectService>
-                                </WhisperProvider>
-                              </LlamaProvider>
-                            </WorkspaceActionsSheetProvider>
-                          </WorkspaceEditSheetProvider>
-                        </FolderFormSheetProvider>
-                      </ModalProvider>
-                      <PortalHost />
-                    </PaperProvider>
-                  </BottomSheetModalProvider>
-                  <AppLockOverlay />
-                </LockScreenSettingsUiProvider>
+                                  <WhisperProvider>
+                                    <AutoConnectService>
+                                      <Stack
+                                        screenOptions={{
+                                          headerShown: false,
+                                          contentStyle: {
+                                            backgroundColor: hsl(
+                                              "background",
+                                              colorScheme
+                                            ),
+                                          },
+                                        }}
+                                      >
+                                        <Stack.Screen name="(tabs)" />
+                                        <Stack.Screen name="(stack)" />
+                                      </Stack>
+                                    </AutoConnectService>
+                                  </WhisperProvider>
+                                </LlamaProvider>
+                              </WorkspaceActionsSheetProvider>
+                            </WorkspaceEditSheetProvider>
+                          </FolderFormSheetProvider>
+                        </ModalProvider>
+                        <PortalHost />
+                      </PaperProvider>
+                    </BottomSheetModalProvider>
+                    <AppLockOverlay />
+                  </LockScreenSettingsUiProvider>
+                </LocaleContext>
               </AppLockProvider>
             </View>
           </GestureHandlerRootView>

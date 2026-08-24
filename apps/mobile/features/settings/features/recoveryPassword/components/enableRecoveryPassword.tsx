@@ -5,6 +5,13 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useRecoveryPassphrase } from "../hooks/useRecoveryPassphrase";
 import { RecoveryPassphraseSetupForm } from "./recoveryPassphraseSetupForm";
 import { RecoveryPassphraseReveal } from "./recoveryPassphraseReveal";
+import {
+  settingsRecoveryPassphraseAlertTitle,
+  settingsRecoveryPassphraseSwitchAccessibilityLabel,
+  settingsRecoveryPassphraseSwitchDescription,
+  settingsRecoveryPassphraseSwitchTitle,
+} from "@/features/settings/features/recoveryPassword/labels/settingsRecoveryLabels";
+import { settingsCommonUnknownError } from "@/features/settings/settingsLabels";
 
 export const EnableRecoveryPassphrase = () => {
   const { openModal, closeModal } = useModal();
@@ -18,7 +25,7 @@ export const EnableRecoveryPassphrase = () => {
   const [showSetup, setShowSetup] = useState(false);
 
   const openErrorAlert = (message: string) => {
-    Alert.alert("Recovery passphrase", message);
+    Alert.alert(settingsRecoveryPassphraseAlertTitle(), message);
   };
 
   const runDisable = async () => {
@@ -28,7 +35,9 @@ export const EnableRecoveryPassphrase = () => {
       await disableRecoveryPassphrase();
       setShowSetup(false);
     } catch (e) {
-      openErrorAlert(e instanceof Error ? e.message : "Unknown error");
+      openErrorAlert(
+        e instanceof Error ? e.message : settingsCommonUnknownError()
+      );
     } finally {
       setBusy(false);
     }
@@ -60,12 +69,12 @@ export const EnableRecoveryPassphrase = () => {
   return (
     <View style={{ gap: 12 }}>
       <SwitchSetting
-        title="Recovery passphrase"
-        description="Add a recovery passphrase as a second unlock option for exported workspaces."
+        title={settingsRecoveryPassphraseSwitchTitle()}
+        description={settingsRecoveryPassphraseSwitchDescription()}
         checked={recoveryPassphraseEnabled || showSetup}
         disabled={busy}
         onCheckedChange={onToggle}
-        accessibilityLabel="Enable recovery passphrase"
+        accessibilityLabel={settingsRecoveryPassphraseSwitchAccessibilityLabel()}
       />
 
       {showSetup && !recoveryPassphraseEnabled ? (
@@ -77,7 +86,9 @@ export const EnableRecoveryPassphrase = () => {
               await enableRecoveryPassphrase(passphrase);
               setShowSetup(false);
             } catch (e) {
-              openErrorAlert(e instanceof Error ? e.message : "Unknown error");
+              openErrorAlert(
+                e instanceof Error ? e.message : settingsCommonUnknownError()
+              );
             } finally {
               setBusy(false);
             }

@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
 
 type SettingsSectionProps = {
-  title: string;
+  title: React.ReactNode;
   icon?: IconName;
   children: React.ReactNode;
 };

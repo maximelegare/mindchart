@@ -14,16 +14,18 @@ import { hsl } from "@/utils/hsl";
 import { Icon } from "@/components/ui/icons/icon";
 
 type SettingsSheetRowProps = {
-  label: string;
+  label: React.ReactNode;
   /** Trailing value (e.g. "Local") when not using subtitle/status stack. */
-  value?: string;
+  value?: React.ReactNode;
   /** Small line under the label (model / workspace name). */
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   /** Status line under the subtitle (Loaded / Setup / Enabled). */
-  status?: string;
+  status?: React.ReactNode;
+  /** Controls status styling without relying on English status text. */
+  statusTone?: "default" | "success" | "warning";
   /** Force red chevron (e.g. Recovery passphrase). */
   dangerChevron?: boolean;
-  sheetTitle: string;
+  sheetTitle: React.ReactNode;
   /** Sheet height snap points. Defaults to 88%. */
   snapPoints?: Array<string | number>;
   borderBottom?: boolean;
@@ -40,6 +42,7 @@ export function SettingsSheetRow({
   value,
   subtitle,
   status,
+  statusTone = "default",
   dangerChevron = false,
   sheetTitle,
   snapPoints = ["88%"],
@@ -50,9 +53,8 @@ export function SettingsSheetRow({
 }: SettingsSheetRowProps) {
   const { colorScheme } = useColorScheme();
   const showMeta = subtitle != null || status != null;
-  const needsSetup = !!status && status !== "Loaded" && /setup/i.test(status);
-  const isDisabledStatus = status === "Disabled";
-  const attention = needsSetup || isDisabledStatus;
+  const attention = statusTone === "warning";
+  const success = statusTone === "success";
   const dangerColor = hsl("foreground-errors", colorScheme);
   const redChevron = dangerChevron || attention;
 
@@ -82,7 +84,7 @@ export function SettingsSheetRow({
                     style={{
                       color: attention
                         ? dangerColor
-                        : status === "Loaded"
+                        : success
                           ? hsl("primary", colorScheme)
                           : hsl("muted-foreground", colorScheme),
                     }}

@@ -2,6 +2,7 @@ import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { View } from "react-native";
+import { MoveNoteActionLabel } from "../noteBottomSheetLabels";
 
 type MoveNoteProps = {
   onPress: () => void;
@@ -19,7 +20,9 @@ export const MoveNote = ({ onPress }: MoveNoteProps) => {
     <Button variant="outline" size="default" onPress={handlePress}>
       <View className="flex-row items-center gap-2">
         <Icon name="arrow-right-left" color="foreground" size={18} />
-        <Typography variant="h3">Move note</Typography>
+        <Typography variant="h3">
+          <MoveNoteActionLabel />
+        </Typography>
       </View>
     </Button>
   );

@@ -15,12 +15,16 @@ import {
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { useModal } from "@/components/ui/modal/modal";
 import { useControllers } from "@/api/controllers/useControllers";
-import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
+import {
+  noteDeleteFailedAlertTitle,
+  noteMoveFailedAlertTitle,
+} from "@/features/notes/noteBottomSheet/noteBottomSheetLabels";
 import {
   FolderPickerSheet,
   type FolderSelection,
 } from "@/features/notes/shared/ui/folderSelector";
 import type { FolderTreeFile } from "./folderTreeUtils";
+import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
 
 type FileActionsMenuProps = {
   file: FolderTreeFile;
@@ -98,7 +102,7 @@ export function FileActionsMenu({
           folderId: folder.id,
         });
       } catch (error) {
-        Alert.alert("Move failed", String(error));
+        Alert.alert(noteMoveFailedAlertTitle(), String(error));
       } finally {
         setMoveActive(false);
       }
@@ -115,7 +119,7 @@ export function FileActionsMenu({
           await deleteNoteAction(file.id);
           closeModal();
         } catch (error) {
-          Alert.alert("Delete failed", String(error));
+          Alert.alert(noteDeleteFailedAlertTitle(), String(error));
         }
       },
     });
