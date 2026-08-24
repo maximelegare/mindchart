@@ -5,7 +5,11 @@ import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { hsl } from "@/utils/hsl";
+import { hsl, hslColor } from "@/utils/hsl";
+import {
+  DEFAULT_CATEGORY_COLOR,
+  useCategoryColorMap,
+} from "@/features/categories/hooks/useCategoryColor";
 import capitalize from "@/utils/stringManipulations/capitalize";
 import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
@@ -34,6 +38,7 @@ type RootLayerCardsProps = {
 
 export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
   const { colorScheme } = useColorScheme();
+  const categoryColorMap = useCategoryColorMap();
   const { setParams } = useRouter();
   const graphMode = useGraphStore((state) => state.mode);
   const { folders } = useControllers();
@@ -54,7 +59,9 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
         const showCategoryStripe =
           graphMode === "category" && (isCategoryNode(node) || !!categoryKey);
         const stripeColor = categoryKey
-          ? hsl(categoryKey, colorScheme, undefined, "categories")
+          ? hslColor(
+              categoryColorMap.get(categoryKey) ?? DEFAULT_CATEGORY_COLOR
+            )
           : hsl("border", colorScheme);
         const iconName =
           graphMode === "category" || isCategoryNode(node)

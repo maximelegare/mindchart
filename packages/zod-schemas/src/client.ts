@@ -64,6 +64,7 @@ export type NotesJoinThoughtsParsedJSONPageSchemaModel = z.infer<
 export const CategoriesJoinThoughtsPageSchema = z.object({
   category_id: z.string(),
   category_name: z.string(),
+  category_color: z.string(),
   category_created_at: z.string(),
   thoughts_json: z.string(),
 });
@@ -71,6 +72,7 @@ export const CategoriesJoinThoughtsPageSchema = z.object({
 export const CategoriesJoinThoughtsParsedSchema = z.object({
   id: z.string(),
   name: z.string(),
+  color: z.string(),
   createdAt: z.string().optional(),
   thoughts: z.array(ThoughtSchema),
 });

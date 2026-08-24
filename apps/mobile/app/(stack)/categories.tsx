@@ -1,11 +1,11 @@
 import React from "react";
 
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { View } from "react-native";
 import { PageContainer } from "@/components/layout/page/pageContainer";
 import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/components/ui/modal/modal";
+import { useCategoriesController } from "@/api/controllers/useCategoriesController";
 
 const withLightness = (hsl: string, lightness: number) => {
   // matches: hsl(120, 50%, 40%)
@@ -21,6 +21,8 @@ const withLightness = (hsl: string, lightness: number) => {
 
 const Categories = () => {
   const { openModal } = useModal();
+  const { useFetchAllCategoriesQuery } = useCategoriesController();
+  const { data: categories = [] } = useFetchAllCategoriesQuery();
 
   const handleOpenModal = () => {
     openModal({
@@ -33,22 +35,24 @@ const Categories = () => {
     <PageContainer>
       <>
         <View className="flex-row flex-wrap gap-4">
-          {Object.entries(CATEGORIES_COLORS).map(([key, value]) => (
-            <View key={key} className="flex-row items-center gap-2">
+          {categories.map((category) => (
+            <View key={category.id} className="flex-row items-center gap-2">
               <View
                 style={{
                   height: 50,
 
                   borderRadius: 100,
-                  backgroundColor: withLightness(value, 50),
+                  backgroundColor: withLightness(category.color, 50),
                   borderWidth: 6,
-                  borderColor: value,
+                  borderColor: category.color,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Typography className="text-white m-2">{key}</Typography>
+                <Typography className="text-white m-2">
+                  {category.id}
+                </Typography>
               </View>
             </View>
           ))}

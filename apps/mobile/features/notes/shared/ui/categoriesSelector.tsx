@@ -1,4 +1,3 @@
-import { CategoryKey } from "@repo/sqlite";
 import React from "react";
 import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import {
@@ -12,7 +11,6 @@ import { Typography } from "@/components/ui";
 import { Check } from "@/lib/icons/Check";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { Category } from "@repo/zod-schemas";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 
@@ -55,8 +53,7 @@ export const CategorySelector = ({
                   : "w-4 h-4 rounded-full"
               }
               style={{
-                backgroundColor:
-                  CATEGORIES_COLORS[selectedCategory?.id as CategoryKey],
+                backgroundColor: selectedCategory?.color,
               }}
             ></View>
             <Typography
@@ -124,7 +121,7 @@ function CategoryItem({ item, onPress, selected }: ItemProps) {
       <View className="flex gap-2 items-center flex-row justify-between">
         <View
           className="w-4 h-4 rounded-full pr-4 pt-1"
-          style={{ backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey] }}
+          style={{ backgroundColor: item.color }}
         ></View>
         <View className="flex-1">
           <Typography>{item.name}</Typography>

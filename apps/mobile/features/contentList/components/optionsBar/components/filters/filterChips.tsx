@@ -4,8 +4,6 @@ import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { CategoryKey } from "@repo/sqlite";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import React, { ReactNode, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -123,7 +121,7 @@ export function ContentListFilterChips({
         .map((category) => ({
           id: category.id,
           label: category.name,
-          colorBadge: CATEGORIES_COLORS[category.id as CategoryKey],
+          colorBadge: category.color,
         }));
     }
 

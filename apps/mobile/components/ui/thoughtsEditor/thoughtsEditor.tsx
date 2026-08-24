@@ -1,6 +1,4 @@
-import { CategoryKey } from "@repo/sqlite";
 import { Category } from "@repo/zod-schemas";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { Asset } from "expo-asset";
 import React from "react";
 import { Keyboard, Pressable, ScrollView, View } from "react-native";
@@ -122,12 +120,12 @@ const scrollCaretIntoViewScript = (bottomMargin: number) => `
 })();
 `;
 
-function buildCategoryColorCss(): string {
-  return Object.entries(CATEGORIES_COLORS)
+function buildCategoryColorCss(categories: Category[]): string {
+  return categories
     .map(
-      ([id, color]) => `
-      li[data-category-id="${id}"] .thought-stripe {
-        background-color: ${color};
+      (category) => `
+      li[data-category-id="${category.id}"] .thought-stripe {
+        background-color: ${category.color};
       }
     `
     )
@@ -151,7 +149,7 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
           <View
             className="h-4 w-4 rounded-full"
             style={{
-              backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey],
+              backgroundColor: item.color,
             }}
           />
           <Typography variant="p" className="text-foreground">
@@ -269,7 +267,10 @@ function ThoughtsEditorInner(
   const initialHtmlRef = React.useRef(
     thoughtsToHtml(getValues("thoughts"), effectiveShowTitles, htmlOptions)
   );
-  const categoryColorsCssRef = React.useRef(buildCategoryColorCss());
+  const categoryColorsCss = React.useMemo(
+    () => buildCategoryColorCss(categories),
+    [categories]
+  );
   const { ref: categorySheetRef, close: closeCategorySheet } = useBottomSheet();
 
   const thoughts = watch("thoughts");
@@ -904,7 +905,7 @@ function ThoughtsEditorInner(
                     font-family: inherit;
                     font-weight: inherit;
                   }
-                  ${categoryColorsCssRef.current}
+                  ${categoryColorsCss}
                 `,
                 }}
                 onChange={

@@ -120,6 +120,7 @@ export const AppDataTable = sqliteTable("app_data", {
 export const CategoryTable = sqliteTable("category", {
   id: text("id").notNull().primaryKey(),
   name: text("name").notNull(),
+  color: text("color").notNull(),
   createdAt: text("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

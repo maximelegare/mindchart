@@ -52,6 +52,7 @@ export const setupDB = async (retries = 10, delay = 200) => {
   const categories = CATEGORIES_DEFINITIONS.map((c) => ({
     id: c.id,
     name: c.name,
+    color: c.color,
   }));
 
   const feelings = FEELINGS_DEFINITIONS.map((feeling) => ({

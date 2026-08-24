@@ -1,22 +1,3 @@
-export const DEFAULT_CATEGORIES_COLORS: Record<CategoryKey, string> = {
-  ideas: "#000000",
-  tasks: "#000000",
-  events: "#000000",
-  places: "#000000",
-  goals: "#000000",
-  problems: "#000000",
-  insights: "#000000",
-  plans: "#000000",
-  questions: "#000000",
-  memories: "#000000",
-  learning: "#000000",
-  preferences: "#000000",
-  projects: "#000000",
-  random: "#000000",
-  uncategorized: "#000000",
-  other: "#000000",
-} as const;
-
 export const FEELINGS_DEFINITIONS = [
   { value: 2, label: "Great", emoji: "😁" },
   { value: 1, label: "Good", emoji: "🙂" },
@@ -29,30 +10,25 @@ export type FeelingValue = (typeof FEELINGS_DEFINITIONS)[number]["value"];
 
 export const SETTINGS_DEFINITIONS = [
   { id: "theme", name: "Theme", data: "system" },
-  {
-    id: "graph_categories_colors",
-    name: "Graph Categories Colors",
-    data: JSON.stringify(DEFAULT_CATEGORIES_COLORS),
-  },
 ] as const;
 
 export const CATEGORIES_DEFINITIONS = [
-  { id: "ideas", name: "Ideas" },
-  { id: "tasks", name: "Tasks" },
-  { id: "events", name: "Events" },
-  { id: "places", name: "Places" },
-  { id: "goals", name: "Goals" },
-  { id: "problems", name: "Problems" },
-  { id: "insights", name: "Insights" },
-  { id: "plans", name: "Plans" },
-  { id: "questions", name: "Questions" },
-  { id: "memories", name: "Memories" },
-  { id: "learning", name: "Learning" },
-  { id: "preferences", name: "Preferences" },
-  { id: "projects", name: "Projects" },
-  { id: "random", name: "Random" },
-  { id: "uncategorized", name: "Uncategorized" },
-  { id: "other", name: "Other" },
+  { id: "ideas", name: "Ideas", color: "hsl(35.2, 89.7%, 81%)" },
+  { id: "tasks", name: "Tasks", color: "hsl(53.8, 82.9%, 79.4%)" },
+  { id: "events", name: "Events", color: "hsl(205.7, 55.3%, 85.1%)" },
+  { id: "places", name: "Places", color: "hsl(23.8, 59.2%, 80.8%)" },
+  { id: "goals", name: "Goals", color: "hsl(293.9, 95.2%, 83.7%)" },
+  { id: "problems", name: "Problems", color: "hsl(0, 100%, 89%)" },
+  { id: "insights", name: "Insights", color: "hsl(334, 89.8%, 88.4%)" },
+  { id: "plans", name: "Plans", color: "hsl(109.6, 21.5%, 79%)" },
+  { id: "questions", name: "Questions", color: "hsl(237.5, 90%, 84.3%)" },
+  { id: "memories", name: "Memories", color: "hsl(318.8, 60%, 84.3%)" },
+  { id: "learning", name: "Learning", color: "hsl(259.5, 71.4%, 89%)" },
+  { id: "preferences", name: "Preferences", color: "hsl(177.5, 67.9%, 79.2%)" },
+  { id: "projects", name: "Projects", color: "hsl(113.8, 45.9%, 71%)" },
+  { id: "random", name: "Random", color: "hsl(310.9, 19.6%, 78%)" },
+  { id: "uncategorized", name: "Uncategorized", color: "hsl(240, 21.5%, 79%)" },
+  { id: "other", name: "Other", color: "hsl(0, 0%, 84.3%)" },
 ] as const;
 
 export const APP_DATA_DEFINITIONS = [

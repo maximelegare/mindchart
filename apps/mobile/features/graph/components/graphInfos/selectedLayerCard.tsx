@@ -14,7 +14,11 @@ import { Icon } from "@/components/ui/icons/icon";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { cn } from "@/lib/cn";
-import { hsl } from "@/utils/hsl";
+import { hsl, hslColor } from "@/utils/hsl";
+import {
+  DEFAULT_CATEGORY_COLOR,
+  useCategoryColorMap,
+} from "@/features/categories/hooks/useCategoryColor";
 import capitalize from "@/utils/stringManipulations/capitalize";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
@@ -1025,6 +1029,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
   focusedThoughtId,
 }) => {
   const { colorScheme } = useColorScheme();
+  const categoryColorMap = useCategoryColorMap();
   const { setParams, push } = useRouter();
   const graphMode = useGraphStore((state) => state.mode);
   const highlightColor = hsl("border", colorScheme);
@@ -1041,11 +1046,9 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
   const categoryKey = resolveNodeCategoryKey(layerRoot);
   const showMainStripe = graphMode === "category";
   const stripeColor = categoryKey
-    ? hsl(
-        categoryKey,
-        colorScheme,
-        resolveListItemCategoryShade("root"),
-        "categories"
+    ? hslColor(
+        categoryColorMap.get(categoryKey) ?? DEFAULT_CATEGORY_COLOR,
+        resolveListItemCategoryShade("root")
       )
     : hsl("border", colorScheme);
 

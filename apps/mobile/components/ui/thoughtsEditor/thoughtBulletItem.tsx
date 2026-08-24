@@ -1,4 +1,3 @@
-import { CategoryKey } from "@repo/sqlite";
 import { Category } from "@repo/zod-schemas";
 import React from "react";
 import {
@@ -29,8 +28,8 @@ import {
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui";
 import { EditableField } from "@/components/ui/editableField";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { Check } from "@/lib/icons/Check";
+import { getCategoryColor } from "@/features/categories/hooks/useCategoryColor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 
@@ -77,7 +76,7 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
       <View className="flex gap-2 items-center flex-row justify-between">
         <View
           className="w-4 h-4 rounded-full pr-4 pt-1"
-          style={{ backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey] }}
+          style={{ backgroundColor: item.color }}
         />
         <View className="flex-1">
           <Typography>{item.name}</Typography>
@@ -312,8 +311,7 @@ export const ThoughtBulletItem = ({
       }) => {
         const selectedCategory =
           categories.find((cat) => cat.id === categoryId) || null;
-        const bulletColor =
-          CATEGORIES_COLORS[(categoryId as CategoryKey) || "uncategorized"];
+        const bulletColor = getCategoryColor(categories, categoryId);
 
         const handleSelectCategory = (category: Category) => {
           onCategoryChange(category.id);

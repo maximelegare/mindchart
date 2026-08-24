@@ -3,8 +3,6 @@ import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
 import { CategoryWithThoughtsInfos } from "@repo/zod-schemas/src/schemas";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
-import { CategoryKey } from "@repo/sqlite";
 import { Separator } from "@/components/ui/separator";
 import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
 import { CategoryBottomSheet } from "../../categoryBottomSheet";
@@ -12,7 +10,7 @@ import { GraphButton } from "@/components/ui/buttons/graphButton";
 
 export const CategoryItem: React.FC<CategoryWithThoughtsInfos> = memo(
   (category) => {
-    const { name, id, thoughtCount, createdAt } = category;
+    const { name, id, thoughtCount, createdAt, color } = category;
 
     return (
       <View className="bg-card w-full rounded-2xl p-3.5 pb-4">
@@ -24,7 +22,7 @@ export const CategoryItem: React.FC<CategoryWithThoughtsInfos> = memo(
           <View
             className="w-4 h-4 rounded-full mt-1"
             style={{
-              backgroundColor: CATEGORIES_COLORS[id as CategoryKey],
+              backgroundColor: color,
             }}
           />
           <View className="flex-1">

@@ -23,8 +23,12 @@ import {
   Easing,
   runOnJS,
 } from "react-native-reanimated";
-import { hsl } from "@/utils/hsl";
+import { hsl, hslColor } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
+import {
+  DEFAULT_CATEGORY_COLOR,
+  useCategoryColorMap,
+} from "@/features/categories/hooks/useCategoryColor";
 import { Icon } from "@/components/ui/icons/icon";
 import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
@@ -479,6 +483,7 @@ function CirclePackSkiaRenderer({
   onNodeSelected,
 }: Props & { layout: Layout }) {
   const { colorScheme } = useColorScheme();
+  const categoryColorMap = useCategoryColorMap();
   const isTransitioningInternal = useRef(false);
   const [hatchHighlightActive, setHatchHighlightActive] =
     useState(!!focusedThoughtId);
@@ -700,12 +705,9 @@ function CirclePackSkiaRenderer({
       ? (packLayerCounts.get(category.internalId) ?? 1)
       : 1;
 
+    const categoryColor = categoryColorMap.get(cat) ?? DEFAULT_CATEGORY_COLOR;
     return softenPackForTheme(
-      shadeCategoryLayer(
-        hsl(cat, colorScheme, undefined, "categories"),
-        layerIndex,
-        layerCount
-      )
+      shadeCategoryLayer(hslColor(categoryColor), layerIndex, layerCount)
     );
   };
 

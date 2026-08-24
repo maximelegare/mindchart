@@ -19,6 +19,7 @@ export const parseCategoriesWithThoughts = (
     .map((row) => ({
       id: row.category_id,
       name: row.category_name,
+      color: row.category_color,
       createdAt: row.category_created_at,
       thoughts: parseThoughtsJson(row.thoughts_json).map(
         (thought: Record<string, unknown>) => ({
