@@ -72,7 +72,7 @@ export function settingsDbInspectorDeleteDbFileButton() {
 
 export function settingsDbInspectorRowsLabel(count: number) {
   return fbs(
-    ["Rows: ", fbs.param("count", count)],
+    ["Rows: ", fbs.param("count", count.toString())],
     "DB inspector: table row count"
   );
 }

@@ -187,7 +187,7 @@ export function workspaceConfirmPasswordPlaceholder() {
 
 export function workspacePasswordMinLengthError(min: number) {
   return fbs(
-    ["At least ", fbs.param("min", min), " characters"],
+    ["At least ", fbs.param("min", min.toString()), " characters"],
     "Workspace password minimum length validation"
   );
 }
