@@ -34,6 +34,7 @@ export const REACT_QUERY_KEYS = {
   exportDatabase: "export_database",
   importDatabase: "import_database",
   fetchAllCategories: "fetch_all_categories",
+  fetchCategoryTranslationsByLang: "fetch_category_translations_by_lang",
   generateNote: "generate_note",
   insertNoteAndThoughts: "insert_note_and_thoughts",
   fetchNotes: "fetch_notes",

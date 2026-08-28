@@ -1,6 +1,7 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import List from "@/components/ui/list";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { useMemo } from "react";
 import z from "zod";
 import { CategoryItem } from "../components/categoriesList";
@@ -21,6 +22,7 @@ export const CategoriesListFeature = ({
 }) => {
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
+  const categoryLabels = useCategoryLabelsMap();
 
   const { data } = useFetchAllCategoriesWithThoughtsInfosQuery();
 
@@ -29,11 +31,16 @@ export const CategoriesListFeature = ({
     const result = z.array(CategoryWithThoughtsInfosSchema).safeParse(data);
     if (!result.success) return null;
 
-    const categoriesWithContent = result.data.filter(
-      (category) =>
-        category.thoughtCount > 0 &&
-        (selectedCategoryId == null || category.id === selectedCategoryId)
-    );
+    const categoriesWithContent = result.data
+      .map((category) => ({
+        ...category,
+        name: categoryLabels.get(category.id) ?? category.name,
+      }))
+      .filter(
+        (category) =>
+          category.thoughtCount > 0 &&
+          (selectedCategoryId == null || category.id === selectedCategoryId)
+      );
 
     if (!sortBy) return categoriesWithContent;
 
@@ -41,7 +48,7 @@ export const CategoriesListFeature = ({
       getName: (category) => category.name,
       getDate: (category) => category.createdAt,
     });
-  }, [data, selectedCategoryId, sortBy]);
+  }, [categoryLabels, data, selectedCategoryId, sortBy]);
 
   if (!parsedData) return null;
 

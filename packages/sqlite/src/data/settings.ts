@@ -31,6 +31,54 @@ export const CATEGORIES_DEFINITIONS = [
   { id: "other", name: "Other", color: "hsl(0, 0%, 84.3%)" },
 ] as const;
 
+export const CATEGORIES_TRANSLATIONS: {
+  lang: string;
+  translations: Record<string, string>;
+}[] = [
+  {
+    lang: "en-US",
+    translations: {
+      ideas: "Ideas",
+      tasks: "Tasks",
+      events: "Events",
+      places: "Places",
+      goals: "Goals",
+      problems: "Problems",
+      insights: "Insights",
+      plans: "Plans",
+      questions: "Questions",
+      memories: "Memories",
+      learning: "Learning",
+      preferences: "Preferences",
+      projects: "Projects",
+      random: "Random",
+      uncategorized: "Uncategorized",
+      other: "Other",
+    },
+  },
+  {
+    lang: "fr-CA",
+    translations: {
+      ideas: "Idées",
+      tasks: "Tâches",
+      events: "Événements",
+      places: "Endroits",
+      goals: "Objectifs",
+      problems: "Problèmes",
+      insights: "Perspectives",
+      plans: "Plans",
+      questions: "Questions",
+      memories: "Souvenirs",
+      learning: "Apprentissage",
+      preferences: "Préférences",
+      projects: "Projets",
+      random: "Divers",
+      uncategorized: "Non classé",
+      other: "Autre",
+    },
+  },
+];
+
 export const APP_DATA_DEFINITIONS = [
   { id: "app_name", name: "app_name", data: "My App" },
   { id: "app_version", name: "app_version", data: "1.0.0" },

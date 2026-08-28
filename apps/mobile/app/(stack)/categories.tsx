@@ -6,6 +6,7 @@ import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/components/ui/modal/modal";
 import { useCategoriesController } from "@/api/controllers/useCategoriesController";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 const withLightness = (hsl: string, lightness: number) => {
   // matches: hsl(120, 50%, 40%)
@@ -23,6 +24,7 @@ const Categories = () => {
   const { openModal } = useModal();
   const { useFetchAllCategoriesQuery } = useCategoriesController();
   const { data: categories = [] } = useFetchAllCategoriesQuery();
+  const categoryLabels = useCategoryLabelsMap();
 
   const handleOpenModal = () => {
     openModal({
@@ -51,7 +53,7 @@ const Categories = () => {
                 }}
               >
                 <Typography className="text-white m-2">
-                  {category.id}
+                  {categoryLabels.get(category.id) ?? category.id}
                 </Typography>
               </View>
             </View>

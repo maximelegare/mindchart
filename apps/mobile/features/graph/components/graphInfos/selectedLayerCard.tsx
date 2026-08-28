@@ -31,6 +31,7 @@ import {
   resolveListItemCategoryShade,
   resolveNodeCategoryKey,
 } from "../../utils/resolveNodeCategoryKey";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import type { GraphMode, NodeDatum } from "../../types/types";
 import type { Folder } from "@repo/zod-schemas/src/schemas";
 
@@ -104,6 +105,16 @@ const isFolderNode = (node: NodeDatum) =>
   !isNoteLeaf(node) && (!!node.folderId || node.id.startsWith("folder-"));
 
 const isCategoryNode = (node: NodeDatum) => node.id.startsWith("category-");
+
+const resolveGraphNodeLabel = (
+  node: NodeDatum,
+  categoryLabels: Map<string, string>
+): string => {
+  if (isCategoryNode(node) && node.name) {
+    return categoryLabels.get(node.name) ?? node.name;
+  }
+  return node.name || node.title || "";
+};
 
 const NodeKindIcon = ({
   node,
@@ -352,6 +363,7 @@ type TreeCtx = {
   lineColor: string;
   graphMode: GraphMode;
   foldersById: ReadonlyMap<string, Folder>;
+  categoryLabels: Map<string, string>;
   onNavigate: (nodeId: string) => void;
   onOpenNote: (noteId?: string) => void;
 };
@@ -915,7 +927,10 @@ const FolderBranch = React.memo(function FolderBranch({
                     className={cn("flex-1", isCurrent && "font-semibold")}
                     numberOfLines={1}
                   >
-                    {formatTitle(node.name || node.title || "", 35)}
+                    {formatTitle(
+                      resolveGraphNodeLabel(node, ctx.categoryLabels),
+                      35
+                    )}
                   </Typography>
                   {children.length > 0 ? (
                     <Typography variant="p" className="text-xs opacity-60">
@@ -968,7 +983,9 @@ const FolderBranch = React.memo(function FolderBranch({
                     gap: ROW_GAP,
                   }}
                   accessibilityRole="button"
-                  accessibilityLabel={`Zoom to ${node.name || "group"}`}
+                  accessibilityLabel={`Zoom to ${
+                    resolveGraphNodeLabel(node, ctx.categoryLabels) || "group"
+                  }`}
                 >
                   {rowContent}
                 </Pressable>
@@ -1030,6 +1047,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
 }) => {
   const { colorScheme } = useColorScheme();
   const categoryColorMap = useCategoryColorMap();
+  const categoryLabels = useCategoryLabelsMap();
   const { setParams, push } = useRouter();
   const graphMode = useGraphStore((state) => state.mode);
   const highlightColor = hsl("border", colorScheme);
@@ -1141,11 +1159,13 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
       lineColor,
       graphMode,
       foldersById,
+      categoryLabels,
       onNavigate: navigateToNode,
       onOpenNote: navigateToNote,
     }),
     [
       activePathIds,
+      categoryLabels,
       currentNodeId,
       expandedIds,
       focusedThoughtId,
@@ -1235,7 +1255,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
                   >
                     {formatTitle(
                       layerRoot.folderLabel ||
-                        layerRoot.name ||
+                        resolveGraphNodeLabel(layerRoot, categoryLabels) ||
                         layerRoot.title ||
                         ""
                     )}

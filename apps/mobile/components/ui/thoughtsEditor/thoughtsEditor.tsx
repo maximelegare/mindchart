@@ -46,6 +46,7 @@ import {
   getThoughtFieldPlaceholders,
   thoughtsEditorShowTitlesAccessibilityLabel,
 } from "./thoughtsEditorLabels";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
 const QUICKSAND_BOLD = require("@/assets/fonts/Quicksand-Bold.ttf");
@@ -134,11 +135,17 @@ function buildCategoryColorCss(categories: Category[]): string {
 
 type CategoryListItemProps = {
   item: Category;
+  label: string;
   onPress: () => void;
   selected: boolean;
 };
 
-function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
+function CategoryListItem({
+  item,
+  label,
+  onPress,
+  selected,
+}: CategoryListItemProps) {
   return (
     <Pressable
       className={cn("w-full rounded-lg px-2 py-4", selected && "bg-border")}
@@ -153,7 +160,7 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
             }}
           />
           <Typography variant="p" className="text-foreground">
-            {item.name}
+            {label}
           </Typography>
         </View>
         {selected ? <Check className="text-accent-foreground" /> : null}
@@ -218,6 +225,7 @@ function ThoughtsEditorInner(
   ref: React.ForwardedRef<ThoughtsEditorHandle>
 ) {
   const { colorScheme } = useColorScheme();
+  const categoryLabels = useCategoryLabelsMap();
   const { push } = useRouter();
   const { getValues, setValue, watch } =
     useFormContext<ThoughtsEditorFormValues>();
@@ -957,6 +965,7 @@ function ThoughtsEditorInner(
                   <CategoryListItem
                     key={category.id}
                     item={category}
+                    label={categoryLabels.get(category.id) ?? category.name}
                     onPress={() => handleSelectCategory(category)}
                     selected={selectedCategoryId === category.id}
                   />

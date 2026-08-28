@@ -7,11 +7,21 @@ export const CategorySchema = z.object({
   createdAt: z.string(),
 });
 
+export const CategoryTranslationSchema = z.object({
+  id: z.string(),
+  lang: z.string(),
+  label: z.string(),
+  createdAt: z.string(),
+  editedAt: z.string().nullable().optional(),
+});
+
 export type Note = z.infer<typeof NoteSchema>;
 
 export type Thought = z.infer<typeof ThoughtSchema>;
 
 export type Category = z.infer<typeof CategorySchema>;
+
+export type CategoryTranslation = z.infer<typeof CategoryTranslationSchema>;
 
 export type Person = z.infer<typeof PersonSchema>;
 

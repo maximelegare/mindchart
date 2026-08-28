@@ -16,6 +16,7 @@ import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBread
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";
 import { resolveNodeCategoryKey } from "../../utils/resolveNodeCategoryKey";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import type { NodeDatum } from "../../types/types";
 
 const MAX_LABEL_LENGTH = 22;
@@ -32,6 +33,16 @@ const isFolderNode = (node: NodeDatum) =>
 
 const isCategoryNode = (node: NodeDatum) => node.id.startsWith("category-");
 
+const resolveNodeLabel = (
+  node: NodeDatum,
+  categoryLabels: Map<string, string>
+): string => {
+  if (isCategoryNode(node) && node.name) {
+    return categoryLabels.get(node.name) ?? node.name;
+  }
+  return node.name || node.title || "";
+};
+
 type RootLayerCardsProps = {
   nodes: NodeDatum[];
 };
@@ -39,6 +50,7 @@ type RootLayerCardsProps = {
 export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
   const { colorScheme } = useColorScheme();
   const categoryColorMap = useCategoryColorMap();
+  const categoryLabels = useCategoryLabelsMap();
   const { setParams } = useRouter();
   const graphMode = useGraphStore((state) => state.mode);
   const { folders } = useControllers();
@@ -101,7 +113,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
               <View className="flex-row items-center gap-2 px-3.5 py-2.5">
                 <Icon name={iconName} color="muted-foreground" size={16} />
                 <Typography variant="h4" numberOfLines={1} className="max-w-40">
-                  {formatLabel(node.name || node.title || "")}
+                  {formatLabel(resolveNodeLabel(node, categoryLabels))}
                 </Typography>
                 {node.children?.length ? (
                   <Typography
@@ -140,7 +152,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
             key={node.id}
             onPress={navigate}
             accessibilityRole="button"
-            accessibilityLabel={`Open ${node.name || "item"}`}
+            accessibilityLabel={`Open ${resolveNodeLabel(node, categoryLabels) || "item"}`}
           >
             {card}
           </Pressable>

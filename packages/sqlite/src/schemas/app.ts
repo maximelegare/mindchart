@@ -126,6 +126,27 @@ export const CategoryTable = sqliteTable("category", {
     .notNull(),
 });
 
+export const CategoryTranslationTable = sqliteTable(
+  "category_translation",
+  {
+    id: text("id").notNull(),
+    lang: text("lang").notNull(),
+    label: text("label").notNull(),
+    createdAt: text("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    editedAt: text("edited_at"),
+  },
+  (table) => [
+    primaryKey({ columns: [table.id, table.lang] }),
+    foreignKey({
+      name: "category_translation_category_id_fk",
+      columns: [table.id],
+      foreignColumns: [CategoryTable.id],
+    }).onDelete("cascade"),
+  ]
+);
+
 export const SettingTable = sqliteTable("setting", {
   id: text("id").notNull().primaryKey(),
   name: text("name").notNull(),

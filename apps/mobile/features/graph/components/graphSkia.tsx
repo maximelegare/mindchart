@@ -29,6 +29,7 @@ import {
   DEFAULT_CATEGORY_COLOR,
   useCategoryColorMap,
 } from "@/features/categories/hooks/useCategoryColor";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { Icon } from "@/components/ui/icons/icon";
 import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
@@ -396,6 +397,15 @@ const formatLabel = (name: string) => {
   return `${formatted.slice(0, MAX_LABEL_LENGTH - 1)}…`;
 };
 
+const resolveNodeLabel = (
+  node: NodeInfo,
+  categoryLabels: Map<string, string>
+): string => {
+  const rawName = node.rawData.name;
+  if (!isCategoryPackNode(node) || !rawName) return rawName || "";
+  return categoryLabels.get(rawName) ?? rawName;
+};
+
 const buildHatchLines = (r: number, lineColor: string) => {
   const spacing = Math.max(3, r * 0.12);
   const strokeWidth = Math.max(0.5, r * 0.035);
@@ -484,6 +494,7 @@ function CirclePackSkiaRenderer({
 }: Props & { layout: Layout }) {
   const { colorScheme } = useColorScheme();
   const categoryColorMap = useCategoryColorMap();
+  const categoryLabels = useCategoryLabelsMap();
   const isTransitioningInternal = useRef(false);
   const [hatchHighlightActive, setHatchHighlightActive] =
     useState(!!focusedThoughtId);
@@ -732,7 +743,7 @@ function CirclePackSkiaRenderer({
         }
         if (countDirectChildren(node, allNodes) >= 2) {
           labels.set(node.internalId, {
-            text: formatLabel(node.rawData.name),
+            text: formatLabel(resolveNodeLabel(node, categoryLabels)),
             empty: false,
           });
         }
@@ -748,14 +759,14 @@ function CirclePackSkiaRenderer({
         labels.set(node.internalId, { text: "Empty", empty: true });
       } else {
         labels.set(node.internalId, {
-          text: formatLabel(node.rawData.name),
+          text: formatLabel(resolveNodeLabel(node, categoryLabels)),
           empty: false,
         });
       }
     }
 
     return labels;
-  }, [activeViewNode, allNodes, rootNode]);
+  }, [activeViewNode, allNodes, categoryLabels, rootNode]);
 
   const labelColor = hsl("foreground", colorScheme);
   const labelBgColor = hsl("background", colorScheme);

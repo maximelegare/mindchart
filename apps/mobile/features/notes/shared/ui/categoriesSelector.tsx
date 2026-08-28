@@ -13,6 +13,7 @@ import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { Category } from "@repo/zod-schemas";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 export const CategorySelector = ({
   categories,
@@ -26,6 +27,7 @@ export const CategorySelector = ({
   variant?: "default" | "subtle";
 }) => {
   const { dismiss } = useBottomSheetModal();
+  const categoryLabels = useCategoryLabelsMap();
   const handleSelect = (category: Category) => {
     onSelect(category);
     dismiss();
@@ -64,7 +66,10 @@ export const CategorySelector = ({
                   : "text-foreground"
               }
             >
-              {selectedCategory?.name}
+              {selectedCategory
+                ? (categoryLabels.get(selectedCategory.id) ??
+                  selectedCategory.name)
+                : ""}
             </Typography>
           </TouchableOpacity>
         </BottomSheetOpenTrigger>
@@ -88,6 +93,7 @@ export const CategorySelector = ({
                   <CategoryItem
                     key={category.id}
                     item={category}
+                    label={categoryLabels.get(category.id) ?? category.name}
                     // Use handleSelect instead of onSelect to ensure close() is called
                     onPress={() => handleSelect(category)}
                     selected={selectedCategory === category}
@@ -104,11 +110,12 @@ export const CategorySelector = ({
 
 type ItemProps = {
   item: Category;
+  label: string;
   onPress: () => void;
   selected: boolean;
 };
 
-function CategoryItem({ item, onPress, selected }: ItemProps) {
+function CategoryItem({ item, label, onPress, selected }: ItemProps) {
   const { colorScheme } = useColorScheme();
   return (
     <Pressable
@@ -124,7 +131,7 @@ function CategoryItem({ item, onPress, selected }: ItemProps) {
           style={{ backgroundColor: item.color }}
         ></View>
         <View className="flex-1">
-          <Typography>{item.name}</Typography>
+          <Typography>{label}</Typography>
         </View>
         <View>{selected && <Check className="text-accent-foreground" />}</View>
       </View>

@@ -1,12 +1,14 @@
 import {
   AppDataTable,
   CategoryTable,
+  CategoryTranslationTable,
   FeelingTable,
   SettingTable,
 } from "../../schema.root";
 import {
   SETTINGS_DEFINITIONS,
   CATEGORIES_DEFINITIONS,
+  CATEGORIES_TRANSLATIONS,
   APP_DATA_DEFINITIONS,
   FEELINGS_DEFINITIONS,
 } from "../../data/settings";
@@ -55,6 +57,15 @@ export const setupDB = async (retries = 10, delay = 200) => {
     color: c.color,
   }));
 
+  const categoryTranslations = CATEGORIES_TRANSLATIONS.flatMap(
+    ({ lang, translations }) =>
+      Object.entries(translations).map(([id, label]) => ({
+        id,
+        lang,
+        label,
+      }))
+  );
+
   const feelings = FEELINGS_DEFINITIONS.map((feeling) => ({
     value: feeling.value,
     label: feeling.label,
@@ -72,6 +83,10 @@ export const setupDB = async (retries = 10, delay = 200) => {
       await db.transaction(async (tx) => {
         await tx.insert(SettingTable).values(settings);
         await tx.insert(CategoryTable).values(categories);
+        await tx
+          .insert(CategoryTranslationTable)
+          .values(categoryTranslations)
+          .onConflictDoNothing();
         await tx.insert(FeelingTable).values(feelings).onConflictDoNothing();
         await tx.insert(AppDataTable).values(appData);
       });

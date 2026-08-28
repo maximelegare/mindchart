@@ -1,5 +1,6 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import { FilterChip } from "@/features/contentList/components/optionsBar/components/filters/filterChips";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import React, { ReactNode, useMemo } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -31,6 +32,7 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
   const { useFetchAllFoldersWithNotesInfosQuery } = useControllers().folders;
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
+  const categoryLabels = useCategoryLabelsMap();
 
   const { data: foldersData } = useFetchAllFoldersWithNotesInfosQuery({
     enabled: !showCategories,
@@ -46,7 +48,7 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
         .filter((category) => (category.thoughtCount ?? 0) > 0)
         .map((category) => ({
           id: category.id,
-          label: category.name,
+          label: categoryLabels.get(category.id) ?? category.name,
           colorBadge: category.color,
         }));
     }
@@ -58,7 +60,7 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
         id: folder.id,
         label: folder.label,
       }));
-  }, [categoriesData, foldersData, showCategories]);
+  }, [categoriesData, categoryLabels, foldersData, showCategories]);
 
   const selectedId = showCategories ? selectedCategoryId : selectedFolderId;
   const onSelect = (id: string | null) => {

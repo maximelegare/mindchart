@@ -8,6 +8,7 @@ import {
   usePaginatedNotesControls,
 } from "@/features/contentList/features/pagination/hooks/usePaginatedNotes";
 import { useCategoryGroupsFromPaginatedNotes } from "@/features/contentList/features/pagination/utils/groupThoughtsByCategoryFromNotes";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { sortContentList } from "@/features/contentList/utils/sortContentList";
 
 export const useGroupByCategoriesThoughtsData = () => {
@@ -23,6 +24,7 @@ export const useGroupByCategoriesThoughtsData = () => {
     }, [refetch])
   );
 
+  const categoryLabels = useCategoryLabelsMap();
   const categoryGroups = useCategoryGroupsFromPaginatedNotes(
     items,
     allCategories
@@ -36,11 +38,16 @@ export const useGroupByCategoriesThoughtsData = () => {
       : categoryGroups;
     if (!filtered.length) return null;
 
-    return sortContentList(filtered, sortBy, {
+    const localized = filtered.map((category) => ({
+      ...category,
+      name: categoryLabels.get(category.id) ?? category.name,
+    }));
+
+    return sortContentList(localized, sortBy, {
       getName: (category) => category.name,
       getDate: (category) => category.createdAt,
     });
-  }, [categoryGroups, selectedCategoryId, sortBy]);
+  }, [categoryGroups, categoryLabels, selectedCategoryId, sortBy]);
 };
 
 export const useGroupByCategoriesPagination = () => usePaginatedNotesControls();

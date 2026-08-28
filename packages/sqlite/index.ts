@@ -75,6 +75,10 @@ import { deleteThoughtsByIdsQuery } from "./src/queries/thoughts/deleteThoughtsB
 import { deleteNoteByIdQuery } from "./src/queries/notes/deleteNoteById";
 import { searchThoughtsInFTSQuery } from "./src/queries/search/fts5/search";
 import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
+import {
+  getAllCategoryTranslationsQuery,
+  getCategoryTranslationsByLangQuery,
+} from "./src/queries/categories/getCategoryTranslationsByLang";
 import { getAllFoldersQuery } from "./src/queries/folders/getAllFolders";
 import { getAllFoldersWithNotesInfosQuery } from "./src/queries/folders/getAllFoldersWithNotesInfos";
 import { getFolderByIdQuery } from "./src/queries/folders/getFolderById";
@@ -153,6 +157,8 @@ export {
   deleteNoteByIdQuery,
   searchThoughtsInFTSQuery,
   getAllCategoriesWithThoughtsInfosQuery,
+  getAllCategoryTranslationsQuery,
+  getCategoryTranslationsByLangQuery,
   getAllFoldersQuery,
   getAllFoldersWithNotesInfosQuery,
   getFolderByIdQuery,
