@@ -5,8 +5,10 @@ import { DisplayDate } from "@/components/ui/date";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { GroupedNoteResult } from "@/features/search/features/searchOptions/groupByNote/groupByNote";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
-import { CategoryKey } from "@repo/sqlite";
+import {
+  DEFAULT_CATEGORY_COLOR,
+  useCategoryColorMap,
+} from "@/features/categories/hooks/useCategoryColor";
 
 export const NoteResult = ({
   query,
@@ -16,6 +18,7 @@ export const NoteResult = ({
   data: GroupedNoteResult;
 }) => {
   const { noteTitle, thoughts, noteId } = data;
+  const categoryColorMap = useCategoryColorMap();
 
   const { push } = useRouter();
   const { dismiss } = useBottomSheetModal();
@@ -49,7 +52,8 @@ export const NoteResult = ({
                 style={{
                   left: -12,
                   backgroundColor:
-                    CATEGORIES_COLORS[thought.categoryId as CategoryKey],
+                    categoryColorMap.get(thought.categoryId) ??
+                    DEFAULT_CATEGORY_COLOR,
                 }}
               ></View>
               <View>

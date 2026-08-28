@@ -1,4 +1,3 @@
-import { CategoryKey } from "@repo/sqlite";
 import React from "react";
 import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
 import {
@@ -12,9 +11,9 @@ import { Typography } from "@/components/ui";
 import { Check } from "@/lib/icons/Check";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { Category } from "@repo/zod-schemas";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 export const CategorySelector = ({
   categories,
@@ -28,6 +27,7 @@ export const CategorySelector = ({
   variant?: "default" | "subtle";
 }) => {
   const { dismiss } = useBottomSheetModal();
+  const categoryLabels = useCategoryLabelsMap();
   const handleSelect = (category: Category) => {
     onSelect(category);
     dismiss();
@@ -55,8 +55,7 @@ export const CategorySelector = ({
                   : "w-4 h-4 rounded-full"
               }
               style={{
-                backgroundColor:
-                  CATEGORIES_COLORS[selectedCategory?.id as CategoryKey],
+                backgroundColor: selectedCategory?.color,
               }}
             ></View>
             <Typography
@@ -67,7 +66,10 @@ export const CategorySelector = ({
                   : "text-foreground"
               }
             >
-              {selectedCategory?.name}
+              {selectedCategory
+                ? (categoryLabels.get(selectedCategory.id) ??
+                  selectedCategory.name)
+                : ""}
             </Typography>
           </TouchableOpacity>
         </BottomSheetOpenTrigger>
@@ -91,6 +93,7 @@ export const CategorySelector = ({
                   <CategoryItem
                     key={category.id}
                     item={category}
+                    label={categoryLabels.get(category.id) ?? category.name}
                     // Use handleSelect instead of onSelect to ensure close() is called
                     onPress={() => handleSelect(category)}
                     selected={selectedCategory === category}
@@ -107,11 +110,12 @@ export const CategorySelector = ({
 
 type ItemProps = {
   item: Category;
+  label: string;
   onPress: () => void;
   selected: boolean;
 };
 
-function CategoryItem({ item, onPress, selected }: ItemProps) {
+function CategoryItem({ item, label, onPress, selected }: ItemProps) {
   const { colorScheme } = useColorScheme();
   return (
     <Pressable
@@ -124,10 +128,10 @@ function CategoryItem({ item, onPress, selected }: ItemProps) {
       <View className="flex gap-2 items-center flex-row justify-between">
         <View
           className="w-4 h-4 rounded-full pr-4 pt-1"
-          style={{ backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey] }}
+          style={{ backgroundColor: item.color }}
         ></View>
         <View className="flex-1">
-          <Typography>{item.name}</Typography>
+          <Typography>{label}</Typography>
         </View>
         <View>{selected && <Check className="text-accent-foreground" />}</View>
       </View>

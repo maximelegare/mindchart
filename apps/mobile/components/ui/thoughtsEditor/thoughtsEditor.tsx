@@ -1,6 +1,4 @@
-import { CategoryKey } from "@repo/sqlite";
 import { Category } from "@repo/zod-schemas";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { Asset } from "expo-asset";
 import React from "react";
 import { Keyboard, Pressable, ScrollView, View } from "react-native";
@@ -48,6 +46,7 @@ import {
   getThoughtFieldPlaceholders,
   thoughtsEditorShowTitlesAccessibilityLabel,
 } from "./thoughtsEditorLabels";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
 const QUICKSAND_BOLD = require("@/assets/fonts/Quicksand-Bold.ttf");
@@ -122,12 +121,12 @@ const scrollCaretIntoViewScript = (bottomMargin: number) => `
 })();
 `;
 
-function buildCategoryColorCss(): string {
-  return Object.entries(CATEGORIES_COLORS)
+function buildCategoryColorCss(categories: Category[]): string {
+  return categories
     .map(
-      ([id, color]) => `
-      li[data-category-id="${id}"] .thought-stripe {
-        background-color: ${color};
+      (category) => `
+      li[data-category-id="${category.id}"] .thought-stripe {
+        background-color: ${category.color};
       }
     `
     )
@@ -136,11 +135,17 @@ function buildCategoryColorCss(): string {
 
 type CategoryListItemProps = {
   item: Category;
+  label: string;
   onPress: () => void;
   selected: boolean;
 };
 
-function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
+function CategoryListItem({
+  item,
+  label,
+  onPress,
+  selected,
+}: CategoryListItemProps) {
   return (
     <Pressable
       className={cn("w-full rounded-lg px-2 py-4", selected && "bg-border")}
@@ -151,11 +156,11 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
           <View
             className="h-4 w-4 rounded-full"
             style={{
-              backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey],
+              backgroundColor: item.color,
             }}
           />
           <Typography variant="p" className="text-foreground">
-            {item.name}
+            {label}
           </Typography>
         </View>
         {selected ? <Check className="text-accent-foreground" /> : null}
@@ -220,6 +225,7 @@ function ThoughtsEditorInner(
   ref: React.ForwardedRef<ThoughtsEditorHandle>
 ) {
   const { colorScheme } = useColorScheme();
+  const categoryLabels = useCategoryLabelsMap();
   const { push } = useRouter();
   const { getValues, setValue, watch } =
     useFormContext<ThoughtsEditorFormValues>();
@@ -269,7 +275,10 @@ function ThoughtsEditorInner(
   const initialHtmlRef = React.useRef(
     thoughtsToHtml(getValues("thoughts"), effectiveShowTitles, htmlOptions)
   );
-  const categoryColorsCssRef = React.useRef(buildCategoryColorCss());
+  const categoryColorsCss = React.useMemo(
+    () => buildCategoryColorCss(categories),
+    [categories]
+  );
   const { ref: categorySheetRef, close: closeCategorySheet } = useBottomSheet();
 
   const thoughts = watch("thoughts");
@@ -904,7 +913,7 @@ function ThoughtsEditorInner(
                     font-family: inherit;
                     font-weight: inherit;
                   }
-                  ${categoryColorsCssRef.current}
+                  ${categoryColorsCss}
                 `,
                 }}
                 onChange={
@@ -956,6 +965,7 @@ function ThoughtsEditorInner(
                   <CategoryListItem
                     key={category.id}
                     item={category}
+                    label={categoryLabels.get(category.id) ?? category.name}
                     onPress={() => handleSelectCategory(category)}
                     selected={selectedCategoryId === category.id}
                   />

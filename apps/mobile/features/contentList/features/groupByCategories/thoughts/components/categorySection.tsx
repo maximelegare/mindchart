@@ -1,20 +1,19 @@
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { GroupingLabel } from "@/features/contentList/components/labels/groupingLabel";
-import { CategoryKey } from "@repo/sqlite";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { ReactNode, useState } from "react";
 import { View } from "react-native";
 
 type CategorySectionProps = {
   id: string;
   name: string;
+  color: string;
   children: ReactNode;
   numberOfItems?: number;
 };
 
 export const CategorySection = ({
-  id,
   name,
+  color,
   children,
   numberOfItems,
 }: CategorySectionProps) => {
@@ -24,7 +23,7 @@ export const CategorySection = ({
     <View className="gap-2">
       <GroupingLabel
         label={name}
-        colorBadge={CATEGORIES_COLORS[id as CategoryKey]}
+        colorBadge={color}
         expanded={expanded}
         onPress={() => setExpanded(!expanded)}
         numberOfItems={numberOfItems}

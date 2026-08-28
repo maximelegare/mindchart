@@ -13,6 +13,8 @@ import m0008 from "./0008_previous_lester.sql";
 import m0009 from "./0009_worthless_la_nuit.sql";
 import m0010 from "./0010_robust_gabe_jones.sql";
 import m0011 from "./0011_remove_topic.sql";
+import m0012 from "./0012_add_category_color.sql";
+import m0013 from "./0013_add_category_translations.sql";
 
 export default {
   journal,
@@ -29,5 +31,7 @@ export default {
     m0009,
     m0010,
     m0011,
+    m0012,
+    m0013,
   },
 };

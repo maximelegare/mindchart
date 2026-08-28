@@ -4,12 +4,11 @@ import { Icon } from "@/components/ui/icons/icon";
 import { IconName } from "@/components/ui/icons/icon-registry";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import { CategoryKey } from "@repo/sqlite";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import React, { ReactNode, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useOptionsBar } from "../../context/optionBarContext";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 type ChipItem = {
   id: string;
@@ -103,6 +102,7 @@ export function ContentListFilterChips({
   const { useFetchAllFoldersWithNotesInfosQuery } = useControllers().folders;
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
+  const categoryLabels = useCategoryLabelsMap();
 
   const showCategories =
     groupBy === "categories" || displayMode === "categories";
@@ -122,8 +122,8 @@ export function ContentListFilterChips({
         .filter((category) => (category.thoughtCount ?? 0) > 0)
         .map((category) => ({
           id: category.id,
-          label: category.name,
-          colorBadge: CATEGORIES_COLORS[category.id as CategoryKey],
+          label: categoryLabels.get(category.id) ?? category.name,
+          colorBadge: category.color,
         }));
     }
 
@@ -134,7 +134,7 @@ export function ContentListFilterChips({
         id: folder.id,
         label: folder.label,
       }));
-  }, [categoriesData, foldersData, showCategories]);
+  }, [categoriesData, categoryLabels, foldersData, showCategories]);
 
   const selectedId = showCategories ? selectedCategoryId : selectedFolderId;
   const onSelect = (id: string | null) => {

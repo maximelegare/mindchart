@@ -7,6 +7,7 @@ export const getAllCategoriesQuery = async (db: DB) => {
       .select({
         id: CategoryTable.id,
         name: CategoryTable.name,
+        color: CategoryTable.color,
         createdAt: CategoryTable.createdAt,
       })
       .from(CategoryTable);

@@ -5,13 +5,18 @@ import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { hsl } from "@/utils/hsl";
+import { hsl, hslColor } from "@/utils/hsl";
+import {
+  DEFAULT_CATEGORY_COLOR,
+  useCategoryColorMap,
+} from "@/features/categories/hooks/useCategoryColor";
 import capitalize from "@/utils/stringManipulations/capitalize";
 import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";
 import { resolveNodeCategoryKey } from "../../utils/resolveNodeCategoryKey";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import type { NodeDatum } from "../../types/types";
 
 const MAX_LABEL_LENGTH = 22;
@@ -28,12 +33,24 @@ const isFolderNode = (node: NodeDatum) =>
 
 const isCategoryNode = (node: NodeDatum) => node.id.startsWith("category-");
 
+const resolveNodeLabel = (
+  node: NodeDatum,
+  categoryLabels: Map<string, string>
+): string => {
+  if (isCategoryNode(node) && node.name) {
+    return categoryLabels.get(node.name) ?? node.name;
+  }
+  return node.name || node.title || "";
+};
+
 type RootLayerCardsProps = {
   nodes: NodeDatum[];
 };
 
 export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
   const { colorScheme } = useColorScheme();
+  const categoryColorMap = useCategoryColorMap();
+  const categoryLabels = useCategoryLabelsMap();
   const { setParams } = useRouter();
   const graphMode = useGraphStore((state) => state.mode);
   const { folders } = useControllers();
@@ -54,7 +71,9 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
         const showCategoryStripe =
           graphMode === "category" && (isCategoryNode(node) || !!categoryKey);
         const stripeColor = categoryKey
-          ? hsl(categoryKey, colorScheme, undefined, "categories")
+          ? hslColor(
+              categoryColorMap.get(categoryKey) ?? DEFAULT_CATEGORY_COLOR
+            )
           : hsl("border", colorScheme);
         const iconName =
           graphMode === "category" || isCategoryNode(node)
@@ -94,7 +113,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
               <View className="flex-row items-center gap-2 px-3.5 py-2.5">
                 <Icon name={iconName} color="muted-foreground" size={16} />
                 <Typography variant="h4" numberOfLines={1} className="max-w-40">
-                  {formatLabel(node.name || node.title || "")}
+                  {formatLabel(resolveNodeLabel(node, categoryLabels))}
                 </Typography>
                 {node.children?.length ? (
                   <Typography
@@ -133,7 +152,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
             key={node.id}
             onPress={navigate}
             accessibilityRole="button"
-            accessibilityLabel={`Open ${node.name || "item"}`}
+            accessibilityLabel={`Open ${resolveNodeLabel(node, categoryLabels) || "item"}`}
           >
             {card}
           </Pressable>

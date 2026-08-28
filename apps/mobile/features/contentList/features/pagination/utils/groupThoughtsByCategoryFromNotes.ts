@@ -5,6 +5,7 @@ import type { NotesJoinThoughtsParsedJSONPageSchemaModel } from "@repo/zod-schem
 export type CategoryThoughtGroup = {
   id: string;
   name: string;
+  color: string;
   createdAt?: string;
   thoughts: {
     id: string;
@@ -21,7 +22,8 @@ export type CategoryThoughtGroup = {
 /** Build category sections from a paginated page of notes (without-folders + groupBy categories). */
 export const groupThoughtsByCategoryFromNotes = (
   notes: NotesJoinThoughtsParsedJSONPageSchemaModel[],
-  categoryNameById: Map<string, string>
+  categoryNameById: Map<string, string>,
+  categoryColorById: Map<string, string>
 ): CategoryThoughtGroup[] | null => {
   if (!notes.length) return null;
 
@@ -36,6 +38,7 @@ export const groupThoughtsByCategoryFromNotes = (
           name:
             categoryNameById.get(categoryId) ??
             capitalize(categoryId.replace(/-/g, " ")),
+          color: categoryColorById.get(categoryId) ?? "hsl(0, 0%, 84.3%)",
           createdAt: thought.createdAt ?? undefined,
           thoughts: [],
         });
@@ -68,13 +71,16 @@ export const groupThoughtsByCategoryFromNotes = (
 
 export const useCategoryGroupsFromPaginatedNotes = (
   notes: NotesJoinThoughtsParsedJSONPageSchemaModel[] | null,
-  categories: { id: string; name: string }[] | undefined
+  categories: { id: string; name: string; color: string }[] | undefined
 ) => {
   return useMemo(() => {
     if (!notes) return null;
     const nameById = new Map(
       (categories ?? []).map((category) => [category.id, category.name])
     );
-    return groupThoughtsByCategoryFromNotes(notes, nameById);
+    const colorById = new Map(
+      (categories ?? []).map((category) => [category.id, category.color])
+    );
+    return groupThoughtsByCategoryFromNotes(notes, nameById, colorById);
   }, [categories, notes]);
 };

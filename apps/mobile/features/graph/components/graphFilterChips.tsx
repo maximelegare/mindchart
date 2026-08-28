@@ -1,7 +1,6 @@
 import { useControllers } from "@/api/controllers/useControllers";
 import { FilterChip } from "@/features/contentList/components/optionsBar/components/filters/filterChips";
-import { CategoryKey } from "@repo/sqlite";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import React, { ReactNode, useMemo } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -33,6 +32,7 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
   const { useFetchAllFoldersWithNotesInfosQuery } = useControllers().folders;
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
     useControllers().categories;
+  const categoryLabels = useCategoryLabelsMap();
 
   const { data: foldersData } = useFetchAllFoldersWithNotesInfosQuery({
     enabled: !showCategories,
@@ -46,14 +46,11 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
       if (!categoriesData || !Array.isArray(categoriesData)) return [];
       return categoriesData
         .filter((category) => (category.thoughtCount ?? 0) > 0)
-        .map((category) => {
-          const categoryKey = category.id.toLowerCase() as CategoryKey;
-          return {
-            id: category.id,
-            label: category.name,
-            colorBadge: CATEGORIES_COLORS[categoryKey],
-          };
-        });
+        .map((category) => ({
+          id: category.id,
+          label: categoryLabels.get(category.id) ?? category.name,
+          colorBadge: category.color,
+        }));
     }
 
     if (!foldersData || !Array.isArray(foldersData)) return [];
@@ -63,7 +60,7 @@ export function GraphFilterChips({ leading }: GraphFilterChipsProps) {
         id: folder.id,
         label: folder.label,
       }));
-  }, [categoriesData, foldersData, showCategories]);
+  }, [categoriesData, categoryLabels, foldersData, showCategories]);
 
   const selectedId = showCategories ? selectedCategoryId : selectedFolderId;
   const onSelect = (id: string | null) => {

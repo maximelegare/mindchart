@@ -13,6 +13,7 @@ import {
 } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 function BreadcrumbsSurface({ children }: { children: React.ReactNode }) {
   const { colorScheme } = useColorScheme();
@@ -37,6 +38,7 @@ export const GraphBreadcrumbs = () => {
   const { data: allFolders = [] } = folders.useFetchAllFoldersQuery({
     enabled: graphMode === "folder",
   });
+  const categoryLabels = useCategoryLabelsMap();
 
   const foldersById = useMemo(
     () => new Map(allFolders.map((folder) => [folder.id, folder])),
@@ -54,11 +56,13 @@ export const GraphBreadcrumbs = () => {
         (node.id === "root" || node.name?.toLowerCase() === "root");
       return {
         id: isSynthetic ? "root" : node.id,
-        name: isSynthetic ? rootLabel : formatBreadcrumbLabel(node),
+        name: isSynthetic
+          ? rootLabel
+          : formatBreadcrumbLabel(node, categoryLabels),
       };
     });
     return path.length > 0 ? path : [{ id: "root", name: rootLabel }];
-  }, [activeId, hierarchy, rootLabel]);
+  }, [activeId, categoryLabels, hierarchy, rootLabel]);
 
   const updateGraphParams = (targetId: string) => {
     setParams({

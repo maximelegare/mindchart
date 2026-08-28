@@ -19,6 +19,7 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
       .select({
         category_id: CategoryTable.id,
         category_name: CategoryTable.name,
+        category_color: CategoryTable.color,
         category_created_at: CategoryTable.createdAt,
         thought_id: ThoughtTable.id,
         thought_title: ThoughtTable.title,
@@ -36,6 +37,7 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
       {
         category_id: string;
         category_name: string;
+        category_color: string;
         category_created_at: string;
         thoughts: CategoryThoughtRow[];
       }
@@ -62,6 +64,7 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         categoriesById.set(row.category_id, {
           category_id: row.category_id,
           category_name: row.category_name,
+          category_color: row.category_color,
           category_created_at: row.category_created_at,
           thoughts: [thought],
         });
@@ -71,6 +74,7 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
     return Array.from(categoriesById.values()).map((category) => ({
       category_id: category.category_id,
       category_name: category.category_name,
+      category_color: category.category_color,
       category_created_at: category.category_created_at,
       thoughts_json: JSON.stringify(category.thoughts),
     }));

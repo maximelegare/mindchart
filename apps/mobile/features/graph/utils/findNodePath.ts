@@ -1,5 +1,7 @@
 import { NodeDatum } from "../types/types";
 
+const isCategoryNodeId = (id: string) => id.startsWith("category-");
+
 export const findNodePath = (
   root: NodeDatum,
   targetId: string
@@ -26,8 +28,15 @@ export const findNodePath = (
   return path.length > 0 ? path : [root];
 };
 
-export const formatBreadcrumbLabel = (node: NodeDatum) => {
+export const formatBreadcrumbLabel = (
+  node: NodeDatum,
+  categoryLabels?: Map<string, string>
+) => {
   if (node.id === "root") return "Root";
-  const label = node.folderLabel || node.name || node.title || node.id;
+  const rawLabel = node.folderLabel || node.name || node.title || node.id;
+  const label =
+    categoryLabels && isCategoryNodeId(node.id) && node.name
+      ? (categoryLabels.get(node.name) ?? rawLabel)
+      : rawLabel;
   return label.charAt(0).toUpperCase() + label.slice(1);
 };

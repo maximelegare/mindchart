@@ -1,4 +1,3 @@
-import { CategoryKey } from "@repo/sqlite";
 import { Category } from "@repo/zod-schemas";
 import React from "react";
 import {
@@ -29,8 +28,9 @@ import {
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui";
 import { EditableField } from "@/components/ui/editableField";
-import { CATEGORIES_COLORS } from "@repo/theme/categories";
 import { Check } from "@/lib/icons/Check";
+import { getCategoryColor } from "@/features/categories/hooks/useCategoryColor";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
 
@@ -59,11 +59,17 @@ type ThoughtBulletItemProps = {
 
 type CategoryListItemProps = {
   item: Category;
+  label: string;
   onPress: () => void;
   selected: boolean;
 };
 
-function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
+function CategoryListItem({
+  item,
+  label,
+  onPress,
+  selected,
+}: CategoryListItemProps) {
   const { colorScheme } = useColorScheme();
 
   return (
@@ -77,10 +83,10 @@ function CategoryListItem({ item, onPress, selected }: CategoryListItemProps) {
       <View className="flex gap-2 items-center flex-row justify-between">
         <View
           className="w-4 h-4 rounded-full pr-4 pt-1"
-          style={{ backgroundColor: CATEGORIES_COLORS[item.id as CategoryKey] }}
+          style={{ backgroundColor: item.color }}
         />
         <View className="flex-1">
-          <Typography>{item.name}</Typography>
+          <Typography>{label}</Typography>
         </View>
         <View>{selected && <Check className="text-accent-foreground" />}</View>
       </View>
@@ -102,6 +108,7 @@ export const ThoughtBulletItem = ({
   onBackspaceKey,
 }: ThoughtBulletItemProps) => {
   const { dismiss } = useBottomSheetModal();
+  const categoryLabels = useCategoryLabelsMap();
   const [isExpanded, setIsExpanded] = React.useState(true);
   const categoryTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
     null
@@ -312,8 +319,10 @@ export const ThoughtBulletItem = ({
       }) => {
         const selectedCategory =
           categories.find((cat) => cat.id === categoryId) || null;
-        const bulletColor =
-          CATEGORIES_COLORS[(categoryId as CategoryKey) || "uncategorized"];
+        const selectedCategoryLabel = selectedCategory
+          ? (categoryLabels.get(selectedCategory.id) ?? selectedCategory.name)
+          : "";
+        const bulletColor = getCategoryColor(categories, categoryId);
 
         const handleSelectCategory = (category: Category) => {
           onCategoryChange(category.id);
@@ -372,13 +381,13 @@ export const ThoughtBulletItem = ({
               <BottomSheetOpenTrigger asChild>
                 <Pressable>
                   <Typography className="text-muted-foreground text-xs opacity-80 underline">
-                    {selectedCategory?.name}
+                    {selectedCategoryLabel}
                   </Typography>
                 </Pressable>
               </BottomSheetOpenTrigger>
             ) : (
               <Typography className="text-muted-foreground text-xs opacity-80 underline">
-                {selectedCategory?.name}
+                {selectedCategoryLabel}
               </Typography>
             )}
           </Animated.View>
@@ -429,6 +438,7 @@ export const ThoughtBulletItem = ({
                       <CategoryListItem
                         key={category.id}
                         item={category}
+                        label={categoryLabels.get(category.id) ?? category.name}
                         onPress={() => handleSelectCategory(category)}
                         selected={selectedCategory?.id === category.id}
                       />

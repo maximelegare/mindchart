@@ -85,6 +85,20 @@
       "when": 1786554300000,
       "tag": "0011_remove_topic",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1787591079424,
+      "tag": "0012_add_category_color",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1787952167497,
+      "tag": "0013_add_category_translations",
+      "breakpoints": true
     }
   ]
 }

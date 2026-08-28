@@ -9,9 +9,11 @@ import {
   useGroupByCategoriesPagination,
   useGroupByCategoriesThoughtsData,
 } from "../hooks/useGroupByCategoriesThoughtsData";
+import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
   const parsedData = useGroupByCategoriesThoughtsData();
+  const categoryLabels = useCategoryLabelsMap();
   const { page, pageCount, setPage, isFetching } =
     useGroupByCategoriesPagination();
   const [expandedCardId, setExpandedCardId] = useState<string | null>();
@@ -29,7 +31,8 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
         <CategorySection
           key={category.id}
           id={category.id}
-          name={category.name}
+          name={categoryLabels.get(category.id) ?? category.name}
+          color={category.color}
           numberOfItems={category.thoughts.length}
         >
           {category.thoughts.map((thought) => (

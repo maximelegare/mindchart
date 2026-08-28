@@ -11,6 +11,7 @@ export const getAllCategoriesWithThoughtsInfosQuery = async (
       .select({
         id: CategoryTable.id,
         name: CategoryTable.name,
+        color: CategoryTable.color,
         createdAt: CategoryTable.createdAt,
         thoughtCount: count(ThoughtTable.id),
       })
