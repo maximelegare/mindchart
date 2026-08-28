@@ -2,12 +2,6 @@ import { useCallback } from "react";
 import { Note, Thought } from "@repo/zod-schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 
-export type SaveGeneratedNoteInput = {
-  note: Note;
-  thoughts: Thought[];
-  folderId?: string | null;
-};
-
 function asText(value: unknown): string {
   if (typeof value === "string") return value.trim();
   if (Array.isArray(value)) return value.map(String).join(" ").trim();
@@ -15,37 +9,23 @@ function asText(value: unknown): string {
   return String(value).trim();
 }
 
-/**
- * Persists an AI-generated note: embeddings → note/thoughts → embeddings rows.
- * Returns the saved note id for navigation.
- */
-export const useSaveGeneratedNote = () => {
+export const useSaveNewNote = () => {
   const { notesAndThoughts, embeddings } = useControllers();
 
-  const { useInsertNoteAndThoughtsMutation } = notesAndThoughts;
-  const { useInsertEmbeddingsMutation, useGenerateLocalEmbeddingsMutation } =
-    embeddings;
-
   const { mutateAsync: insertNoteAndThoughtsMutateAsync } =
-    useInsertNoteAndThoughtsMutation();
+    notesAndThoughts.useInsertNoteAndThoughtsMutation();
   const { mutateAsync: generateLocalEmbeddingsMutateAsync } =
-    useGenerateLocalEmbeddingsMutation();
+    embeddings.useGenerateLocalEmbeddingsMutation();
   const { mutateAsync: insertEmbeddingsMutateAsync } =
-    useInsertEmbeddingsMutation();
+    embeddings.useInsertEmbeddingsMutation();
 
-  const saveGeneratedNote = useCallback(
-    async ({ note, thoughts, folderId }: SaveGeneratedNoteInput) => {
+  const saveNewNote = useCallback(
+    async (note: Note, thoughts: Thought[]) => {
       const noteToInsert: Note = {
-        id: note.id,
+        ...note,
         title: asText(note.title),
         summary: asText(note.summary),
         rawText: note.rawText ?? "",
-        folderId: folderId ?? note.folderId ?? null,
-        persons: note.persons ?? [],
-        feeling: note.feeling ?? null,
-        locationId: note.locationId ?? null,
-        locationName: note.locationName ?? null,
-        createdAt: note.createdAt ?? new Date().toISOString(),
       };
 
       const thoughtsToInsert: Thought[] = thoughts.map((thought) => {
@@ -54,14 +34,12 @@ export const useSaveGeneratedNote = () => {
         const semanticLabel = asText(thought.semanticLabel) || title || summary;
 
         return {
-          id: thought.id,
-          thoughtId: thought.thoughtId || thought.id,
-          noteId: noteToInsert.id,
+          ...thought,
           title,
           summary,
           semanticLabel,
           categoryId: asText(thought.categoryId) || "uncategorized",
-          createdAt: thought.createdAt ?? new Date().toISOString(),
+          noteId: noteToInsert.id,
         };
       });
 
@@ -74,8 +52,6 @@ export const useSaveGeneratedNote = () => {
         thoughts: thoughtsToInsert,
       });
       await insertEmbeddingsMutateAsync({ data: generatedEmbeddings });
-
-      return noteToInsert.id;
     },
     [
       generateLocalEmbeddingsMutateAsync,
@@ -84,5 +60,5 @@ export const useSaveGeneratedNote = () => {
     ]
   );
 
-  return { saveGeneratedNote };
+  return { saveNewNote };
 };

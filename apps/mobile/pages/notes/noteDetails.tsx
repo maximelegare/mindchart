@@ -1,4 +1,5 @@
 import { PageContainer } from "@/components/layout/page/pageContainer";
+import type { MoreOptionsMenuLink } from "@/components/layout/header/moreOptions/moreOptionsMenu";
 import { useModal } from "@/components/ui/modal/modal";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
@@ -8,6 +9,7 @@ import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/component
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
 import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
+import { useNoteDraftStore } from "@/features/notes/noteDraft/store/noteDraftStore";
 import {
   noteDetailsDeleteNoteMenuLabel,
   noteDetailsFolderRequiredAlertMessage,
@@ -26,12 +28,14 @@ import { Alert } from "react-native";
 
 function parseEditorMode(value: string | string[] | undefined): NoteEditorMode {
   const raw = Array.isArray(value) ? value[0] : value;
-  return raw === "preview" ? "preview" : "regular";
+  if (raw === "new") return "new";
+  if (raw === "preview") return "preview";
+  return "regular";
 }
 
 function shouldStartEditing(value: string | string[] | undefined): boolean {
   const raw = Array.isArray(value) ? value[0] : value;
-  return raw === "preview" || raw === "edit";
+  return raw === "preview" || raw === "edit" || raw === "new";
 }
 
 export const NoteDetailsPage = () => {
@@ -41,6 +45,7 @@ export const NoteDetailsPage = () => {
   }>();
   const segments = useSegments();
   const openedFromGraph = (segments as string[]).includes("graph");
+  const clearDraft = useNoteDraftStore((s) => s.clearDraft);
   const [open, setOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<NoteEditorMode>(() =>
     parseEditorMode(modeParam)
@@ -62,7 +67,8 @@ export const NoteDetailsPage = () => {
   const saveActionRef = useRef<(() => void) | null>(null);
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
-  const { noteTitle, isPending, note, noteId } = useNoteDetailsData();
+  const isNewMode = editorMode === "new";
+  const { noteTitle, isPending, note, noteId } = useNoteDetailsData(isNewMode);
 
   const { notesAndThoughts, folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
@@ -97,11 +103,24 @@ export const NoteDetailsPage = () => {
     return allFolders.find((folder) => folder.id === folderId) ?? null;
   }, [allFolders, note]);
 
+  // For new notes, initialize header state once from the draft note.
   useEffect(() => {
+    if (!isNewMode || !note?.[0]) return;
+    const draftNote = note[0];
     setHeaderFolder(noteFolder);
-  }, [noteFolder]);
+    setHeaderPersons(draftNote.persons ?? []);
+    setHeaderFeeling(draftNote.feeling ?? null);
+    setHeaderLocationId(draftNote.locationId ?? null);
+    setHeaderLocationName(draftNote.locationName ?? null);
+  }, [isNewMode, note, noteFolder]);
 
   useEffect(() => {
+    if (isNewMode) return;
+    setHeaderFolder(noteFolder);
+  }, [isNewMode, noteFolder]);
+
+  useEffect(() => {
+    if (isNewMode) return;
     const nextPersons = note?.[0]?.persons ?? [];
     setHeaderPersons((current) => {
       const currentKey = current
@@ -114,16 +133,18 @@ export const NoteDetailsPage = () => {
         .join("|");
       return currentKey === nextKey ? current : nextPersons;
     });
-  }, [note]);
+  }, [isNewMode, note]);
 
   useEffect(() => {
+    if (isNewMode) return;
     setHeaderFeeling(note?.[0]?.feeling ?? null);
-  }, [note]);
+  }, [isNewMode, note]);
 
   useEffect(() => {
+    if (isNewMode) return;
     setHeaderLocationId(note?.[0]?.locationId ?? null);
     setHeaderLocationName(note?.[0]?.locationName ?? null);
-  }, [note]);
+  }, [isNewMode, note]);
 
   useEffect(() => {
     const nextMode = parseEditorMode(modeParam);
@@ -155,6 +176,11 @@ export const NoteDetailsPage = () => {
   };
 
   const handleDiscardNote = () => {
+    if (isNewMode) {
+      clearDraft();
+      leaveAfterDelete();
+      return;
+    }
     openModal({
       modalName: "DELETE_NOTE_CONFIRMATION",
       onConfirm: async () => {
@@ -172,8 +198,11 @@ export const NoteDetailsPage = () => {
 
   const handleEditingChange = (editing: boolean) => {
     setIsEditing(editing);
-    // Leaving edit after a preview save promotes the note to regular mode.
-    if (!editing && editorMode === "preview") {
+    // Leaving edit after a preview/new save promotes the note to regular mode.
+    if (!editing && (editorMode === "preview" || editorMode === "new")) {
+      if (editorMode === "new") {
+        clearDraft();
+      }
       switchToRegularMode();
     }
   };
@@ -197,7 +226,7 @@ export const NoteDetailsPage = () => {
       }
       setFolderRequiredError(false);
       setHeaderFolder(folder);
-      if (!noteId) return;
+      if (!noteId || isNewMode) return;
       if (folder.id === (note?.[0]?.folderId ?? null)) return;
       try {
         await updateNoteFolderId({
@@ -209,13 +238,13 @@ export const NoteDetailsPage = () => {
         Alert.alert(noteMoveFailedAlertTitle(), String(error));
       }
     },
-    [note, noteFolder, noteId, updateNoteFolderId]
+    [isNewMode, note, noteFolder, noteId, updateNoteFolderId]
   );
 
   const handlePersonsChange = useCallback(
     async (persons: Person[]) => {
       setHeaderPersons(persons);
-      if (!noteId) return;
+      if (!noteId || isNewMode) return;
       try {
         await updateNotePersons({ noteId, persons });
       } catch (error) {
@@ -223,13 +252,13 @@ export const NoteDetailsPage = () => {
         Alert.alert(noteDetailsUpdateFailedAlertTitle(), String(error));
       }
     },
-    [note, noteId, updateNotePersons]
+    [isNewMode, note, noteId, updateNotePersons]
   );
 
   const handleFeelingChange = useCallback(
     async (feeling: FeelingValue | null) => {
       setHeaderFeeling(feeling);
-      if (!noteId) return;
+      if (!noteId || isNewMode) return;
       try {
         await updateNoteFeeling({ noteId, feeling });
       } catch (error) {
@@ -237,14 +266,14 @@ export const NoteDetailsPage = () => {
         Alert.alert(noteDetailsUpdateFailedAlertTitle(), String(error));
       }
     },
-    [note, noteId, updateNoteFeeling]
+    [isNewMode, note, noteId, updateNoteFeeling]
   );
 
   const handleLocationChange = useCallback(
     async (location: Location | null) => {
       setHeaderLocationId(location?.id ?? null);
       setHeaderLocationName(location?.name ?? null);
-      if (!noteId) return;
+      if (!noteId || isNewMode) return;
       try {
         await updateNoteLocation({
           noteId,
@@ -256,8 +285,25 @@ export const NoteDetailsPage = () => {
         Alert.alert(noteDetailsUpdateFailedAlertTitle(), String(error));
       }
     },
-    [note, noteId, updateNoteLocation]
+    [isNewMode, note, noteId, updateNoteLocation]
   );
+
+  const menuLinks: MoreOptionsMenuLink[] = [
+    ...(isNewMode
+      ? []
+      : [
+          {
+            label: noteDetailsDeleteNoteMenuLabel(),
+            icon: "trash-2" as const,
+            action: handleDeleteNote,
+          },
+        ]),
+    {
+      label: noteDetailsSettingsMenuLabel(),
+      icon: "settings" as const,
+      href: "/settings",
+    },
+  ];
 
   return (
     <PageContainer
@@ -280,7 +326,7 @@ export const NoteDetailsPage = () => {
           />
         ) : undefined
       }
-      hideBackButton={isPreviewMode}
+      hideBackButton={isPreviewMode || isNewMode}
       hideTabBar
       noScrollView
       optionsHeader={
@@ -312,18 +358,7 @@ export const NoteDetailsPage = () => {
           : []
       }
       moreOptionsMenu={{
-        links: [
-          {
-            label: noteDetailsDeleteNoteMenuLabel(),
-            icon: "trash-2",
-            action: handleDeleteNote,
-          },
-          {
-            label: noteDetailsSettingsMenuLabel(),
-            icon: "settings",
-            href: "/settings",
-          },
-        ],
+        links: menuLinks,
         state: { open, setOpen },
         trigger: "ellipsis",
         currentWorkspace: false,
@@ -338,6 +373,11 @@ export const NoteDetailsPage = () => {
         onSavingChange={setIsSaving}
         simplified={simplified}
         folderId={headerFolder?.id ?? null}
+        persons={headerPersons}
+        feeling={headerFeeling}
+        locationId={headerLocationId}
+        locationName={headerLocationName}
+        isNew={isNewMode}
         onFolderErrorChange={setFolderRequiredError}
       />
     </PageContainer>

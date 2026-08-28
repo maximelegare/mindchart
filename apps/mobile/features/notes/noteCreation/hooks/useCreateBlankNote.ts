@@ -1,43 +1,28 @@
 import { useCallback } from "react";
 import { router } from "expo-router";
-import { useControllers } from "@/api/controllers/useControllers";
-import { createEmptyThought } from "@/components/ui/thoughtsEditor";
+import {
+  createBlankDraftNote,
+  useNoteDraftStore,
+} from "@/features/notes/noteDraft/store/noteDraftStore";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
-import { generateID } from "@/utils/genrateID";
 
 export const useCreateBlankNote = () => {
   const currentFolderId = useOptionsBar((s) => s.currentFolderId);
-  const { notesAndThoughts } = useControllers();
-  const { mutateAsync: insertNoteAndThoughts } =
-    notesAndThoughts.useInsertNoteAndThoughtsMutation();
+  const setDraft = useNoteDraftStore((s) => s.setDraft);
 
   const createBlankNote = useCallback(
-    async (folderIdOverride?: string | null) => {
-      const noteId = generateID();
-      const thought = createEmptyThought(noteId);
-      // Non-empty so local embedding helpers never see a blank label.
-      thought.semanticLabel = " ";
+    (folderIdOverride?: string | null) => {
       const folderId =
         folderIdOverride !== undefined ? folderIdOverride : currentFolderId;
-
-      await insertNoteAndThoughts({
-        note: {
-          id: noteId,
-          title: "",
-          summary: "",
-          rawText: "",
-          folderId,
-          createdAt: new Date().toISOString(),
-        },
-        thoughts: [thought],
-      });
+      const draft = createBlankDraftNote(folderId);
+      setDraft(draft);
 
       router.push({
         pathname: "/notes/[id]",
-        params: { id: noteId, mode: "preview" },
+        params: { id: draft.id, mode: "new" },
       });
     },
-    [currentFolderId, insertNoteAndThoughts]
+    [currentFolderId, setDraft]
   );
 
   return { createBlankNote };
