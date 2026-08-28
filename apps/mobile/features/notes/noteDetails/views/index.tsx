@@ -11,12 +11,15 @@ import {
 } from "@/components/ui/thoughtsEditor";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
+import { useSaveNewNote } from "@/features/notes/noteDraft/hooks/useSaveNewNote";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import {
   noteDetailsTitleRequiredPlaceholder,
   NoteDetailsTitlePlaceholder,
 } from "@/features/notes/noteDetails/noteDetailsLabels";
+import { Person } from "@repo/zod-schemas";
+import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 
 type NoteDetailsFeatureProps = {
   isPending: boolean;
@@ -28,6 +31,11 @@ type NoteDetailsFeatureProps = {
   simplified?: boolean;
   /** Current folder from the header selector (preferred over stale note data). */
   folderId?: string | null;
+  persons?: Person[];
+  feeling?: FeelingValue | null;
+  locationId?: string | null;
+  locationName?: string | null;
+  isNew?: boolean;
   /** Called when save validation needs to highlight the folder selector. */
   onFolderErrorChange?: (hasError: boolean) => void;
 };
@@ -70,6 +78,11 @@ type NoteDetailsContentProps = {
   onSavingChange?: (saving: boolean) => void;
   simplified: boolean;
   folderId: string | null;
+  persons: Person[];
+  feeling: FeelingValue | null;
+  locationId: string | null;
+  locationName: string | null;
+  isNew: boolean;
   onFolderErrorChange?: (hasError: boolean) => void;
 };
 
@@ -81,9 +94,15 @@ function NoteDetailsContent({
   onSavingChange,
   simplified,
   folderId,
+  persons,
+  feeling,
+  locationId,
+  locationName,
+  isNew,
   onFolderErrorChange,
 }: NoteDetailsContentProps) {
   const { editNoteAction } = useEditNote();
+  const { saveNewNote } = useSaveNewNote();
   const { useFetchAllCategoriesQuery } = useControllers().categories;
   const { data: categoriesData } = useFetchAllCategoriesQuery();
   const { colorScheme } = useColorScheme();
@@ -196,27 +215,34 @@ function NoteDetailsContent({
         return;
       }
 
-      const remainingIds = new Set(nextThoughts.map((thought) => thought.id));
-      const thoughtsToDelete = [...originalThoughtIds].filter(
-        (id) => !remainingIds.has(id)
-      );
+      const noteToSave = {
+        id: note.id,
+        title,
+        summary: note.summary,
+        rawText: note.rawText ?? "",
+        folderId: folderId ?? note.folderId ?? null,
+        persons: isNew ? persons : (note.persons ?? []),
+        feeling: isNew ? feeling : (note.feeling ?? null),
+        locationId: isNew ? locationId : (note.locationId ?? null),
+        locationName: isNew ? locationName : (note.locationName ?? null),
+        createdAt: note.createdAt,
+      };
 
-      await editNoteAction(
-        {
-          id: note.id,
-          title,
-          summary: note.summary,
-          rawText: note.rawText ?? "",
-          folderId: folderId ?? note.folderId ?? null,
-          persons: note.persons ?? [],
-          feeling: note.feeling ?? null,
-          locationId: note.locationId ?? null,
-          locationName: note.locationName ?? null,
-          createdAt: note.createdAt,
-        },
-        nextThoughts,
-        thoughtsToDelete
-      );
+      if (isNew) {
+        const thoughtsToSave = nextThoughts.map(
+          ({ status: _status, ...thought }) => ({
+            ...thought,
+            noteId: note.id,
+          })
+        ) as import("@repo/zod-schemas").Thought[];
+        await saveNewNote(noteToSave, thoughtsToSave);
+      } else {
+        const remainingIds = new Set(nextThoughts.map((thought) => thought.id));
+        const thoughtsToDelete = [...originalThoughtIds].filter(
+          (id) => !remainingIds.has(id)
+        );
+        await editNoteAction(noteToSave, nextThoughts, thoughtsToDelete);
+      }
       setTitleRequiredError(false);
       onFolderErrorChange?.(false);
       thoughtsEditorRef.current?.clearValidationErrors();
@@ -226,17 +252,27 @@ function NoteDetailsContent({
     }
   }, [
     editNoteAction,
+    feeling,
     folderId,
     getValues,
+    isNew,
+    locationId,
+    locationName,
     note.createdAt,
     note.folderId,
     note.id,
+    note.locationId,
+    note.locationName,
+    note.persons,
+    note.feeling,
     note.rawText,
     note.summary,
     onEditingChange,
     onFolderErrorChange,
     onSavingChange,
     originalThoughtIds,
+    persons,
+    saveNewNote,
     setValue,
   ]);
 
@@ -358,6 +394,11 @@ export const NoteDetailsFeature = ({
   onSavingChange,
   simplified = false,
   folderId = null,
+  persons = [],
+  feeling = null,
+  locationId = null,
+  locationName = null,
+  isNew = false,
   onFolderErrorChange,
 }: NoteDetailsFeatureProps) => {
   if (isPending) return null;
@@ -374,6 +415,11 @@ export const NoteDetailsFeature = ({
       onSavingChange={onSavingChange}
       simplified={simplified}
       folderId={folderId ?? noteRow.folderId ?? null}
+      persons={persons}
+      feeling={feeling}
+      locationId={locationId}
+      locationName={locationName}
+      isNew={isNew}
       onFolderErrorChange={onFolderErrorChange}
     />
   );

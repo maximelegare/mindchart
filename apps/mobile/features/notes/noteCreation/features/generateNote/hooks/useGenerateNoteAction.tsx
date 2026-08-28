@@ -3,14 +3,14 @@ import { Keyboard } from "react-native";
 import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
-import {
-  loadingModalGeneratingNoteTitle,
-  loadingModalSavingNoteTitle,
-} from "@/components/ui/modal/data/loadingModalLabels";
+import { loadingModalGeneratingNoteTitle } from "@/components/ui/modal/data/loadingModalLabels";
 import { CategoryKey } from "@repo/sqlite";
-import { useSaveGeneratedNote } from "@/features/notes/noteCreation/features/generateNote/hooks/useSaveGeneratedNote";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { router } from "expo-router";
+import {
+  createGeneratedDraftNote,
+  useNoteDraftStore,
+} from "@/features/notes/noteDraft/store/noteDraftStore";
 
 export const useGenerateNoteAction = ({
   fileURI,
@@ -25,11 +25,11 @@ export const useGenerateNoteAction = ({
 }) => {
   const { notesAndThoughts, categories } = useControllers();
   const { aiProviders } = useAISettingsPreferences();
-  const { openModal, closeModal, setModalContent } = useModal();
-  const { saveGeneratedNote } = useSaveGeneratedNote();
+  const { openModal, closeModal } = useModal();
   const requestFabClose = useNoteCreationStore(
     (state) => state.requestFabClose
   );
+  const setDraft = useNoteDraftStore((s) => s.setDraft);
 
   const { useGenerateNoteMutation } = notesAndThoughts;
   const { mutateAsync: generateNoteMutateAsync } = useGenerateNoteMutation();
@@ -91,24 +91,15 @@ export const useGenerateNoteAction = ({
         return;
       }
 
-      setModalContent({
-        customContent: () => (
-          <LoadingState title={loadingModalSavingNoteTitle()} size="large" />
-        ),
-      });
-
-      const noteId = await saveGeneratedNote({
-        note,
-        thoughts,
-        folderId: null,
-      });
+      const draft = createGeneratedDraftNote(note, thoughts);
+      setDraft(draft);
 
       closeModal();
       onSuccess?.();
       requestFabClose();
       router.push({
         pathname: "/notes/[id]",
-        params: { id: noteId, mode: "preview" },
+        params: { id: draft.id, mode: "new" },
       });
     } catch (error) {
       console.error(error);
