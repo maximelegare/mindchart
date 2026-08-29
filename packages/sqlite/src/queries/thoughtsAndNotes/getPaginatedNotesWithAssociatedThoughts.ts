@@ -37,6 +37,8 @@ export const getPaginatedNotesWithAssociatedThoughtsQuery = async (
       note_summary: NoteTable.summary,
       note_raw_text: NoteTable.rawText,
       note_created_at: NoteTable.createdAt,
+      note_updated_at: NoteTable.updatedAt,
+      note_last_viewed_at: NoteTable.lastViewedAt,
       note_feeling: NoteTable.feeling,
       location_id: NoteTable.locationId,
       location_name: LocationTable.name,

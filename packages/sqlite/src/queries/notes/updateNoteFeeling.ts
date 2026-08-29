@@ -9,6 +9,6 @@ export const updateNoteFeelingQuery = async (
 ) => {
   return await db
     .update(NoteTable)
-    .set({ feeling: data.feeling })
+    .set({ feeling: data.feeling, updatedAt: new Date().toISOString() })
     .where(eq(NoteTable.id, data.noteId));
 };

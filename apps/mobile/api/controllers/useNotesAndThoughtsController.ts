@@ -6,6 +6,7 @@ import {
   updateNoteAndThoughts,
   updateNoteFeeling,
   updateNoteFolderId,
+  updateNoteLastViewedAt,
   updateNoteLocation,
   updateNotePersons,
 } from "@/api/endpoints/notes";
@@ -312,6 +313,25 @@ export const useNotesAndThoughtsController = () => {
     });
   };
 
+  const useUpdateNoteLastViewedAtMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation<
+      Awaited<ReturnType<typeof updateNoteLastViewedAt>>,
+      Error,
+      string
+    >({
+      mutationKey: [REACT_QUERY_KEYS.updateNoteLastViewedAt],
+      mutationFn: updateNoteLastViewedAt,
+      onSuccess: async (noteId) => {
+        // Refetch the details so the updated timestamp is reflected without
+        // invalidating the broader lists.
+        await queryClient.refetchQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails, noteId],
+        });
+      },
+    });
+  };
+
   return {
     useGenerateNoteMutation,
     useInsertNoteAndThoughtsMutation,
@@ -328,6 +348,7 @@ export const useNotesAndThoughtsController = () => {
     useUpdateNotePersonsMutation,
     useUpdateNoteFeelingMutation,
     useUpdateNoteLocationMutation,
+    useUpdateNoteLastViewedAtMutation,
     useFetchAllNotesQuery,
   };
 };

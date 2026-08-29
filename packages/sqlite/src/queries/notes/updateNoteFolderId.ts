@@ -8,6 +8,9 @@ export const updateNoteFolderIdQuery = async (
 ) => {
   return await db
     .update(NoteTable)
-    .set({ folderId: data.folderId })
+    .set({
+      folderId: data.folderId,
+      updatedAt: new Date().toISOString(),
+    })
     .where(eq(NoteTable.id, data.noteId));
 };

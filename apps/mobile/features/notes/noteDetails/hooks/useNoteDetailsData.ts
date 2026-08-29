@@ -8,7 +8,7 @@ import {
 } from "@/features/notes/noteDraft/store/noteDraftStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 function resolveDraftNote(
   noteId: string | undefined,
@@ -28,9 +28,12 @@ export const useNoteDetailsData = (isNewMode: boolean) => {
   const local = useLocalSearchParams<{ id: string }>();
   const noteId = typeof local.id === "string" ? local.id : local.id?.[0];
   const queryClient = useQueryClient();
-  const { useFetchNoteDetails } = useControllers().notesAndThoughts;
+  const { useFetchNoteDetails, useUpdateNoteLastViewedAtMutation } =
+    useControllers().notesAndThoughts;
+  const { mutate: updateLastViewedAt } = useUpdateNoteLastViewedAtMutation();
   const draft = useNoteDraftStore((s) => s.draft);
   const fallbackDraftRef = useRef<DraftNote | null>(null);
+  const recordedNoteIdRef = useRef<string | null>(null);
 
   const draftNote = useMemo(
     () => resolveDraftNote(noteId, draft, fallbackDraftRef),
@@ -40,6 +43,14 @@ export const useNoteDetailsData = (isNewMode: boolean) => {
   const { data, isPending: queryPending } = useFetchNoteDetails(noteId ?? "", {
     enabled: !!noteId && !isNewMode,
   });
+
+  useEffect(() => {
+    if (isNewMode || !noteId) return;
+    if (data && recordedNoteIdRef.current !== noteId) {
+      recordedNoteIdRef.current = noteId;
+      updateLastViewedAt(noteId);
+    }
+  }, [data, isNewMode, noteId, updateLastViewedAt]);
 
   const note = useMemo(() => {
     if (isNewMode) return [draftNote];

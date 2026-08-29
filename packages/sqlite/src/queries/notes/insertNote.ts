@@ -19,6 +19,8 @@ export const insertNoteQuery = async (db: DB, data: Note) => {
       feeling: data.feeling ?? null,
       locationId: data.locationId ?? null,
       createdAt: data.createdAt ?? new Date().toISOString(),
+      updatedAt: data.updatedAt ?? new Date().toISOString(),
+      lastViewedAt: data.lastViewedAt ?? null,
     });
   } catch (error) {
     console.error(error);

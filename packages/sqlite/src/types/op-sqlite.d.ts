@@ -21,7 +21,8 @@ declare module "@op-engineering/op-sqlite" {
   export interface SQLiteDatabase {
     close: () => void;
     delete: (location?: string) => void;
-    execute: (sql: string) => void;
+    execute: (sql: string, params?: unknown[]) => Promise<QueryResult>;
+    executeSync: (sql: string, params?: unknown[]) => QueryResult;
     executeQuery: (sql: string) => QueryResult;
     run: (sql: string) => SQLiteRaw<QueryResult>;
     [key: string]: unknown;
