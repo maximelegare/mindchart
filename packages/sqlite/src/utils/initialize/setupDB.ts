@@ -12,7 +12,7 @@ import {
   APP_DATA_DEFINITIONS,
   FEELINGS_DEFINITIONS,
 } from "../../data/settings";
-import { getOPDatabase } from "./getOPDatabase";
+import { getOPDatabase, runRawSqliteTransaction } from "./getOPDatabase";
 import { sql } from "drizzle-orm";
 
 export const setupDB = async (retries = 10, delay = 200) => {
@@ -80,15 +80,15 @@ export const setupDB = async (retries = 10, delay = 200) => {
   // Retry inserting data in case tables aren't fully ready yet
   for (let i = 0; i < retries; i++) {
     try {
-      await db.transaction(async (tx) => {
-        await tx.insert(SettingTable).values(settings);
-        await tx.insert(CategoryTable).values(categories);
-        await tx
+      await runRawSqliteTransaction(async () => {
+        await db.insert(SettingTable).values(settings);
+        await db.insert(CategoryTable).values(categories);
+        await db
           .insert(CategoryTranslationTable)
           .values(categoryTranslations)
           .onConflictDoNothing();
-        await tx.insert(FeelingTable).values(feelings).onConflictDoNothing();
-        await tx.insert(AppDataTable).values(appData);
+        await db.insert(FeelingTable).values(feelings).onConflictDoNothing();
+        await db.insert(AppDataTable).values(appData);
       });
       // Success! Break out of retry loop
       return;

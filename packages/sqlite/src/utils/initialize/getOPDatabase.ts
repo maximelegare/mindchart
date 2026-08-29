@@ -30,10 +30,38 @@ export const getOPDatabase = (): OPSQLiteDatabase => {
       encryptionKey: activeEncryptionKey,
     });
 
-    rawSqlite.execute("PRAGMA foreign_keys = ON;");
+    rawSqlite.executeSync("PRAGMA foreign_keys = ON;");
     instance = drizzle(rawSqlite);
   }
   return instance;
+};
+
+/**
+ * Toggle FK enforcement on the raw OP SQLite connection.
+ * Must not go through Drizzle: `PRAGMA foreign_keys` is a no-op inside a
+ * transaction, and Drizzle wraps `db.run()` / `migrate()` in transactions.
+ */
+export const setForeignKeysEnabled = (enabled: boolean) => {
+  getOPDatabase();
+  rawSqlite?.executeSync(`PRAGMA foreign_keys = ${enabled ? "ON" : "OFF"};`);
+};
+
+export const runRawSqliteTransaction = async <T>(
+  fn: () => Promise<T>
+): Promise<T> => {
+  getOPDatabase();
+  if (!rawSqlite) {
+    throw new Error("SQLite connection is not open");
+  }
+  rawSqlite.executeSync("BEGIN");
+  try {
+    const result = await fn();
+    rawSqlite.executeSync("COMMIT");
+    return result;
+  } catch (error) {
+    rawSqlite.executeSync("ROLLBACK");
+    throw error;
+  }
 };
 
 const closeConnection = () => {
