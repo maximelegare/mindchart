@@ -7,7 +7,7 @@ import z from "zod";
 import { CategoryItem } from "../components/categoriesList";
 import { CategoryWithThoughtsInfosSchema } from "@repo/zod-schemas/src/schemas";
 import {
-  SortBy,
+  SortOptions,
   sortContentList,
 } from "@/features/contentList/utils/sortContentList";
 
@@ -17,7 +17,7 @@ export const CategoriesListFeature = ({
   selectedCategoryId,
 }: {
   withSpaceFiller?: boolean;
-  sortBy?: SortBy;
+  sortBy?: SortOptions;
   selectedCategoryId?: string | null;
 }) => {
   const { useFetchAllCategoriesWithThoughtsInfosQuery } =
@@ -46,7 +46,7 @@ export const CategoriesListFeature = ({
 
     return sortContentList(categoriesWithContent, sortBy, {
       getName: (category) => category.name,
-      getDate: (category) => category.createdAt,
+      getCreatedAt: (category) => category.createdAt,
     });
   }, [categoryLabels, data, selectedCategoryId, sortBy]);
 

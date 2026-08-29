@@ -24,6 +24,7 @@ import {
   DisplayMode,
   FoldersMode,
   OptionsBar as OptionsBarType,
+  SortField,
 } from "../../../types";
 import {
   OPTIONS_BAR_DEFAULTS,
@@ -46,8 +47,9 @@ import {
   GroupSheetTitle,
   OptionLabelRenderer,
   renderGroupChipLabel,
-  renderSortChipLabel,
-  SortOptionLabel,
+  renderSortFieldChipLabel,
+  SortDirectionChipLabel,
+  SortFieldOptionLabel,
   SortSheetTitle,
 } from "./optionsBarLabels";
 
@@ -56,11 +58,11 @@ type OptionItem<T extends string> = {
   icon?: IconName;
 };
 
-const SORT_OPTIONS: OptionItem<OptionsBarType["sortBy"]>[] = [
-  { icon: "arrow-down-wide-narrow", value: "newest" },
-  { icon: "arrow-up-narrow-wide", value: "oldest" },
-  { icon: "arrow-down-a-z", value: "az" },
-  { icon: "arrow-up-a-z", value: "za" },
+const SORT_FIELD_OPTIONS: OptionItem<SortField>[] = [
+  { icon: "arrow-down-a-z", value: "alphabetical" },
+  { icon: "eye", value: "lastViewed" },
+  { icon: "pencil", value: "updatedAt" },
+  { icon: "calendar", value: "createdAt" },
 ];
 
 const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
@@ -198,7 +200,12 @@ function BreadcrumbsSurface({ children }: { children: React.ReactNode }) {
 
 export const OptionsBar = () => {
   const [expanded, setExpanded] = useState(false);
-  const handleSortByChange = useOptionsBar((state) => state.handleSortByChange);
+  const handleSortFieldChange = useOptionsBar(
+    (state) => state.handleSortFieldChange
+  );
+  const toggleSortDirection = useOptionsBar(
+    (state) => state.toggleSortDirection
+  );
   const handleGroupByChange = useOptionsBar(
     (state) => state.handleGroupByChange
   );
@@ -225,7 +232,12 @@ export const OptionsBar = () => {
   const filterLocationIds = useOptionsBar((state) => state.filterLocationIds);
   const selectedFolderId = useOptionsBar((state) => state.selectedFolderId);
 
-  const [sortBy, setSortBy] = useState(() => useOptionsBar.getState().sortBy);
+  const [sortField, setSortField] = useState(
+    () => useOptionsBar.getState().sortField
+  );
+  const [sortDirection, setSortDirection] = useState(
+    () => useOptionsBar.getState().sortDirection
+  );
   const [groupBy, setGroupBy] = useState(
     () => useOptionsBar.getState().groupBy
   );
@@ -288,9 +300,15 @@ export const OptionsBar = () => {
     );
   };
 
-  const onSortByChange = (value: OptionsBarType["sortBy"]) => {
-    setSortBy(value);
-    handleSortByChange(value);
+  const onSortFieldChange = (value: SortField) => {
+    setSortField(value);
+    handleSortFieldChange(value);
+  };
+
+  const onSortDirectionToggle = () => {
+    const next = sortDirection === "asc" ? "desc" : "asc";
+    setSortDirection(next);
+    toggleSortDirection();
   };
 
   const onGroupByChange = (value: OptionsBarType["groupBy"]) => {
@@ -325,7 +343,8 @@ export const OptionsBar = () => {
       useOptionsBar.getState().pageSize !== OPTIONS_BAR_DEFAULTS.pageSize);
 
   const hasNonDefaultOptions =
-    sortBy !== OPTIONS_BAR_DEFAULTS.sortBy ||
+    sortField !== OPTIONS_BAR_DEFAULTS.sortField ||
+    sortDirection !== OPTIONS_BAR_DEFAULTS.sortDirection ||
     localFoldersMode !== OPTIONS_BAR_DEFAULTS.foldersMode ||
     hasAttributeFilters ||
     hasNonDefaultWithoutFolderOptions;
@@ -367,13 +386,36 @@ export const OptionsBar = () => {
                 }
               />
 
+              <OptionChip
+                icon={
+                  sortDirection === "asc"
+                    ? "arrow-down-wide-narrow"
+                    : "arrow-up-narrow-wide"
+                }
+                label={<SortDirectionChipLabel value={sortDirection} />}
+                unstyledLabel
+                onPress={onSortDirectionToggle}
+                accessibilityLabel={
+                  sortDirection === "asc"
+                    ? fbs(
+                        "Sort from beginning to end",
+                        "Accessibility label for ascending sort direction"
+                      )
+                    : fbs(
+                        "Sort from end to beginning",
+                        "Accessibility label for descending sort direction"
+                      )
+                }
+              />
               <OptionsSheet
                 title={<SortSheetTitle />}
-                value={sortBy}
-                options={SORT_OPTIONS}
-                renderOptionLabel={(value) => <SortOptionLabel value={value} />}
-                renderChipLabel={renderSortChipLabel}
-                onValueChange={onSortByChange}
+                value={sortField}
+                options={SORT_FIELD_OPTIONS}
+                renderOptionLabel={(value) => (
+                  <SortFieldOptionLabel value={value} />
+                )}
+                renderChipLabel={renderSortFieldChipLabel}
+                onValueChange={onSortFieldChange}
               />
               <NotesFilterSheet />
               {localFoldersMode === "with" ? <BreadcrumbLinkToggle /> : null}

@@ -10,6 +10,8 @@ type NoteQueryRow = {
   folder_id?: string | null;
   folder_label?: string | null;
   createdAt: string;
+  updatedAt?: string | null;
+  lastViewedAt?: string | null;
 };
 
 export const normalizeNotesFromQuery = (data: unknown): Note[] | null => {
@@ -23,6 +25,8 @@ export const normalizeNotesFromQuery = (data: unknown): Note[] | null => {
     folderId: row.folder_id ?? undefined,
     folderLabel: row.folder_label ?? undefined,
     createdAt: row.createdAt ?? undefined,
+    updatedAt: row.updatedAt ?? undefined,
+    lastViewedAt: row.lastViewedAt ?? null,
   }));
 
   const result = z.array(NoteSchema).safeParse(normalized);

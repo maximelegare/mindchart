@@ -5,7 +5,8 @@ import { DEFAULT_PAGE_SIZE } from "../../../features/pagination/constants";
 import type { PageSize } from "../../../features/pagination/types";
 
 export const OPTIONS_BAR_DEFAULTS = {
-  sortBy: "newest",
+  sortField: "createdAt",
+  sortDirection: "asc",
   groupBy: "folders",
   displayMode: "notes",
   foldersMode: "with",
@@ -23,7 +24,8 @@ export const OPTIONS_BAR_DEFAULTS = {
 const resetPage = { page: 1 } as const;
 
 export type OptionsBarStore = OptionsBar & {
-  handleSortByChange: (sortBy: OptionsBar["sortBy"]) => void;
+  handleSortFieldChange: (sortField: OptionsBar["sortField"]) => void;
+  toggleSortDirection: () => void;
   handleGroupByChange: (groupBy: OptionsBar["groupBy"]) => void;
   handleDisplayModeChange: (displayMode: OptionsBar["displayMode"]) => void;
   handleFoldersModeChange: (foldersMode: OptionsBar["foldersMode"]) => void;
@@ -42,7 +44,12 @@ export type OptionsBarStore = OptionsBar & {
 
 export const useOptionsBar = create<OptionsBarStore>((set) => ({
   ...OPTIONS_BAR_DEFAULTS,
-  handleSortByChange: (sortBy) => set({ sortBy, ...resetPage }),
+  handleSortFieldChange: (sortField) => set({ sortField, ...resetPage }),
+  toggleSortDirection: () =>
+    set((state) => ({
+      sortDirection: state.sortDirection === "asc" ? "desc" : "asc",
+      ...resetPage,
+    })),
   handleGroupByChange: (groupBy) =>
     set((state) => ({
       groupBy,

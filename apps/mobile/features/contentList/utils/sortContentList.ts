@@ -1,37 +1,48 @@
-import { OptionsBar } from "../types";
+import type { SortDirection, SortField } from "../types";
 
-export type SortBy = OptionsBar["sortBy"];
+export type SortOptions = {
+  field: SortField;
+  direction: SortDirection;
+};
 
 type SortKeys<T> = {
   getName: (item: T) => string;
-  getDate?: (item: T) => string | null | undefined;
+  getCreatedAt?: (item: T) => string | null | undefined;
+  getUpdatedAt?: (item: T) => string | null | undefined;
+  getLastViewedAt?: (item: T) => string | null | undefined;
 };
 
 const compareNames = (a: string, b: string) =>
   a.localeCompare(b, undefined, { sensitivity: "base" });
 
-const compareDates = (a: string, b: string) => b.localeCompare(a);
+const compareDates = (a: string, b: string) => a.localeCompare(b);
+
+const valueForField = <T>(item: T, field: SortField, keys: SortKeys<T>) => {
+  if (field === "alphabetical") return keys.getName(item);
+  if (field === "lastViewed") return keys.getLastViewedAt?.(item) ?? "";
+  if (field === "updatedAt") return keys.getUpdatedAt?.(item) ?? "";
+  return keys.getCreatedAt?.(item) ?? "";
+};
 
 export const sortContentList = <T>(
   items: T[],
-  sortBy: SortBy,
+  sort: SortOptions,
   keys: SortKeys<T>
 ): T[] => {
-  const getDate = keys.getDate ?? (() => undefined);
-
   return [...items].sort((a, b) => {
-    const nameA = keys.getName(a);
-    const nameB = keys.getName(b);
+    const valueA = valueForField(a, sort.field, keys);
+    const valueB = valueForField(b, sort.field, keys);
+    const compared =
+      sort.field === "alphabetical"
+        ? compareNames(valueA, valueB)
+        : compareDates(valueA, valueB);
 
-    if (sortBy === "az") return compareNames(nameA, nameB);
-    if (sortBy === "za") return compareNames(nameB, nameA);
+    const fromBeginning = sort.direction === "asc";
+    if (sort.field === "alphabetical") {
+      return fromBeginning ? compared : -compared;
+    }
 
-    const dateA = getDate(a) ?? "";
-    const dateB = getDate(b) ?? "";
-
-    return sortBy === "newest"
-      ? compareDates(dateA, dateB)
-      : compareDates(dateB, dateA);
+    return fromBeginning ? -compared : compared;
   });
 };
 
@@ -40,5 +51,5 @@ export const latestDate = (
 ): string | undefined => {
   const valid = dates.filter((date): date is string => Boolean(date));
   if (!valid.length) return undefined;
-  return valid.sort(compareDates)[0];
+  return [...valid].sort((a, b) => compareDates(b, a))[0];
 };

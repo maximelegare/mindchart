@@ -2,7 +2,13 @@ import { and, asc, count, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { NoteTable, PersonToNoteTable, ThoughtTable } from "../../schema.root";
 import { type DB } from "../../utils/initialize/getOPDatabase";
 
-export type NoteListSortBy = "newest" | "oldest" | "az" | "za";
+export type NoteListSortField =
+  | "alphabetical"
+  | "lastViewed"
+  | "updatedAt"
+  | "createdAt";
+
+export type NoteListSortDirection = "asc" | "desc";
 
 export type NoteListFilters = {
   folderId?: string | null;
@@ -15,21 +21,32 @@ export type NoteListFilters = {
 export type NoteListQueryParams = {
   limit: number;
   offset: number;
-  sortBy: NoteListSortBy;
+  sortField: NoteListSortField;
+  sortDirection: NoteListSortDirection;
   filters?: NoteListFilters;
 };
 
-export const noteListOrderBy = (sortBy: NoteListSortBy) => {
-  switch (sortBy) {
-    case "oldest":
-      return asc(NoteTable.createdAt);
-    case "az":
-      return asc(NoteTable.title);
-    case "za":
-      return desc(NoteTable.title);
-    case "newest":
+export const noteListOrderBy = (
+  sortField: NoteListSortField,
+  sortDirection: NoteListSortDirection
+) => {
+  const fromBeginning = sortDirection === "asc";
+  switch (sortField) {
+    case "alphabetical":
+      return fromBeginning ? asc(NoteTable.title) : desc(NoteTable.title);
+    case "lastViewed":
+      return fromBeginning
+        ? desc(NoteTable.lastViewedAt)
+        : asc(NoteTable.lastViewedAt);
+    case "updatedAt":
+      return fromBeginning
+        ? desc(NoteTable.updatedAt)
+        : asc(NoteTable.updatedAt);
+    case "createdAt":
     default:
-      return desc(NoteTable.createdAt);
+      return fromBeginning
+        ? desc(NoteTable.createdAt)
+        : asc(NoteTable.createdAt);
   }
 };
 
