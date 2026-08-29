@@ -103,6 +103,8 @@ export const NoteSchema = z.object({
   locationName: z.string().nullable().optional(),
   persons: z.array(PersonSchema).optional(),
   createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  lastViewedAt: z.string().nullable().optional(),
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);

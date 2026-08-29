@@ -8,6 +8,9 @@ export const updateNoteLocationQuery = async (
 ) => {
   return await db
     .update(NoteTable)
-    .set({ locationId: data.locationId })
+    .set({
+      locationId: data.locationId,
+      updatedAt: new Date().toISOString(),
+    })
     .where(eq(NoteTable.id, data.noteId));
 };

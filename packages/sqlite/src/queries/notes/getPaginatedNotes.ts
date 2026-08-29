@@ -22,6 +22,8 @@ export const getPaginatedNotesQuery = async (
       folder_id: NoteTable.folderId,
       folder_label: FolderTable.label,
       createdAt: NoteTable.createdAt,
+      updatedAt: NoteTable.updatedAt,
+      lastViewedAt: NoteTable.lastViewedAt,
     })
     .from(NoteTable)
     .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id))

@@ -6,6 +6,7 @@ import {
   setNotePersonsQuery,
   updateNoteFeelingQuery,
   updateNoteFolderIdQuery,
+  updateNoteLastViewedAtQuery,
   updateNoteLocationQuery,
   updateNoteQuery,
   updateThoughtsQuery,
@@ -80,6 +81,11 @@ export const updateNoteLocation = async (data: {
 }) => {
   const db = getOPDatabase();
   return await updateNoteLocationQuery(db, data);
+};
+
+export const updateNoteLastViewedAt = async (noteId: string) => {
+  const db = getOPDatabase();
+  return await updateNoteLastViewedAtQuery(db, noteId);
 };
 
 export const generateNote = async (body: FormData) => {
