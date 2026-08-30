@@ -21,6 +21,18 @@ const matchesFolder = (node: NodeDatum, selectedFolderId: string) => {
   return false;
 };
 
+function findMatchingNode(
+  node: NodeDatum,
+  matches: (candidate: NodeDatum) => boolean
+): NodeDatum | null {
+  if (matches(node)) return node;
+  for (const child of node.children ?? []) {
+    const found = findMatchingNode(child, matches);
+    if (found) return found;
+  }
+  return null;
+}
+
 /** Use the matched folder/category node as the pack root (not the synthetic root). */
 export function filterGraphHierarchy(
   hierarchy: NodeDatum,
@@ -29,15 +41,15 @@ export function filterGraphHierarchy(
   selectedCategoryId: string | null
 ): NodeDatum {
   if (mode === "category" && selectedCategoryId) {
-    const match = hierarchy.children?.find((child) =>
-      matchesCategory(child, selectedCategoryId)
+    const match = findMatchingNode(hierarchy, (node) =>
+      matchesCategory(node, selectedCategoryId)
     );
     return match ?? hierarchy;
   }
 
   if (mode === "folder" && selectedFolderId) {
-    const match = hierarchy.children?.find((child) =>
-      matchesFolder(child, selectedFolderId)
+    const match = findMatchingNode(hierarchy, (node) =>
+      matchesFolder(node, selectedFolderId)
     );
     return match ?? hierarchy;
   }
