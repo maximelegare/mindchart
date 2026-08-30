@@ -96,6 +96,8 @@ export function GroupOptionLabel({ value }: { value: GroupBy }) {
       return <fbt desc="Group option: by folder">By folder</fbt>;
     case "categories":
       return <fbt desc="Group option: by category">By category</fbt>;
+    case "dates":
+      return <fbt desc="Group option: by date">By date</fbt>;
     case "none":
       return <fbt desc="Group option: no grouping">Not grouping</fbt>;
   }

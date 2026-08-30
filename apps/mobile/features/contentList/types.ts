@@ -18,7 +18,7 @@ export type SortDirection = "asc" | "desc";
 export type OptionsBar = {
   sortField: SortField;
   sortDirection: SortDirection;
-  groupBy: "folders" | "categories" | "none";
+  groupBy: "folders" | "categories" | "dates" | "none";
   displayMode: DisplayMode;
   /** Browse via folders + breadcrumbs, or via folder/category filter chips */
   foldersMode: FoldersMode;

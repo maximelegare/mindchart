@@ -68,6 +68,7 @@ const SORT_FIELD_OPTIONS: OptionItem<SortField>[] = [
 const GROUP_OPTIONS: OptionItem<OptionsBarType["groupBy"]>[] = [
   { icon: "folder", value: "folders" },
   { icon: "shapes", value: "categories" },
+  { icon: "calendar", value: "dates" },
   { icon: "circle-off", value: "none" },
 ];
 
