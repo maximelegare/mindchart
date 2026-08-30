@@ -83,8 +83,9 @@ export const usePaginatedNotes = (
   const pageCount = paginationPageCount(totalCount, pageSize);
 
   useEffect(() => {
+    if (data == null) return;
     if (page > pageCount) setPage(clampPage(page, pageCount));
-  }, [page, pageCount, setPage]);
+  }, [data, page, pageCount, setPage]);
 
   const items = useMemo(
     () => parseNoteAndThoughts(data?.rows) ?? [],
@@ -121,8 +122,9 @@ export const usePaginatedNotesPlain = (
   const pageCount = paginationPageCount(totalCount, pageSize);
 
   useEffect(() => {
+    if (data == null) return;
     if (page > pageCount) setPage(clampPage(page, pageCount));
-  }, [page, pageCount, setPage]);
+  }, [data, page, pageCount, setPage]);
 
   const items = useMemo(
     () => normalizeNotesFromQuery(data?.rows) ?? [],
