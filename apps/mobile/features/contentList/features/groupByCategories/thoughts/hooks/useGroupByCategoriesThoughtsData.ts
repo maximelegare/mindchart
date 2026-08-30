@@ -45,7 +45,8 @@ export const useGroupByCategoriesThoughtsData = () => {
 
     return sortContentList(localized, sortBy, {
       getName: (category) => category.name,
-      getDate: (category) => category.createdAt,
+      getCreatedAt: (category) => category.createdAt,
+      getUpdatedAt: (category) => category.updatedAt,
     });
   }, [categoryGroups, categoryLabels, selectedCategoryId, sortBy]);
 };

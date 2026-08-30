@@ -16,7 +16,11 @@ const sortFolderGroups = <
   T extends {
     id: string;
     name: string;
-    notes: { createdAt?: string | null }[];
+    notes: {
+      createdAt?: string | null;
+      updatedAt?: string | null;
+      lastViewedAt?: string | null;
+    }[];
   },
 >(
   groups: T[] | null,
@@ -25,7 +29,12 @@ const sortFolderGroups = <
   if (!groups?.length) return null;
   return sortContentList(groups, sortBy, {
     getName: (group) => group.name,
-    getDate: (group) => latestDate(group.notes.map((note) => note.createdAt)),
+    getCreatedAt: (group) =>
+      latestDate(group.notes.map((note) => note.createdAt)),
+    getUpdatedAt: (group) =>
+      latestDate(group.notes.map((note) => note.updatedAt)),
+    getLastViewedAt: (group) =>
+      latestDate(group.notes.map((note) => note.lastViewedAt)),
   });
 };
 

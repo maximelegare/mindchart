@@ -7,7 +7,8 @@ import {
   countNotesQuery,
   type NoteListFilters,
   type NoteListQueryParams,
-  type NoteListSortBy,
+  type NoteListSortDirection,
+  type NoteListSortField,
 } from "./src/queries/notes/noteListQuery";
 import { insertNoteQuery } from "./src/queries/notes/insertNote";
 import { getAllThoughtsQuery } from "./src/queries/thoughts/getAllThoughts";
@@ -116,7 +117,8 @@ export {
   countNotesQuery,
   type NoteListFilters,
   type NoteListQueryParams,
-  type NoteListSortBy,
+  type NoteListSortDirection,
+  type NoteListSortField,
   insertNoteQuery,
   getAllThoughtsQuery,
   getAllThoughtsGroupByCategoryQuery,

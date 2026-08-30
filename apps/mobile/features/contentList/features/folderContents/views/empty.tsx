@@ -42,7 +42,9 @@ export const FolderContentsView = () => {
 
     return sortContentList(filtered, sortBy, {
       getName: (note) => note.title,
-      getDate: (note) => note.createdAt,
+      getCreatedAt: (note) => note.createdAt,
+      getUpdatedAt: (note) => note.updatedAt,
+      getLastViewedAt: (note) => note.lastViewedAt,
     });
   }, [attributeFilters, currentFolderId, data, sortBy]);
 

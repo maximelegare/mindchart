@@ -23,7 +23,7 @@ export const getPaginatedNotesWithAssociatedThoughtsQuery = async (
     .select({ id: NoteTable.id })
     .from(NoteTable)
     .where(where)
-    .orderBy(noteListOrderBy(params.sortBy))
+    .orderBy(noteListOrderBy(params.sortField, params.sortDirection))
     .limit(params.limit)
     .offset(params.offset);
 
@@ -65,7 +65,7 @@ export const getPaginatedNotesWithAssociatedThoughtsQuery = async (
     .leftJoin(LocationTable, eq(NoteTable.locationId, LocationTable.id))
     .where(inArray(NoteTable.id, noteIds))
     .groupBy(NoteTable.id)
-    .orderBy(noteListOrderBy(params.sortBy));
+    .orderBy(noteListOrderBy(params.sortField, params.sortDirection));
 
   return rows ?? [];
 };

@@ -3,6 +3,8 @@ import { UiKey } from "../../types";
 import { NotesListWithOverviewFeature } from "@/features/contentList/features/groupByNone/views/withOverview";
 import { NotesListGroupByFoldersWithoutOverviewFeature } from "@/features/contentList/features/groupByFolders/notes/views/withoutOverview";
 import { NotesListGroupByFoldersWithOverviewFeature } from "@/features/contentList/features/groupByFolders/notes/views/withOverview";
+import { NotesListGroupByDatesWithoutOverviewFeature } from "@/features/contentList/features/groupByDates/notes/views/withoutOverview";
+import { NotesListGroupByDatesWithOverviewFeature } from "@/features/contentList/features/groupByDates/notes/views/withOverview";
 import { getUiKey } from "./getUiKey";
 
 import { NotesListWithoutOverviewFeature } from "@/features/contentList/features/groupByNone/views/withoutOverview";
@@ -24,6 +26,11 @@ export const CONTENT_VIEW_REGISTRY = {
   "groupBy=folders&display=notes-overview":
     NotesListGroupByFoldersWithOverviewFeature,
   "groupBy=folders&display=categories": CategoriesOnlyViewFeature,
+
+  "groupBy=dates&display=notes": NotesListGroupByDatesWithoutOverviewFeature,
+  "groupBy=dates&display=notes-overview":
+    NotesListGroupByDatesWithOverviewFeature,
+  "groupBy=dates&display=categories": CategoriesOnlyViewFeature,
 
   "groupBy=categories&display=categories": CategoriesOnlyViewFeature,
   "groupBy=categories&display=notes":

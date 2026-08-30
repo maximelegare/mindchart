@@ -27,7 +27,7 @@ type PaginatedNotesHookResult<T> = PaginatedResult<T> & {
 };
 
 const usePaginatedNotesQueryParams = () => {
-  const sortBy = useContentListSort();
+  const sort = useContentListSort();
   const selectedFolderId = useSelectedFolderId();
   const selectedCategoryId = useSelectedCategoryId();
   const attributeFilters = useNotesAttributeFilters();
@@ -47,7 +47,8 @@ const usePaginatedNotesQueryParams = () => {
     return {
       limit: pageSize,
       offset: paginationOffset(page, pageSize),
-      sortBy,
+      sortField: sort.field,
+      sortDirection: sort.direction,
       filters: hasFilters ? filters : undefined,
     };
   }, [
@@ -57,7 +58,8 @@ const usePaginatedNotesQueryParams = () => {
     pageSize,
     selectedCategoryId,
     selectedFolderId,
-    sortBy,
+    sort.direction,
+    sort.field,
   ]);
 
   return { queryParams, page, pageSize, setPage };

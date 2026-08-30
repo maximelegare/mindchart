@@ -7,9 +7,18 @@ export type DisplayKey = "notes" | "notes-overview" | "categories";
 
 export type FoldersMode = "with" | "without";
 
+export type SortField =
+  | "alphabetical"
+  | "lastViewed"
+  | "updatedAt"
+  | "createdAt";
+
+export type SortDirection = "asc" | "desc";
+
 export type OptionsBar = {
-  sortBy: "newest" | "oldest" | "az" | "za";
-  groupBy: "folders" | "categories" | "none";
+  sortField: SortField;
+  sortDirection: SortDirection;
+  groupBy: "folders" | "categories" | "dates" | "none";
   displayMode: DisplayMode;
   /** Browse via folders + breadcrumbs, or via folder/category filter chips */
   foldersMode: FoldersMode;

@@ -1,5 +1,5 @@
 import { IconName } from "@/components/ui/icons/icon-registry";
-import { Pressable } from "react-native";
+import { Pressable, View } from "react-native";
 import React from "react";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
@@ -16,13 +16,23 @@ export type OptionsChipProps = {
   colorBadge?: string;
   onPress?: () => void;
   accessibilityLabel?: string;
+  /** Render `label` as-is (for mixed text + icon labels). */
+  unstyledLabel?: boolean;
 };
 
 export const OptionChip = React.forwardRef<
   React.ElementRef<typeof Pressable>,
   OptionsChipProps
 >(function FilterChip(
-  { label, onPress, icon, selected = false, muted = false, ...props },
+  {
+    label,
+    onPress,
+    icon,
+    selected = false,
+    muted = false,
+    unstyledLabel = false,
+    ...props
+  },
   ref
 ) {
   const { colorScheme } = useColorScheme();
@@ -35,7 +45,7 @@ export const OptionChip = React.forwardRef<
       ref={ref}
       onPress={onPress}
       className={cn(
-        "rounded-full flex-row items-center gap-1.5 bg-card px-2",
+        "min-h-7 rounded-full flex-row items-center justify-center gap-1.5 bg-card px-2.5 py-1.5",
         muted && "opacity-35"
       )}
       variant="ghost"
@@ -45,22 +55,40 @@ export const OptionChip = React.forwardRef<
       {...props}
     >
       {icon ? (
-        <Icon
-          name={icon}
-          color={
-            muted
-              ? "muted-foreground"
-              : selected
-                ? "foreground"
-                : "muted-foreground"
-          }
-          size={14}
-        />
+        <View className="h-3.5 w-3.5 items-center justify-center">
+          <Icon
+            name={icon}
+            color={
+              muted
+                ? "muted-foreground"
+                : selected
+                  ? "foreground"
+                  : "muted-foreground"
+            }
+            size={14}
+          />
+        </View>
       ) : null}
       {label ? (
-        <Typography variant="p" style={{ color: fg, fontSize: 12 }}>
-          {label}
-        </Typography>
+        unstyledLabel && React.isValidElement(label) ? (
+          React.cloneElement(label as React.ReactElement<{ color?: string }>, {
+            color: fg,
+          })
+        ) : unstyledLabel ? (
+          label
+        ) : (
+          <Typography
+            variant="span"
+            style={{
+              color: fg,
+              fontSize: 12,
+              lineHeight: 14,
+              includeFontPadding: false,
+            }}
+          >
+            {label}
+          </Typography>
+        )
       ) : null}
     </Button>
   );

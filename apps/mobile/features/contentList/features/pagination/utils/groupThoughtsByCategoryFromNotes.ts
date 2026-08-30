@@ -7,6 +7,7 @@ export type CategoryThoughtGroup = {
   name: string;
   color: string;
   createdAt?: string;
+  updatedAt?: string;
   thoughts: {
     id: string;
     thoughtId: string;
@@ -40,6 +41,7 @@ export const groupThoughtsByCategoryFromNotes = (
             capitalize(categoryId.replace(/-/g, " ")),
           color: categoryColorById.get(categoryId) ?? "hsl(0, 0%, 84.3%)",
           createdAt: thought.createdAt ?? undefined,
+          updatedAt: note.updatedAt ?? undefined,
           thoughts: [],
         });
       }
@@ -59,6 +61,12 @@ export const groupThoughtsByCategoryFromNotes = (
         (!group.createdAt || thought.createdAt > group.createdAt)
       ) {
         group.createdAt = thought.createdAt;
+      }
+      if (
+        note.updatedAt &&
+        (!group.updatedAt || note.updatedAt > group.updatedAt)
+      ) {
+        group.updatedAt = note.updatedAt;
       }
     }
   }

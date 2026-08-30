@@ -28,7 +28,7 @@ export const getPaginatedNotesQuery = async (
     .from(NoteTable)
     .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id))
     .where(where)
-    .orderBy(noteListOrderBy(params.sortBy))
+    .orderBy(noteListOrderBy(params.sortField, params.sortDirection))
     .limit(params.limit)
     .offset(params.offset);
 };

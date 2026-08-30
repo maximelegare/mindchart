@@ -7,7 +7,7 @@ import { Pressable, View } from "react-native";
 
 type GroupingLabelProps = {
   colorBadge?: string;
-  label: string;
+  label: ReactNode;
   href?: LinkProps["href"];
   children?: ReactNode;
   expanded?: boolean;
