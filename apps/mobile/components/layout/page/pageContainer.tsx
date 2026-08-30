@@ -34,6 +34,16 @@ const { HEADER_HEIGHT, HEADER_OVERLAP, OPTIONS_HEADER_HEIGHT } = LAYOUT_SIZES;
 const SIDE_GUTTER = 4;
 const PAGE_TOP_RADIUS = 24;
 
+type PageScrollApi = {
+  scrollToTop: () => void;
+};
+
+const PageScrollContext = React.createContext<PageScrollApi>({
+  scrollToTop: () => {},
+});
+
+export const usePageScroll = () => React.useContext(PageScrollContext);
+
 type HeaderVariant = "stack" | "tab" | "none";
 
 type PageContainerProps = {
@@ -151,6 +161,16 @@ export const PageContainer = ({
   const previousScrollY = useSharedValue(0);
   const filteredScroll = useSharedValue(0);
 
+  const scrollToTop = React.useCallback(() => {
+    scrollY.value = 0;
+    previousScrollY.value = 0;
+    filteredScroll.value = 0;
+    animatedScrollRef.current?.scrollTo({ y: 0, animated: false });
+    staticScrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [filteredScroll, previousScrollY, scrollY]);
+
+  const pageScrollApi = React.useMemo(() => ({ scrollToTop }), [scrollToTop]);
+
   // Calculate filtered scroll directly inside the scroll handler to guarantee zero-frame lag
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -250,124 +270,132 @@ export const PageContainer = ({
     const pagePaddingTop = optionsHeader ? optionsHeaderHeight : 0;
 
     return (
+      <PageScrollContext.Provider value={pageScrollApi}>
+        <View style={[styles.root, { backgroundColor: chromeBackdrop }]}>
+          {fixedGradient}
+          {showHeader && (
+            <View style={styles.chrome} collapsable={false}>
+              {headerBlock}
+              {optionsHeader ? (
+                <View
+                  style={[
+                    styles.optionsOverlap,
+                    { marginTop: -(pageTopRadius + 1) },
+                  ]}
+                  onLayout={(event) => {
+                    onOptionsHeaderLayout(event.nativeEvent.layout.height);
+                  }}
+                >
+                  {optionsHeader}
+                </View>
+              ) : null}
+            </View>
+          )}
+          <View
+            className="flex-1"
+            style={[
+              styles.pageContainer,
+              gutter(),
+              { backgroundColor: pageBackground },
+              showHeader && { marginTop: pageMarginTop },
+              pagePaddingTop > 0 && { paddingTop: pagePaddingTop },
+              pageNeedsTopRadius && {
+                borderTopLeftRadius: pageTopRadius,
+                borderTopRightRadius: pageTopRadius,
+              },
+            ]}
+          >
+            {noScrollView ? (
+              <View
+                className={
+                  optionsHeader
+                    ? "relative flex-1 min-h-0"
+                    : "relative flex-1 min-h-0 mt-6"
+                }
+              >
+                <Gutter size="md" className="flex-1 min-h-0">
+                  {children}
+                </Gutter>
+              </View>
+            ) : (
+              <ScrollView
+                ref={staticScrollRef}
+                className="flex-1"
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={[
+                  styles.scrollContent,
+                  !optionsHeader && { paddingTop: 24 },
+                ]}
+              >
+                <Gutter size="md">{children}</Gutter>
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </PageScrollContext.Provider>
+    );
+  }
+
+  return (
+    <PageScrollContext.Provider value={pageScrollApi}>
       <View style={[styles.root, { backgroundColor: chromeBackdrop }]}>
         {fixedGradient}
-        {showHeader && (
-          <View style={styles.chrome} collapsable={false}>
-            {headerBlock}
-            {optionsHeader ? (
-              <View
-                style={[
-                  styles.optionsOverlap,
-                  { marginTop: -(pageTopRadius + 1) },
-                ]}
-                onLayout={(event) => {
-                  onOptionsHeaderLayout(event.nativeEvent.layout.height);
-                }}
-              >
-                {optionsHeader}
-              </View>
-            ) : null}
-          </View>
-        )}
+
         <View
           className="flex-1"
           style={[
             styles.pageContainer,
             gutter(),
             { backgroundColor: pageBackground },
-            showHeader && { marginTop: pageMarginTop },
-            pagePaddingTop > 0 && { paddingTop: pagePaddingTop },
-            pageNeedsTopRadius && {
-              borderTopLeftRadius: pageTopRadius,
-              borderTopRightRadius: pageTopRadius,
-            },
           ]}
         >
-          {noScrollView ? (
-            <View
-              className={
-                optionsHeader
-                  ? "relative flex-1 min-h-0"
-                  : "relative flex-1 min-h-0 mt-6"
-              }
-            >
-              <Gutter size="md" className="flex-1 min-h-0">
-                {children}
-              </Gutter>
-            </View>
-          ) : (
-            <ScrollView
-              ref={staticScrollRef}
-              className="flex-1"
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={[
-                styles.scrollContent,
-                !optionsHeader && { paddingTop: 24 },
-              ]}
-            >
-              <Gutter size="md">{children}</Gutter>
-            </ScrollView>
-          )}
+          <Animated.ScrollView
+            className="flex-1"
+            ref={animatedScrollRef}
+            onScroll={scrollHandler}
+            scrollEventThrottle={16} // Guarantees 60fps/120fps tracking updates
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Reserve space for headers to sit over */}
+            <View style={{ height: chromeHeight }} />
+            <Gutter size="md">{children}</Gutter>
+          </Animated.ScrollView>
         </View>
-      </View>
-    );
-  }
 
-  return (
-    <View style={[styles.root, { backgroundColor: chromeBackdrop }]}>
-      {fixedGradient}
-
-      <View
-        className="flex-1"
-        style={[
-          styles.pageContainer,
-          gutter(),
-          { backgroundColor: pageBackground },
-        ]}
-      >
-        <Animated.ScrollView
-          className="flex-1"
-          ref={animatedScrollRef}
-          onScroll={scrollHandler}
-          scrollEventThrottle={16} // Guarantees 60fps/120fps tracking updates
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Reserve space for headers to sit over */}
-          <View style={{ height: chromeHeight }} />
-          <Gutter size="md">{children}</Gutter>
-        </Animated.ScrollView>
-      </View>
-
-      {/* Split layout layers: Rendered above the pageContainer to avoid overlap issues */}
-      <Animated.View
-        pointerEvents="box-none"
-        collapsable={false}
-        style={[styles.chrome, { height: headerHeight }, chromeTranslateStyle]}
-      >
-        {headerBlock}
-      </Animated.View>
-
-      {optionsHeader ? (
+        {/* Split layout layers: Rendered above the pageContainer to avoid overlap issues */}
         <Animated.View
           pointerEvents="box-none"
           collapsable={false}
           style={[
-            styles.optionsChrome,
-            { top: headerHeight },
+            styles.chrome,
+            { height: headerHeight },
             chromeTranslateStyle,
           ]}
-          onLayout={(event) => {
-            onOptionsHeaderLayout(event.nativeEvent.layout.height);
-          }}
         >
-          {optionsHeader}
+          {headerBlock}
         </Animated.View>
-      ) : null}
-    </View>
+
+        {optionsHeader ? (
+          <Animated.View
+            pointerEvents="box-none"
+            collapsable={false}
+            style={[
+              styles.optionsChrome,
+              { top: headerHeight },
+              chromeTranslateStyle,
+            ]}
+            onLayout={(event) => {
+              onOptionsHeaderLayout(event.nativeEvent.layout.height);
+            }}
+          >
+            {optionsHeader}
+          </Animated.View>
+        ) : null}
+      </View>
+    </PageScrollContext.Provider>
   );
 };
 

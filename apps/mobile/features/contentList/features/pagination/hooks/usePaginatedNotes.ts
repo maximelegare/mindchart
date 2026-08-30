@@ -144,14 +144,16 @@ export const usePaginatedNotesPlain = (
 };
 
 /** Shared pagination chrome (page / pageCount / setPage) for list views. */
-export const usePaginatedNotesControls = () => {
+export const usePaginatedNotesControls = (options?: { enabled?: boolean }) => {
   const page = useOptionsBar((state) => state.page);
   const pageSize = useOptionsBar((state) => state.pageSize);
   const setPage = useOptionsBar((state) => state.setPage);
   const { notesAndThoughts } = useControllers();
   const { queryParams } = usePaginatedNotesQueryParams();
   const { data, isFetching } =
-    notesAndThoughts.useFetchPaginatedNotesAndThoughtsQuery(queryParams);
+    notesAndThoughts.useFetchPaginatedNotesAndThoughtsQuery(queryParams, {
+      enabled: options?.enabled ?? true,
+    });
   const totalCount = data?.totalCount ?? 0;
   const pageCount = paginationPageCount(totalCount, pageSize);
   return { page, pageCount, setPage, isFetching };
