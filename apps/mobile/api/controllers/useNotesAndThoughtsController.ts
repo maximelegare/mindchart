@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   deleteNoteById,
   fetchAllNotes,
@@ -167,6 +172,7 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchPaginatedNotes>>>({
       queryKey: [REACT_QUERY_KEYS.fetchPaginatedNotes, params],
       queryFn: () => fetchPaginatedNotes(params),
+      placeholderData: keepPreviousData,
       refetchOnMount: "always",
       structuralSharing: false,
       ...options,
@@ -179,6 +185,7 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchPaginatedNotesAndThoughts>>>({
       queryKey: [REACT_QUERY_KEYS.fetchPaginatedNotesAndThoughts, params],
       queryFn: () => fetchPaginatedNotesAndThoughts(params),
+      placeholderData: keepPreviousData,
       refetchOnMount: "always",
       structuralSharing: false,
       ...options,
