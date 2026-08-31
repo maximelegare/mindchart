@@ -196,7 +196,7 @@ const ThoughtRowActions = ({
   >
     {emphasized ? (
       <View style={{ opacity: 0.45 }}>
-        <Icon name="map-pin-simple" color="muted-foreground" size={12} />
+        <Icon name="map-pin-simple" color="text" size={12} />
       </View>
     ) : null}
     {noteId ? (
@@ -462,7 +462,7 @@ function NoteTitleRow({
             opacity: 0.45,
           }}
         >
-          <Icon name="map-pin-simple" color="muted-foreground" size={12} />
+          <Icon name="map-pin-simple" color="text" size={12} />
         </View>
       ) : null}
     </View>
@@ -939,11 +939,7 @@ const FolderBranch = React.memo(function FolderBranch({
                   ) : null}
                   {isCurrent ? (
                     <View style={{ opacity: 0.45 }}>
-                      <Icon
-                        name="map-pin-simple"
-                        color="muted-foreground"
-                        size={12}
-                      />
+                      <Icon name="map-pin-simple" color="text" size={12} />
                     </View>
                   ) : null}
                 </>
@@ -1265,11 +1261,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
                   ) : null}
                   {isLayerCurrent ? (
                     <View style={{ opacity: 0.45 }}>
-                      <Icon
-                        name="map-pin-simple"
-                        color="muted-foreground"
-                        size={12}
-                      />
+                      <Icon name="map-pin-simple" color="text" size={12} />
                     </View>
                   ) : null}
                 </>

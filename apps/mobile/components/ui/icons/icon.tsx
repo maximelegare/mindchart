@@ -54,6 +54,7 @@ export const Icon = ({
       xml={xml}
       width={size}
       height={size}
+      color={resolvedColor}
       style={style}
       opacity={opacity / 100}
     />
