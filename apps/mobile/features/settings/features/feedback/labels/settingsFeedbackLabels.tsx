@@ -1,7 +1,16 @@
 import { fbs } from "fbtee";
 
 export function SettingsFeedbackSectionTitle() {
-  return <fbt desc="Settings section: feedback">Feedback</fbt>;
+  return <fbt desc="Settings section: send us feedback">Feedback</fbt>;
+}
+
+export function SettingsFeedbackSheetDescription() {
+  return (
+    <fbt desc="Feedback sheet: explain how feedback is used and response time">
+      Use feedback to tell us how you feel about the app. You can also report
+      bugs through here. You should get a response within one business day.
+    </fbt>
+  );
 }
 
 export function settingsFeedbackBugReportLabel() {
@@ -9,7 +18,7 @@ export function settingsFeedbackBugReportLabel() {
 }
 
 export function settingsFeedbackGeneralLabel() {
-  return fbs("Feedback", "Settings feedback row: general feedback");
+  return fbs("Send Feedback", "Settings feedback row: general feedback");
 }
 
 export function settingsFeedbackFeatureIdeaLabel() {

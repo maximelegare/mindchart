@@ -20,25 +20,50 @@ const getAppVersion = (): string => {
   return extra?.version ?? Constants.expoConfig?.version ?? "unknown";
 };
 
-const getOsVersion = (): string => {
+type AndroidConstants = {
+  Brand?: string;
+  Manufacturer?: string;
+  Model?: string;
+  Release?: string;
+};
+
+const androidConstants = (): AndroidConstants =>
+  Platform.OS === "android" ? (Platform.constants as AndroidConstants) : {};
+
+const getManufacturer = (): string => {
+  if (Platform.OS === "ios") return "Apple";
+  const { Manufacturer, Brand } = androidConstants();
+  return Manufacturer ?? Brand ?? "unknown";
+};
+
+const getDevice = (): string => {
   if (Platform.OS === "ios") {
-    return `iOS ${String(Platform.Version)}`;
+    return Constants.platform?.ios?.model ?? Constants.deviceName ?? "unknown";
+  }
+  const { Model } = androidConstants();
+  return Model ?? Constants.deviceName ?? "unknown";
+};
+
+const getOsAndVersion = (): string => {
+  if (Platform.OS === "ios") {
+    const version =
+      Constants.platform?.ios?.systemVersion ?? String(Platform.Version);
+    return `iOS ${version}`;
   }
   if (Platform.OS === "android") {
-    const release =
-      "Release" in Platform.constants && Platform.constants.Release
-        ? String(Platform.constants.Release)
-        : String(Platform.Version);
-    return `Android ${release}`;
+    const { Release } = androidConstants();
+    return `Android ${Release ?? String(Platform.Version)}`;
   }
   return `${Platform.OS} ${String(Platform.Version)}`;
 };
 
 const buildDiagnosticsText = (): string =>
   [
-    "MindChart diagnostics",
-    `App version: ${getAppVersion()}`,
-    `OS: ${getOsVersion()}`,
+    `MindChart Diagnostics:`,
+    `Manufacture: ${getManufacturer()}`,
+    `Device: ${getDevice()}`,
+    `OS: ${getOsAndVersion()}`,
+    `App Version: ${getAppVersion()}`,
   ].join("\n");
 
 const writeDiagnosticsFile = (): string => {

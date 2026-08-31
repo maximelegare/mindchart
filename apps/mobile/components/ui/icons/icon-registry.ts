@@ -46,6 +46,7 @@ export type IconName =
   | "lock-keyhole"
   | "map-pin-simple"
   | "map-pin"
+  | "message-circle-question-mark"
   | "mic"
   | "notebook-text"
   | "palette"
@@ -261,6 +262,10 @@ export const ICON_METADATA: Record<
   "map-pin": {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></g>`,
+  },
+  "message-circle-question-mark": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092a10 10 0 1 0-4.777-4.719"></path><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path></g>`,
   },
   mic: {
     viewBox: "0 0 24 24",
