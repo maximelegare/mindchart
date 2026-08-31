@@ -7,17 +7,16 @@ import seedNotes from "./data/mock.json" with { type: "json" };
 import seedFolders from "./data/mock_folders.json" with { type: "json" };
 
 const useSeedDatabaseService = () => {
-  const db = getOPDatabase();
   const { generateEmbeddings } = useGenerateLocalEmbeddingsService();
 
   const seedDatabaseService = async (numberOfNotes: number) => {
     if (numberOfNotes > seedNotes.length) {
-      return ServiceResponse.failure(
-        `Enter a number less than or equal to ${seedNotes.length}`,
-        null
+      throw new Error(
+        `Enter a number less than or equal to ${seedNotes.length}`
       );
     }
 
+    const db = getOPDatabase();
     const formatedNotes = seedNotes
       .map((note) => seedFormatNote(note))
       .splice(0, numberOfNotes);
@@ -55,7 +54,9 @@ const useSeedDatabaseService = () => {
       return ServiceResponse.success("Database seeded successfully", null);
     } catch (error) {
       console.error(error);
-      return ServiceResponse.failure("Failed to seed database", error);
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to seed database");
     }
   };
   return { seedDatabaseService };

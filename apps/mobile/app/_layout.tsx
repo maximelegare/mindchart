@@ -46,12 +46,16 @@ import {
   setWorkspaceEncryptionKey,
   validateIfDBExists,
 } from "@repo/sqlite";
-import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
+import {
+  useWorkspacesStore,
+  waitForWorkspacesHydration,
+} from "@/features/workspaces/context/workspacesContext";
 import {
   getKeyForWorkspace,
   hasKeyForWorkspace,
 } from "@/features/workspaces/services/workspaceKeyService";
 import { migrateLegacyDatabase } from "@/features/workspaces/utils/migrateLegacyDatabase";
+import { recoverOrphanedWorkspaces } from "@/features/workspaces/utils/recoverOrphanedWorkspaces";
 import type { Workspace } from "@/features/workspaces/context/workspacesContext";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { AppLockProvider } from "@/features/lockScreen/context/appLockProvider";
@@ -137,14 +141,27 @@ export default function RootLayout() {
       setThemePreference(getThemePreference());
       setAndroidNavigationBar(resolveThemePreference());
 
-      // Workspace + DB Logic
+      // Workspace + DB Logic — persist hydrates asynchronously; reading
+      // workspaces before that looks like "no databases" and can overwrite
+      // the real list when the user is sent to create a new one.
       try {
+        await waitForWorkspacesHydration();
         await migrateLegacyDatabase();
+        await recoverOrphanedWorkspaces();
         const exists = await openActiveWorkspaceAndValidate();
         setDbExists(exists);
       } catch (e) {
         console.warn(e);
-        setDbExists(false);
+        const { workspaces } = useWorkspacesStore.getState();
+        if (workspaces.length === 0) {
+          setDbExists(false);
+        } else {
+          try {
+            setDbExists(await validateIfDBExists());
+          } catch {
+            setDbExists(false);
+          }
+        }
       } finally {
         setIsDbChecked(true);
       }

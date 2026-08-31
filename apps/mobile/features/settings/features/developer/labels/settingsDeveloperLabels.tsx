@@ -37,6 +37,10 @@ export function settingsSeedDatabaseLoadingTitle() {
   return fbs("Seeding Database", "Developer seed database loading title");
 }
 
+export function settingsSeedDatabaseFailedAlertTitle() {
+  return fbs("Seed failed", "Developer seed database: failure alert title");
+}
+
 export function settingsDbInspectorClearTableAlertTitle() {
   return fbs("Clear table?", "DB inspector: clear table alert title");
 }

@@ -22,6 +22,8 @@ export const seedFormatNote = (
     summary,
     rawText: "",
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lastViewedAt: null,
   };
 
   const formatedToughts = thoughts.map((t: LocalAIResThought) => {

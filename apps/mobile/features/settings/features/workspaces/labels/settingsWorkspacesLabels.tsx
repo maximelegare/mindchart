@@ -81,6 +81,13 @@ export function settingsWorkspaceUnavailableAlertMessage() {
   );
 }
 
+export function settingsWorkspaceSwitchFailedAlertTitle() {
+  return fbs(
+    "Could not switch workspace",
+    "Alert title when workspace switch fails"
+  );
+}
+
 export function settingsWorkspaceEditDescription() {
   return fbs(
     "Choose a new name, color, and icon for this workspace.",

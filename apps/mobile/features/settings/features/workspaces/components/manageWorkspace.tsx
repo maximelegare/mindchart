@@ -32,6 +32,7 @@ import {
   settingsWorkspaceStatusLoad,
   settingsWorkspaceUnavailableAlertMessage,
   settingsWorkspaceUnavailableAlertTitle,
+  settingsWorkspaceSwitchFailedAlertTitle,
 } from "@/features/settings/features/workspaces/labels/settingsWorkspacesLabels";
 import {
   settingsActionSave,
@@ -87,7 +88,9 @@ export const ManageWorkspaceLayout = () => {
         );
         return;
       }
-      throw error;
+      const message =
+        error instanceof Error ? error.message : String(error ?? "");
+      Alert.alert(settingsWorkspaceSwitchFailedAlertTitle(), message);
     }
   };
 
