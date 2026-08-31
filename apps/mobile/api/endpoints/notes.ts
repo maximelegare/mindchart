@@ -2,7 +2,10 @@ import { ClientOpenAIRoutes } from "@repo/constants";
 import {
   deleteNoteByIdQuery,
   getAllNotesQuery,
+  getOPDatabase,
   insertNoteQuery,
+  insertThoughtsQuery,
+  runRawSqliteTransaction,
   setNotePersonsQuery,
   updateNoteFeelingQuery,
   updateNoteFolderIdQuery,
@@ -11,8 +14,6 @@ import {
   updateNoteQuery,
   updateThoughtsQuery,
 } from "@repo/sqlite";
-import { getOPDatabase } from "@repo/sqlite";
-import { insertThoughtsQuery } from "@repo/sqlite";
 import { Note, Thought } from "@repo/zod-schemas/client";
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
 
@@ -23,14 +24,12 @@ export const insertNoteAndThoughts = async ({
   note: Note;
   thoughts: Array<Thought>;
 }) => {
-  try {
-    const db = getOPDatabase();
+  const db = getOPDatabase();
+  await runRawSqliteTransaction(async () => {
     await insertNoteQuery(db, note);
     await insertThoughtsQuery(db, thoughts);
     await setNotePersonsQuery(db, note.id, note.persons ?? []);
-  } catch (error) {
-    console.error(error);
-  }
+  });
 };
 
 export const updateNoteAndThoughts = async ({

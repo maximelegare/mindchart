@@ -562,50 +562,6 @@
       ],
       "types": []
     },
-    "QyOZ6riGUln/+AKnPLkewA==": {
-      "description": "Sort option: newest first",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Plus récent d'abord",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
-    "OsWHGJzz00FlMWor3o9tsA==": {
-      "description": "Sort option: oldest first",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Plus ancien d'abord",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
-    "vanH2Sa5S+5vU6xdQBI1KA==": {
-      "description": "Sort option: alphabetical A to Z",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Alphabétique",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
-    "Whl1CBlv/FpIzcoir/J6jA==": {
-      "description": "Sort option: alphabetical Z to A",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Ordre Z à A",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
     "X/9dddolhwr78U1MQ22h1A==": {
       "description": "Group option: by folder",
       "tokens": [],
@@ -4634,11 +4590,296 @@
     },
     "xD2IIaGAT6zQ7Il4R8+bIQ==": {
       "description": "Import workspace flow: overwrite confirmation description",
-      "status": "new",
       "tokens": [],
       "translations": [
         {
-          "translation": "All notes and data in \" {workspaceName} \" will be permanently replaced with the contents of this import. Your current workspace name, icon, and color will stay the same. This cannot be undone.",
+          "translation": "Toutes les notes et données de « {workspaceName} » seront définitivement remplacées par le contenu de cet import. Le nom, l'icône et la couleur de votre espace de travail actuel seront conservés. Cette action est irréversible.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "WA8cGN8jvshKji3dx5fTqQ==": {
+      "description": "Alert title when workspace switch fails",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Impossible de changer d'espace de travail",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "K9V6lodtHOvHp7U2EVFhUQ==": {
+      "description": "Settings section: send us feedback",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Commentaires",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lq4l5hF7hSqv555b/v/GNA==": {
+      "description": "Feedback sheet: explain how feedback is used and response time",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Utilisez les commentaires pour nous dire ce que vous pensez de l'application. Vous pouvez aussi signaler des bogues ici. Vous devriez recevoir une réponse dans un délai d'un jour ouvrable.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "V7xTISCDBujkBDpZ0L9Akw==": {
+      "description": "Settings feedback row: bug report",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rapport de bogue",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ORy86LAviBQG4PBS7UCqdw==": {
+      "description": "Settings feedback row: general feedback",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Commentaires",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Xb5yxwWH6Ab+bGFEc8aWHw==": {
+      "description": "Settings feedback row: feature idea",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Idée de fonctionnalité",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5A2orJFm2DlJZ3G4NDyjwQ==": {
+      "description": "Email subject for a bug report",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rapport de bogue",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "pCoehDByVQUpQ5ZI0x5A7A==": {
+      "description": "Email subject for general feedback",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Commentaires pour MindChart",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "0z8OENCKbFf+kMeyRvbsNA==": {
+      "description": "Email subject for a feature idea",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Idée de fonctionnalité",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fH5FimTYTHB0zYpIwuc0NA==": {
+      "description": "Alert title when no mail app can be opened",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Application de courriel indisponible",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Va7Y22Zwtc67WFmtEHs7eQ==": {
+      "description": "Alert message when no mail app can be opened",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Impossible d'ouvrir votre application de courriel. Vérifiez qu'un compte courriel est configuré sur cet appareil.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "5UMYG9mnVb7vXHYEgQHC5w==": {
+      "description": "Developer seed database: failure alert title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Échec du peuplement",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Sx/zpifu75UXLKUyM4BT8A==": {
+      "description": "Date group: no date",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Sans date",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "4ENMWNm78wjdJK3ObXt3Lw==": {
+      "description": "Date group: today",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Aujourd'hui",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "rtDdBQ/0UBBoebLOfChMmg==": {
+      "description": "Date group: yesterday",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Hier",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Ce1nch4RLlMIF6jQaAcyeA==": {
+      "description": "Accessibility label for ascending sort direction",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Trier du début à la fin",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "p0hCULQMixTZ6o8e9TAWbg==": {
+      "description": "Accessibility label for descending sort direction",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Trier de la fin au début",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "KUmk4AAx3vTGXNO7Mk6slg==": {
+      "description": "Sort field: alphabetical",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Alphabétique",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "7PNzvJvg3cgjPPUViVPSwg==": {
+      "description": "Sort field: last viewed",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dernière consultation",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "XoecGVs5GF+3Y/b7eCSkgA==": {
+      "description": "Sort field: last updated",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dernière modification",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ye9C2UnD5v/eI6xrRxOT0A==": {
+      "description": "Sort field: date created",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Date de création",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ldSeOH/YuwRbCWGCo/vnwQ==": {
+      "description": "Sort direction start: beginning",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Début",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "hZpq0JPPyK9XERfblxrEFA==": {
+      "description": "Sort direction end: end",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "fin",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "9FcCaiXU2AtW7wrFfCrnAw==": {
+      "description": "Sort direction start: end",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Fin",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Sqqm2KWHoVT5PQjSV1fWdg==": {
+      "description": "Sort direction end: beginning",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "début",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "G3x6YnIgq3wC0Bx9YiC7tQ==": {
+      "description": "Group option: by date",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Par date",
           "variations": {}
         }
       ],

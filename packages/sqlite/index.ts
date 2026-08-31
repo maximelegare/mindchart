@@ -60,6 +60,7 @@ import {
   setWorkspaceEncryptionKey,
   getActiveDbName,
   getDbLocation,
+  runRawSqliteTransaction,
 } from "./src/utils/initialize/getOPDatabase";
 import { WorkspaceEncryptionKeyMissingError } from "./src/utils/initialize/workspaceEncryptionKeyMissingError";
 export * from "./src/data/settings";
@@ -150,6 +151,7 @@ export {
   setWorkspaceEncryptionKey,
   getActiveDbName,
   getDbLocation,
+  runRawSqliteTransaction,
   WorkspaceEncryptionKeyMissingError,
   seedDatabaseQuery,
   updateNoteQuery,
