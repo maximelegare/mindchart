@@ -10,6 +10,7 @@ import { AiSettingsSection } from "@/features/settings/features/ai/components/ai
 import { WorkspacesSettingsSection } from "@/features/settings/features/workspaces/components/workspacesSettingsSection";
 import { LockScreenSettingsSection } from "@/features/lockScreen/views/lockScreenSettingsSection";
 import { AppVersionFeature } from "@/features/settings/features/aboutApp/features/appVersion";
+import { FeedbackSettingsSection } from "@/features/settings/features/feedback/components/feedbackSettingsSection";
 import {
   SettingsAboutSectionTitle,
   SettingsAppearanceSectionTitle,
@@ -35,6 +36,7 @@ export const SettingsFeature = () => {
       <SettingsSection title={<SettingsAboutSectionTitle />} icon="info">
         <AppVersionFeature />
       </SettingsSection>
+      <FeedbackSettingsSection />
       <SettingsSection
         title={<SettingsDeveloperSectionTitle />}
         icon="brackets-curly"
