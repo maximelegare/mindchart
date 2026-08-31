@@ -66,3 +66,15 @@ export const useWorkspacesStore = create<WorkspacesState>()(
     }
   )
 );
+
+export const waitForWorkspacesHydration = (): Promise<void> =>
+  new Promise((resolve) => {
+    if (useWorkspacesStore.persist.hasHydrated()) {
+      resolve();
+      return;
+    }
+    const unsub = useWorkspacesStore.persist.onFinishHydration(() => {
+      unsub();
+      resolve();
+    });
+  });

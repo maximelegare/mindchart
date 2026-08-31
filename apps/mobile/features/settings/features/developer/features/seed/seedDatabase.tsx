@@ -15,6 +15,7 @@ import {
   SettingsSeedDatabaseDescription,
   SettingsSeedDatabaseTitle,
   settingsSeedDatabaseEnterNumberAlert,
+  settingsSeedDatabaseFailedAlertTitle,
   settingsSeedDatabaseLoadingTitle,
   settingsSeedDatabaseNotesPlaceholder,
 } from "@/features/settings/features/developer/labels/settingsDeveloperLabels";
@@ -50,6 +51,9 @@ export const SeedDatabaseFeature = ({
       await seedDatabaseAsync(parseInt(numberOfNotes));
     } catch (error) {
       console.error(error);
+      const message =
+        error instanceof Error ? error.message : String(error ?? "");
+      Alert.alert(settingsSeedDatabaseFailedAlertTitle(), message);
     } finally {
       closeModal();
     }

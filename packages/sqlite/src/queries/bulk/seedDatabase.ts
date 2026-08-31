@@ -1,4 +1,7 @@
-import { DB } from "../../utils/initialize/getOPDatabase";
+import {
+  DB,
+  runRawSqliteTransaction,
+} from "../../utils/initialize/getOPDatabase";
 
 import type {
   Embedding,
@@ -20,20 +23,14 @@ export async function seedDatabaseQuery(
     folders: Folder[];
   }
 ) {
-  await db.transaction(async (tx) => {
-    try {
-      await insertFoldersQuery(tx, data.folders);
+  await runRawSqliteTransaction(async () => {
+    await insertFoldersQuery(db, data.folders);
 
-      for (const note of data.notes) {
-        await insertNoteQuery(tx, note);
-      }
-
-      await insertThoughtsQuery(tx, data.thoughts);
-
-      await insertEmbeddingsQuery(tx, data.embeddings);
-    } catch (error) {
-      console.error(error);
-      throw error; // IMPORTANT → rollback
+    for (const note of data.notes) {
+      await insertNoteQuery(db, note);
     }
+
+    await insertThoughtsQuery(db, data.thoughts);
+    await insertEmbeddingsQuery(db, data.embeddings);
   });
 }
