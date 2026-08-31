@@ -66,15 +66,30 @@ const buildDiagnosticsText = (): string =>
     `App Version: ${getAppVersion()}`,
   ].join("\n");
 
-const writeDiagnosticsFile = (): string => {
-  const file = new File(Paths.cache, "mindchart-diagnostics.txt");
-  if (file.exists) {
-    file.write(buildDiagnosticsText());
-  } else {
-    file.create();
-    file.write(buildDiagnosticsText());
+const DIAGNOSTICS_FILE_NAME = "mindchart-diagnostics.txt";
+
+const deleteCachedDiagnostics = () => {
+  try {
+    for (const entry of Paths.cache.list()) {
+      if (
+        entry.name.startsWith("mindchart-diagnostics") &&
+        entry.name.endsWith(".txt")
+      ) {
+        entry.delete();
+      }
+    }
+  } catch {
+    const leftover = new File(Paths.cache, DIAGNOSTICS_FILE_NAME);
+    if (leftover.exists) leftover.delete();
   }
-  return file.uri;
+};
+
+const writeDiagnosticsFile = (): File => {
+  deleteCachedDiagnostics();
+  const file = new File(Paths.cache, DIAGNOSTICS_FILE_NAME);
+  file.create({ overwrite: true });
+  file.write(buildDiagnosticsText());
+  return file;
 };
 
 const openMailtoFallback = async (subject: string): Promise<void> => {
@@ -87,13 +102,15 @@ const openMailtoFallback = async (subject: string): Promise<void> => {
 };
 
 export const openFeedbackMail = async (subject: string): Promise<void> => {
+  let diagnosticsFile: File | null = null;
   try {
     const available = await MailComposer.isAvailableAsync();
     if (available) {
+      diagnosticsFile = writeDiagnosticsFile();
       await MailComposer.composeAsync({
         recipients: [getFeedbackEmail()],
         subject,
-        attachments: [writeDiagnosticsFile()],
+        attachments: [diagnosticsFile.uri],
       });
       return;
     }
@@ -104,5 +121,11 @@ export const openFeedbackMail = async (subject: string): Promise<void> => {
       settingsFeedbackMailUnavailableAlertTitle(),
       settingsFeedbackMailUnavailableAlertMessage()
     );
+  } finally {
+    try {
+      if (diagnosticsFile?.exists) diagnosticsFile.delete();
+    } catch {
+      // Cache cleanup is best-effort; the next send also wipes leftovers.
+    }
   }
 };

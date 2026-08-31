@@ -51,14 +51,16 @@ function FeedbackSheetBody() {
             <SettingsFeedbackSheetDescription />
           </Typography>
         </View>
-        <View className="items-end gap-1 pt-4">
+        <View className="items-end gap-3 pt-8">
           <Button
             variant="ghost"
             size="sm"
             onPress={() =>
               openMail(String(settingsFeedbackMailSubjectBugReport()))
             }
+            className="flex-row items-center gap-2"
           >
+            <Icon name="bug" color="foreground" size={16} />
             <Typography>{settingsFeedbackBugReportLabel()}</Typography>
           </Button>
           <Button
@@ -67,7 +69,13 @@ function FeedbackSheetBody() {
             onPress={() =>
               openMail(String(settingsFeedbackMailSubjectFeedback()))
             }
+            className="flex-row items-center gap-2"
           >
+            <Icon
+              name="message-circle-question-mark"
+              color="foreground"
+              size={16}
+            />
             <Typography>{settingsFeedbackGeneralLabel()}</Typography>
           </Button>
           <Button
@@ -76,7 +84,9 @@ function FeedbackSheetBody() {
             onPress={() =>
               openMail(String(settingsFeedbackMailSubjectFeatureIdea()))
             }
+            className="flex-row items-center gap-1"
           >
+            <Icon name="lightbulb" color="foreground" size={16} />
             <Typography>{settingsFeedbackFeatureIdeaLabel()}</Typography>
           </Button>
         </View>

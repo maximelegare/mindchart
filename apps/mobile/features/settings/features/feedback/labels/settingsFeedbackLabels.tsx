@@ -14,15 +14,15 @@ export function SettingsFeedbackSheetDescription() {
 }
 
 export function settingsFeedbackBugReportLabel() {
-  return fbs("Send a bug report", "Settings feedback row: bug report");
+  return fbs("Bug Report", "Settings feedback row: bug report");
 }
 
 export function settingsFeedbackGeneralLabel() {
-  return fbs("Send Feedback", "Settings feedback row: general feedback");
+  return fbs("Feedback", "Settings feedback row: general feedback");
 }
 
 export function settingsFeedbackFeatureIdeaLabel() {
-  return fbs("Feature idea", "Settings feedback row: feature idea");
+  return fbs("Feature Idea", "Settings feedback row: feature idea");
 }
 
 export function settingsFeedbackMailSubjectBugReport() {
