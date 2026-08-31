@@ -859,7 +859,7 @@
         "end": {
           "line": 192,
           "column": 3,
-          "index": 5270
+          "index": 5281
         }
       },
       "project": "",
@@ -883,12 +883,12 @@
         "start": {
           "line": 196,
           "column": 9,
-          "index": 5335
+          "index": 5346
         },
         "end": {
           "line": 199,
           "column": 3,
-          "index": 5418
+          "index": 5429
         }
       },
       "project": "",
@@ -912,12 +912,12 @@
         "start": {
           "line": 203,
           "column": 9,
-          "index": 5483
+          "index": 5494
         },
         "end": {
           "line": 206,
           "column": 3,
-          "index": 5571
+          "index": 5582
         }
       },
       "project": "",
@@ -941,12 +941,12 @@
         "start": {
           "line": 210,
           "column": 9,
-          "index": 5643
+          "index": 5654
         },
         "end": {
           "line": 213,
           "column": 3,
-          "index": 5733
+          "index": 5744
         }
       },
       "project": "",
@@ -970,12 +970,12 @@
         "start": {
           "line": 217,
           "column": 9,
-          "index": 5806
+          "index": 5817
         },
         "end": {
           "line": 220,
           "column": 3,
-          "index": 5896
+          "index": 5907
         }
       },
       "project": "",
@@ -999,12 +999,12 @@
         "start": {
           "line": 224,
           "column": 9,
-          "index": 5971
+          "index": 5982
         },
         "end": {
           "line": 227,
           "column": 3,
-          "index": 6081
+          "index": 6092
         }
       },
       "project": "",
@@ -1028,12 +1028,12 @@
         "start": {
           "line": 231,
           "column": 9,
-          "index": 6145
+          "index": 6156
         },
         "end": {
           "line": 231,
           "column": 78,
-          "index": 6214
+          "index": 6225
         }
       },
       "project": "",
@@ -1057,12 +1057,12 @@
         "start": {
           "line": 235,
           "column": 9,
-          "index": 6278
+          "index": 6289
         },
         "end": {
           "line": 235,
           "column": 78,
-          "index": 6347
+          "index": 6358
         }
       },
       "project": "",
@@ -1071,1398 +1071,6 @@
         "t": {
           "desc": "Import workspace password modal submitting state",
           "text": "Importing…"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "X0bAmXXm9sSEnSOJ6PXFrA==": {
-          "desc": "Settings section: AI",
-          "text": "AI"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 4,
-          "column": 9,
-          "index": 82
-        },
-        "end": {
-          "line": 4,
-          "column": 50,
-          "index": 123
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings section: AI",
-          "text": "AI"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "VIp1M5yqYlwtPVElFKpjEw==": {
-          "desc": "Settings AI row: auto connect",
-          "text": "Auto Connect"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 8,
-          "column": 9,
-          "index": 184
-        },
-        "end": {
-          "line": 8,
-          "column": 61,
-          "index": 236
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings AI row: auto connect",
-          "text": "Auto Connect"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "cwavxQxiHgsSueiyMgxFVw==": {
-          "desc": "Settings AI auto connect description",
-          "text": "Connect Whisper and Llama Chat on launch. Embeddings always connect."
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 12,
-          "column": 9,
-          "index": 303
-        },
-        "end": {
-          "line": 15,
-          "column": 3,
-          "index": 430
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings AI auto connect description",
-          "text": "Connect Whisper and Llama Chat on launch. Embeddings always connect."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "DEGncCLuxkHNYXTe3kZgig==": {
-          "desc": "Settings AI auto connect switch accessibility label",
-          "text": "Auto Connect"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 19,
-          "column": 9,
-          "index": 504
-        },
-        "end": {
-          "line": 22,
-          "column": 3,
-          "index": 590
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings AI auto connect switch accessibility label",
-          "text": "Auto Connect"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "z27kGVly2CYdoMVQli4jxg==": {
-          "desc": "Settings AI row: providers",
-          "text": "AI Providers"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 26,
-          "column": 9,
-          "index": 649
-        },
-        "end": {
-          "line": 26,
-          "column": 58,
-          "index": 698
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings AI row: providers",
-          "text": "AI Providers"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "IhheEnY60K6/JbrxMPwcGg==": {
-          "desc": "Settings AI row: whisper engine",
-          "text": "Whisper Engine"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 30,
-          "column": 9,
-          "index": 761
-        },
-        "end": {
-          "line": 30,
-          "column": 65,
-          "index": 817
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings AI row: whisper engine",
-          "text": "Whisper Engine"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "0aDawXa5V7LBD+f6mZYi2w==": {
-          "desc": "Settings AI row: llama chat engine",
-          "text": "Llama Chat Engine"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 34,
-          "column": 9,
-          "index": 882
-        },
-        "end": {
-          "line": 34,
-          "column": 71,
-          "index": 944
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings AI row: llama chat engine",
-          "text": "Llama Chat Engine"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "NFFO35N8J14AyjcPek93TA==": {
-          "desc": "Settings AI row: embeddings engine",
-          "text": "Embeddings Engine"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 38,
-          "column": 9,
-          "index": 1010
-        },
-        "end": {
-          "line": 38,
-          "column": 71,
-          "index": 1072
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings AI row: embeddings engine",
-          "text": "Embeddings Engine"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "yXuLpPGflw1h9suJxJwJ+g==": {
-          "desc": "AI provider option: local",
-          "text": "Local"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 42,
-          "column": 9,
-          "index": 1130
-        },
-        "end": {
-          "line": 42,
-          "column": 50,
-          "index": 1171
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI provider option: local",
-          "text": "Local"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "i8zj5fbcFiNT+pFYijWVAw==": {
-          "desc": "AI provider option: cloud",
-          "text": "Cloud"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 46,
-          "column": 9,
-          "index": 1229
-        },
-        "end": {
-          "line": 46,
-          "column": 50,
-          "index": 1270
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI provider option: cloud",
-          "text": "Cloud"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "5Bfsj72ek8iZXVMxfccDzA==": {
-          "desc": "AI providers summary: mixed",
-          "text": "Mixed"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 50,
-          "column": 9,
-          "index": 1328
-        },
-        "end": {
-          "line": 50,
-          "column": 52,
-          "index": 1371
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI providers summary: mixed",
-          "text": "Mixed"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "OjPmLjZc9f/s/ml2PZGvZg==": {
-          "desc": "AI settings: no model selected",
-          "text": "No model"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 54,
-          "column": 9,
-          "index": 1423
-        },
-        "end": {
-          "line": 54,
-          "column": 58,
-          "index": 1472
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI settings: no model selected",
-          "text": "No model"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "yF9hN7mq49yhmiCOUGiAKw==": {
-          "desc": "AI providers settings description",
-          "text": "The AI providers are the locations where the AI models are hosted."
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 59,
-          "column": 4,
-          "index": 1543
-        },
-        "end": {
-          "line": 61,
-          "column": 10,
-          "index": 1673
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI providers settings description",
-          "text": "The AI providers are the locations where the AI models are hosted."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "+aqgSD2/9OMXik+EdtbyQA==": {
-          "desc": "AI provider row: whisper",
-          "text": "Whisper"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 66,
-          "column": 9,
-          "index": 1742
-        },
-        "end": {
-          "line": 66,
-          "column": 59,
-          "index": 1792
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI provider row: whisper",
-          "text": "Whisper"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "4bl5cu0L85MojWZlPTS8sA==": {
-          "desc": "AI provider row: llama chat",
-          "text": "Llama Chat"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 70,
-          "column": 9,
-          "index": 1859
-        },
-        "end": {
-          "line": 70,
-          "column": 65,
-          "index": 1915
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI provider row: llama chat",
-          "text": "Llama Chat"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "fVVE0L+p0Eh5Iyi6scAVLA==": {
-          "desc": "AI provider row: embeddings",
-          "text": "Embeddings"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 74,
-          "column": 9,
-          "index": 1983
-        },
-        "end": {
-          "line": 74,
-          "column": 65,
-          "index": 2039
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI provider row: embeddings",
-          "text": "Embeddings"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "IwG02Jegqh5juck6XFfjiA==": {
-          "desc": "Whisper engine settings description",
-          "text": "AI Engine responsible for the local transcription of speech. Use Tiny for English and Base for other languages."
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 79,
-          "column": 4,
-          "index": 2112
-        },
-        "end": {
-          "line": 82,
-          "column": 10,
-          "index": 2295
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Whisper engine settings description",
-          "text": "AI Engine responsible for the local transcription of speech. Use Tiny for English and Base for other languages."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "M0Cu+RiPPsE6kXkXeQIErA==": {
-          "desc": "Llama chat engine settings description",
-          "text": "Local Large Language Model responsible for the summarization of notes. Large models require more VRAM and storage but provide better accuracy."
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 88,
-          "column": 4,
-          "index": 2374
-        },
-        "end": {
-          "line": 91,
-          "column": 10,
-          "index": 2591
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Llama chat engine settings description",
-          "text": "Local Large Language Model responsible for the summarization of notes. Large models require more VRAM and storage but provide better accuracy."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "CQnDssZp4TlTiMRQX4oNFA==": {
-          "desc": "Embeddings engine settings description",
-          "text": "Local Embeddings Engine responsible for the creation of thoughts embeddings. It helps finding connections between notes."
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 97,
-          "column": 4,
-          "index": 2671
-        },
-        "end": {
-          "line": 100,
-          "column": 10,
-          "index": 2866
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Embeddings engine settings description",
-          "text": "Local Embeddings Engine responsible for the creation of thoughts embeddings. It helps finding connections between notes."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "6DQr2aFZ/xVgYPMXGqY6vA==": {
-          "desc": "AI engine settings: status heading",
-          "text": "Engine Status"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 105,
-          "column": 9,
-          "index": 2934
-        },
-        "end": {
-          "line": 105,
-          "column": 75,
-          "index": 3000
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI engine settings: status heading",
-          "text": "Engine Status"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "cacjfW8TiX14hJ80hfc2Pw==": {
-          "desc": "AI engine settings: active context label",
-          "text": "Active Context"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 110,
-          "column": 4,
-          "index": 3069
-        },
-        "end": {
-          "line": 110,
-          "column": 77,
-          "index": 3142
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI engine settings: active context label",
-          "text": "Active Context"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "cUrYnAXmPRZF/gaNHgwfbg==": {
-          "desc": "AI engine status: idle",
-          "text": "Idle"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 115,
-          "column": 9,
-          "index": 3201
-        },
-        "end": {
-          "line": 115,
-          "column": 46,
-          "index": 3238
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI engine status: idle",
-          "text": "Idle"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "ZTkI4ZWouwTHK5e4A7AaQA==": {
-          "desc": "AI engine settings: available models heading",
-          "text": "Available Models"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 120,
-          "column": 4,
-          "index": 3311
-        },
-        "end": {
-          "line": 122,
-          "column": 10,
-          "index": 3402
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI engine settings: available models heading",
-          "text": "Available Models"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "kUzDiAlqoXVKIFaIJzEPFg==": {
-          "desc": "AI engine action: unload from RAM",
-          "text": "Unload from RAM"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 127,
-          "column": 9,
-          "index": 3464
-        },
-        "end": {
-          "line": 127,
-          "column": 68,
-          "index": 3523
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI engine action: unload from RAM",
-          "text": "Unload from RAM"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "eHrAkk2EcMriN0AtxP24+w==": {
-          "desc": "AI model action: delete",
-          "text": "Delete"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 131,
-          "column": 9,
-          "index": 3579
-        },
-        "end": {
-          "line": 131,
-          "column": 49,
-          "index": 3619
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI model action: delete",
-          "text": "Delete"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "eqE6YYJMR4P2W8MBEnpsgw==": {
-          "desc": "AI model action: load",
-          "text": "Load"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 135,
-          "column": 9,
-          "index": 3673
-        },
-        "end": {
-          "line": 135,
-          "column": 45,
-          "index": 3709
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI model action: load",
-          "text": "Load"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "+FkJa0RdClUarH7veXQlbQ==": {
-          "desc": "AI model action: loaded",
-          "text": "Loaded"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 139,
-          "column": 9,
-          "index": 3765
-        },
-        "end": {
-          "line": 139,
-          "column": 49,
-          "index": 3805
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI model action: loaded",
-          "text": "Loaded"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "sALzOUSpY14DpOVsSURcOQ==": {
-          "desc": "AI model action: download",
-          "text": "Download"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 143,
-          "column": 9,
-          "index": 3863
-        },
-        "end": {
-          "line": 143,
-          "column": 53,
-          "index": 3907
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI model action: download",
-          "text": "Download"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "lsQV+WP/mfO4S29xIcCrmQ==": {
-          "desc": "AI model action: downloading",
-          "text": "Downloading..."
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 147,
-          "column": 9,
-          "index": 3968
-        },
-        "end": {
-          "line": 147,
-          "column": 62,
-          "index": 4021
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI model action: downloading",
-          "text": "Downloading..."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "fUu0gXWmVdMF1eiU/tzEWQ==": {
-          "desc": "AI model storage label: local",
-          "text": "Local · {size}"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 151,
-          "column": 9,
-          "index": 4093
-        },
-        "end": {
-          "line": 154,
-          "column": 3,
-          "index": 4180
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI model storage label: local",
-          "text": "Local · {size}"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "LxNEsWhDgSdzUvdVb/rX6A==": {
-          "desc": "AI model storage label: cloud download",
-          "text": "Cloud · {size} download"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 158,
-          "column": 9,
-          "index": 4260
-        },
-        "end": {
-          "line": 161,
-          "column": 3,
-          "index": 4369
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI model storage label: cloud download",
-          "text": "Cloud · {size} download"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "qmO0qFY3GBS0C9V9OVSVgg==": {
-          "desc": "Auto connect loading title",
-          "text": "Connecting to AI Models"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 165,
-          "column": 9,
-          "index": 4429
-        },
-        "end": {
-          "line": 165,
-          "column": 69,
-          "index": 4489
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Auto connect loading title",
-          "text": "Connecting to AI Models"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "os2vIF5bt1f/nSvOqn/3Ew==": {
-          "desc": "AI setup modal: go to settings button",
-          "text": "Go to Settings"
-        }
-      },
-      "filename": "features/settings/settingsAiLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 169,
-          "column": 9,
-          "index": 4552
-        },
-        "end": {
-          "line": 169,
-          "column": 71,
-          "index": 4614
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "AI setup modal: go to settings button",
-          "text": "Go to Settings"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "4MsyCSMOnDaqn94cweoKnQ==": {
-          "desc": "Developer settings: seed database title",
-          "text": "Seed Database"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 5,
-          "column": 4,
-          "index": 91
-        },
-        "end": {
-          "line": 5,
-          "column": 75,
-          "index": 162
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Developer settings: seed database title",
-          "text": "Seed Database"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "Zq+vgwuMowy2/HWKeSLpnw==": {
-          "desc": "Developer settings: seed database description",
-          "text": "Fill the database with fake data for testing. The maximum number of notes is {maxNotes}."
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 15,
-          "column": 4,
-          "index": 278
-        },
-        "end": {
-          "line": 18,
-          "column": 10,
-          "index": 487
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Developer settings: seed database description",
-          "text": "Fill the database with fake data for testing. The maximum number of notes is {maxNotes}."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "/1HfJvoCbm4pZDYCOv4WSw==": {
-          "desc": "Developer seed database: number of notes placeholder",
-          "text": "Number of notes"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 23,
-          "column": 9,
-          "index": 562
-        },
-        "end": {
-          "line": 26,
-          "column": 3,
-          "index": 652
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Developer seed database: number of notes placeholder",
-          "text": "Number of notes"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "r7P1OJt3oYTSN92yWjfp3A==": {
-          "desc": "Developer seed database: missing number alert",
-          "text": "Please enter a number of notes"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 30,
-          "column": 9,
-          "index": 723
-        },
-        "end": {
-          "line": 33,
-          "column": 3,
-          "index": 821
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Developer seed database: missing number alert",
-          "text": "Please enter a number of notes"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "Xpa667FfWn0pz5k6Gp9psQ==": {
-          "desc": "Developer seed database loading title",
-          "text": "Seeding Database"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 37,
-          "column": 9,
-          "index": 888
-        },
-        "end": {
-          "line": 37,
-          "column": 73,
-          "index": 952
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Developer seed database loading title",
-          "text": "Seeding Database"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "3fNo9TPf0N3moIb7xTcIhA==": {
-          "desc": "DB inspector: clear table alert title",
-          "text": "Clear table?"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 41,
-          "column": 9,
-          "index": 1026
-        },
-        "end": {
-          "line": 41,
-          "column": 69,
-          "index": 1086
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: clear table alert title",
-          "text": "Clear table?"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "LlzkBbNczTlJfKKD6J34jQ==": {
-          "desc": "DB inspector: clear table alert message",
-          "text": "Remove all rows from \"{tableName}\"?"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 45,
-          "column": 9,
-          "index": 1179
-        },
-        "end": {
-          "line": 48,
-          "column": 3,
-          "index": 1306
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: clear table alert message",
-          "text": "Remove all rows from \"{tableName}\"?"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "6rDkHbAW2sWxGDq7bKtTaw==": {
-          "desc": "DB inspector: clear table button",
-          "text": "Clear"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 52,
-          "column": 9,
-          "index": 1371
-        },
-        "end": {
-          "line": 52,
-          "column": 57,
-          "index": 1419
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: clear table button",
-          "text": "Clear"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "Ia+dIn5Fx+Rsxoi+SCfWhA==": {
-          "desc": "DB inspector: delete database file alert title",
-          "text": "Delete Database File?"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 56,
-          "column": 9,
-          "index": 1495
-        },
-        "end": {
-          "line": 59,
-          "column": 3,
-          "index": 1585
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: delete database file alert title",
-          "text": "Delete Database File?"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "TcmuNFkUzH3Na9uT0Zw0jA==": {
-          "desc": "DB inspector: delete database file alert message",
-          "text": "This will permanently delete your database."
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 63,
-          "column": 9,
-          "index": 1663
-        },
-        "end": {
-          "line": 66,
-          "column": 3,
-          "index": 1777
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: delete database file alert message",
-          "text": "This will permanently delete your database."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "AbdXOW0QnDR7CpHQTgLU9w==": {
-          "desc": "DB inspector: delete database file button",
-          "text": "Delete DB File"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 70,
-          "column": 9,
-          "index": 1849
-        },
-        "end": {
-          "line": 70,
-          "column": 75,
-          "index": 1915
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: delete database file button",
-          "text": "Delete DB File"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "mDot1m4T8BOntfH8qjvvJg==": {
-          "desc": "DB inspector: table row count",
-          "text": "Rows: {count}"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 74,
-          "column": 9,
-          "index": 1991
-        },
-        "end": {
-          "line": 77,
-          "column": 3,
-          "index": 2078
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: table row count",
-          "text": "Rows: {count}"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "O/QDggpZcorooEJzZhfOag==": {
-          "desc": "DB inspector: empty state",
-          "text": "No tables found."
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 81,
-          "column": 9,
-          "index": 2145
-        },
-        "end": {
-          "line": 81,
-          "column": 61,
-          "index": 2197
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: empty state",
-          "text": "No tables found."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "0H2aT8ocfohC9wEt8Psk7A==": {
-          "desc": "DB inspector: new database button",
-          "text": "New Database"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 85,
-          "column": 9,
-          "index": 2268
-        },
-        "end": {
-          "line": 85,
-          "column": 65,
-          "index": 2324
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: new database button",
-          "text": "New Database"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "f9z05ZJt12NCSN2vUTOelA==": {
-          "desc": "DB inspector: migration failed alert title",
-          "text": "Migration failed"
-        }
-      },
-      "filename": "features/settings/settingsDeveloperLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 89,
-          "column": 9,
-          "index": 2398
-        },
-        "end": {
-          "line": 89,
-          "column": 78,
-          "index": 2467
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "DB inspector: migration failed alert title",
-          "text": "Migration failed"
         }
       }
     },
@@ -3425,1050 +2033,6 @@
     },
     {
       "hashToLeaf": {
-        "tmNyvz86BLRs0mpLSFPUBg==": {
-          "desc": "Recovery passphrase alert title",
-          "text": "Recovery passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 4,
-          "column": 9,
-          "index": 96
-        },
-        "end": {
-          "line": 4,
-          "column": 70,
-          "index": 157
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase alert title",
-          "text": "Recovery passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "MbCmrhTHDxYU//qlOX7p6Q==": {
-          "desc": "Recovery passphrase switch title",
-          "text": "Recovery passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 8,
-          "column": 9,
-          "index": 229
-        },
-        "end": {
-          "line": 8,
-          "column": 71,
-          "index": 291
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase switch title",
-          "text": "Recovery passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "7ox75ga7swhBB+uRm0tN3g==": {
-          "desc": "Recovery passphrase switch description",
-          "text": "Add a recovery passphrase as a second unlock option for exported workspaces."
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 12,
-          "column": 9,
-          "index": 369
-        },
-        "end": {
-          "line": 15,
-          "column": 3,
-          "index": 506
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase switch description",
-          "text": "Add a recovery passphrase as a second unlock option for exported workspaces."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "++x5S662RpcY01dXzpwvKw==": {
-          "desc": "Recovery passphrase switch accessibility label",
-          "text": "Enable recovery passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 19,
-          "column": 9,
-          "index": 591
-        },
-        "end": {
-          "line": 22,
-          "column": 3,
-          "index": 686
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase switch accessibility label",
-          "text": "Enable recovery passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "ib9hVm6EkixtCVhNAfKLVw==": {
-          "desc": "Recovery passphrase setup form description",
-          "text": "Choose a passphrase. You'll need it to import exported workspaces if you forget the export password."
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 27,
-          "column": 4,
-          "index": 769
-        },
-        "end": {
-          "line": 30,
-          "column": 10,
-          "index": 948
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase setup form description",
-          "text": "Choose a passphrase. You'll need it to import exported workspaces if you forget the export password."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "QEOCdeAHUCPOZc89ttu4Vw==": {
-          "desc": "Recovery passphrase field label",
-          "text": "Passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 35,
-          "column": 9,
-          "index": 1023
-        },
-        "end": {
-          "line": 35,
-          "column": 61,
-          "index": 1075
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase field label",
-          "text": "Passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "x/+WFfVZX4VFmQPINTR3+w==": {
-          "desc": "Recovery passphrase field placeholder",
-          "text": "Passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 39,
-          "column": 9,
-          "index": 1152
-        },
-        "end": {
-          "line": 39,
-          "column": 67,
-          "index": 1210
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase field placeholder",
-          "text": "Passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "4GkEZuwFjsoIFD5raDfpYA==": {
-          "desc": "Recovery passphrase confirm field label",
-          "text": "Confirm"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 43,
-          "column": 9,
-          "index": 1283
-        },
-        "end": {
-          "line": 43,
-          "column": 66,
-          "index": 1340
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase confirm field label",
-          "text": "Confirm"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "f0NmcxHYR+CSuq1ZCNRiSA==": {
-          "desc": "Recovery passphrase confirm field placeholder",
-          "text": "Confirm passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 47,
-          "column": 9,
-          "index": 1419
-        },
-        "end": {
-          "line": 50,
-          "column": 3,
-          "index": 1505
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase confirm field placeholder",
-          "text": "Confirm passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "rZ+wH4tnUlg/N7ojSezILA==": {
-          "desc": "Recovery passphrase minimum length validation",
-          "text": "At least {min} characters"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 54,
-          "column": 9,
-          "index": 1591
-        },
-        "end": {
-          "line": 57,
-          "column": 3,
-          "index": 1716
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase minimum length validation",
-          "text": "At least {min} characters"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "xmm3BqkoMVu+CjKU6YjNvQ==": {
-          "desc": "Recovery passphrase mismatch validation",
-          "text": "Passphrases do not match"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 61,
-          "column": 9,
-          "index": 1790
-        },
-        "end": {
-          "line": 64,
-          "column": 3,
-          "index": 1876
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase mismatch validation",
-          "text": "Passphrases do not match"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "/1hwe9pdWv2JUUWM2Yqm3A==": {
-          "desc": "Recovery passphrase enabling button state",
-          "text": "Enabling…"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 68,
-          "column": 9,
-          "index": 1945
-        },
-        "end": {
-          "line": 68,
-          "column": 70,
-          "index": 2006
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase enabling button state",
-          "text": "Enabling…"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "DXj6yBhM/2N2jRC3+DvvAg==": {
-          "desc": "Recovery passphrase reveal: saved description",
-          "text": "Save this somewhere safe. Long-press to copy-friendly view."
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 73,
-          "column": 4,
-          "index": 2095
-        },
-        "end": {
-          "line": 75,
-          "column": 10,
-          "index": 2230
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase reveal: saved description",
-          "text": "Save this somewhere safe. Long-press to copy-friendly view."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "ZGSV8IC6gDr86ITuCh1nnQ==": {
-          "desc": "Recovery passphrase reveal: reminder description",
-          "text": "Reveal your saved recovery passphrase if you need a reminder."
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 81,
-          "column": 4,
-          "index": 2326
-        },
-        "end": {
-          "line": 83,
-          "column": 10,
-          "index": 2466
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase reveal: reminder description",
-          "text": "Reveal your saved recovery passphrase if you need a reminder."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "z8PJPhUeOUCJzVHKKAQgHQ==": {
-          "desc": "Recovery passphrase hide button",
-          "text": "Hide passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 88,
-          "column": 9,
-          "index": 2541
-        },
-        "end": {
-          "line": 88,
-          "column": 66,
-          "index": 2598
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase hide button",
-          "text": "Hide passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "yl/huv7hITvCDmR4GWqCOg==": {
-          "desc": "Recovery passphrase authenticating state",
-          "text": "Authenticating…"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 92,
-          "column": 9,
-          "index": 2673
-        },
-        "end": {
-          "line": 92,
-          "column": 75,
-          "index": 2739
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase authenticating state",
-          "text": "Authenticating…"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "fLAXso32oaDl9fcbDVvf9Q==": {
-          "desc": "Recovery passphrase reveal button",
-          "text": "Reveal passphrase"
-        }
-      },
-      "filename": "features/settings/settingsRecoveryLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 96,
-          "column": 9,
-          "index": 2812
-        },
-        "end": {
-          "line": 96,
-          "column": 70,
-          "index": 2873
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Recovery passphrase reveal button",
-          "text": "Reveal passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "ZjeWuqnPRNVLPSMuDpa+ng==": {
-          "desc": "Settings section: workspaces",
-          "text": "Workspaces"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 4,
-          "column": 9,
-          "index": 90
-        },
-        "end": {
-          "line": 4,
-          "column": 66,
-          "index": 147
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings section: workspaces",
-          "text": "Workspaces"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "0eUW1msrDlPd9ojSPCewzQ==": {
-          "desc": "Settings row: workspaces",
-          "text": "Workspaces"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 8,
-          "column": 9,
-          "index": 208
-        },
-        "end": {
-          "line": 8,
-          "column": 54,
-          "index": 253
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings row: workspaces",
-          "text": "Workspaces"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "86ktrw4LJxXQ9XNlf/0vXA==": {
-          "desc": "Settings row: recovery passphrase",
-          "text": "Recovery passphrase"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 12,
-          "column": 9,
-          "index": 322
-        },
-        "end": {
-          "line": 12,
-          "column": 72,
-          "index": 385
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Settings row: recovery passphrase",
-          "text": "Recovery passphrase"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "IqtkwKD0quxscXKDNd3M9g==": {
-          "desc": "Create workspace sheet description",
-          "text": "Each workspace has its own isolated database."
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 16,
-          "column": 9,
-          "index": 454
-        },
-        "end": {
-          "line": 19,
-          "column": 3,
-          "index": 556
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Create workspace sheet description",
-          "text": "Each workspace has its own isolated database."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "LTdzZij9hfTJC5QiCJHnHQ==": {
-          "desc": "Manage workspaces sheet title",
-          "text": "Manage Workspaces"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 23,
-          "column": 9,
-          "index": 620
-        },
-        "end": {
-          "line": 23,
-          "column": 74,
-          "index": 685
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Manage workspaces sheet title",
-          "text": "Manage Workspaces"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "fnkys6jRAM+rwFAk0M3PLg==": {
-          "desc": "Manage workspaces sheet description",
-          "text": "Manage your workspaces here. Each workspace has its seperate database."
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 28,
-          "column": 4,
-          "index": 761
-        },
-        "end": {
-          "line": 30,
-          "column": 10,
-          "index": 897
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Manage workspaces sheet description",
-          "text": "Manage your workspaces here. Each workspace has its seperate database."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "XLbX6Wl6u9avXELpAtBzrQ==": {
-          "desc": "Workspaces settings: active workspace heading",
-          "text": "Active Workspace"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 36,
-          "column": 4,
-          "index": 972
-        },
-        "end": {
-          "line": 38,
-          "column": 10,
-          "index": 1064
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Workspaces settings: active workspace heading",
-          "text": "Active Workspace"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "spCQ1j5f/mT+f8l6FZfgdw==": {
-          "desc": "Workspaces settings: available workspaces heading",
-          "text": "Available Workspaces"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 44,
-          "column": 4,
-          "index": 1143
-        },
-        "end": {
-          "line": 46,
-          "column": 10,
-          "index": 1243
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Workspaces settings: available workspaces heading",
-          "text": "Available Workspaces"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "8UAvIUOeGrPGCzi20mYGlw==": {
-          "desc": "Workspace status: active",
-          "text": "Active"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 51,
-          "column": 9,
-          "index": 1311
-        },
-        "end": {
-          "line": 51,
-          "column": 50,
-          "index": 1352
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Workspace status: active",
-          "text": "Active"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "SToJJnQG6LmkzRJk1miJbQ==": {
-          "desc": "Workspace status: load",
-          "text": "Load"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 55,
-          "column": 9,
-          "index": 1414
-        },
-        "end": {
-          "line": 55,
-          "column": 46,
-          "index": 1451
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Workspace status: load",
-          "text": "Load"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "v+e567bLuwzddht5BcChKA==": {
-          "desc": "Workspace status: encryption key missing",
-          "text": "Key missing"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 59,
-          "column": 9,
-          "index": 1519
-        },
-        "end": {
-          "line": 59,
-          "column": 71,
-          "index": 1581
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Workspace status: encryption key missing",
-          "text": "Key missing"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "cEZDYt6tfrKkWyz1en7ptg==": {
-          "desc": "Workspace action: switch",
-          "text": "Switch"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 63,
-          "column": 9,
-          "index": 1645
-        },
-        "end": {
-          "line": 63,
-          "column": 50,
-          "index": 1686
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Workspace action: switch",
-          "text": "Switch"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "92BstEzRu3t2FsaYk0UM5Q==": {
-          "desc": "Workspace action: unavailable",
-          "text": "Unavailable"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 67,
-          "column": 9,
-          "index": 1755
-        },
-        "end": {
-          "line": 67,
-          "column": 60,
-          "index": 1806
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Workspace action: unavailable",
-          "text": "Unavailable"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "HFI83AHCPXOWNl063yGgGA==": {
-          "desc": "Alert title when workspace key is missing",
-          "text": "Workspace unavailable"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 71,
-          "column": 9,
-          "index": 1879
-        },
-        "end": {
-          "line": 74,
-          "column": 3,
-          "index": 1964
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Alert title when workspace key is missing",
-          "text": "Workspace unavailable"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "LPMpN8uAdr9Gj5JR+326CA==": {
-          "desc": "Alert message when workspace key is missing",
-          "text": "This workspace has no encryption key on this device."
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 78,
-          "column": 9,
-          "index": 2039
-        },
-        "end": {
-          "line": 81,
-          "column": 3,
-          "index": 2157
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Alert message when workspace key is missing",
-          "text": "This workspace has no encryption key on this device."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "zKUA7Nk+m468MjZ3YEnvGg==": {
-          "desc": "Edit workspace sheet description",
-          "text": "Choose a new name, color, and icon for this workspace."
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 85,
-          "column": 9,
-          "index": 2224
-        },
-        "end": {
-          "line": 88,
-          "column": 3,
-          "index": 2333
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Edit workspace sheet description",
-          "text": "Choose a new name, color, and icon for this workspace."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "/OubdScpYt+a0lhvDl2fxQ==": {
-          "desc": "Export workspace modal title",
-          "text": "Export Workspace"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 92,
-          "column": 9,
-          "index": 2401
-        },
-        "end": {
-          "line": 92,
-          "column": 64,
-          "index": 2456
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Export workspace modal title",
-          "text": "Export Workspace"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "9ugI7q3qBMg05lIwrFosCQ==": {
-          "desc": "Alert title when workspace export fails",
-          "text": "Export failed"
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 96,
-          "column": 9,
-          "index": 2521
-        },
-        "end": {
-          "line": 96,
-          "column": 72,
-          "index": 2584
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Alert title when workspace export fails",
-          "text": "Export failed"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "8pk2tJnTP/444Ls3ZAOzMQ==": {
-          "desc": "Alert message when workspace export fails",
-          "text": "Could not export this workspace. Please try again."
-        }
-      },
-      "filename": "features/settings/settingsWorkspacesLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 100,
-          "column": 9,
-          "index": 2651
-        },
-        "end": {
-          "line": 103,
-          "column": 3,
-          "index": 2765
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Alert message when workspace export fails",
-          "text": "Could not export this workspace. Please try again."
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
         "NeTBiNqqkwFJTDXwzsP4XQ==": {
           "desc": "Theme option title: follow device settings",
           "text": "Device settings"
@@ -4725,6 +2289,2790 @@
         "t": {
           "desc": "Selected theme label: light",
           "text": "Light"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZjeWuqnPRNVLPSMuDpa+ng==": {
+          "desc": "Settings section: workspaces",
+          "text": "Workspaces"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 90
+        },
+        "end": {
+          "line": 4,
+          "column": 66,
+          "index": 147
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: workspaces",
+          "text": "Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0eUW1msrDlPd9ojSPCewzQ==": {
+          "desc": "Settings row: workspaces",
+          "text": "Workspaces"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 208
+        },
+        "end": {
+          "line": 8,
+          "column": 54,
+          "index": 253
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: workspaces",
+          "text": "Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "86ktrw4LJxXQ9XNlf/0vXA==": {
+          "desc": "Settings row: recovery passphrase",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 322
+        },
+        "end": {
+          "line": 12,
+          "column": 72,
+          "index": 385
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings row: recovery passphrase",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IqtkwKD0quxscXKDNd3M9g==": {
+          "desc": "Create workspace sheet description",
+          "text": "Each workspace has its own isolated database."
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 454
+        },
+        "end": {
+          "line": 19,
+          "column": 3,
+          "index": 556
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Create workspace sheet description",
+          "text": "Each workspace has its own isolated database."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LTdzZij9hfTJC5QiCJHnHQ==": {
+          "desc": "Manage workspaces sheet title",
+          "text": "Manage Workspaces"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 23,
+          "column": 9,
+          "index": 620
+        },
+        "end": {
+          "line": 23,
+          "column": 74,
+          "index": 685
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Manage workspaces sheet title",
+          "text": "Manage Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fnkys6jRAM+rwFAk0M3PLg==": {
+          "desc": "Manage workspaces sheet description",
+          "text": "Manage your workspaces here. Each workspace has its seperate database."
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 28,
+          "column": 4,
+          "index": 761
+        },
+        "end": {
+          "line": 30,
+          "column": 10,
+          "index": 897
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Manage workspaces sheet description",
+          "text": "Manage your workspaces here. Each workspace has its seperate database."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "XLbX6Wl6u9avXELpAtBzrQ==": {
+          "desc": "Workspaces settings: active workspace heading",
+          "text": "Active Workspace"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 36,
+          "column": 4,
+          "index": 972
+        },
+        "end": {
+          "line": 38,
+          "column": 10,
+          "index": 1064
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspaces settings: active workspace heading",
+          "text": "Active Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "spCQ1j5f/mT+f8l6FZfgdw==": {
+          "desc": "Workspaces settings: available workspaces heading",
+          "text": "Available Workspaces"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 44,
+          "column": 4,
+          "index": 1143
+        },
+        "end": {
+          "line": 46,
+          "column": 10,
+          "index": 1243
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspaces settings: available workspaces heading",
+          "text": "Available Workspaces"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8UAvIUOeGrPGCzi20mYGlw==": {
+          "desc": "Workspace status: active",
+          "text": "Active"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 51,
+          "column": 9,
+          "index": 1311
+        },
+        "end": {
+          "line": 51,
+          "column": 50,
+          "index": 1352
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace status: active",
+          "text": "Active"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "SToJJnQG6LmkzRJk1miJbQ==": {
+          "desc": "Workspace status: load",
+          "text": "Load"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 55,
+          "column": 9,
+          "index": 1414
+        },
+        "end": {
+          "line": 55,
+          "column": 46,
+          "index": 1451
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace status: load",
+          "text": "Load"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "v+e567bLuwzddht5BcChKA==": {
+          "desc": "Workspace status: encryption key missing",
+          "text": "Key missing"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 59,
+          "column": 9,
+          "index": 1519
+        },
+        "end": {
+          "line": 59,
+          "column": 71,
+          "index": 1581
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace status: encryption key missing",
+          "text": "Key missing"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cEZDYt6tfrKkWyz1en7ptg==": {
+          "desc": "Workspace action: switch",
+          "text": "Switch"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 63,
+          "column": 9,
+          "index": 1645
+        },
+        "end": {
+          "line": 63,
+          "column": 50,
+          "index": 1686
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace action: switch",
+          "text": "Switch"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "92BstEzRu3t2FsaYk0UM5Q==": {
+          "desc": "Workspace action: unavailable",
+          "text": "Unavailable"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 67,
+          "column": 9,
+          "index": 1755
+        },
+        "end": {
+          "line": 67,
+          "column": 60,
+          "index": 1806
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Workspace action: unavailable",
+          "text": "Unavailable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "HFI83AHCPXOWNl063yGgGA==": {
+          "desc": "Alert title when workspace key is missing",
+          "text": "Workspace unavailable"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 71,
+          "column": 9,
+          "index": 1879
+        },
+        "end": {
+          "line": 74,
+          "column": 3,
+          "index": 1964
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when workspace key is missing",
+          "text": "Workspace unavailable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LPMpN8uAdr9Gj5JR+326CA==": {
+          "desc": "Alert message when workspace key is missing",
+          "text": "This workspace has no encryption key on this device."
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 78,
+          "column": 9,
+          "index": 2039
+        },
+        "end": {
+          "line": 81,
+          "column": 3,
+          "index": 2157
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert message when workspace key is missing",
+          "text": "This workspace has no encryption key on this device."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "WA8cGN8jvshKji3dx5fTqQ==": {
+          "desc": "Alert title when workspace switch fails",
+          "text": "Could not switch workspace"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 85,
+          "column": 9,
+          "index": 2231
+        },
+        "end": {
+          "line": 88,
+          "column": 3,
+          "index": 2319
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when workspace switch fails",
+          "text": "Could not switch workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "zKUA7Nk+m468MjZ3YEnvGg==": {
+          "desc": "Edit workspace sheet description",
+          "text": "Choose a new name, color, and icon for this workspace."
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 92,
+          "column": 9,
+          "index": 2386
+        },
+        "end": {
+          "line": 95,
+          "column": 3,
+          "index": 2495
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Edit workspace sheet description",
+          "text": "Choose a new name, color, and icon for this workspace."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/OubdScpYt+a0lhvDl2fxQ==": {
+          "desc": "Export workspace modal title",
+          "text": "Export Workspace"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 99,
+          "column": 9,
+          "index": 2563
+        },
+        "end": {
+          "line": 99,
+          "column": 64,
+          "index": 2618
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Export workspace modal title",
+          "text": "Export Workspace"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "9ugI7q3qBMg05lIwrFosCQ==": {
+          "desc": "Alert title when workspace export fails",
+          "text": "Export failed"
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 103,
+          "column": 9,
+          "index": 2683
+        },
+        "end": {
+          "line": 103,
+          "column": 72,
+          "index": 2746
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when workspace export fails",
+          "text": "Export failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "8pk2tJnTP/444Ls3ZAOzMQ==": {
+          "desc": "Alert message when workspace export fails",
+          "text": "Could not export this workspace. Please try again."
+        }
+      },
+      "filename": "features/settings/features/workspaces/labels/settingsWorkspacesLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 107,
+          "column": 9,
+          "index": 2813
+        },
+        "end": {
+          "line": 110,
+          "column": 3,
+          "index": 2927
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert message when workspace export fails",
+          "text": "Could not export this workspace. Please try again."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "tmNyvz86BLRs0mpLSFPUBg==": {
+          "desc": "Recovery passphrase alert title",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 96
+        },
+        "end": {
+          "line": 4,
+          "column": 70,
+          "index": 157
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase alert title",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "MbCmrhTHDxYU//qlOX7p6Q==": {
+          "desc": "Recovery passphrase switch title",
+          "text": "Recovery passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 229
+        },
+        "end": {
+          "line": 8,
+          "column": 71,
+          "index": 291
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase switch title",
+          "text": "Recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "7ox75ga7swhBB+uRm0tN3g==": {
+          "desc": "Recovery passphrase switch description",
+          "text": "Add a recovery passphrase as a second unlock option for exported workspaces."
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 369
+        },
+        "end": {
+          "line": 15,
+          "column": 3,
+          "index": 506
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase switch description",
+          "text": "Add a recovery passphrase as a second unlock option for exported workspaces."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "++x5S662RpcY01dXzpwvKw==": {
+          "desc": "Recovery passphrase switch accessibility label",
+          "text": "Enable recovery passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 19,
+          "column": 9,
+          "index": 591
+        },
+        "end": {
+          "line": 22,
+          "column": 3,
+          "index": 686
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase switch accessibility label",
+          "text": "Enable recovery passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ib9hVm6EkixtCVhNAfKLVw==": {
+          "desc": "Recovery passphrase setup form description",
+          "text": "Choose a passphrase. You'll need it to import exported workspaces if you forget the export password."
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 27,
+          "column": 4,
+          "index": 769
+        },
+        "end": {
+          "line": 30,
+          "column": 10,
+          "index": 948
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase setup form description",
+          "text": "Choose a passphrase. You'll need it to import exported workspaces if you forget the export password."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "QEOCdeAHUCPOZc89ttu4Vw==": {
+          "desc": "Recovery passphrase field label",
+          "text": "Passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 35,
+          "column": 9,
+          "index": 1023
+        },
+        "end": {
+          "line": 35,
+          "column": 61,
+          "index": 1075
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase field label",
+          "text": "Passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "x/+WFfVZX4VFmQPINTR3+w==": {
+          "desc": "Recovery passphrase field placeholder",
+          "text": "Passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 39,
+          "column": 9,
+          "index": 1152
+        },
+        "end": {
+          "line": 39,
+          "column": 67,
+          "index": 1210
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase field placeholder",
+          "text": "Passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4GkEZuwFjsoIFD5raDfpYA==": {
+          "desc": "Recovery passphrase confirm field label",
+          "text": "Confirm"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 43,
+          "column": 9,
+          "index": 1283
+        },
+        "end": {
+          "line": 43,
+          "column": 66,
+          "index": 1340
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase confirm field label",
+          "text": "Confirm"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "f0NmcxHYR+CSuq1ZCNRiSA==": {
+          "desc": "Recovery passphrase confirm field placeholder",
+          "text": "Confirm passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 47,
+          "column": 9,
+          "index": 1419
+        },
+        "end": {
+          "line": 50,
+          "column": 3,
+          "index": 1505
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase confirm field placeholder",
+          "text": "Confirm passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "rZ+wH4tnUlg/N7ojSezILA==": {
+          "desc": "Recovery passphrase minimum length validation",
+          "text": "At least {min} characters"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 54,
+          "column": 9,
+          "index": 1591
+        },
+        "end": {
+          "line": 57,
+          "column": 3,
+          "index": 1716
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase minimum length validation",
+          "text": "At least {min} characters"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xmm3BqkoMVu+CjKU6YjNvQ==": {
+          "desc": "Recovery passphrase mismatch validation",
+          "text": "Passphrases do not match"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 61,
+          "column": 9,
+          "index": 1790
+        },
+        "end": {
+          "line": 64,
+          "column": 3,
+          "index": 1876
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase mismatch validation",
+          "text": "Passphrases do not match"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/1hwe9pdWv2JUUWM2Yqm3A==": {
+          "desc": "Recovery passphrase enabling button state",
+          "text": "Enabling…"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 68,
+          "column": 9,
+          "index": 1945
+        },
+        "end": {
+          "line": 68,
+          "column": 70,
+          "index": 2006
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase enabling button state",
+          "text": "Enabling…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "DXj6yBhM/2N2jRC3+DvvAg==": {
+          "desc": "Recovery passphrase reveal: saved description",
+          "text": "Save this somewhere safe. Long-press to copy-friendly view."
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 73,
+          "column": 4,
+          "index": 2095
+        },
+        "end": {
+          "line": 75,
+          "column": 10,
+          "index": 2230
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase reveal: saved description",
+          "text": "Save this somewhere safe. Long-press to copy-friendly view."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZGSV8IC6gDr86ITuCh1nnQ==": {
+          "desc": "Recovery passphrase reveal: reminder description",
+          "text": "Reveal your saved recovery passphrase if you need a reminder."
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 81,
+          "column": 4,
+          "index": 2326
+        },
+        "end": {
+          "line": 83,
+          "column": 10,
+          "index": 2466
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase reveal: reminder description",
+          "text": "Reveal your saved recovery passphrase if you need a reminder."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "z8PJPhUeOUCJzVHKKAQgHQ==": {
+          "desc": "Recovery passphrase hide button",
+          "text": "Hide passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 88,
+          "column": 9,
+          "index": 2541
+        },
+        "end": {
+          "line": 88,
+          "column": 66,
+          "index": 2598
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase hide button",
+          "text": "Hide passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yl/huv7hITvCDmR4GWqCOg==": {
+          "desc": "Recovery passphrase authenticating state",
+          "text": "Authenticating…"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 92,
+          "column": 9,
+          "index": 2673
+        },
+        "end": {
+          "line": 92,
+          "column": 75,
+          "index": 2739
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase authenticating state",
+          "text": "Authenticating…"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fLAXso32oaDl9fcbDVvf9Q==": {
+          "desc": "Recovery passphrase reveal button",
+          "text": "Reveal passphrase"
+        }
+      },
+      "filename": "features/settings/features/recoveryPassword/labels/settingsRecoveryLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 96,
+          "column": 9,
+          "index": 2812
+        },
+        "end": {
+          "line": 96,
+          "column": 70,
+          "index": 2873
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Recovery passphrase reveal button",
+          "text": "Reveal passphrase"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "K9V6lodtHOvHp7U2EVFhUQ==": {
+          "desc": "Settings section: send us feedback",
+          "text": "Feedback"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 88
+        },
+        "end": {
+          "line": 4,
+          "column": 70,
+          "index": 149
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: send us feedback",
+          "text": "Feedback"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lq4l5hF7hSqv555b/v/GNA==": {
+          "desc": "Feedback sheet: explain how feedback is used and response time",
+          "text": "Use feedback to tell us how you feel about the app. You can also report bugs through here. You should get a response within one business day."
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 9,
+          "column": 4,
+          "index": 222
+        },
+        "end": {
+          "line": 12,
+          "column": 10,
+          "index": 462
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Feedback sheet: explain how feedback is used and response time",
+          "text": "Use feedback to tell us how you feel about the app. You can also report bugs through here. You should get a response within one business day."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "V7xTISCDBujkBDpZ0L9Akw==": {
+          "desc": "Settings feedback row: bug report",
+          "text": "Bug Report"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 17,
+          "column": 9,
+          "index": 531
+        },
+        "end": {
+          "line": 17,
+          "column": 63,
+          "index": 585
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings feedback row: bug report",
+          "text": "Bug Report"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ORy86LAviBQG4PBS7UCqdw==": {
+          "desc": "Settings feedback row: general feedback",
+          "text": "Feedback"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 21,
+          "column": 9,
+          "index": 648
+        },
+        "end": {
+          "line": 21,
+          "column": 67,
+          "index": 706
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings feedback row: general feedback",
+          "text": "Feedback"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Xb5yxwWH6Ab+bGFEc8aWHw==": {
+          "desc": "Settings feedback row: feature idea",
+          "text": "Feature Idea"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 25,
+          "column": 9,
+          "index": 773
+        },
+        "end": {
+          "line": 25,
+          "column": 67,
+          "index": 831
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings feedback row: feature idea",
+          "text": "Feature Idea"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5A2orJFm2DlJZ3G4NDyjwQ==": {
+          "desc": "Email subject for a bug report",
+          "text": "Bug report"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 29,
+          "column": 9,
+          "index": 902
+        },
+        "end": {
+          "line": 29,
+          "column": 60,
+          "index": 953
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Email subject for a bug report",
+          "text": "Bug report"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "pCoehDByVQUpQ5ZI0x5A7A==": {
+          "desc": "Email subject for general feedback",
+          "text": "Feedback for MindChart"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 33,
+          "column": 9,
+          "index": 1023
+        },
+        "end": {
+          "line": 33,
+          "column": 76,
+          "index": 1090
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Email subject for general feedback",
+          "text": "Feedback for MindChart"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0z8OENCKbFf+kMeyRvbsNA==": {
+          "desc": "Email subject for a feature idea",
+          "text": "Feature idea"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 37,
+          "column": 9,
+          "index": 1163
+        },
+        "end": {
+          "line": 37,
+          "column": 64,
+          "index": 1218
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Email subject for a feature idea",
+          "text": "Feature idea"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fH5FimTYTHB0zYpIwuc0NA==": {
+          "desc": "Alert title when no mail app can be opened",
+          "text": "Mail app unavailable"
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 41,
+          "column": 9,
+          "index": 1294
+        },
+        "end": {
+          "line": 44,
+          "column": 3,
+          "index": 1379
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert title when no mail app can be opened",
+          "text": "Mail app unavailable"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Va7Y22Zwtc67WFmtEHs7eQ==": {
+          "desc": "Alert message when no mail app can be opened",
+          "text": "Could not open your mail app. Check that an email account is set up on this device."
+        }
+      },
+      "filename": "features/settings/features/feedback/labels/settingsFeedbackLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 48,
+          "column": 9,
+          "index": 1457
+        },
+        "end": {
+          "line": 51,
+          "column": 3,
+          "index": 1607
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Alert message when no mail app can be opened",
+          "text": "Could not open your mail app. Check that an email account is set up on this device."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4MsyCSMOnDaqn94cweoKnQ==": {
+          "desc": "Developer settings: seed database title",
+          "text": "Seed Database"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 5,
+          "column": 4,
+          "index": 91
+        },
+        "end": {
+          "line": 5,
+          "column": 75,
+          "index": 162
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings: seed database title",
+          "text": "Seed Database"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Zq+vgwuMowy2/HWKeSLpnw==": {
+          "desc": "Developer settings: seed database description",
+          "text": "Fill the database with fake data for testing. The maximum number of notes is {maxNotes}."
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 15,
+          "column": 4,
+          "index": 278
+        },
+        "end": {
+          "line": 18,
+          "column": 10,
+          "index": 487
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer settings: seed database description",
+          "text": "Fill the database with fake data for testing. The maximum number of notes is {maxNotes}."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "/1HfJvoCbm4pZDYCOv4WSw==": {
+          "desc": "Developer seed database: number of notes placeholder",
+          "text": "Number of notes"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 23,
+          "column": 9,
+          "index": 562
+        },
+        "end": {
+          "line": 26,
+          "column": 3,
+          "index": 652
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer seed database: number of notes placeholder",
+          "text": "Number of notes"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "r7P1OJt3oYTSN92yWjfp3A==": {
+          "desc": "Developer seed database: missing number alert",
+          "text": "Please enter a number of notes"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 30,
+          "column": 9,
+          "index": 723
+        },
+        "end": {
+          "line": 33,
+          "column": 3,
+          "index": 821
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer seed database: missing number alert",
+          "text": "Please enter a number of notes"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Xpa667FfWn0pz5k6Gp9psQ==": {
+          "desc": "Developer seed database loading title",
+          "text": "Seeding Database"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 37,
+          "column": 9,
+          "index": 888
+        },
+        "end": {
+          "line": 37,
+          "column": 73,
+          "index": 952
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer seed database loading title",
+          "text": "Seeding Database"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5UMYG9mnVb7vXHYEgQHC5w==": {
+          "desc": "Developer seed database: failure alert title",
+          "text": "Seed failed"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 41,
+          "column": 9,
+          "index": 1023
+        },
+        "end": {
+          "line": 41,
+          "column": 75,
+          "index": 1089
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Developer seed database: failure alert title",
+          "text": "Seed failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "3fNo9TPf0N3moIb7xTcIhA==": {
+          "desc": "DB inspector: clear table alert title",
+          "text": "Clear table?"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 45,
+          "column": 9,
+          "index": 1163
+        },
+        "end": {
+          "line": 45,
+          "column": 69,
+          "index": 1223
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: clear table alert title",
+          "text": "Clear table?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LlzkBbNczTlJfKKD6J34jQ==": {
+          "desc": "DB inspector: clear table alert message",
+          "text": "Remove all rows from \"{tableName}\"?"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 49,
+          "column": 9,
+          "index": 1316
+        },
+        "end": {
+          "line": 52,
+          "column": 3,
+          "index": 1443
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: clear table alert message",
+          "text": "Remove all rows from \"{tableName}\"?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6rDkHbAW2sWxGDq7bKtTaw==": {
+          "desc": "DB inspector: clear table button",
+          "text": "Clear"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 56,
+          "column": 9,
+          "index": 1508
+        },
+        "end": {
+          "line": 56,
+          "column": 57,
+          "index": 1556
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: clear table button",
+          "text": "Clear"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Ia+dIn5Fx+Rsxoi+SCfWhA==": {
+          "desc": "DB inspector: delete database file alert title",
+          "text": "Delete Database File?"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 60,
+          "column": 9,
+          "index": 1632
+        },
+        "end": {
+          "line": 63,
+          "column": 3,
+          "index": 1722
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: delete database file alert title",
+          "text": "Delete Database File?"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "TcmuNFkUzH3Na9uT0Zw0jA==": {
+          "desc": "DB inspector: delete database file alert message",
+          "text": "This will permanently delete your database."
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 67,
+          "column": 9,
+          "index": 1800
+        },
+        "end": {
+          "line": 70,
+          "column": 3,
+          "index": 1914
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: delete database file alert message",
+          "text": "This will permanently delete your database."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "AbdXOW0QnDR7CpHQTgLU9w==": {
+          "desc": "DB inspector: delete database file button",
+          "text": "Delete DB File"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 74,
+          "column": 9,
+          "index": 1986
+        },
+        "end": {
+          "line": 74,
+          "column": 75,
+          "index": 2052
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: delete database file button",
+          "text": "Delete DB File"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "mDot1m4T8BOntfH8qjvvJg==": {
+          "desc": "DB inspector: table row count",
+          "text": "Rows: {count}"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 78,
+          "column": 9,
+          "index": 2128
+        },
+        "end": {
+          "line": 81,
+          "column": 3,
+          "index": 2226
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: table row count",
+          "text": "Rows: {count}"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "O/QDggpZcorooEJzZhfOag==": {
+          "desc": "DB inspector: empty state",
+          "text": "No tables found."
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 85,
+          "column": 9,
+          "index": 2293
+        },
+        "end": {
+          "line": 85,
+          "column": 61,
+          "index": 2345
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: empty state",
+          "text": "No tables found."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0H2aT8ocfohC9wEt8Psk7A==": {
+          "desc": "DB inspector: new database button",
+          "text": "New Database"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 89,
+          "column": 9,
+          "index": 2416
+        },
+        "end": {
+          "line": 89,
+          "column": 65,
+          "index": 2472
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: new database button",
+          "text": "New Database"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "f9z05ZJt12NCSN2vUTOelA==": {
+          "desc": "DB inspector: migration failed alert title",
+          "text": "Migration failed"
+        }
+      },
+      "filename": "features/settings/features/developer/labels/settingsDeveloperLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 93,
+          "column": 9,
+          "index": 2546
+        },
+        "end": {
+          "line": 93,
+          "column": 78,
+          "index": 2615
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "DB inspector: migration failed alert title",
+          "text": "Migration failed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "X0bAmXXm9sSEnSOJ6PXFrA==": {
+          "desc": "Settings section: AI",
+          "text": "AI"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 82
+        },
+        "end": {
+          "line": 4,
+          "column": 50,
+          "index": 123
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings section: AI",
+          "text": "AI"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "VIp1M5yqYlwtPVElFKpjEw==": {
+          "desc": "Settings AI row: auto connect",
+          "text": "Auto Connect"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 184
+        },
+        "end": {
+          "line": 8,
+          "column": 61,
+          "index": 236
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: auto connect",
+          "text": "Auto Connect"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cwavxQxiHgsSueiyMgxFVw==": {
+          "desc": "Settings AI auto connect description",
+          "text": "Connect Whisper and Llama Chat on launch. Embeddings always connect."
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 303
+        },
+        "end": {
+          "line": 15,
+          "column": 3,
+          "index": 430
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI auto connect description",
+          "text": "Connect Whisper and Llama Chat on launch. Embeddings always connect."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "DEGncCLuxkHNYXTe3kZgig==": {
+          "desc": "Settings AI auto connect switch accessibility label",
+          "text": "Auto Connect"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 19,
+          "column": 9,
+          "index": 504
+        },
+        "end": {
+          "line": 22,
+          "column": 3,
+          "index": 590
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI auto connect switch accessibility label",
+          "text": "Auto Connect"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "z27kGVly2CYdoMVQli4jxg==": {
+          "desc": "Settings AI row: providers",
+          "text": "AI Providers"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 26,
+          "column": 9,
+          "index": 649
+        },
+        "end": {
+          "line": 26,
+          "column": 58,
+          "index": 698
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: providers",
+          "text": "AI Providers"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IhheEnY60K6/JbrxMPwcGg==": {
+          "desc": "Settings AI row: whisper engine",
+          "text": "Whisper Engine"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 30,
+          "column": 9,
+          "index": 761
+        },
+        "end": {
+          "line": 30,
+          "column": 65,
+          "index": 817
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: whisper engine",
+          "text": "Whisper Engine"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "0aDawXa5V7LBD+f6mZYi2w==": {
+          "desc": "Settings AI row: llama chat engine",
+          "text": "Llama Chat Engine"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 34,
+          "column": 9,
+          "index": 882
+        },
+        "end": {
+          "line": 34,
+          "column": 71,
+          "index": 944
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: llama chat engine",
+          "text": "Llama Chat Engine"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "NFFO35N8J14AyjcPek93TA==": {
+          "desc": "Settings AI row: embeddings engine",
+          "text": "Embeddings Engine"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 38,
+          "column": 9,
+          "index": 1010
+        },
+        "end": {
+          "line": 38,
+          "column": 71,
+          "index": 1072
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Settings AI row: embeddings engine",
+          "text": "Embeddings Engine"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yXuLpPGflw1h9suJxJwJ+g==": {
+          "desc": "AI provider option: local",
+          "text": "Local"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 42,
+          "column": 9,
+          "index": 1130
+        },
+        "end": {
+          "line": 42,
+          "column": 50,
+          "index": 1171
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider option: local",
+          "text": "Local"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "i8zj5fbcFiNT+pFYijWVAw==": {
+          "desc": "AI provider option: cloud",
+          "text": "Cloud"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 46,
+          "column": 9,
+          "index": 1229
+        },
+        "end": {
+          "line": 46,
+          "column": 50,
+          "index": 1270
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider option: cloud",
+          "text": "Cloud"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "5Bfsj72ek8iZXVMxfccDzA==": {
+          "desc": "AI providers summary: mixed",
+          "text": "Mixed"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 50,
+          "column": 9,
+          "index": 1328
+        },
+        "end": {
+          "line": 50,
+          "column": 52,
+          "index": 1371
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI providers summary: mixed",
+          "text": "Mixed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "OjPmLjZc9f/s/ml2PZGvZg==": {
+          "desc": "AI settings: no model selected",
+          "text": "No model"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 54,
+          "column": 9,
+          "index": 1423
+        },
+        "end": {
+          "line": 54,
+          "column": 58,
+          "index": 1472
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI settings: no model selected",
+          "text": "No model"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "yF9hN7mq49yhmiCOUGiAKw==": {
+          "desc": "AI providers settings description",
+          "text": "The AI providers are the locations where the AI models are hosted."
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 59,
+          "column": 4,
+          "index": 1543
+        },
+        "end": {
+          "line": 61,
+          "column": 10,
+          "index": 1673
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI providers settings description",
+          "text": "The AI providers are the locations where the AI models are hosted."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "+aqgSD2/9OMXik+EdtbyQA==": {
+          "desc": "AI provider row: whisper",
+          "text": "Whisper"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 66,
+          "column": 9,
+          "index": 1742
+        },
+        "end": {
+          "line": 66,
+          "column": 59,
+          "index": 1792
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider row: whisper",
+          "text": "Whisper"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4bl5cu0L85MojWZlPTS8sA==": {
+          "desc": "AI provider row: llama chat",
+          "text": "Llama Chat"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 70,
+          "column": 9,
+          "index": 1859
+        },
+        "end": {
+          "line": 70,
+          "column": 65,
+          "index": 1915
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider row: llama chat",
+          "text": "Llama Chat"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fVVE0L+p0Eh5Iyi6scAVLA==": {
+          "desc": "AI provider row: embeddings",
+          "text": "Embeddings"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 74,
+          "column": 9,
+          "index": 1983
+        },
+        "end": {
+          "line": 74,
+          "column": 65,
+          "index": 2039
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI provider row: embeddings",
+          "text": "Embeddings"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "IwG02Jegqh5juck6XFfjiA==": {
+          "desc": "Whisper engine settings description",
+          "text": "AI Engine responsible for the local transcription of speech. Use Tiny for English and Base for other languages."
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 79,
+          "column": 4,
+          "index": 2112
+        },
+        "end": {
+          "line": 82,
+          "column": 10,
+          "index": 2295
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Whisper engine settings description",
+          "text": "AI Engine responsible for the local transcription of speech. Use Tiny for English and Base for other languages."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "M0Cu+RiPPsE6kXkXeQIErA==": {
+          "desc": "Llama chat engine settings description",
+          "text": "Local Large Language Model responsible for the summarization of notes. Large models require more VRAM and storage but provide better accuracy."
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 88,
+          "column": 4,
+          "index": 2374
+        },
+        "end": {
+          "line": 91,
+          "column": 10,
+          "index": 2591
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Llama chat engine settings description",
+          "text": "Local Large Language Model responsible for the summarization of notes. Large models require more VRAM and storage but provide better accuracy."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "CQnDssZp4TlTiMRQX4oNFA==": {
+          "desc": "Embeddings engine settings description",
+          "text": "Local Embeddings Engine responsible for the creation of thoughts embeddings. It helps finding connections between notes."
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 97,
+          "column": 4,
+          "index": 2671
+        },
+        "end": {
+          "line": 100,
+          "column": 10,
+          "index": 2866
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Embeddings engine settings description",
+          "text": "Local Embeddings Engine responsible for the creation of thoughts embeddings. It helps finding connections between notes."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6DQr2aFZ/xVgYPMXGqY6vA==": {
+          "desc": "AI engine settings: status heading",
+          "text": "Engine Status"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 105,
+          "column": 9,
+          "index": 2934
+        },
+        "end": {
+          "line": 105,
+          "column": 75,
+          "index": 3000
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine settings: status heading",
+          "text": "Engine Status"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cacjfW8TiX14hJ80hfc2Pw==": {
+          "desc": "AI engine settings: active context label",
+          "text": "Active Context"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 110,
+          "column": 4,
+          "index": 3069
+        },
+        "end": {
+          "line": 110,
+          "column": 77,
+          "index": 3142
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine settings: active context label",
+          "text": "Active Context"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cUrYnAXmPRZF/gaNHgwfbg==": {
+          "desc": "AI engine status: idle",
+          "text": "Idle"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 115,
+          "column": 9,
+          "index": 3201
+        },
+        "end": {
+          "line": 115,
+          "column": 46,
+          "index": 3238
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine status: idle",
+          "text": "Idle"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ZTkI4ZWouwTHK5e4A7AaQA==": {
+          "desc": "AI engine settings: available models heading",
+          "text": "Available Models"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 120,
+          "column": 4,
+          "index": 3311
+        },
+        "end": {
+          "line": 122,
+          "column": 10,
+          "index": 3402
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine settings: available models heading",
+          "text": "Available Models"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "kUzDiAlqoXVKIFaIJzEPFg==": {
+          "desc": "AI engine action: unload from RAM",
+          "text": "Unload from RAM"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 127,
+          "column": 9,
+          "index": 3464
+        },
+        "end": {
+          "line": 127,
+          "column": 68,
+          "index": 3523
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI engine action: unload from RAM",
+          "text": "Unload from RAM"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "eHrAkk2EcMriN0AtxP24+w==": {
+          "desc": "AI model action: delete",
+          "text": "Delete"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 131,
+          "column": 9,
+          "index": 3579
+        },
+        "end": {
+          "line": 131,
+          "column": 49,
+          "index": 3619
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: delete",
+          "text": "Delete"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "eqE6YYJMR4P2W8MBEnpsgw==": {
+          "desc": "AI model action: load",
+          "text": "Load"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 135,
+          "column": 9,
+          "index": 3673
+        },
+        "end": {
+          "line": 135,
+          "column": 45,
+          "index": 3709
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: load",
+          "text": "Load"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "+FkJa0RdClUarH7veXQlbQ==": {
+          "desc": "AI model action: loaded",
+          "text": "Loaded"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 139,
+          "column": 9,
+          "index": 3765
+        },
+        "end": {
+          "line": 139,
+          "column": 49,
+          "index": 3805
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: loaded",
+          "text": "Loaded"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "sALzOUSpY14DpOVsSURcOQ==": {
+          "desc": "AI model action: download",
+          "text": "Download"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 143,
+          "column": 9,
+          "index": 3863
+        },
+        "end": {
+          "line": 143,
+          "column": 53,
+          "index": 3907
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: download",
+          "text": "Download"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lsQV+WP/mfO4S29xIcCrmQ==": {
+          "desc": "AI model action: downloading",
+          "text": "Downloading..."
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 147,
+          "column": 9,
+          "index": 3968
+        },
+        "end": {
+          "line": 147,
+          "column": 62,
+          "index": 4021
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model action: downloading",
+          "text": "Downloading..."
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fUu0gXWmVdMF1eiU/tzEWQ==": {
+          "desc": "AI model storage label: local",
+          "text": "Local · {size}"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 151,
+          "column": 9,
+          "index": 4093
+        },
+        "end": {
+          "line": 154,
+          "column": 3,
+          "index": 4180
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model storage label: local",
+          "text": "Local · {size}"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "LxNEsWhDgSdzUvdVb/rX6A==": {
+          "desc": "AI model storage label: cloud download",
+          "text": "Cloud · {size} download"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 158,
+          "column": 9,
+          "index": 4260
+        },
+        "end": {
+          "line": 161,
+          "column": 3,
+          "index": 4369
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI model storage label: cloud download",
+          "text": "Cloud · {size} download"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "qmO0qFY3GBS0C9V9OVSVgg==": {
+          "desc": "Auto connect loading title",
+          "text": "Connecting to AI Models"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 165,
+          "column": 9,
+          "index": 4429
+        },
+        "end": {
+          "line": 165,
+          "column": 69,
+          "index": 4489
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Auto connect loading title",
+          "text": "Connecting to AI Models"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "os2vIF5bt1f/nSvOqn/3Ew==": {
+          "desc": "AI setup modal: go to settings button",
+          "text": "Go to Settings"
+        }
+      },
+      "filename": "features/settings/features/ai/labels/settingsAiLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 169,
+          "column": 9,
+          "index": 4552
+        },
+        "end": {
+          "line": 169,
+          "column": 71,
+          "index": 4614
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "AI setup modal: go to settings button",
+          "text": "Go to Settings"
         }
       }
     },
@@ -8935,6 +9283,93 @@
     },
     {
       "hashToLeaf": {
+        "Sx/zpifu75UXLKUyM4BT8A==": {
+          "desc": "Date group: no date",
+          "text": "No date"
+        }
+      },
+      "filename": "features/contentList/features/groupByDates/notes/components/dateGroupLabel.tsx",
+      "loc": {
+        "start": {
+          "line": 25,
+          "column": 11,
+          "index": 877
+        },
+        "end": {
+          "line": 25,
+          "column": 56,
+          "index": 922
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Date group: no date",
+          "text": "No date"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "4ENMWNm78wjdJK3ObXt3Lw==": {
+          "desc": "Date group: today",
+          "text": "Today"
+        }
+      },
+      "filename": "features/contentList/features/groupByDates/notes/components/dateGroupLabel.tsx",
+      "loc": {
+        "start": {
+          "line": 32,
+          "column": 11,
+          "index": 1063
+        },
+        "end": {
+          "line": 32,
+          "column": 52,
+          "index": 1104
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Date group: today",
+          "text": "Today"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "rtDdBQ/0UBBoebLOfChMmg==": {
+          "desc": "Date group: yesterday",
+          "text": "Yesterday"
+        }
+      },
+      "filename": "features/contentList/features/groupByDates/notes/components/dateGroupLabel.tsx",
+      "loc": {
+        "start": {
+          "line": 36,
+          "column": 11,
+          "index": 1153
+        },
+        "end": {
+          "line": 36,
+          "column": 60,
+          "index": 1202
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Date group: yesterday",
+          "text": "Yesterday"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "Up0lL+gkyK8UrTuBRUacRA==": {
           "desc": "Folder form title: new folder",
           "text": "New folder"
@@ -9581,14 +10016,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBar.tsx",
       "loc": {
         "start": {
-          "line": 174,
+          "line": 177,
           "column": 26,
-          "index": 6052
+          "index": 6119
         },
         "end": {
-          "line": 177,
+          "line": 180,
           "column": 7,
-          "index": 6138
+          "index": 6205
         }
       },
       "project": "",
@@ -9602,6 +10037,64 @@
     },
     {
       "hashToLeaf": {
+        "Ce1nch4RLlMIF6jQaAcyeA==": {
+          "desc": "Accessibility label for ascending sort direction",
+          "text": "Sort from beginning to end"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBar.tsx",
+      "loc": {
+        "start": {
+          "line": 401,
+          "column": 22,
+          "index": 13043
+        },
+        "end": {
+          "line": 404,
+          "column": 23,
+          "index": 13200
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for ascending sort direction",
+          "text": "Sort from beginning to end"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "p0hCULQMixTZ6o8e9TAWbg==": {
+          "desc": "Accessibility label for descending sort direction",
+          "text": "Sort from end to beginning"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBar.tsx",
+      "loc": {
+        "start": {
+          "line": 405,
+          "column": 22,
+          "index": 13223
+        },
+        "end": {
+          "line": 408,
+          "column": 23,
+          "index": 13381
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for descending sort direction",
+          "text": "Sort from end to beginning"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "CJrvnzZkWPWG0I2qrcpDKQ==": {
           "desc": "Options bar sort sheet title",
           "text": "Sort by"
@@ -9610,14 +10103,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 8,
+          "line": 47,
           "column": 9,
-          "index": 236
+          "index": 1064
         },
         "end": {
-          "line": 8,
+          "line": 47,
           "column": 63,
-          "index": 290
+          "index": 1118
         }
       },
       "project": "",
@@ -9639,14 +10132,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 12,
+          "line": 51,
           "column": 9,
-          "index": 340
+          "index": 1168
         },
         "end": {
-          "line": 12,
+          "line": 51,
           "column": 65,
-          "index": 396
+          "index": 1224
         }
       },
       "project": "",
@@ -9660,117 +10153,233 @@
     },
     {
       "hashToLeaf": {
-        "QyOZ6riGUln/+AKnPLkewA==": {
-          "desc": "Sort option: newest first",
-          "text": "Newest first"
-        }
-      },
-      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 18,
-          "column": 13,
-          "index": 516
-        },
-        "end": {
-          "line": 18,
-          "column": 69,
-          "index": 572
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Sort option: newest first",
-          "text": "Newest first"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "OsWHGJzz00FlMWor3o9tsA==": {
-          "desc": "Sort option: oldest first",
-          "text": "Oldest first"
-        }
-      },
-      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 20,
-          "column": 13,
-          "index": 606
-        },
-        "end": {
-          "line": 20,
-          "column": 69,
-          "index": 662
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Sort option: oldest first",
-          "text": "Oldest first"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
-        "vanH2Sa5S+5vU6xdQBI1KA==": {
-          "desc": "Sort option: alphabetical A to Z",
+        "KUmk4AAx3vTGXNO7Mk6slg==": {
+          "desc": "Sort field: alphabetical",
           "text": "Alphabetical"
         }
       },
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 22,
+          "line": 57,
           "column": 13,
-          "index": 692
+          "index": 1358
         },
         "end": {
-          "line": 22,
-          "column": 76,
-          "index": 755
+          "line": 57,
+          "column": 68,
+          "index": 1413
         }
       },
       "project": "",
       "jsfbt": {
         "m": [],
         "t": {
-          "desc": "Sort option: alphabetical A to Z",
+          "desc": "Sort field: alphabetical",
           "text": "Alphabetical"
         }
       }
     },
     {
       "hashToLeaf": {
-        "Whl1CBlv/FpIzcoir/J6jA==": {
-          "desc": "Sort option: alphabetical Z to A",
-          "text": "Z to A order"
+        "7PNzvJvg3cgjPPUViVPSwg==": {
+          "desc": "Sort field: last viewed",
+          "text": "Last viewed"
         }
       },
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 24,
+          "line": 59,
           "column": 13,
-          "index": 785
+          "index": 1451
         },
         "end": {
-          "line": 24,
-          "column": 76,
-          "index": 848
+          "line": 59,
+          "column": 66,
+          "index": 1504
         }
       },
       "project": "",
       "jsfbt": {
         "m": [],
         "t": {
-          "desc": "Sort option: alphabetical Z to A",
-          "text": "Z to A order"
+          "desc": "Sort field: last viewed",
+          "text": "Last viewed"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "XoecGVs5GF+3Y/b7eCSkgA==": {
+          "desc": "Sort field: last updated",
+          "text": "Last updated"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 61,
+          "column": 13,
+          "index": 1541
+        },
+        "end": {
+          "line": 61,
+          "column": 68,
+          "index": 1596
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort field: last updated",
+          "text": "Last updated"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ye9C2UnD5v/eI6xrRxOT0A==": {
+          "desc": "Sort field: date created",
+          "text": "Date created"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 63,
+          "column": 13,
+          "index": 1633
+        },
+        "end": {
+          "line": 63,
+          "column": 68,
+          "index": 1688
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort field: date created",
+          "text": "Date created"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "ldSeOH/YuwRbCWGCo/vnwQ==": {
+          "desc": "Sort direction start: beginning",
+          "text": "Beginning"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 78,
+          "column": 14,
+          "index": 1909
+        },
+        "end": {
+          "line": 78,
+          "column": 73,
+          "index": 1968
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort direction start: beginning",
+          "text": "Beginning"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "hZpq0JPPyK9XERfblxrEFA==": {
+          "desc": "Sort direction end: end",
+          "text": "end"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 79,
+          "column": 12,
+          "index": 1982
+        },
+        "end": {
+          "line": 79,
+          "column": 57,
+          "index": 2027
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort direction end: end",
+          "text": "end"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "9FcCaiXU2AtW7wrFfCrnAw==": {
+          "desc": "Sort direction start: end",
+          "text": "End"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 87,
+          "column": 12,
+          "index": 2118
+        },
+        "end": {
+          "line": 87,
+          "column": 59,
+          "index": 2165
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort direction start: end",
+          "text": "End"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "Sqqm2KWHoVT5PQjSV1fWdg==": {
+          "desc": "Sort direction end: beginning",
+          "text": "beginning"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 88,
+          "column": 10,
+          "index": 2177
+        },
+        "end": {
+          "line": 88,
+          "column": 67,
+          "index": 2234
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Sort direction end: beginning",
+          "text": "beginning"
         }
       }
     },
@@ -9784,14 +10393,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 31,
+          "line": 96,
           "column": 13,
-          "index": 975
+          "index": 2369
         },
         "end": {
-          "line": 31,
+          "line": 96,
           "column": 64,
-          "index": 1026
+          "index": 2420
         }
       },
       "project": "",
@@ -9813,14 +10422,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 33,
+          "line": 98,
           "column": 13,
-          "index": 1064
+          "index": 2458
         },
         "end": {
-          "line": 33,
+          "line": 98,
           "column": 68,
-          "index": 1119
+          "index": 2513
         }
       },
       "project": "",
@@ -9834,6 +10443,35 @@
     },
     {
       "hashToLeaf": {
+        "G3x6YnIgq3wC0Bx9YiC7tQ==": {
+          "desc": "Group option: by date",
+          "text": "By date"
+        }
+      },
+      "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 100,
+          "column": 13,
+          "index": 2546
+        },
+        "end": {
+          "line": 100,
+          "column": 60,
+          "index": 2593
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Group option: by date",
+          "text": "By date"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "/nf5tt88au9U1upzCSn67Q==": {
           "desc": "Group option: no grouping",
           "text": "Not grouping"
@@ -9842,14 +10480,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 35,
+          "line": 102,
           "column": 13,
-          "index": 1151
+          "index": 2625
         },
         "end": {
-          "line": 35,
+          "line": 102,
           "column": 69,
-          "index": 1207
+          "index": 2681
         }
       },
       "project": "",
@@ -9871,14 +10509,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 48,
+          "line": 115,
           "column": 6,
-          "index": 1362
+          "index": 2836
         },
         "end": {
-          "line": 53,
+          "line": 120,
           "column": 12,
-          "index": 1554
+          "index": 3028
         }
       },
       "project": "",
@@ -9900,14 +10538,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 62,
+          "line": 129,
           "column": 11,
-          "index": 1723
+          "index": 3197
         },
         "end": {
-          "line": 62,
+          "line": 129,
           "column": 68,
-          "index": 1780
+          "index": 3254
         }
       },
       "project": "",
@@ -9929,14 +10567,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 65,
+          "line": 132,
           "column": 9,
-          "index": 1796
+          "index": 3270
         },
         "end": {
-          "line": 65,
+          "line": 132,
           "column": 72,
-          "index": 1859
+          "index": 3333
         }
       },
       "project": "",
@@ -9958,14 +10596,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 70,
+          "line": 137,
           "column": 11,
-          "index": 1973
+          "index": 3447
         },
         "end": {
-          "line": 70,
+          "line": 137,
           "column": 62,
-          "index": 2024
+          "index": 3498
         }
       },
       "project": "",
@@ -9987,14 +10625,14 @@
       "filename": "features/contentList/components/optionsBar/components/optionsBarLabels.tsx",
       "loc": {
         "start": {
-          "line": 73,
+          "line": 140,
           "column": 9,
-          "index": 2040
+          "index": 3514
         },
         "end": {
-          "line": 73,
+          "line": 140,
           "column": 70,
-          "index": 2101
+          "index": 3575
         }
       },
       "project": "",
