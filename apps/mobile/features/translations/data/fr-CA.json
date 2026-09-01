@@ -1662,50 +1662,6 @@
       ],
       "types": []
     },
-    "LXFqSbfY/poA1CitfOXO9g==": {
-      "description": "Discard note button: delete preview note",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Supprimer",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
-    "VHA8Vsbl10hmHGZVtjf5Uw==": {
-      "description": "Discard note button: discard editing note",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Abandonner",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
-    "cyhvt9XbkpDta1jPIpAovQ==": {
-      "description": "Accessibility label for delete note button in preview",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Supprimer la note",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
-    "ZrkcEmKJdkrBwJH+7w7xtg==": {
-      "description": "Accessibility label for discard note button while editing",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Abandonner la note",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
     "JcYearLypkMy+cO78r6UMg==": {
       "description": "Note details raw text viewer trigger",
       "tokens": [],
@@ -4880,6 +4836,116 @@
       "translations": [
         {
           "translation": "Par date",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xgIc68iazmLdzfeubjQM1w==": {
+      "description": "Accessibility label for deny button on a new or preview note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Ne pas enregistrer la note",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "L820/gVQQZrBpwMQlEf+Eg==": {
+      "description": "Accessibility label for deny button while editing an existing note",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner les modifications",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qBB8WNWvuHkvv+LZsQj8bw==": {
+      "description": "Discard unsaved note confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner cette note ?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VXXhUGiOaxFQL7F3StVh6g==": {
+      "description": "Discard unsaved note confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Cette note ne sera pas enregistrée.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "WcFCJnpLi5XcS05QL9DTTA==": {
+      "description": "Discard unsaved note confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "dkYY5WYvACmy5URTn/h4Ng==": {
+      "description": "Discard unsaved note confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "Z7OZv+fJ0g+NMSuWdISUnA==": {
+      "description": "Discard note edits confirmation modal title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner les modifications ?",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "qqQXhLFiEXVC6Fkb+RBjrg==": {
+      "description": "Discard note edits confirmation modal description",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Vos modifications non enregistrées seront perdues.",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "ZXb5cRRsCJtg3IG7TEbbgw==": {
+      "description": "Discard note edits confirmation confirm button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Abandonner",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "wY2uExBffbODlC8/BG4ovQ==": {
+      "description": "Discard note edits confirmation cancel button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Annuler",
           "variations": {}
         }
       ],

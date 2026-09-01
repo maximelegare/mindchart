@@ -28,25 +28,17 @@ export function noteDetailsTitleRequiredPlaceholder() {
   return fbs("Title is required", "Note details title validation placeholder");
 }
 
-export function DiscardNoteDeleteLabel() {
-  return <fbt desc="Discard note button: delete preview note">Delete</fbt>;
-}
-
-export function DiscardNoteDiscardLabel() {
-  return <fbt desc="Discard note button: discard editing note">Discard</fbt>;
-}
-
 export function noteDetailsDeleteNoteAccessibilityLabel() {
   return fbs(
-    "Delete note",
-    "Accessibility label for delete note button in preview"
+    "Don't save note",
+    "Accessibility label for deny button on a new or preview note"
   );
 }
 
 export function noteDetailsDiscardNoteAccessibilityLabel() {
   return fbs(
-    "Discard note",
-    "Accessibility label for discard note button while editing"
+    "Discard changes",
+    "Accessibility label for deny button while editing an existing note"
   );
 }
 

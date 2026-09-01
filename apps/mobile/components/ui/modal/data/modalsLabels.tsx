@@ -53,6 +53,48 @@ export function getDeleteNoteConfirmationModal(): ModalPreset {
   };
 }
 
+export function getDiscardUnsavedNoteModal(): ModalPreset {
+  return {
+    title: fbs(
+      "Discard this note?",
+      "Discard unsaved note confirmation modal title"
+    ),
+    description: fbs(
+      "This note will not be saved.",
+      "Discard unsaved note confirmation modal description"
+    ),
+    confirmButton: {
+      text: fbs("Discard", "Discard unsaved note confirmation confirm button"),
+      variant: "destructive",
+    },
+    cancelButton: {
+      text: fbs("Cancel", "Discard unsaved note confirmation cancel button"),
+      variant: "default",
+    },
+  };
+}
+
+export function getDiscardNoteChangesModal(): ModalPreset {
+  return {
+    title: fbs(
+      "Discard changes?",
+      "Discard note edits confirmation modal title"
+    ),
+    description: fbs(
+      "Your unsaved edits will be lost.",
+      "Discard note edits confirmation modal description"
+    ),
+    confirmButton: {
+      text: fbs("Discard", "Discard note edits confirmation confirm button"),
+      variant: "destructive",
+    },
+    cancelButton: {
+      text: fbs("Cancel", "Discard note edits confirmation cancel button"),
+      variant: "default",
+    },
+  };
+}
+
 export function getDeleteWorkspaceConfirmationModal(): ModalPreset {
   return {
     title: fbs(
@@ -242,6 +284,8 @@ export function getDeleteDatabaseFileModal(): ModalPreset {
 
 const TRANSLATED_MODALS: Partial<Record<ModalContent, () => ModalPreset>> = {
   DELETE_NOTE_CONFIRMATION: getDeleteNoteConfirmationModal,
+  DISCARD_UNSAVED_NOTE: getDiscardUnsavedNoteModal,
+  DISCARD_NOTE_CHANGES: getDiscardNoteChangesModal,
   DELETE_FOLDER_CONFIRMATION: getDeleteFolderConfirmationModal,
   DELETE_WORKSPACE: getDeleteWorkspaceConfirmationModal,
   IMPORT_WORKSPACE_CHOICE: getImportWorkspaceChoiceModal,

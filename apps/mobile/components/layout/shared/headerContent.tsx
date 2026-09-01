@@ -21,6 +21,8 @@ type HeaderContentProps = {
   subtitleContent?: React.ReactNode;
   hideBackButton?: boolean;
   showLogo?: boolean;
+  /** Actions rendered on the left, after the back button when it is shown. */
+  leftButtons?: React.ReactNode[];
   /** Header action buttons. Logic stays with the caller; this only renders them. */
   buttons?: React.ReactNode[];
   moreOptionsMenu?: {
@@ -34,6 +36,7 @@ type HeaderContentProps = {
 export const HeaderContent = ({
   title,
   hideBackButton = false,
+  leftButtons,
   buttons,
   moreOptionsMenu,
   showLogo = false,
@@ -51,6 +54,13 @@ export const HeaderContent = ({
           <Button variant="ghost" size="icon" onPress={() => back()}>
             <Icon color="popover-foreground" name="arrow-left" />
           </Button>
+        )}
+        {leftButtons && leftButtons.length > 0 && (
+          <View className="flex-row items-center">
+            {leftButtons.map((button, index) => (
+              <React.Fragment key={index}>{button}</React.Fragment>
+            ))}
+          </View>
         )}
         <View
           className={
