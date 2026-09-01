@@ -58,6 +58,8 @@ type PageContainerProps = {
   headerVariant?: HeaderVariant;
   /** Force-hide the back button (also hidden for stack headers / when nothing to pop). */
   hideBackButton?: boolean;
+  /** Actions rendered on the left of the header, after the back button when shown. */
+  leftButtons?: React.ReactNode[];
   buttons?: React.ReactNode[];
   children: React.ReactNode;
   noScrollView?: boolean;
@@ -88,6 +90,7 @@ export const PageContainer = ({
   showLogo = false,
   headerVariant = "stack",
   hideBackButton = false,
+  leftButtons,
   buttons,
   children,
   noScrollView = false,
@@ -250,6 +253,7 @@ export const PageContainer = ({
           hideBackButton={
             hideBackButton || headerVariant === "stack" || !canGoBack
           }
+          leftButtons={leftButtons}
           buttons={buttons}
           moreOptionsMenu={moreOptionsMenu}
         />

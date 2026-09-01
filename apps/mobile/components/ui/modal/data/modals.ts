@@ -21,6 +21,8 @@ export const MODALS_CONTENT: Record<
   | "DELETE_MODEL_ACTION"
   | "AI_SETUP_REQUIRED"
   | "DELETE_NOTE_CONFIRMATION"
+  | "DISCARD_UNSAVED_NOTE"
+  | "DISCARD_NOTE_CHANGES"
   | "DISABLE_RECOVERY_PASSWORD"
   | "BIOMETRICS_UNAVAILABLE"
   | "DELETE_FOLDER_CONFIRMATION"
@@ -91,6 +93,18 @@ export const MODALS_CONTENT: Record<
     description:
       "This will permanently delete this note and all associated thoughts.",
     confirmButton: { text: "Delete", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
+  DISCARD_UNSAVED_NOTE: {
+    title: "Discard this note?",
+    description: "This note will not be saved.",
+    confirmButton: { text: "Discard", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
+  DISCARD_NOTE_CHANGES: {
+    title: "Discard changes?",
+    description: "Your unsaved edits will be lost.",
+    confirmButton: { text: "Discard", variant: "destructive" },
     cancelButton: { text: "Cancel", variant: "default" },
   },
   DISABLE_RECOVERY_PASSWORD: {

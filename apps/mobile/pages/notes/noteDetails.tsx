@@ -4,7 +4,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useDeleteNote } from "@/features/notes/deleteNote/hooks/useDeleteNote";
 import { EditNoteButton } from "@/features/notes/editNote/components/editNoteButton";
-import { DiscardNoteButton } from "@/features/notes/noteDetails/components/discardNoteButton";
+import { NoteEditorHeaderActions } from "@/features/notes/noteDetails/components/noteEditorHeaderActions";
 import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/components/noteDetailsOptionsHeader";
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
@@ -82,8 +82,8 @@ export const NoteDetailsPage = () => {
     notesAndThoughts.useUpdateNoteLocationMutation();
 
   const isPreviewMode = editorMode === "preview";
-  const showHeaderDeleteAction = isPreviewMode || isEditing;
-  const headerDeleteVariant = isPreviewMode ? "delete" : "discard";
+  const showHeaderEditorActions = isPreviewMode || isEditing;
+  const headerDenyVariant = isNewMode || isPreviewMode ? "delete" : "discard";
 
   const leaveAfterDelete = useCallback(() => {
     if (openedFromGraph) {
@@ -175,19 +175,34 @@ export const NoteDetailsPage = () => {
     });
   };
 
-  const handleDiscardNote = () => {
-    if (isNewMode) {
-      clearDraft();
-      leaveAfterDelete();
+  const handleDenyNote = () => {
+    if (isNewMode || isPreviewMode) {
+      openModal({
+        modalName: "DISCARD_UNSAVED_NOTE",
+        onConfirm: async () => {
+          closeModal();
+          if (isNewMode) {
+            clearDraft();
+            leaveAfterDelete();
+            return;
+          }
+          await deleteAndLeave();
+        },
+      });
       return;
     }
+
     openModal({
-      modalName: "DELETE_NOTE_CONFIRMATION",
-      onConfirm: async () => {
+      modalName: "DISCARD_NOTE_CHANGES",
+      onConfirm: () => {
         closeModal();
-        await deleteAndLeave();
+        handleEditingChange(false);
       },
     });
+  };
+
+  const handleConfirmNote = () => {
+    saveActionRef.current?.();
   };
 
   const switchToRegularMode = () => {
@@ -208,10 +223,6 @@ export const NoteDetailsPage = () => {
   };
 
   const handleEditPress = () => {
-    if (isEditing) {
-      saveActionRef.current?.();
-      return;
-    }
     setIsEditing(true);
   };
 
@@ -308,25 +319,29 @@ export const NoteDetailsPage = () => {
   return (
     <PageContainer
       headerVariant="tab"
-      title={showHeaderDeleteAction ? undefined : (noteTitle ?? "")}
+      title={showHeaderEditorActions ? undefined : (noteTitle ?? "")}
       subtitle={
-        showHeaderDeleteAction
+        showHeaderEditorActions
           ? undefined
           : {
               text: noteDetailsNoteSubtitle(),
               icon: "notebook-text",
             }
       }
-      subtitleContent={
-        showHeaderDeleteAction ? (
-          <DiscardNoteButton
-            variant={headerDeleteVariant}
-            onPress={handleDiscardNote}
-            disabled={isDiscarding || !noteId}
-          />
-        ) : undefined
+      hideBackButton={showHeaderEditorActions}
+      leftButtons={
+        showHeaderEditorActions
+          ? [
+              <NoteEditorHeaderActions
+                key="note-editor-actions"
+                onConfirm={handleConfirmNote}
+                onDeny={handleDenyNote}
+                disabled={isSaving || isDiscarding || !noteId}
+                denyVariant={headerDenyVariant}
+              />,
+            ]
+          : undefined
       }
-      hideBackButton={isPreviewMode || isNewMode}
       hideTabBar
       noScrollView
       optionsHeader={
@@ -346,7 +361,7 @@ export const NoteDetailsPage = () => {
         />
       }
       buttons={
-        noteId
+        noteId && !showHeaderEditorActions
           ? [
               <EditNoteButton
                 key="edit-note"
