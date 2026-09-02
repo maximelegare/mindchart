@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
+import { gutter } from "@/components/ui/gutter";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import {
@@ -122,8 +123,19 @@ export function ThoughtsEditorToolbar({
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const { progress } = useReanimatedKeyboardAnimation();
-  const backgroundColor = hsl("muted", colorScheme);
+  const hostRef = React.useRef<View>(null);
+  const [sideBleed, setSideBleed] = React.useState(
+    gutter("sm").marginLeft ?? 4
+  );
+  const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
+
+  const updateBleed = React.useCallback(() => {
+    hostRef.current?.measureInWindow((x) => {
+      const next = Math.max(0, Math.round(x));
+      setSideBleed((current) => (current === next ? current : next));
+    });
+  }, []);
 
   const safePadStyle = useAnimatedStyle(() => ({
     paddingBottom: interpolate(
@@ -153,21 +165,30 @@ export function ThoughtsEditorToolbar({
   }
 
   return (
-    <KeyboardStickyView
+    <View
+      ref={hostRef}
       pointerEvents="box-none"
-      offset={{ closed: 0, opened: 0 }}
-      style={[
-        styles.docked,
-        safePadStyle,
-        {
-          backgroundColor,
-          borderTopColor: borderColor,
-          borderTopWidth: StyleSheet.hairlineWidth,
-        },
-      ]}
+      onLayout={updateBleed}
+      style={styles.dockedHost}
     >
-      <View style={styles.dockedRow}>{content}</View>
-    </KeyboardStickyView>
+      <KeyboardStickyView
+        pointerEvents="box-none"
+        offset={{ closed: 0, opened: 0 }}
+        style={[
+          styles.docked,
+          safePadStyle,
+          {
+            left: -sideBleed,
+            right: -sideBleed,
+            backgroundColor,
+            borderTopColor: borderColor,
+            borderTopWidth: StyleSheet.hairlineWidth,
+          },
+        ]}
+      >
+        <View style={styles.dockedRow}>{content}</View>
+      </KeyboardStickyView>
+    </View>
   );
 }
 
@@ -176,10 +197,16 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     justifyContent: "center",
   },
-  docked: {
+  dockedHost: {
     position: "absolute",
     left: 0,
     right: 0,
+    bottom: 0,
+    height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
+    zIndex: 20,
+  },
+  docked: {
+    position: "absolute",
     bottom: 0,
     zIndex: 20,
     elevation: 20,

@@ -588,7 +588,6 @@ function ThoughtsEditorInner(
   const mutedFg = hsl("muted-foreground", colorScheme);
   const graphButtonColor = mutedFg;
   const showToolbar = !readOnly;
-  const showEditBorder = !readOnly;
 
   React.useImperativeHandle(
     ref,
@@ -672,11 +671,9 @@ function ThoughtsEditorInner(
 
         <View
           className={
-            plain && !showEditBorder
+            plain
               ? "relative flex-1 min-h-0 overflow-hidden"
-              : plain && showEditBorder
-                ? "relative flex-1 min-h-0 overflow-hidden rounded-t-lg border border-b-0 border-input"
-                : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
+              : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
           }
           style={
             plain
@@ -728,7 +725,7 @@ function ThoughtsEditorInner(
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
                   line-height: 1.45;
-                  padding: ${plain ? "8px 2px" : "12px"};
+                  padding: ${plain ? (!readOnly ? "8px 0" : "8px 2px") : "12px"};
                   padding-bottom: ${
                     !readOnly && keyboardOpen
                       ? CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT
