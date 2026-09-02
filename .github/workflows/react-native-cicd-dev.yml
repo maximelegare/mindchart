@@ -86,6 +86,13 @@ jobs:
 
           echo ""
           echo "========================================"
+          echo "INODE USAGE"
+          echo "========================================"
+
+          df -ih /
+
+          echo ""
+          echo "========================================"
           echo "LARGEST ROOT DIRECTORIES"
           echo "========================================"
 
@@ -131,7 +138,7 @@ jobs:
 
           echo ""
           echo "========================================"
-          echo "CLEANING GRADLE CACHES"
+          echo "CLEANING GRADLE"
           echo "========================================"
 
           rm -rf ~/.gradle/caches
@@ -140,28 +147,37 @@ jobs:
 
           echo ""
           echo "========================================"
-          echo "CLEANING ANDROID EMULATOR FILES"
+          echo "CLEANING ANDROID EMULATOR"
           echo "========================================"
 
-          # Emulator system images are not needed to build an APK.
           sudo rm -rf /usr/local/lib/android/sdk/system-images
-
-          # The emulator binary itself is not needed for an APK build.
           sudo rm -rf /usr/local/lib/android/sdk/emulator
 
           echo ""
           echo "========================================"
-          echo "DISK SPACE AFTER CLEANUP"
+          echo "CLEANING TEMPORARY FILES"
+          echo "========================================"
+
+          sudo rm -rf /tmp/*
+          sudo rm -rf /var/tmp/*
+
+          echo ""
+          echo "========================================"
+          echo "DISK AFTER CLEANUP"
           echo "========================================"
 
           df -h /
 
           echo ""
           echo "========================================"
-          echo "ANDROID SDK AFTER CLEANUP"
+          echo "INODES AFTER CLEANUP"
           echo "========================================"
 
-          sudo du -sh /usr/local/lib/android/sdk/* 2>/dev/null | sort -h || true
+          df -ih /
+
+      # =========================================================
+      # DISK CHECK
+      # =========================================================
 
       - name: 💾 Check disk after cleanup
         run: |
@@ -184,6 +200,14 @@ jobs:
           echo "========================================"
 
           sudo du -sh /usr/local/lib/android/sdk/* 2>/dev/null | sort -h || true
+
+          echo ""
+          echo "========================================"
+          echo "TMP"
+          echo "========================================"
+
+          sudo du -sh /tmp 2>/dev/null || true
+          sudo du -sh /var/tmp 2>/dev/null || true
 
       # =========================================================
       # NODE
@@ -227,10 +251,11 @@ jobs:
 
           echo ""
           echo "========================================"
-          echo "CACHE"
+          echo "TMP"
           echo "========================================"
 
-          du -sh ~/.cache 2>/dev/null || true
+          du -sh /tmp 2>/dev/null || true
+          du -sh /var/tmp 2>/dev/null || true
 
       # =========================================================
       # EAS CLI
@@ -301,7 +326,7 @@ jobs:
           df -h /
 
       # =========================================================
-      # FINAL DISK CHECK
+      # FINAL DISK CHECK BEFORE BUILD
       # =========================================================
 
       - name: 💾 Check disk before Android build
@@ -311,6 +336,13 @@ jobs:
           echo "========================================"
 
           df -h /
+
+          echo ""
+          echo "========================================"
+          echo "INODES"
+          echo "========================================"
+
+          df -ih /
 
           echo ""
           echo "========================================"
@@ -336,6 +368,14 @@ jobs:
 
           echo ""
           echo "========================================"
+          echo "TMP"
+          echo "========================================"
+
+          sudo du -sh /tmp 2>/dev/null || true
+          sudo du -sh /var/tmp 2>/dev/null || true
+
+          echo ""
+          echo "========================================"
           echo "WORKSPACE"
           echo "========================================"
 
@@ -349,19 +389,41 @@ jobs:
         run: |
           (
             while true; do
+              echo "========================================"
               echo "===== $(date) ====="
+              echo "========================================"
+
+              echo ""
+              echo "DISK:"
               df -h /
 
               echo ""
-              echo "Gradle:"
+              echo "INODES:"
+              df -ih /
+
+              echo ""
+              echo "GRADLE:"
               du -sh ~/.gradle 2>/dev/null || true
 
               echo ""
-              echo "Workspace:"
+              echo "TMP:"
+              du -sh /tmp 2>/dev/null || true
+              du -sh /var/tmp 2>/dev/null || true
+
+              echo ""
+              echo "WORKSPACE:"
               du -sh . 2>/dev/null || true
 
               echo ""
-              sleep 15
+              echo "LARGEST TMP DIRECTORIES:"
+              sudo du -xhd1 /tmp 2>/dev/null | sort -h | tail -10 || true
+
+              echo ""
+              echo "LARGEST WORKSPACE DIRECTORIES:"
+              du -xhd2 . 2>/dev/null | sort -h | tail -15 || true
+
+              echo ""
+              sleep 10
             done
           ) > /tmp/disk-monitor.log 2>&1 &
 
@@ -429,6 +491,13 @@ jobs:
 
           echo ""
           echo "========================================"
+          echo "INODES AFTER BUILD"
+          echo "========================================"
+
+          df -ih /
+
+          echo ""
+          echo "========================================"
           echo "GRADLE"
           echo "========================================"
 
@@ -436,10 +505,11 @@ jobs:
 
           echo ""
           echo "========================================"
-          echo "CACHE"
+          echo "TMP"
           echo "========================================"
 
-          du -sh ~/.cache 2>/dev/null || true
+          sudo du -sh /tmp 2>/dev/null || true
+          sudo du -sh /var/tmp 2>/dev/null || true
 
           echo ""
           echo "========================================"
