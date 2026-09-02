@@ -159,6 +159,9 @@ export function ThoughtsEditorToolbar({
   const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
   const bottomInset = insets.bottom;
+  // KeyboardBackgroundView maps Gboard dark to #1c1c2c (navy). Use true black
+  // in dark mode so the bar matches the keyboard instead of that blue-gray.
+  const darkKeyboardFill = "#000000";
 
   React.useEffect(() => {
     if (!dockToKeyboard || Platform.OS !== "android") return;
@@ -224,10 +227,20 @@ export function ThoughtsEditorToolbar({
           pointerEvents="box-none"
           style={[styles.docked, dockedStyle, { borderTopColor: borderColor }]}
         >
-          <KeyboardBackgroundView
-            pointerEvents="none"
-            style={StyleSheet.absoluteFill}
-          />
+          {colorScheme === "dark" ? (
+            <View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFill,
+                { backgroundColor: darkKeyboardFill },
+              ]}
+            />
+          ) : (
+            <KeyboardBackgroundView
+              pointerEvents="none"
+              style={StyleSheet.absoluteFill}
+            />
+          )}
           <View style={styles.dockedRow}>{content}</View>
         </Animated.View>
       </View>
