@@ -132,6 +132,13 @@ function buildCategoryColorCss(categories: Category[]): string {
       li[data-category-id="${category.id}"] .thought-stripe {
         background-color: ${category.color};
       }
+      li[data-category-id="${category.id}"] .thought-check-box {
+        border-color: ${category.color};
+      }
+      li[data-category-id="${category.id}"].is-completed .thought-check-box {
+        background-color: ${category.color};
+        border-color: ${category.color};
+      }
     `
     )
     .join("\n");
@@ -977,15 +984,16 @@ function ThoughtsEditorInner(
                   li.thought-item {
                     position: relative;
                     margin-bottom: 0.85em;
-                    padding-left: 22px;
+                    padding-left: 30px;
                     padding-right: ${showGraphButtons ? "40px" : "0"};
+                    overflow: visible;
                   }
                   li.thought-item.is-checklist.is-single-line:not(.has-title) {
-                    padding-right: ${showGraphButtons ? "68px" : "28px"};
+                    padding-right: ${showGraphButtons ? "68px" : "32px"};
                   }
                   .thought-rail {
                     position: absolute;
-                    left: 0;
+                    left: 8px;
                     top: 0;
                     bottom: 0;
                     width: 18px;
@@ -998,43 +1006,52 @@ function ThoughtsEditorInner(
                     display: none;
                     position: absolute;
                     z-index: 4;
-                    width: 32px;
-                    height: 32px;
+                    left: 7px;
+                    width: 20px;
+                    height: 20px;
                     padding: 0;
                     margin: 0;
                     border: none;
                     background: transparent;
-                    color: ${textColor};
                     cursor: pointer;
                     user-select: none;
                     -webkit-user-select: none;
                     align-items: center;
                     justify-content: center;
                   }
+                  .thought-check::before {
+                    content: "";
+                    position: absolute;
+                    inset: -8px;
+                  }
                   li.thought-item.is-checklist .thought-check {
                     display: flex;
+                  }
+                  li.thought-item.is-checklist:not(.is-single-line) .thought-check {
+                    left: 7px;
+                    top: calc(4px + 1.45em);
                   }
                   .thought-check-box {
                     display: block;
                     box-sizing: border-box;
-                    width: 16px;
-                    height: 16px;
+                    width: 18px;
+                    height: 18px;
                     border: 1.5px solid currentColor;
                     border-radius: 3px;
                     position: relative;
-                    opacity: 0.72;
+                    z-index: 1;
+                    background: ${hsl("card", colorScheme)};
                   }
                   li.thought-item.is-completed .thought-check-box {
                     background: currentColor;
-                    opacity: 0.88;
                   }
                   li.thought-item.is-completed .thought-check-box::after {
                     content: "";
                     position: absolute;
-                    left: 4px;
-                    top: 1px;
+                    left: 5px;
+                    top: 2px;
                     width: 5px;
-                    height: 9px;
+                    height: 10px;
                     border: solid ${plain ? hsl("card", colorScheme) : backgroundColor};
                     border-width: 0 1.5px 1.5px 0;
                     transform: rotate(45deg);

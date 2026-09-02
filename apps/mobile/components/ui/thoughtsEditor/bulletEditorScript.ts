@@ -1263,6 +1263,14 @@ export const CHECKLIST_SCRIPT = `
     return check;
   }
 
+  function fieldLineHeight(el) {
+    if (!el) return 23;
+    var raw = window.getComputedStyle(el).lineHeight;
+    var parsed = parseFloat(raw);
+    if (parsed && !isNaN(parsed)) return parsed;
+    return 23;
+  }
+
   function syncChecklistLayout(li) {
     if (!li) return;
     var check = ensureCheckbox(li);
@@ -1281,8 +1289,9 @@ export const CHECKLIST_SCRIPT = `
     li.classList.toggle("has-title", hasTitle);
 
     var field = summary || title;
+    var lineH = fieldLineHeight(field);
     var fieldH = field ? field.offsetHeight : 0;
-    var singleLine = !hasTitle && fieldH <= 40;
+    var singleLine = !hasTitle && fieldH <= lineH * 1.6;
     li.classList.toggle("is-single-line", singleLine);
     li.classList.toggle("has-graph", !!graph);
 
@@ -1294,18 +1303,15 @@ export const CHECKLIST_SCRIPT = `
 
     if (!completable) return;
 
-    if (hasTitle) {
-      var align = summary || title;
-      check.style.left = "-7px";
-      var top = align ? align.offsetTop : 0;
-      check.style.top = Math.max(0, top - 7) + "px";
-    } else if (singleLine) {
+    var railLeft = "7px";
+    var dotTop = 8;
+    if (singleLine) {
       check.style.left = "auto";
       check.style.right = graph ? "32px" : "0px";
-      check.style.top = "0px";
+      check.style.top = dotTop + "px";
     } else {
-      check.style.left = "-7px";
-      check.style.top = "14px";
+      check.style.left = railLeft;
+      check.style.top = lineH + 4 + "px";
     }
   }
 
@@ -1381,31 +1387,46 @@ export const CHECKLIST_SCRIPT = `
   if (!window.__mcChecklistInstalled) {
     window.__mcChecklistInstalled = true;
 
-    content.addEventListener(
-      "click",
-      function (e) {
-        var check = closestClass(e.target, "thought-check");
-        if (!check) return;
-        e.preventDefault();
-        e.stopPropagation();
-        var li = closestLi(check);
-        if (li) toggleCompleted(li);
-      },
-      true
-    );
+    function isCategoryChrome(node) {
+      return (
+        closestClass(node, "thought-rail") ||
+        closestClass(node, "thought-stripe") ||
+        closestClass(node, "thought-category") ||
+        closestClass(node, "thought-graph")
+      );
+    }
 
-    content.addEventListener(
-      "touchend",
-      function (e) {
-        var check = closestClass(e.target, "thought-check");
-        if (!check) return;
+    function isThoughtText(node) {
+      return (
+        closestClass(node, "thought-title") ||
+        closestClass(node, "thought-summary") ||
+        closestClass(node, "thought-fields") ||
+        closestClass(node, "thought-body")
+      );
+    }
+
+    function onChecklistPointer(e) {
+      var check = closestClass(e.target, "thought-check");
+      var li = closestLi(e.target);
+      if (check) {
         e.preventDefault();
         e.stopPropagation();
-        var li = closestLi(check);
         if (li) toggleCompleted(li);
-      },
-      true
-    );
+        return;
+      }
+      // View mode: tapping the thought text toggles complete.
+      // Edit mode keeps the caret so the user can still type.
+      if (window.__mcBulletGuardInstalled) return;
+      if (!li || !isTrueAttr(li, "data-completable")) return;
+      if (isCategoryChrome(e.target)) return;
+      if (!isThoughtText(e.target) && e.target !== li) return;
+      e.preventDefault();
+      e.stopPropagation();
+      toggleCompleted(li);
+    }
+
+    content.addEventListener("click", onChecklistPointer, true);
+    content.addEventListener("touchend", onChecklistPointer, true);
 
     document.addEventListener("selectionchange", function () {
       var sel = window.getSelection();
