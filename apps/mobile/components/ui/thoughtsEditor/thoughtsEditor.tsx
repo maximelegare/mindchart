@@ -150,6 +150,34 @@ function setCategoryColorCssScript(css: string): string {
 `;
 }
 
+function applyFormatInThoughtFieldScript(command: string): string {
+  return `
+(function () {
+  var command = ${JSON.stringify(command)};
+  var sel = window.getSelection();
+  var node = sel && sel.anchorNode;
+  var inField = false;
+  while (node) {
+    if (
+      node.nodeType === 1 &&
+      node.classList &&
+      (node.classList.contains("thought-summary") ||
+        node.classList.contains("thought-title"))
+    ) {
+      inField = true;
+      break;
+    }
+    node = node.parentNode;
+  }
+  if (!inField) return true;
+  if (!document.queryCommandState(command)) {
+    document.execCommand(command);
+  }
+  true;
+})();
+`;
+}
+
 type CategoryListItemProps = {
   item: Category;
   label: string;
@@ -265,6 +293,9 @@ function ThoughtsEditorInner(
   const richRef = React.useRef<RichEditor>(null);
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
+  const pendingFormatRef = React.useRef<"bold" | "italic" | "underline" | null>(
+    null
+  );
   const showTitlesRef = React.useRef(showTitles);
   const effectiveShowTitles = effectiveSimplified ? false : showTitles;
   showTitlesRef.current = effectiveShowTitles;
@@ -317,6 +348,12 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
   }, []);
 
+  const tryApplyPendingFormat = React.useCallback(() => {
+    const pending = pendingFormatRef.current;
+    if (!pending) return;
+    richRef.current?.injectJavascript(applyFormatInThoughtFieldScript(pending));
+  }, []);
+
   React.useEffect(() => {
     let cancelled = false;
     loadEditorFontFaceCss()
@@ -340,6 +377,7 @@ function ThoughtsEditorInner(
       }
 
       const refresh = () => {
+        tryApplyPendingFormat();
         scrollCaretIntoView();
       };
       requestAnimationFrame(() => {
@@ -350,6 +388,7 @@ function ThoughtsEditorInner(
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       keyboardOpenRef.current = false;
+      pendingFormatRef.current = null;
       if (!dockToolbarToKeyboard) {
         setKeyboardOpen(false);
       }
@@ -359,7 +398,12 @@ function ThoughtsEditorInner(
       showSub.remove();
       hideSub.remove();
     };
-  }, [readOnly, dockToolbarToKeyboard, scrollCaretIntoView]);
+  }, [
+    readOnly,
+    dockToolbarToKeyboard,
+    scrollCaretIntoView,
+    tryApplyPendingFormat,
+  ]);
 
   React.useEffect(() => {
     if (readOnly || !dockToolbarToKeyboard) return;
@@ -419,23 +463,45 @@ function ThoughtsEditorInner(
     );
   }, []);
 
-  const handleEditorInitialized = React.useCallback(() => {
-    // Apply simplified before collapse timers so plain bullets never animate.
-    applyEditorFlags(showTitlesRef.current);
-    applySimplifiedMode(simplifiedRef.current);
-    applyCategoryColors(categoryColorsCssRef.current);
-    richRef.current?.registerToolbar((items) => {
+  const applyPendingFormat = React.useCallback(
+    (items: Array<string | { type?: string }>) => {
       const has = (action: string) =>
         items.some(
           (item) =>
             item === action ||
             (typeof item === "object" && item?.type === action)
         );
+      const pending = pendingFormatRef.current;
+      if (pending) {
+        richRef.current?.injectJavascript(
+          applyFormatInThoughtFieldScript(pending)
+        );
+        if (has(pending)) {
+          pendingFormatRef.current = null;
+        }
+        setActiveFormats({
+          bold: pending === "bold" || has(actions.setBold),
+          italic: pending === "italic" || has(actions.setItalic),
+          underline: pending === "underline" || has(actions.setUnderline),
+        });
+        return;
+      }
       setActiveFormats({
         bold: has(actions.setBold),
         italic: has(actions.setItalic),
         underline: has(actions.setUnderline),
       });
+    },
+    []
+  );
+
+  const handleEditorInitialized = React.useCallback(() => {
+    // Apply simplified before collapse timers so plain bullets never animate.
+    applyEditorFlags(showTitlesRef.current);
+    applySimplifiedMode(simplifiedRef.current);
+    applyCategoryColors(categoryColorsCssRef.current);
+    richRef.current?.registerToolbar((items) => {
+      applyPendingFormat(items);
     });
     if (readOnly) {
       richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
@@ -455,6 +521,7 @@ function ThoughtsEditorInner(
     applyEditorFlags,
     applySimplifiedMode,
     applyCategoryColors,
+    applyPendingFormat,
     readOnly,
     showGraphButtons,
     thoughtPlaceholders,
@@ -511,8 +578,25 @@ function ThoughtsEditorInner(
         | (RichEditor & { showAndroidKeyboard?: () => void })
         | null;
       if (!editor) return;
-      editor.showAndroidKeyboard?.();
-      editor.sendAction(command, "result");
+
+      if (keyboardOpenRef.current && pendingFormatRef.current == null) {
+        editor.showAndroidKeyboard?.();
+        editor.sendAction(command, "result");
+        return;
+      }
+
+      if (pendingFormatRef.current === command) {
+        pendingFormatRef.current = null;
+        setActiveFormats((prev) => ({ ...prev, [command]: false }));
+        if (keyboardOpenRef.current) {
+          editor.sendAction(command, "result");
+        }
+        return;
+      }
+
+      pendingFormatRef.current = command;
+      setActiveFormats((prev) => ({ ...prev, [command]: true }));
+      editor.focusContentEditor();
     },
     []
   );
@@ -978,7 +1062,12 @@ function ThoughtsEditorInner(
                       }
                 }
                 onCursorPosition={
-                  readOnly ? undefined : () => scrollCaretIntoView()
+                  readOnly
+                    ? undefined
+                    : () => {
+                        tryApplyPendingFormat();
+                        scrollCaretIntoView();
+                      }
                 }
                 onMessage={handleEditorMessage}
               />
