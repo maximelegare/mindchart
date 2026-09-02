@@ -6,6 +6,7 @@ import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAnd
 import {
   ThoughtsEditor,
   createEmptyThought,
+  stripHtml,
   type ThoughtsEditorHandle,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
@@ -189,15 +190,17 @@ function NoteDetailsContent({
       const nextThoughts = data.thoughts
         .filter(
           (thought) =>
-            thought.title.trim() ||
-            thought.summary.trim() ||
+            stripHtml(thought.title) ||
+            stripHtml(thought.summary) ||
             thought.semanticLabel.trim()
         )
         .map((thought) => {
           const thoughtTitle = thought.title.trim();
           const summary = thought.summary.trim();
           const semanticLabel =
-            thought.semanticLabel.trim() || thoughtTitle || summary;
+            stripHtml(thought.semanticLabel) ||
+            stripHtml(thoughtTitle) ||
+            stripHtml(summary);
           return {
             ...thought,
             title: thoughtTitle,
@@ -286,7 +289,9 @@ function NoteDetailsContent({
     };
   }, [saveActionRef, saveNote]);
 
-  const showTitles = note.thoughts.some((thought) => thought.title?.trim());
+  const showTitles = note.thoughts.some((thought) =>
+    Boolean(stripHtml(thought.title ?? ""))
+  );
 
   const [titleInputHeight, setTitleInputHeight] = React.useState(28);
 
@@ -378,6 +383,7 @@ function NoteDetailsContent({
             showGraphButtons={!isEditing}
             plain
             simplified={simplified}
+            dockToolbarToKeyboard
           />
         </View>
       </View>

@@ -10,6 +10,7 @@ import {
   useGroupByCategoriesThoughtsData,
 } from "../hooks/useGroupByCategoriesThoughtsData";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
+import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
   const parsedData = useGroupByCategoriesThoughtsData();
@@ -40,14 +41,16 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
               key={thought.id}
               id={thought.id}
               noteId={thought.noteId ?? ""}
-              title={thought.title}
+              title={stripHtml(thought.title)}
               date={thought.createdAt ?? ""}
               expanded={expandedCardId === thought.id}
               onPress={handleExpandableCardPress}
             >
               <View className="gap-3 mt-2">
                 <Separator />
-                <Typography variant="p">{thought.summary}</Typography>
+                <Typography variant="p">
+                  {stripHtml(thought.summary)}
+                </Typography>
               </View>
             </ExpandableThoughtWithOverview>
           ))}

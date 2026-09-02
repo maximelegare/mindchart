@@ -4,6 +4,7 @@ import { NodeDatum, GraphDataCache } from "../types/types";
 import { buildGraphByFolder } from "./buildGraphByFolder";
 import { categoryGraphNeedsRebuild } from "./buildGraphByCategoryFolders";
 import { isNoteLeafId } from "./mapNoteToLeaf";
+import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 /** Bump when folder/category graph shape changes (forces DB cache rebuild). */
 export const GRAPH_CACHE_VERSION = 5;
@@ -109,8 +110,8 @@ const notesFromThoughtLeaves = (thoughts: ThoughtWithEmbedding[]): Note[] => {
     if (!thought.noteId || byNote.has(thought.noteId)) continue;
     byNote.set(thought.noteId, {
       id: thought.noteId,
-      title: thought.title || "Untitled",
-      summary: thought.summary || "",
+      title: stripHtml(thought.title) || "Untitled",
+      summary: stripHtml(thought.summary || ""),
       rawText: "",
       folderId: thought.folderId ?? undefined,
       folderLabel: thought.folderLabel ?? undefined,

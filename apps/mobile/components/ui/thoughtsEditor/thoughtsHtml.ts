@@ -41,6 +41,35 @@ export function stripHtml(html: string): string {
     .trim();
 }
 
+/** Keep only inline bold/italic/underline markup for editor round-trips. */
+export function sanitizeInlineHtml(html: string): string {
+  if (!html) return "";
+
+  let value = html
+    .replace(/&nbsp;/gi, " ")
+    .replace(/<div\b[^>]*>/gi, "")
+    .replace(/<\/div>/gi, "<br>")
+    .replace(/<p\b[^>]*>/gi, "")
+    .replace(/<\/p>/gi, "<br>")
+    .replace(/<span\b[^>]*>/gi, "")
+    .replace(/<\/span>/gi, "")
+    .replace(/<strong\b[^>]*>/gi, "<b>")
+    .replace(/<\/strong>/gi, "</b>")
+    .replace(/<em\b[^>]*>/gi, "<i>")
+    .replace(/<\/em>/gi, "</i>");
+
+  value = value.replace(/<\/?([a-z0-9]+)(\s[^>]*)?\/?>/gi, (match, tag) => {
+    const name = String(tag).toLowerCase();
+    if (name === "br") return "<br>";
+    if (name === "b" || name === "i" || name === "u") {
+      return match.startsWith("</") ? `</${name}>` : `<${name}>`;
+    }
+    return "";
+  });
+
+  return value.replace(/^(<br>)+|(<br>)+$/gi, "").trim();
+}
+
 function formatCategoryLabel(categoryId: string): string {
   if (!categoryId) return "Uncategorized";
   return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
@@ -142,8 +171,8 @@ function parseTitledLi(liHtml: string): {
 
   if (titled != null || summarized != null) {
     return {
-      title: stripHtml(titled ?? ""),
-      summary: stripHtml(summarized ?? ""),
+      title: sanitizeInlineHtml(titled ?? ""),
+      summary: sanitizeInlineHtml(summarized ?? ""),
       hasTitleField: titled != null,
       hasSummaryField: summarized != null,
     };
@@ -185,10 +214,13 @@ function titledFieldHtml(
   placeholder: string,
   value: string
 ): string {
-  const empty = !value;
-  const body = value || "<br>";
+  const withBreaks = value.replace(/\n/g, "<br>");
+  const body = /<[a-z]/i.test(withBreaks)
+    ? sanitizeInlineHtml(withBreaks)
+    : escapeHtml(withBreaks);
+  const empty = !stripHtml(body);
   const classes = empty ? `${className} is-placeholder` : className;
-  return `<div class="${classes}" data-placeholder="${placeholder}">${body}</div>`;
+  return `<div class="${classes}" data-placeholder="${placeholder}">${empty ? "<br>" : body}</div>`;
 }
 
 function categoryLabelHtml(categoryId: string): string {
@@ -259,21 +291,18 @@ function liToHtml(
   };
 
   if (showTitles) {
-    const title = escapeHtml(thought.title);
-    const summary = escapeHtml(thought.summary).replace(/\n/g, "<br>");
     return thoughtItemHtml(
       categoryId,
-      titledFieldHtml(TITLE_CLASS, placeholders.title, title) +
-        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, summary),
+      titledFieldHtml(TITLE_CLASS, placeholders.title, thought.title) +
+        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, thought.summary),
       options
     );
   }
 
   const summaryText = thought.summary || thought.title;
-  const summary = escapeHtml(summaryText).replace(/\n/g, "<br>");
   return thoughtItemHtml(
     categoryId,
-    titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, summary),
+    titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, summaryText),
     options
   );
 }
@@ -365,7 +394,7 @@ export function htmlToThoughts(
     }
 
     const summaryField = extractByClass(contentHtml, SUMMARY_CLASS);
-    const summary = stripHtml(
+    const summary = sanitizeInlineHtml(
       summaryField != null ? summaryField : contentHtml
     );
     // Present-but-empty `.thought-summary` must clear, not keep stale text.
@@ -385,8 +414,8 @@ export function htmlToThoughts(
   const trimmed = next.filter(
     (thought, index) =>
       index === 0 ||
-      thought.title.trim().length > 0 ||
-      thought.summary.trim().length > 0
+      stripHtml(thought.title).length > 0 ||
+      stripHtml(thought.summary).length > 0
   );
 
   return trimmed.length > 0 ? trimmed : [createEmptyThought(noteId)];

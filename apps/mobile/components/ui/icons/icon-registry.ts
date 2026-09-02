@@ -9,6 +9,7 @@ export type IconName =
   | "arrow-up-a-z"
   | "arrow-up-from-line"
   | "arrow-up-narrow-wide"
+  | "bold"
   | "book"
   | "brackets-curly"
   | "brain-off"
@@ -39,6 +40,7 @@ export type IconName =
   | "house"
   | "import"
   | "info"
+  | "italic"
   | "key-round"
   | "keyboard"
   | "languages"
@@ -79,6 +81,7 @@ export type IconName =
   | "tag"
   | "target"
   | "trash-2"
+  | "underline"
   | "undo-dot"
   | "user-round"
   | "zoom-out";
@@ -118,6 +121,10 @@ export const ICON_METADATA: Record<
   "arrow-up-narrow-wide": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 8l4-4l4 4M7 4v16m4-8h4m-4 4h7m-7 4h10"></path>`,
+  },
+  bold: {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"></path>`,
   },
   book: {
     viewBox: "0 0 24 24",
@@ -238,6 +245,10 @@ export const ICON_METADATA: Record<
   info: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4m0-4h.01"></path></g>`,
+  },
+  italic: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M19 4h-9m4 16H5M15 4L9 20"></path></g>`,
   },
   "key-round": {
     viewBox: "0 0 24 24",
@@ -398,6 +409,10 @@ export const ICON_METADATA: Record<
   "trash-2": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>`,
+  },
+  underline: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M6 4v6a6 6 0 0 0 12 0V4M4 20h16"></path></g>`,
   },
   "undo-dot": {
     viewBox: "0 0 24 24",
