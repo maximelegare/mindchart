@@ -1,8 +1,9 @@
 import React from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import { interpolate, useAnimatedStyle } from "react-native-reanimated";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 import {
-  KeyboardStickyView,
+  AndroidSoftInputModes,
+  KeyboardController,
   useReanimatedKeyboardAnimation,
 } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +23,7 @@ import {
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
-const OPEN_PAD = 6;
+const PAGE_SHEET_INSET = gutter("sm").marginLeft ?? 4;
 
 type FormatCommand = "bold" | "italic" | "underline";
 
@@ -122,28 +123,28 @@ export function ThoughtsEditorToolbar({
 }: ThoughtsEditorToolbarProps) {
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
-  const { progress } = useReanimatedKeyboardAnimation();
-  const hostRef = React.useRef<View>(null);
-  const [sideBleed, setSideBleed] = React.useState(
-    gutter("sm").marginLeft ?? 4
-  );
+  const { height } = useReanimatedKeyboardAnimation();
   const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
+  const bottomInset = insets.bottom;
 
-  const updateBleed = React.useCallback(() => {
-    hostRef.current?.measureInWindow((x) => {
-      const next = Math.max(0, Math.round(x));
-      setSideBleed((current) => (current === next ? current : next));
-    });
-  }, []);
+  React.useEffect(() => {
+    if (!dockToKeyboard || Platform.OS !== "android") return;
+    KeyboardController.setInputMode(
+      AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
+    );
+    return () => {
+      KeyboardController.setDefaultMode();
+    };
+  }, [dockToKeyboard]);
 
-  const safePadStyle = useAnimatedStyle(() => ({
-    paddingBottom: interpolate(
-      progress.value,
-      [0, 1],
-      [Math.max(insets.bottom, OPEN_PAD), OPEN_PAD]
-    ),
-  }));
+  const dockedStyle = useAnimatedStyle(() => {
+    const keyboard = Math.max(0, -height.value);
+    const tuckedInset = Math.min(bottomInset, keyboard);
+    return {
+      transform: [{ translateY: height.value + tuckedInset }],
+    };
+  }, [bottomInset]);
 
   const content = <ToolbarContent {...contentProps} />;
 
@@ -165,30 +166,22 @@ export function ThoughtsEditorToolbar({
   }
 
   return (
-    <View
-      ref={hostRef}
+    <Animated.View
       pointerEvents="box-none"
-      onLayout={updateBleed}
-      style={styles.dockedHost}
+      style={[
+        styles.docked,
+        dockedStyle,
+        {
+          left: -PAGE_SHEET_INSET,
+          right: -PAGE_SHEET_INSET,
+          paddingBottom: bottomInset,
+          backgroundColor,
+          borderTopColor: borderColor,
+        },
+      ]}
     >
-      <KeyboardStickyView
-        pointerEvents="box-none"
-        offset={{ closed: 0, opened: 0 }}
-        style={[
-          styles.docked,
-          safePadStyle,
-          {
-            left: -sideBleed,
-            right: -sideBleed,
-            backgroundColor,
-            borderTopColor: borderColor,
-            borderTopWidth: StyleSheet.hairlineWidth,
-          },
-        ]}
-      >
-        <View style={styles.dockedRow}>{content}</View>
-      </KeyboardStickyView>
-    </View>
+      <View style={styles.dockedRow}>{content}</View>
+    </Animated.View>
   );
 }
 
@@ -197,19 +190,12 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     justifyContent: "center",
   },
-  dockedHost: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
-    zIndex: 20,
-  },
   docked: {
     position: "absolute",
     bottom: 0,
     zIndex: 20,
     elevation: 20,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
   dockedRow: {
     height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
