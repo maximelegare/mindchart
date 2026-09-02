@@ -65,12 +65,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # =========================================================
+      # CHECKOUT
+      # =========================================================
+
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
-      # ---------------------------------------------------------
-      # Disk diagnostics
-      # ---------------------------------------------------------
+      # =========================================================
+      # INITIAL DISK DIAGNOSTICS
+      # =========================================================
 
       - name: 💾 Check initial disk space
         run: |
@@ -94,9 +98,9 @@ jobs:
 
           sudo du -sh /usr/local/lib/android/sdk/* 2>/dev/null | sort -h || true
 
-      # ---------------------------------------------------------
-      # Aggressive but safe cleanup
-      # ---------------------------------------------------------
+      # =========================================================
+      # FREE DISK SPACE
+      # =========================================================
 
       - name: 🧹 Free disk space
         run: |
@@ -132,18 +136,17 @@ jobs:
 
           rm -rf ~/.gradle/caches
           rm -rf ~/.gradle/wrapper
+          rm -rf ~/.gradle/daemon
 
           echo ""
           echo "========================================"
-          echo "CLEANING ANDROID EMULATOR DATA"
+          echo "CLEANING ANDROID EMULATOR FILES"
           echo "========================================"
 
-          # Android emulator system images are not required
-          # to build an APK.
+          # Emulator system images are not needed to build an APK.
           sudo rm -rf /usr/local/lib/android/sdk/system-images
 
-          # Emulator-related directories are also unnecessary
-          # for a CI APK build.
+          # The emulator binary itself is not needed for an APK build.
           sudo rm -rf /usr/local/lib/android/sdk/emulator
 
           echo ""
@@ -182,15 +185,19 @@ jobs:
 
           sudo du -sh /usr/local/lib/android/sdk/* 2>/dev/null | sort -h || true
 
-      # ---------------------------------------------------------
-      # Node / dependencies
-      # ---------------------------------------------------------
+      # =========================================================
+      # NODE
+      # =========================================================
 
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "yarn"
+
+      # =========================================================
+      # DEPENDENCIES
+      # =========================================================
 
       - name: 📦 Install dependencies
         run: yarn install
@@ -225,9 +232,9 @@ jobs:
 
           du -sh ~/.cache 2>/dev/null || true
 
-      # ---------------------------------------------------------
-      # EAS
-      # ---------------------------------------------------------
+      # =========================================================
+      # EAS CLI
+      # =========================================================
 
       - name: 📦 Install EAS CLI
         run: npm install -g eas-cli@latest
@@ -235,9 +242,9 @@ jobs:
       - name: 🔄 Verify EAS CLI
         run: eas --version
 
-      # ---------------------------------------------------------
-      # Android credentials
-      # ---------------------------------------------------------
+      # =========================================================
+      # ANDROID CREDENTIALS
+      # =========================================================
 
       - name: 🔑 Restore Android Keystore
         run: |
@@ -262,9 +269,40 @@ jobs:
           EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
           EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
-      # ---------------------------------------------------------
-      # Final disk check before build
-      # ---------------------------------------------------------
+      # =========================================================
+      # GRADLE CONFIGURATION
+      # =========================================================
+
+      - name: 🧹 Prepare Gradle for CI
+        run: |
+          rm -rf ~/.gradle/caches
+          rm -rf ~/.gradle/daemon
+
+          mkdir -p ~/.gradle
+
+          cat > ~/.gradle/gradle.properties <<'EOF'
+          org.gradle.daemon=false
+          org.gradle.caching=false
+          org.gradle.parallel=false
+          org.gradle.configureondemand=false
+          EOF
+
+          echo "========================================"
+          echo "GRADLE CONFIGURATION"
+          echo "========================================"
+
+          cat ~/.gradle/gradle.properties
+
+          echo ""
+          echo "========================================"
+          echo "DISK"
+          echo "========================================"
+
+          df -h /
+
+      # =========================================================
+      # FINAL DISK CHECK
+      # =========================================================
 
       - name: 💾 Check disk before Android build
         run: |
@@ -303,9 +341,9 @@ jobs:
 
           du -xhd2 . 2>/dev/null | sort -h | tail -30
 
-      # ---------------------------------------------------------
-      # Continuous disk monitor
-      # ---------------------------------------------------------
+      # =========================================================
+      # DISK MONITOR
+      # =========================================================
 
       - name: 📊 Start disk monitor
         run: |
@@ -313,12 +351,15 @@ jobs:
             while true; do
               echo "===== $(date) ====="
               df -h /
+
               echo ""
               echo "Gradle:"
               du -sh ~/.gradle 2>/dev/null || true
+
               echo ""
               echo "Workspace:"
               du -sh . 2>/dev/null || true
+
               echo ""
               sleep 15
             done
@@ -326,9 +367,9 @@ jobs:
 
           echo $! > /tmp/disk-monitor.pid
 
-      # ---------------------------------------------------------
-      # Build
-      # ---------------------------------------------------------
+      # =========================================================
+      # ANDROID BUILD
+      # =========================================================
 
       - name: 📱 Build QA APK
         if: github.event_name == 'push' || github.event.inputs.buildType == 'dev'
@@ -348,15 +389,17 @@ jobs:
           GRADLE_OPTS: >-
             -Dorg.gradle.jvmargs=-Xmx4096m
             -XX:MaxMetaspaceSize=1024m
+            -Dorg.gradle.daemon=false
+            -Dorg.gradle.caching=false
 
           EAS_BUILD_KEYSTORE_PATH: "./MindChart.keystore"
           EAS_BUILD_KEYSTORE_ALIAS: "${{ secrets.KEY_ALIAS }}"
           EAS_BUILD_KEYSTORE_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
           EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
 
-      # ---------------------------------------------------------
-      # Diagnostics after build
-      # ---------------------------------------------------------
+      # =========================================================
+      # STOP DISK MONITOR
+      # =========================================================
 
       - name: 🛑 Stop disk monitor
         if: always()
@@ -370,6 +413,10 @@ jobs:
           echo "========================================"
 
           cat /tmp/disk-monitor.log || true
+
+      # =========================================================
+      # POST-BUILD DISK DIAGNOSTICS
+      # =========================================================
 
       - name: 💾 Check disk after Android build
         if: always()
@@ -401,13 +448,17 @@ jobs:
 
           du -xhd2 . 2>/dev/null | sort -h | tail -30
 
-      # ---------------------------------------------------------
-      # APK
-      # ---------------------------------------------------------
+      # =========================================================
+      # APK CHECKSUM
+      # =========================================================
 
       - name: 🔑 Generate SHA256 for APK
         run: |
           sha256sum ./MindChart-dev.apk > MindChart-dev.apk.sha256
+
+      # =========================================================
+      # ARTIFACTS
+      # =========================================================
 
       - name: 📦 Upload build artifacts to GitHub
         uses: actions/upload-artifact@v4
