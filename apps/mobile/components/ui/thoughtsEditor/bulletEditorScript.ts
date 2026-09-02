@@ -245,6 +245,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       li.__mcBounceTimer = setTimeout(function () {
         bounceStripe(li);
       }, COLLAPSE_TRANSITION_MS);
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
     }
 
     function expandThoughtCategory(li, reschedule) {
@@ -255,6 +258,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       li.classList.remove("is-collapsed");
       if (reschedule !== false) {
         scheduleCollapse(li);
+      }
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
       }
     }
 
@@ -1080,6 +1086,9 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     li.__mcBounceTimer = setTimeout(function () {
       bounceStripe(li);
     }, COLLAPSE_TRANSITION_MS);
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
+    }
   }
 
   function expandThoughtCategory(li, reschedule) {
@@ -1090,6 +1099,9 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     li.classList.remove("is-collapsed");
     if (reschedule !== false) {
       scheduleCollapse(li);
+    }
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
     }
   }
 
@@ -1296,22 +1308,33 @@ export const CHECKLIST_SCRIPT = `
     li.classList.toggle("has-graph", !!graph);
 
     if (!check) return;
-    check.style.left = "";
-    check.style.right = "";
-    check.style.top = "";
-    check.style.transform = "";
 
-    if (!completable) return;
+    if (!completable) {
+      check.style.left = "";
+      check.style.right = "";
+      check.style.top = "";
+      return;
+    }
 
-    var railLeft = "7px";
-    var dotTop = 8;
     if (singleLine) {
       check.style.left = "auto";
       check.style.right = graph ? "32px" : "0px";
-      check.style.top = dotTop + "px";
+      check.style.top = "8px";
     } else {
-      check.style.left = railLeft;
-      check.style.top = lineH + 4 + "px";
+      check.style.left = "";
+      check.style.right = "";
+      check.style.top = "";
+      if (hasTitle && title) {
+        li.style.setProperty("--title-h", title.offsetHeight + "px");
+      } else {
+        li.style.removeProperty("--title-h");
+      }
+    }
+
+    if (!check.classList.contains("is-anchored")) {
+      requestAnimationFrame(function () {
+        check.classList.add("is-anchored");
+      });
     }
   }
 
@@ -1399,13 +1422,12 @@ export const CHECKLIST_SCRIPT = `
     function isThoughtText(node) {
       return (
         closestClass(node, "thought-title") ||
-        closestClass(node, "thought-summary") ||
-        closestClass(node, "thought-fields") ||
-        closestClass(node, "thought-body")
+        closestClass(node, "thought-summary")
       );
     }
 
     function onChecklistPointer(e) {
+      if (isCategoryChrome(e.target)) return;
       var check = closestClass(e.target, "thought-check");
       var li = closestLi(e.target);
       if (check) {
@@ -1418,8 +1440,7 @@ export const CHECKLIST_SCRIPT = `
       // Edit mode keeps the caret so the user can still type.
       if (window.__mcBulletGuardInstalled) return;
       if (!li || !isTrueAttr(li, "data-completable")) return;
-      if (isCategoryChrome(e.target)) return;
-      if (!isThoughtText(e.target) && e.target !== li) return;
+      if (!isThoughtText(e.target)) return;
       e.preventDefault();
       e.stopPropagation();
       toggleCompleted(li);
@@ -1427,6 +1448,22 @@ export const CHECKLIST_SCRIPT = `
 
     content.addEventListener("click", onChecklistPointer, true);
     content.addEventListener("touchend", onChecklistPointer, true);
+
+    content.addEventListener(
+      "transitionend",
+      function (e) {
+        if (
+          !e.target ||
+          !e.target.classList ||
+          !e.target.classList.contains("thought-category")
+        ) {
+          return;
+        }
+        var li = closestLi(e.target);
+        if (li) syncChecklistLayout(li);
+      },
+      true
+    );
 
     document.addEventListener("selectionchange", function () {
       var sel = window.getSelection();

@@ -987,6 +987,10 @@ function ThoughtsEditorInner(
                     padding-left: 30px;
                     padding-right: ${showGraphButtons ? "40px" : "0"};
                     overflow: visible;
+                    --category-stack: 25px;
+                  }
+                  li.thought-item.is-collapsed {
+                    --category-stack: 2px;
                   }
                   li.thought-item.is-checklist.is-single-line:not(.has-title) {
                     padding-right: ${showGraphButtons ? "68px" : "32px"};
@@ -1019,17 +1023,29 @@ function ThoughtsEditorInner(
                     align-items: center;
                     justify-content: center;
                   }
+                  .thought-check.is-anchored {
+                    transition:
+                      top 0.38s ease,
+                      left 0.38s ease,
+                      right 0.38s ease;
+                  }
                   .thought-check::before {
                     content: "";
                     position: absolute;
-                    inset: -8px;
+                    top: -2px;
+                    right: -8px;
+                    bottom: -8px;
+                    left: -2px;
                   }
                   li.thought-item.is-checklist .thought-check {
                     display: flex;
                   }
                   li.thought-item.is-checklist:not(.is-single-line) .thought-check {
                     left: 7px;
-                    top: calc(4px + 1.45em);
+                    top: calc(var(--category-stack, 0px) + 1.45em + 4px);
+                  }
+                  li.thought-item.has-title.is-checklist:not(.is-single-line) .thought-check {
+                    top: calc(var(--category-stack, 0px) + var(--title-h, 1.45em) + 2px);
                   }
                   .thought-check-box {
                     display: block;
@@ -1108,6 +1124,8 @@ function ThoughtsEditorInner(
                     pointer-events: none;
                   }
                   .thought-category {
+                    position: relative;
+                    z-index: 5;
                     min-height: 18px;
                     margin: 0 0 4px;
                     padding: 2px 0;
