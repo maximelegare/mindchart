@@ -41,7 +41,7 @@ const CONTENT_GAP = 8;
 const CATEGORY_LABEL_HEIGHT = 14;
 const DOT_ALIGN_TOP = 11;
 const DOT_HIT_SIZE = 36;
-const CATEGORY_FADE_MS = 4000;
+const CATEGORY_FADE_MS = 3000;
 
 type ThoughtBulletItemProps = {
   index: number;
