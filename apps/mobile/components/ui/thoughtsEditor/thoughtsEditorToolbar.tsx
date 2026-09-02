@@ -1,10 +1,13 @@
 import React from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
-import Animated, { useAnimatedStyle } from "react-native-reanimated";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
 import {
   AndroidSoftInputModes,
   KeyboardController,
-  useReanimatedKeyboardAnimation,
+  useGenericKeyboardHandler,
 } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Switch } from "@/components/ui/switch";
@@ -123,10 +126,22 @@ export function ThoughtsEditorToolbar({
 }: ThoughtsEditorToolbarProps) {
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
-  const { height } = useReanimatedKeyboardAnimation();
+  const keyboardHeight = useSharedValue(0);
+  const targetHeight = useSharedValue(0);
+  const lastProgress = useSharedValue(0);
   const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
   const bottomInset = insets.bottom;
+  const dockedChromeStyle = React.useMemo(
+    () => ({
+      left: -PAGE_SHEET_INSET,
+      right: -PAGE_SHEET_INSET,
+      paddingBottom: bottomInset,
+      backgroundColor,
+      borderTopColor: borderColor,
+    }),
+    [bottomInset, backgroundColor, borderColor]
+  );
 
   React.useEffect(() => {
     if (!dockToKeyboard || Platform.OS !== "android") return;
@@ -138,11 +153,49 @@ export function ThoughtsEditorToolbar({
     };
   }, [dockToKeyboard]);
 
+  useGenericKeyboardHandler(
+    {
+      onStart: (event) => {
+        "worklet";
+        // Destination only — applying it here jumps the bar to the top on Android.
+        targetHeight.value = event.height;
+      },
+      onMove: (event) => {
+        "worklet";
+        const opening = event.progress >= lastProgress.value;
+        lastProgress.value = event.progress;
+        if (!opening) {
+          keyboardHeight.value = event.height;
+          return;
+        }
+        const cap = targetHeight.value > 0 ? targetHeight.value : event.height;
+        keyboardHeight.value = Math.min(
+          Math.max(keyboardHeight.value, event.height),
+          cap
+        );
+      },
+      onInteractive: (event) => {
+        "worklet";
+        keyboardHeight.value = event.height;
+        lastProgress.value = event.progress;
+      },
+      onEnd: (event) => {
+        "worklet";
+        lastProgress.value = event.progress;
+        if (event.progress === 0 || event.height < 2) {
+          keyboardHeight.value = 0;
+          targetHeight.value = 0;
+        }
+      },
+    },
+    []
+  );
+
   const dockedStyle = useAnimatedStyle(() => {
-    const keyboard = Math.max(0, -height.value);
+    const keyboard = Math.max(0, keyboardHeight.value);
     const tuckedInset = Math.min(bottomInset, keyboard);
     return {
-      transform: [{ translateY: height.value + tuckedInset }],
+      transform: [{ translateY: -keyboard + tuckedInset }],
     };
   }, [bottomInset]);
 
@@ -168,17 +221,7 @@ export function ThoughtsEditorToolbar({
   return (
     <Animated.View
       pointerEvents="box-none"
-      style={[
-        styles.docked,
-        dockedStyle,
-        {
-          left: -PAGE_SHEET_INSET,
-          right: -PAGE_SHEET_INSET,
-          paddingBottom: bottomInset,
-          backgroundColor,
-          borderTopColor: borderColor,
-        },
-      ]}
+      style={[styles.docked, dockedStyle, dockedChromeStyle]}
     >
       <View style={styles.dockedRow}>{content}</View>
     </Animated.View>

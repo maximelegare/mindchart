@@ -317,7 +317,9 @@ function ThoughtsEditorInner(
     if (readOnly) return;
     const showSub = Keyboard.addListener("keyboardDidShow", () => {
       keyboardOpenRef.current = true;
-      setKeyboardOpen(true);
+      if (!dockToolbarToKeyboard) {
+        setKeyboardOpen(true);
+      }
 
       const refresh = () => {
         scrollCaretIntoView();
@@ -330,17 +332,32 @@ function ThoughtsEditorInner(
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       keyboardOpenRef.current = false;
-      setKeyboardOpen(false);
+      if (!dockToolbarToKeyboard) {
+        setKeyboardOpen(false);
+      }
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, [readOnly, scrollCaretIntoView]);
+  }, [readOnly, dockToolbarToKeyboard, scrollCaretIntoView]);
 
   React.useEffect(() => {
-    if (readOnly || !keyboardOpen) return;
+    if (readOnly || !dockToolbarToKeyboard) return;
+    const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
+    richRef.current?.injectJavascript(`
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.style.paddingBottom = "${pad}px";
+  true;
+})();
+`);
+  }, [readOnly, dockToolbarToKeyboard, fontFaceCss]);
+
+  React.useEffect(() => {
+    if (readOnly || !keyboardOpen || dockToolbarToKeyboard) return;
     const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
     richRef.current?.injectJavascript(`
 (function () {
@@ -351,10 +368,10 @@ function ThoughtsEditorInner(
 })();
 `);
     scrollCaretIntoView();
-  }, [keyboardOpen, readOnly, scrollCaretIntoView]);
+  }, [keyboardOpen, readOnly, dockToolbarToKeyboard, scrollCaretIntoView]);
 
   React.useEffect(() => {
-    if (readOnly || keyboardOpen) return;
+    if (readOnly || keyboardOpen || dockToolbarToKeyboard) return;
     richRef.current?.injectJavascript(`
 (function () {
   var content =
@@ -363,7 +380,7 @@ function ThoughtsEditorInner(
   true;
 })();
 `);
-  }, [keyboardOpen, readOnly]);
+  }, [keyboardOpen, readOnly, dockToolbarToKeyboard]);
 
   const applyEditorFlags = React.useCallback((nextShowTitles: boolean) => {
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
@@ -688,7 +705,7 @@ function ThoughtsEditorInner(
                 ? {
                     paddingBottom:
                       THOUGHTS_EDITOR_TOOLBAR_HEIGHT +
-                      (keyboardOpen ? 6 : Math.max(insets.bottom, 6)),
+                      Math.max(insets.bottom, 6),
                   }
                 : undefined
             }
@@ -727,10 +744,10 @@ function ThoughtsEditorInner(
                   line-height: 1.45;
                   padding: ${plain ? (!readOnly ? "8px 0" : "8px 2px") : "12px"};
                   padding-bottom: ${
-                    !readOnly && keyboardOpen
-                      ? CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT
-                      : showToolbar && dockToolbarToKeyboard
-                        ? THOUGHTS_EDITOR_TOOLBAR_HEIGHT + 12
+                    showToolbar && dockToolbarToKeyboard
+                      ? THOUGHTS_EDITOR_TOOLBAR_HEIGHT + 12
+                      : !readOnly && keyboardOpen
+                        ? CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT
                         : 12
                   }px;
                   min-height: 100%;
