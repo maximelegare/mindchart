@@ -10,6 +10,7 @@ on:
       - "**.md"
       - "LICENSE"
       - "docs/**"
+
   workflow_dispatch:
     inputs:
       buildType:
@@ -23,16 +24,26 @@ env:
   NODE_OPTIONS: --openssl-legacy-provider
 
 jobs:
+  # ---------------------------
+  # Skip CI check
+  # ---------------------------
+
   check-skip:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
     steps:
       - name: Skip CI check
         run: echo "Proceeding with workflow"
 
+  # ---------------------------
+  # Tests
+  # ---------------------------
+
   test:
     needs: check-skip
     runs-on: ubuntu-latest
+
     steps:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
@@ -52,23 +63,74 @@ jobs:
       - name: 🧹 Run ESLint
         run: yarn lint
 
+  # ---------------------------
+  # Build APKs
+  # ---------------------------
+
   build:
     needs: test
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/DEV') || github.event_name == 'workflow_dispatch'
+
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/DEV') ||
+      github.event_name == 'workflow_dispatch'
+
     runs-on: ubuntu-latest
+
     steps:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
-      - name: Disk usage before build
+      # ---------------------------
+      # Disk space management
+      # ---------------------------
+
+      - name: 💾 Check initial disk space
         run: |
-            df -h
-            df -h /tmp
-            
-      - name: Free disk space
+          echo "=== Filesystem ==="
+          df -h /
+
+          echo ""
+          echo "=== Largest root directories ==="
+          sudo du -xhd1 / 2>/dev/null | sort -h | tail -20
+
+      - name: 🧹 Free disk space
         run: |
-            sudo rm -rf /usr/share/dotnet
-            sudo rm -rf /opt/ghc
+          echo "=== Removing unnecessary software ==="
+
+          # Large preinstalled tools that are not required
+          # for the React Native Android build.
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/powershell
+
+          # Remove unused Docker data.
+          sudo docker system prune -af || true
+
+          # Remove user-level caches.
+          rm -rf ~/.cache
+          rm -rf ~/.npm
+
+          # Remove Gradle caches from the fresh runner.
+          # Gradle will recreate anything it needs.
+          rm -rf ~/.gradle/caches
+          rm -rf ~/.gradle/wrapper
+
+          echo ""
+          echo "=== Disk space after cleanup ==="
+          df -h /
+
+      - name: 💾 Check disk after cleanup
+        run: |
+          echo "=== Filesystem ==="
+          df -h /
+
+          echo ""
+          echo "=== Largest root directories ==="
+          sudo du -xhd1 / 2>/dev/null | sort -h | tail -20
+
+      # ---------------------------
+      # Node / dependencies
+      # ---------------------------
 
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
@@ -76,75 +138,144 @@ jobs:
           node-version: "20"
           cache: "yarn"
 
-      - name: 📦 Install dependencies & EAS CLI
+      - name: 📦 Install dependencies
+        run: yarn install
+
+      - name: 💾 Check disk after dependency installation
         run: |
-          yarn install
-          npm install -g eas-cli@latest
+          echo "=== Filesystem ==="
+          df -h /
+
+          echo ""
+          echo "=== Dependency sizes ==="
+          du -sh node_modules 2>/dev/null || true
+          du -sh apps/mobile/node_modules 2>/dev/null || true
+          du -sh ~/.gradle 2>/dev/null || true
+          du -sh ~/.cache 2>/dev/null || true
+
+      - name: 📦 Install EAS CLI
+        run: npm install -g eas-cli@latest
 
       - name: 🔄 Verify EAS CLI
         run: eas --version
 
       # ---------------------------
-      # Build APKs
+      # Android credentials
       # ---------------------------
-
-
-           
 
       - name: 🔑 Restore Android Keystore
         run: |
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/MindChart.keystore    
-         
-            
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" |
+            base64 --decode > apps/mobile/MindChart.keystore
+
       - name: 📝 Create local credentials.json
         working-directory: apps/mobile
         run: |
           echo '{
-                "android": {
-                  "keystore":{
-                    "keystorePath": "./MindChart.keystore",
-                    "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
-                    "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
-                    "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
-                  }
-                }
-              }' > credentials.json
+            "android": {
+              "keystore": {
+                "keystorePath": "./MindChart.keystore",
+                "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
+                "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
+                "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
+              }
+            }
+          }' > credentials.json
+
         env:
-            EAS_BUILD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-            EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
-            EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}      
+          EAS_BUILD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
+          EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
 
+      # ---------------------------
+      # Pre-build disk check
+      # ---------------------------
 
+      - name: 💾 Check disk before Android build
+        run: |
+          echo "=== Filesystem ==="
+          df -h /
+
+          echo ""
+          echo "=== Gradle ==="
+          du -sh ~/.gradle 2>/dev/null || true
+
+          echo ""
+          echo "=== Node modules ==="
+          du -sh node_modules 2>/dev/null || true
+          du -sh apps/mobile/node_modules 2>/dev/null || true
+
+          echo ""
+          echo "=== Cache ==="
+          du -sh ~/.cache 2>/dev/null || true
+
+          echo ""
+          echo "=== Largest directories in workspace ==="
+          du -xhd2 . 2>/dev/null | sort -h | tail -30
+
+      # ---------------------------
+      # Build APK
+      # ---------------------------
 
       - name: 📱 Build QA APK
         if: github.event_name == 'push' || github.event.inputs.buildType == 'dev'
         working-directory: apps/mobile
         run: |
           export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
-          eas build --platform android --profile production --local --non-interactive --output=../../MindChart-dev.apk
+
+          eas build \
+            --platform android \
+            --profile production \
+            --local \
+            --non-interactive \
+            --output=../../MindChart-dev.apk
+
         env:
           NODE_ENV: production
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+
+          GRADLE_OPTS: >-
+            -Dorg.gradle.jvmargs=-Xmx4096m
+            -XX:MaxMetaspaceSize=1024m
+
           EAS_BUILD_KEYSTORE_PATH: "./MindChart.keystore"
           EAS_BUILD_KEYSTORE_ALIAS: "${{ secrets.KEY_ALIAS }}"
           EAS_BUILD_KEYSTORE_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
           EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
 
+      # ---------------------------
+      # Post-build disk check
+      # ---------------------------
 
+      - name: 💾 Check disk after Android build
+        if: always()
+        run: |
+          echo "=== Filesystem ==="
+          df -h /
 
+          echo ""
+          echo "=== Gradle ==="
+          du -sh ~/.gradle 2>/dev/null || true
+
+          echo ""
+          echo "=== Cache ==="
+          du -sh ~/.cache 2>/dev/null || true
+
+          echo ""
+          echo "=== Workspace ==="
+          du -xhd2 . 2>/dev/null | sort -h | tail -30
 
       # ---------------------------
       # SHA256 generation
       # ---------------------------
+
       - name: 🔑 Generate SHA256 for APKs
         run: |
           sha256sum ./MindChart-dev.apk > MindChart-dev.apk.sha256
-     
-   
 
       # ---------------------------
       # Upload artifacts
       # ---------------------------
+
       - name: 📦 Upload build artifacts to GitHub
         uses: actions/upload-artifact@v4
         with:
