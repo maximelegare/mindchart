@@ -6,6 +6,7 @@ import Animated, {
 } from "react-native-reanimated";
 import {
   AndroidSoftInputModes,
+  KeyboardBackgroundView,
   KeyboardController,
   useGenericKeyboardHandler,
 } from "react-native-keyboard-controller";
@@ -14,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
-import { gutter } from "@/components/ui/gutter";
+import { Portal } from "@/components/primitives/portal";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import {
@@ -26,12 +27,11 @@ import {
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
-const PAGE_SHEET_INSET = gutter("sm").marginLeft ?? 4;
 
 type FormatCommand = "bold" | "italic" | "underline";
 
 type ThoughtsEditorToolbarProps = {
-  /** When true, the bar sits at the page bottom and rides the keyboard. */
+  /** When true, the bar sits at the page bottom and snaps onto the keyboard. */
   dockToKeyboard?: boolean;
   showTitles: boolean;
   showTitlesToggle: boolean;
@@ -78,7 +78,10 @@ function ToolbarContent({
   const { colorScheme } = useColorScheme();
 
   return (
-    <View className="flex-row items-center justify-between px-2">
+    <View
+      className="flex-row items-center justify-between"
+      style={styles.content}
+    >
       <View className="flex-row items-center">
         <FormatButton
           icon="bold"
@@ -100,7 +103,7 @@ function ToolbarContent({
         />
       </View>
       {showTitlesToggle ? (
-        <View className="flex-row items-center gap-2 pr-1">
+        <View className="flex-row items-center gap-2">
           <Typography className="text-sm text-muted-foreground">
             <ThoughtsEditorTitlesToggleLabel />
           </Typography>
@@ -127,21 +130,9 @@ export function ThoughtsEditorToolbar({
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const keyboardHeight = useSharedValue(0);
-  const targetHeight = useSharedValue(0);
-  const lastProgress = useSharedValue(0);
   const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
   const bottomInset = insets.bottom;
-  const dockedChromeStyle = React.useMemo(
-    () => ({
-      left: -PAGE_SHEET_INSET,
-      right: -PAGE_SHEET_INSET,
-      paddingBottom: bottomInset,
-      backgroundColor,
-      borderTopColor: borderColor,
-    }),
-    [bottomInset, backgroundColor, borderColor]
-  );
 
   React.useEffect(() => {
     if (!dockToKeyboard || Platform.OS !== "android") return;
@@ -153,38 +144,19 @@ export function ThoughtsEditorToolbar({
     };
   }, [dockToKeyboard]);
 
+  // Snap on movement start. `onStart` carries the destination height, so the
+  // bar is already in place while the IME is still animating.
   useGenericKeyboardHandler(
     {
       onStart: (event) => {
         "worklet";
-        // Destination only — applying it here jumps the bar to the top on Android.
-        targetHeight.value = event.height;
-      },
-      onMove: (event) => {
-        "worklet";
-        const opening = event.progress >= lastProgress.value;
-        lastProgress.value = event.progress;
-        if (!opening) {
-          keyboardHeight.value = event.height;
-          return;
-        }
-        const cap = targetHeight.value > 0 ? targetHeight.value : event.height;
-        keyboardHeight.value = Math.min(
-          Math.max(keyboardHeight.value, event.height),
-          cap
-        );
-      },
-      onInteractive: (event) => {
-        "worklet";
-        keyboardHeight.value = event.height;
-        lastProgress.value = event.progress;
+        keyboardHeight.value =
+          event.progress === 1 ? Math.max(0, event.height) : 0;
       },
       onEnd: (event) => {
         "worklet";
-        lastProgress.value = event.progress;
-        if (event.progress === 0 || event.height < 2) {
+        if (event.progress !== 1) {
           keyboardHeight.value = 0;
-          targetHeight.value = 0;
         }
       },
     },
@@ -193,12 +165,13 @@ export function ThoughtsEditorToolbar({
 
   const dockedStyle = useAnimatedStyle(() => {
     const keyboard = Math.max(0, keyboardHeight.value);
-    const tuckedInset = Math.min(bottomInset, keyboard);
+    const fill = Math.max(bottomInset, keyboard);
     return {
-      transform: [{ translateY: -keyboard + tuckedInset }],
+      height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT + fill,
     };
   }, [bottomInset]);
 
+  const portalName = React.useId();
   const content = <ToolbarContent {...contentProps} />;
 
   if (!dockToKeyboard) {
@@ -219,12 +192,20 @@ export function ThoughtsEditorToolbar({
   }
 
   return (
-    <Animated.View
-      pointerEvents="box-none"
-      style={[styles.docked, dockedStyle, dockedChromeStyle]}
-    >
-      <View style={styles.dockedRow}>{content}</View>
-    </Animated.View>
+    <Portal name={`thoughts-editor-toolbar-${portalName}`}>
+      <View pointerEvents="box-none" style={styles.screen}>
+        <Animated.View
+          pointerEvents="box-none"
+          style={[styles.docked, dockedStyle, { borderTopColor: borderColor }]}
+        >
+          <KeyboardBackgroundView
+            pointerEvents="none"
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.dockedRow}>{content}</View>
+        </Animated.View>
+      </View>
+    </Portal>
   );
 }
 
@@ -233,15 +214,24 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     justifyContent: "center",
   },
+  screen: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 40,
+    elevation: 40,
+  },
   docked: {
     position: "absolute",
+    left: 0,
+    right: 0,
     bottom: 0,
-    zIndex: 20,
-    elevation: 20,
+    overflow: "hidden",
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   dockedRow: {
     height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
     justifyContent: "center",
+  },
+  content: {
+    paddingHorizontal: 5,
   },
 });
