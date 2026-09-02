@@ -6,6 +6,7 @@ import {
   useGroupByFoldersNotesPagination,
   useGroupByFoldersNotesWithOverviewData,
 } from "../hooks/useGroupByFoldersNotesData";
+import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 export const NotesListGroupByFoldersWithOverviewFeature = () => {
   const parsedData = useGroupByFoldersNotesWithOverviewData();
@@ -29,7 +30,9 @@ export const NotesListGroupByFoldersWithOverviewFeature = () => {
               title={note.title}
               category="idea"
               date={note.createdAt ?? ""}
-              overviewItems={note.thoughts.map((thought) => thought.summary)}
+              overviewItems={note.thoughts.map((thought) =>
+                stripHtml(thought.summary)
+              )}
             />
           ))}
         </FolderSection>

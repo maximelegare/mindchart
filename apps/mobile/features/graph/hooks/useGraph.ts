@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
 import { GraphDataCache, NodeDatum } from "../types/types";
+import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 export type { NodeDatum };
 
@@ -22,8 +23,8 @@ const deriveNotesFromThoughts = (thoughts: ThoughtWithEmbedding[]): Note[] => {
     if (!thought.noteId || byNote.has(thought.noteId)) continue;
     byNote.set(thought.noteId, {
       id: thought.noteId,
-      title: thought.title || "Untitled",
-      summary: thought.summary || "",
+      title: stripHtml(thought.title) || "Untitled",
+      summary: stripHtml(thought.summary || ""),
       rawText: "",
       folderId: thought.folderId ?? undefined,
       folderLabel: thought.folderLabel ?? undefined,

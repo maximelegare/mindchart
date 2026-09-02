@@ -6,6 +6,7 @@ import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAnd
 import {
   ThoughtsEditor,
   createEmptyThought,
+  stripHtml,
   type ThoughtsEditorHandle,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
@@ -14,6 +15,7 @@ import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { useSaveNewNote } from "@/features/notes/noteDraft/hooks/useSaveNewNote";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import { gutter } from "@/components/ui/gutter";
 import {
   noteDetailsTitleRequiredPlaceholder,
   NoteDetailsTitlePlaceholder,
@@ -189,15 +191,17 @@ function NoteDetailsContent({
       const nextThoughts = data.thoughts
         .filter(
           (thought) =>
-            thought.title.trim() ||
-            thought.summary.trim() ||
+            stripHtml(thought.title) ||
+            stripHtml(thought.summary) ||
             thought.semanticLabel.trim()
         )
         .map((thought) => {
           const thoughtTitle = thought.title.trim();
           const summary = thought.summary.trim();
           const semanticLabel =
-            thought.semanticLabel.trim() || thoughtTitle || summary;
+            stripHtml(thought.semanticLabel) ||
+            stripHtml(thoughtTitle) ||
+            stripHtml(summary);
           return {
             ...thought,
             title: thoughtTitle,
@@ -286,7 +290,9 @@ function NoteDetailsContent({
     };
   }, [saveActionRef, saveNote]);
 
-  const showTitles = note.thoughts.some((thought) => thought.title?.trim());
+  const showTitles = note.thoughts.some((thought) =>
+    Boolean(stripHtml(thought.title ?? ""))
+  );
 
   const [titleInputHeight, setTitleInputHeight] = React.useState(28);
 
@@ -300,9 +306,15 @@ function NoteDetailsContent({
     <FormProvider {...form}>
       <View
         style={{ marginTop: 10 }}
-        className=" flex-col flex-1 min-h-0 w-full gap-4 px-1"
+        className={
+          isEditing
+            ? "flex-col flex-1 min-h-0 w-full gap-4"
+            : "flex-col flex-1 min-h-0 w-full gap-4 px-1"
+        }
       >
-        <View className="w-full shrink-0">
+        <View
+          className={isEditing ? "w-full shrink-0 px-1" : "w-full shrink-0"}
+        >
           {isEditing ? (
             <Controller
               control={control}
@@ -367,7 +379,17 @@ function NoteDetailsContent({
           )}
         </View>
 
-        <View className="flex-1 min-h-0">
+        <View
+          className="flex-1 min-h-0"
+          style={
+            isEditing
+              ? {
+                  marginLeft: -(gutter("md").marginLeft ?? 8),
+                  marginRight: -(gutter("md").marginRight ?? 8),
+                }
+              : undefined
+          }
+        >
           <ThoughtsEditor
             ref={thoughtsEditorRef}
             key={note.id}
@@ -378,6 +400,7 @@ function NoteDetailsContent({
             showGraphButtons={!isEditing}
             plain
             simplified={simplified}
+            dockToolbarToKeyboard
           />
         </View>
       </View>

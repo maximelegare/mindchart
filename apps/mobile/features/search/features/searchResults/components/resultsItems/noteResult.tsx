@@ -9,6 +9,7 @@ import {
   DEFAULT_CATEGORY_COLOR,
   useCategoryColorMap,
 } from "@/features/categories/hooks/useCategoryColor";
+import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 export const NoteResult = ({
   query,
@@ -60,10 +61,10 @@ export const NoteResult = ({
                 <Highlight
                   variant="h3"
                   className="text-base"
-                  text={thought.title}
+                  text={stripHtml(thought.title)}
                   query={query}
                 />
-                <Highlight text={thought.summary} query={query} />
+                <Highlight text={stripHtml(thought.summary)} query={query} />
               </View>
             </View>
           ))}

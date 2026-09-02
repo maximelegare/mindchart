@@ -3,7 +3,8 @@ import { Asset } from "expo-asset";
 import React from "react";
 import { Keyboard, Pressable, ScrollView, View } from "react-native";
 import { useFormContext } from "react-hook-form";
-import { RichEditor } from "react-native-pell-rich-editor";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { RichEditor, actions } from "react-native-pell-rich-editor";
 import {
   BottomSheet,
   BottomSheetContent,
@@ -13,19 +14,18 @@ import {
   useBottomSheetContext,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Typography } from "@/components/ui";
-import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Check } from "@/lib/icons/Check";
 import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useRouter } from "expo-router";
-import { createEmptyThought, type ThoughtsEditorFormValues } from "./types";
+import { type ThoughtsEditorFormValues } from "./types";
 import {
   htmlToThoughts,
   setThoughtCategoryScript,
+  stripHtml,
   thoughtsToHtml,
 } from "./thoughtsHtml";
 import {
@@ -39,13 +39,14 @@ import {
   setThoughtValidationErrorsScript,
 } from "./bulletEditorScript";
 import {
-  ThoughtsEditorClearLabel,
   ThoughtsEditorContentLabel,
-  ThoughtsEditorTitlesToggleLabel,
   buildThoughtPlaceholdersScript,
   getThoughtFieldPlaceholders,
-  thoughtsEditorShowTitlesAccessibilityLabel,
 } from "./thoughtsEditorLabels";
+import {
+  ThoughtsEditorToolbar,
+  THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
+} from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
@@ -77,7 +78,7 @@ async function loadEditorFontFaceCss(): Promise<string> {
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
 
-/** Extra space below the caret so it stays clear of the keyboard / viewport edge. */
+/** Extra space below the caret so it stays clear of the format toolbar / keyboard. */
 const CARET_BOTTOM_MARGIN = 72;
 
 const scrollCaretIntoViewScript = (bottomMargin: number) => `
@@ -133,6 +134,50 @@ function buildCategoryColorCss(categories: Category[]): string {
     .join("\n");
 }
 
+function setCategoryColorCssScript(css: string): string {
+  return `
+(function () {
+  var id = "mindchart-category-colors";
+  var style = document.getElementById(id);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    (document.head || document.documentElement).appendChild(style);
+  }
+  style.textContent = ${JSON.stringify(css)};
+  true;
+})();
+`;
+}
+
+function applyFormatInThoughtFieldScript(command: string): string {
+  return `
+(function () {
+  var command = ${JSON.stringify(command)};
+  var sel = window.getSelection();
+  var node = sel && sel.anchorNode;
+  var inField = false;
+  while (node) {
+    if (
+      node.nodeType === 1 &&
+      node.classList &&
+      (node.classList.contains("thought-summary") ||
+        node.classList.contains("thought-title"))
+    ) {
+      inField = true;
+      break;
+    }
+    node = node.parentNode;
+  }
+  if (!inField) return true;
+  if (!document.queryCommandState(command)) {
+    document.execCommand(command);
+  }
+  true;
+})();
+`;
+}
+
 type CategoryListItemProps = {
   item: Category;
   label: string;
@@ -169,9 +214,6 @@ function CategoryListItem({
   );
 }
 
-/** Height of the floating Clear / Titles toolbar overlay. */
-const EDITOR_TOOLBAR_HEIGHT = 44;
-
 /** Presents the category sheet from inside the BottomSheet provider. */
 function CategorySheetPresenter({ index }: { index: number | null }) {
   const { sheetRef } = useBottomSheetContext();
@@ -193,7 +235,7 @@ type ThoughtsEditorProps = {
   noteId: string;
   categories: Category[];
   defaultShowTitles?: boolean;
-  /** When true, content is view-only (no editing chrome / Clear). */
+  /** When true, content is view-only (no editing chrome). */
   readOnly?: boolean;
   /** Show a graph open button on the right of each thought. */
   showGraphButtons?: boolean;
@@ -204,6 +246,8 @@ type ThoughtsEditorProps = {
    * Ignored while editing (`readOnly={false}`).
    */
   simplified?: boolean;
+  /** Dock the format toolbar to the keyboard (note details). */
+  dockToolbarToKeyboard?: boolean;
 };
 
 export type ThoughtsEditorHandle = {
@@ -221,10 +265,12 @@ function ThoughtsEditorInner(
     showGraphButtons = false,
     plain = false,
     simplified = false,
+    dockToolbarToKeyboard = false,
   }: ThoughtsEditorProps,
   ref: React.ForwardedRef<ThoughtsEditorHandle>
 ) {
   const { colorScheme } = useColorScheme();
+  const insets = useSafeAreaInsets();
   const categoryLabels = useCategoryLabelsMap();
   const { push } = useRouter();
   const { getValues, setValue, watch } =
@@ -234,6 +280,11 @@ function ThoughtsEditorInner(
   // Keep the user's Titles preference even while simplified view hides them.
   const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
+  const [activeFormats, setActiveFormats] = React.useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  });
   const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
@@ -242,6 +293,9 @@ function ThoughtsEditorInner(
   const richRef = React.useRef<RichEditor>(null);
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
+  const pendingFormatRef = React.useRef<"bold" | "italic" | "underline" | null>(
+    null
+  );
   const showTitlesRef = React.useRef(showTitles);
   const effectiveShowTitles = effectiveSimplified ? false : showTitles;
   showTitlesRef.current = effectiveShowTitles;
@@ -279,6 +333,8 @@ function ThoughtsEditorInner(
     () => buildCategoryColorCss(categories),
     [categories]
   );
+  const categoryColorsCssRef = React.useRef(categoryColorsCss);
+  categoryColorsCssRef.current = categoryColorsCss;
   const { ref: categorySheetRef, close: closeCategorySheet } = useBottomSheet();
 
   const thoughts = watch("thoughts");
@@ -290,6 +346,12 @@ function ThoughtsEditorInner(
   const scrollCaretIntoView = React.useCallback(() => {
     const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 28;
     richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
+  }, []);
+
+  const tryApplyPendingFormat = React.useCallback(() => {
+    const pending = pendingFormatRef.current;
+    if (!pending) return;
+    richRef.current?.injectJavascript(applyFormatInThoughtFieldScript(pending));
   }, []);
 
   React.useEffect(() => {
@@ -310,9 +372,12 @@ function ThoughtsEditorInner(
     if (readOnly) return;
     const showSub = Keyboard.addListener("keyboardDidShow", () => {
       keyboardOpenRef.current = true;
-      setKeyboardOpen(true);
+      if (!dockToolbarToKeyboard) {
+        setKeyboardOpen(true);
+      }
 
       const refresh = () => {
+        tryApplyPendingFormat();
         scrollCaretIntoView();
       };
       requestAnimationFrame(() => {
@@ -323,18 +388,39 @@ function ThoughtsEditorInner(
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       keyboardOpenRef.current = false;
-      setKeyboardOpen(false);
+      pendingFormatRef.current = null;
+      if (!dockToolbarToKeyboard) {
+        setKeyboardOpen(false);
+      }
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, [readOnly, scrollCaretIntoView]);
+  }, [
+    readOnly,
+    dockToolbarToKeyboard,
+    scrollCaretIntoView,
+    tryApplyPendingFormat,
+  ]);
 
   React.useEffect(() => {
-    if (readOnly || !keyboardOpen) return;
-    const pad = CARET_BOTTOM_MARGIN + 24;
+    if (readOnly || !dockToolbarToKeyboard) return;
+    const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
+    richRef.current?.injectJavascript(`
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.style.paddingBottom = "${pad}px";
+  true;
+})();
+`);
+  }, [readOnly, dockToolbarToKeyboard, fontFaceCss]);
+
+  React.useEffect(() => {
+    if (readOnly || !keyboardOpen || dockToolbarToKeyboard) return;
+    const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
     richRef.current?.injectJavascript(`
 (function () {
   var content =
@@ -344,10 +430,10 @@ function ThoughtsEditorInner(
 })();
 `);
     scrollCaretIntoView();
-  }, [keyboardOpen, readOnly, scrollCaretIntoView]);
+  }, [keyboardOpen, readOnly, dockToolbarToKeyboard, scrollCaretIntoView]);
 
   React.useEffect(() => {
-    if (readOnly || keyboardOpen) return;
+    if (readOnly || keyboardOpen || dockToolbarToKeyboard) return;
     richRef.current?.injectJavascript(`
 (function () {
   var content =
@@ -356,11 +442,20 @@ function ThoughtsEditorInner(
   true;
 })();
 `);
-  }, [keyboardOpen, readOnly]);
+  }, [keyboardOpen, readOnly, dockToolbarToKeyboard]);
 
   const applyEditorFlags = React.useCallback((nextShowTitles: boolean) => {
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
   }, []);
+
+  const applyCategoryColors = React.useCallback((css: string) => {
+    if (!css) return;
+    richRef.current?.injectJavascript(setCategoryColorCssScript(css));
+  }, []);
+
+  React.useEffect(() => {
+    applyCategoryColors(categoryColorsCss);
+  }, [applyCategoryColors, categoryColorsCss, fontFaceCss]);
 
   const applySimplifiedMode = React.useCallback((nextSimplified: boolean) => {
     richRef.current?.injectJavascript(
@@ -368,10 +463,46 @@ function ThoughtsEditorInner(
     );
   }, []);
 
+  const applyPendingFormat = React.useCallback(
+    (items: Array<string | { type?: string }>) => {
+      const has = (action: string) =>
+        items.some(
+          (item) =>
+            item === action ||
+            (typeof item === "object" && item?.type === action)
+        );
+      const pending = pendingFormatRef.current;
+      if (pending) {
+        richRef.current?.injectJavascript(
+          applyFormatInThoughtFieldScript(pending)
+        );
+        if (has(pending)) {
+          pendingFormatRef.current = null;
+        }
+        setActiveFormats({
+          bold: pending === "bold" || has(actions.setBold),
+          italic: pending === "italic" || has(actions.setItalic),
+          underline: pending === "underline" || has(actions.setUnderline),
+        });
+        return;
+      }
+      setActiveFormats({
+        bold: has(actions.setBold),
+        italic: has(actions.setItalic),
+        underline: has(actions.setUnderline),
+      });
+    },
+    []
+  );
+
   const handleEditorInitialized = React.useCallback(() => {
     // Apply simplified before collapse timers so plain bullets never animate.
     applyEditorFlags(showTitlesRef.current);
     applySimplifiedMode(simplifiedRef.current);
+    applyCategoryColors(categoryColorsCssRef.current);
+    richRef.current?.registerToolbar((items) => {
+      applyPendingFormat(items);
+    });
     if (readOnly) {
       richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
     } else {
@@ -389,6 +520,8 @@ function ThoughtsEditorInner(
   }, [
     applyEditorFlags,
     applySimplifiedMode,
+    applyCategoryColors,
+    applyPendingFormat,
     readOnly,
     showGraphButtons,
     thoughtPlaceholders,
@@ -415,45 +548,82 @@ function ThoughtsEditorInner(
     });
   }, []);
 
-  // View mode only installs collapse chrome; install the Enter/backspace guard when editing.
+  const wasEditingRef = React.useRef(!readOnly);
+
+  // Entering edit installs the guard and drops graph chrome. Leaving edit
+  // rebuilds HTML so graph buttons come back.
   React.useEffect(() => {
-    if (readOnly) return;
-    // Set titles flag before the guard installs/normalizes, or titles get stripped.
-    applyEditorFlags(showTitles);
-    applySimplifiedMode(false);
-    richRef.current?.injectJavascript(
-      buildThoughtPlaceholdersScript(thoughtPlaceholders)
-    );
-    richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+    if (!readOnly) {
+      wasEditingRef.current = true;
+      applyEditorFlags(showTitles);
+      applySimplifiedMode(false);
+      richRef.current?.injectJavascript(
+        buildThoughtPlaceholdersScript(thoughtPlaceholders)
+      );
+      richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+      richRef.current?.setContentHTML(
+        thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
+      );
+      refreshCategoryTimers();
+      return;
+    }
+
+    if (!wasEditingRef.current) return;
+    wasEditingRef.current = false;
+
+    const titles = simplifiedRef.current ? false : showTitlesRef.current;
+    applyEditorFlags(titles);
+    applySimplifiedMode(simplifiedRef.current);
     richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
+      thoughtsToHtml(getValues("thoughts"), titles, htmlOptions)
     );
+    richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
+    if (showGraphButtons) {
+      richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
+    }
+    applyCategoryColors(categoryColorsCssRef.current);
     refreshCategoryTimers();
-    // Intentionally keyed on edit entry only (readOnly / graph chrome), not Titles toggle.
   }, [
+    applyCategoryColors,
     applyEditorFlags,
     applySimplifiedMode,
+    getValues,
+    htmlOptions,
     readOnly,
     refreshCategoryTimers,
-    htmlOptions,
+    showGraphButtons,
+    showTitles,
     thoughtPlaceholders,
   ]);
 
-  const handleClearContent = React.useCallback(() => {
-    const empty = [createEmptyThought(noteId)];
-    setValue("thoughts", empty, { shouldDirty: true });
-    richRef.current?.setContentHTML(
-      thoughtsToHtml(empty, showTitlesRef.current, htmlOptions)
-    );
-    refreshCategoryTimers();
-    applySimplifiedMode(simplifiedRef.current);
-  }, [
-    applySimplifiedMode,
-    htmlOptions,
-    noteId,
-    refreshCategoryTimers,
-    setValue,
-  ]);
+  const handleFormat = React.useCallback(
+    (command: "bold" | "italic" | "underline") => {
+      const editor = richRef.current as
+        | (RichEditor & { showAndroidKeyboard?: () => void })
+        | null;
+      if (!editor) return;
+
+      if (keyboardOpenRef.current && pendingFormatRef.current == null) {
+        editor.showAndroidKeyboard?.();
+        editor.sendAction(command, "result");
+        return;
+      }
+
+      if (pendingFormatRef.current === command) {
+        pendingFormatRef.current = null;
+        setActiveFormats((prev) => ({ ...prev, [command]: false }));
+        if (keyboardOpenRef.current) {
+          editor.sendAction(command, "result");
+        }
+        return;
+      }
+
+      pendingFormatRef.current = command;
+      setActiveFormats((prev) => ({ ...prev, [command]: true }));
+      editor.focusContentEditor();
+    },
+    []
+  );
 
   const handleShowTitlesChange = React.useCallback(
     (nextShowTitles: boolean) => {
@@ -569,11 +739,9 @@ function ThoughtsEditorInner(
   const placeholderColor = hsl("muted-foreground", colorScheme);
   const errorPlaceholderColor = hsl("foreground-errors", colorScheme);
   const caretColor = hsl("primary", colorScheme);
-  const headerBg = hsl("muted", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
   const graphButtonColor = mutedFg;
   const showToolbar = !readOnly;
-  const showEditBorder = !readOnly;
 
   React.useImperativeHandle(
     ref,
@@ -587,8 +755,8 @@ function ThoughtsEditorInner(
           summary: string;
           semanticLabel: string;
         }) =>
-          !thought.title.trim() &&
-          !thought.summary.trim() &&
+          !stripHtml(thought.title) &&
+          !stripHtml(thought.summary) &&
           !thought.semanticLabel.trim();
 
         // Fully empty bullets are dropped on save — ignore them for "has content".
@@ -611,8 +779,8 @@ function ThoughtsEditorInner(
           // Partial bullets (title XOR summary) must be completed.
           const incomplete = thoughts.flatMap((thought, index) => {
             if (isEmptyThought(thought)) return [];
-            const hasTitle = Boolean(thought.title.trim());
-            const hasSummary = Boolean(thought.summary.trim());
+            const hasTitle = Boolean(stripHtml(thought.title));
+            const hasSummary = Boolean(stripHtml(thought.summary));
             if (hasTitle && hasSummary) return [];
             return [
               {
@@ -648,7 +816,7 @@ function ThoughtsEditorInner(
   return (
     <BottomSheet className="flex-1 min-h-0">
       <CategorySheetPresenter index={categoryPickerIndex} />
-      <View className="flex-col flex-1 min-h-0">
+      <View className="relative flex-col flex-1 min-h-0">
         {!readOnly && !plain ? (
           <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
             <ThoughtsEditorContentLabel />
@@ -657,11 +825,9 @@ function ThoughtsEditorInner(
 
         <View
           className={
-            plain && !showEditBorder
+            plain
               ? "relative flex-1 min-h-0 overflow-hidden"
-              : plain && showEditBorder
-                ? "relative flex-1 min-h-0 overflow-hidden rounded-t-lg border border-b-0 border-input"
-                : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
+              : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
           }
           style={
             plain
@@ -669,45 +835,17 @@ function ThoughtsEditorInner(
               : { backgroundColor: hsl("card", colorScheme) }
           }
         >
-          {showToolbar ? (
-            <View
-              className="absolute left-0 right-0 top-0 z-10 flex-row items-center justify-between border-b border-input px-3"
-              style={{
-                height: EDITOR_TOOLBAR_HEIGHT,
-                backgroundColor: headerBg,
-              }}
-            >
-              <Button onPress={handleClearContent} variant="ghost" size="sm">
-                <Typography className="text-muted-foreground text-xs">
-                  <ThoughtsEditorClearLabel />
-                </Typography>
-              </Button>
-
-              {showToolbar && !effectiveSimplified ? (
-                <View className="flex-row items-center gap-3">
-                  <Typography className="text-sm text-muted-foreground">
-                    <ThoughtsEditorTitlesToggleLabel />
-                  </Typography>
-                  <Switch
-                    checked={showTitles}
-                    onCheckedChange={handleShowTitlesChange}
-                    aria-label={thoughtsEditorShowTitlesAccessibilityLabel()}
-                    trackColor={hsl("border", colorScheme)}
-                    trackCheckedColor={hsl("primary", colorScheme)}
-                    thumbColor={hsl("card", colorScheme)}
-                  />
-                </View>
-              ) : (
-                <View />
-              )}
-            </View>
-          ) : null}
-
           <View
             className="flex-1 min-h-0"
-            style={{
-              paddingTop: showToolbar ? EDITOR_TOOLBAR_HEIGHT : 0,
-            }}
+            style={
+              showToolbar && dockToolbarToKeyboard
+                ? {
+                    paddingBottom:
+                      THOUGHTS_EDITOR_TOOLBAR_HEIGHT +
+                      Math.max(insets.bottom, 6),
+                  }
+                : undefined
+            }
             onLayout={(event) => {
               scrollViewHeightRef.current = event.nativeEvent.layout.height;
               if (keyboardOpenRef.current) {
@@ -741,9 +879,13 @@ function ThoughtsEditorInner(
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
                   line-height: 1.45;
-                  padding: ${plain ? "8px 2px" : "12px"};
+                  padding: ${plain ? (!readOnly ? "8px 0" : "8px 2px") : "12px"};
                   padding-bottom: ${
-                    !readOnly && keyboardOpen ? CARET_BOTTOM_MARGIN + 24 : 12
+                    showToolbar && dockToolbarToKeyboard
+                      ? THOUGHTS_EDITOR_TOOLBAR_HEIGHT + 12
+                      : !readOnly && keyboardOpen
+                        ? CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT
+                        : 12
                   }px;
                   min-height: 100%;
                   box-sizing: border-box;
@@ -890,6 +1032,23 @@ function ThoughtsEditorInner(
                     font-weight: normal;
                     opacity: 0.92;
                   }
+                  .thought-title b,
+                  .thought-title strong,
+                  .thought-summary b,
+                  .thought-summary strong {
+                    font-family: 'QuicksandBold', sans-serif;
+                    font-weight: bold;
+                  }
+                  .thought-title i,
+                  .thought-title em,
+                  .thought-summary i,
+                  .thought-summary em {
+                    font-style: italic;
+                  }
+                  .thought-title u,
+                  .thought-summary u {
+                    text-decoration: underline;
+                  }
                   /* Class-driven placeholders survive backspace better than :empty */
                   .thought-title.is-placeholder::before,
                   .thought-summary.is-placeholder::before {
@@ -927,13 +1086,37 @@ function ThoughtsEditorInner(
                       }
                 }
                 onCursorPosition={
-                  readOnly ? undefined : () => scrollCaretIntoView()
+                  readOnly
+                    ? undefined
+                    : () => {
+                        tryApplyPendingFormat();
+                        scrollCaretIntoView();
+                      }
                 }
                 onMessage={handleEditorMessage}
               />
             )}
           </View>
+          {showToolbar && !dockToolbarToKeyboard ? (
+            <ThoughtsEditorToolbar
+              showTitles={showTitles}
+              showTitlesToggle={!effectiveSimplified}
+              onShowTitlesChange={handleShowTitlesChange}
+              activeFormats={activeFormats}
+              onFormat={handleFormat}
+            />
+          ) : null}
         </View>
+        {showToolbar && dockToolbarToKeyboard ? (
+          <ThoughtsEditorToolbar
+            dockToKeyboard
+            showTitles={showTitles}
+            showTitlesToggle={!effectiveSimplified}
+            onShowTitlesChange={handleShowTitlesChange}
+            activeFormats={activeFormats}
+            onFormat={handleFormat}
+          />
+        ) : null}
       </View>
 
       {!readOnly ? (

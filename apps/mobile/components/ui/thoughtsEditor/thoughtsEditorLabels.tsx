@@ -4,12 +4,23 @@ export function ThoughtsEditorContentLabel() {
   return <fbt desc="Thoughts editor field label">Content</fbt>;
 }
 
-export function ThoughtsEditorClearLabel() {
-  return <fbt desc="Thoughts editor clear content button">Clear</fbt>;
-}
-
 export function ThoughtsEditorTitlesToggleLabel() {
   return <fbt desc="Thoughts editor show titles toggle">Titles</fbt>;
+}
+
+export function thoughtsEditorBoldAccessibilityLabel() {
+  return fbs("Bold", "Accessibility label for bold formatting button");
+}
+
+export function thoughtsEditorItalicAccessibilityLabel() {
+  return fbs("Italic", "Accessibility label for italic formatting button");
+}
+
+export function thoughtsEditorUnderlineAccessibilityLabel() {
+  return fbs(
+    "Underline",
+    "Accessibility label for underline formatting button"
+  );
 }
 
 export function thoughtsEditorShowTitlesAccessibilityLabel() {

@@ -16,7 +16,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     if (typeof window.__mcShowTitles !== "boolean") {
       window.__mcShowTitles = false;
     }
-    var CATEGORY_FADE_MS = 5000;
+    var CATEGORY_FADE_MS = 3000;
     var COLLAPSE_TRANSITION_MS = 380;
 
     function emptyTitledFieldsHtml() {
@@ -1009,7 +1009,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   if (!content || window.__mcCategoryCollapseInstalled) return true;
   window.__mcCategoryCollapseInstalled = true;
 
-  var CATEGORY_FADE_MS = 5000;
+  var CATEGORY_FADE_MS = 3000;
   var COLLAPSE_TRANSITION_MS = 380;
 
   function closest(node, predicate) {
