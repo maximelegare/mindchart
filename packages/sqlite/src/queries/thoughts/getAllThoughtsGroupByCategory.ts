@@ -11,6 +11,8 @@ type CategoryThoughtRow = {
   createdAt: string;
   categoryId: string;
   noteId: string;
+  isCompletable: boolean;
+  isCompleted: boolean;
 };
 
 export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
@@ -28,6 +30,8 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         thought_created_at: ThoughtTable.createdAt,
         thought_note_id: ThoughtTable.noteId,
         thought_category_id: ThoughtTable.categoryId,
+        thought_is_completable: ThoughtTable.isCompletable,
+        thought_is_completed: ThoughtTable.isCompleted,
       })
       .from(ThoughtTable)
       .innerJoin(CategoryTable, eq(ThoughtTable.categoryId, CategoryTable.id));
@@ -55,6 +59,8 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         createdAt: row.thought_created_at,
         categoryId: row.thought_category_id,
         noteId: row.thought_note_id,
+        isCompletable: Boolean(row.thought_is_completable),
+        isCompleted: Boolean(row.thought_is_completed),
       };
 
       const existing = categoriesById.get(row.category_id);

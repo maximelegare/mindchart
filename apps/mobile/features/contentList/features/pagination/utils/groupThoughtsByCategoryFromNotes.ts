@@ -17,6 +17,8 @@ export type CategoryThoughtGroup = {
     categoryId: string;
     noteId?: string;
     createdAt?: string | null;
+    isCompletable: boolean;
+    isCompleted: boolean;
   }[];
 };
 
@@ -55,6 +57,8 @@ export const groupThoughtsByCategoryFromNotes = (
         categoryId,
         noteId: thought.noteId ?? note.id,
         createdAt: thought.createdAt ?? null,
+        isCompletable: thought.isCompletable ?? false,
+        isCompleted: thought.isCompleted ?? false,
       });
       if (
         thought.createdAt &&

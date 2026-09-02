@@ -24,6 +24,8 @@ import {
   thoughtsEditorItalicAccessibilityLabel,
   thoughtsEditorShowTitlesAccessibilityLabel,
   thoughtsEditorUnderlineAccessibilityLabel,
+  thoughtsEditorBulletAccessibilityLabel,
+  thoughtsEditorChecklistAccessibilityLabel,
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
@@ -38,6 +40,8 @@ type ThoughtsEditorToolbarProps = {
   onShowTitlesChange: (next: boolean) => void;
   activeFormats: Record<FormatCommand, boolean>;
   onFormat: (command: FormatCommand) => void;
+  isChecklist: boolean;
+  onListTypeChange: (completable: boolean) => void;
 };
 
 function FormatButton({
@@ -74,6 +78,8 @@ function ToolbarContent({
   onShowTitlesChange,
   activeFormats,
   onFormat,
+  isChecklist,
+  onListTypeChange,
 }: Omit<ThoughtsEditorToolbarProps, "dockToKeyboard">) {
   const { colorScheme } = useColorScheme();
 
@@ -100,6 +106,26 @@ function ToolbarContent({
           active={activeFormats.underline}
           label={thoughtsEditorUnderlineAccessibilityLabel()}
           onPress={() => onFormat("underline")}
+        />
+        <View
+          style={{
+            width: StyleSheet.hairlineWidth,
+            height: 20,
+            marginHorizontal: 4,
+            backgroundColor: hsl("input", colorScheme),
+          }}
+        />
+        <FormatButton
+          icon="list"
+          active={!isChecklist}
+          label={thoughtsEditorBulletAccessibilityLabel()}
+          onPress={() => onListTypeChange(false)}
+        />
+        <FormatButton
+          icon="square"
+          active={isChecklist}
+          label={thoughtsEditorChecklistAccessibilityLabel()}
+          onPress={() => onListTypeChange(true)}
         />
       </View>
       {showTitlesToggle ? (

@@ -38,6 +38,8 @@ export const seedFormatNote = (
       thoughtId,
       categoryId: categoryId.toLowerCase(),
       createdAt: new Date().toISOString(),
+      isCompletable: false,
+      isCompleted: false,
     };
   });
 

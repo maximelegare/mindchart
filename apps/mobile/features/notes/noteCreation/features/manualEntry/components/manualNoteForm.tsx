@@ -54,6 +54,8 @@ const mapThoughtToFormValue = (thought: Thought, noteId: string) => ({
   noteId: thought.noteId ?? noteId,
   categoryId: thought.categoryId ?? "uncategorized",
   thoughtId: thought.thoughtId ?? thought.id,
+  isCompletable: thought.isCompletable ?? false,
+  isCompleted: thought.isCompleted ?? false,
 });
 
 const buildFormDefaultValues = (

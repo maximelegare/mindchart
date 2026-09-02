@@ -9,6 +9,8 @@ export type ThoughtsFormValue = {
   noteId: string;
   categoryId: string;
   thoughtId: string;
+  isCompletable: boolean;
+  isCompleted: boolean;
 };
 
 export type ThoughtsEditorFormValues = {
@@ -26,5 +28,7 @@ export const createEmptyThought = (noteId: string): ThoughtsFormValue => {
     noteId,
     categoryId: "uncategorized",
     thoughtId,
+    isCompletable: false,
+    isCompleted: false,
   };
 };

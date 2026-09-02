@@ -30,6 +30,20 @@ export function thoughtsEditorShowTitlesAccessibilityLabel() {
   );
 }
 
+export function thoughtsEditorBulletAccessibilityLabel() {
+  return fbs(
+    "Bullet list",
+    "Accessibility label for bullet thought type button"
+  );
+}
+
+export function thoughtsEditorChecklistAccessibilityLabel() {
+  return fbs(
+    "Checklist",
+    "Accessibility label for checklist thought type button"
+  );
+}
+
 export type ThoughtFieldPlaceholders = {
   title: string;
   summary: string;

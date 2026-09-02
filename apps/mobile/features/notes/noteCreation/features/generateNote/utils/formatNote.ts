@@ -40,6 +40,8 @@ export const formatNote = (
         (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtSummary,
       categoryId: categoryId.toLowerCase(),
       createdAt: new Date().toISOString(),
+      isCompletable: false,
+      isCompleted: false,
     };
   });
 

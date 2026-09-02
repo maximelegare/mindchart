@@ -59,6 +59,8 @@ const mapThoughtToFormValue = (
     noteId: string;
     categoryId: string;
     thoughtId: string;
+    isCompletable?: boolean;
+    isCompleted?: boolean;
   },
   noteId: string
 ): ThoughtsFormValue => ({
@@ -70,6 +72,8 @@ const mapThoughtToFormValue = (
   noteId: thought.noteId ?? noteId,
   categoryId: thought.categoryId ?? "uncategorized",
   thoughtId: thought.thoughtId ?? thought.id,
+  isCompletable: thought.isCompletable ?? false,
+  isCompleted: thought.isCompleted ?? false,
 });
 
 type NoteDetailsContentProps = {
@@ -106,6 +110,10 @@ function NoteDetailsContent({
   const { editNoteAction } = useEditNote();
   const { saveNewNote } = useSaveNewNote();
   const { useFetchAllCategoriesQuery } = useControllers().categories;
+  const { useUpdateThoughtCompletionMutation } =
+    useControllers().notesAndThoughts;
+  const { mutate: persistThoughtCompletion } =
+    useUpdateThoughtCompletionMutation();
   const { data: categoriesData } = useFetchAllCategoriesQuery();
   const { colorScheme } = useColorScheme();
   const [titleRequiredError, setTitleRequiredError] = React.useState(false);
@@ -401,6 +409,10 @@ function NoteDetailsContent({
             plain
             simplified={simplified}
             dockToolbarToKeyboard
+            onToggleCompleted={({ id, isCompleted }) => {
+              if (isEditing || isNew) return;
+              persistThoughtCompletion({ id, isCompleted });
+            }}
           />
         </View>
       </View>

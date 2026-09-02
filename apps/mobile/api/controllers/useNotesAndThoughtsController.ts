@@ -30,6 +30,7 @@ import { fetchPaginatedNotes } from "@/api/endpoints/paginatedNotes";
 import {
   deleteThoughtsByIds,
   fetchAllThoughtsWithEmbeddings,
+  updateThoughtCompletion,
 } from "@/api/endpoints/thoughts";
 import { invalidateNotesAndThoughtsQueries } from "@/api/utils/invalidateNotesAndThoughtsQueries";
 import { useGraphController } from "./useGraphController";
@@ -339,6 +340,13 @@ export const useNotesAndThoughtsController = () => {
     });
   };
 
+  const useUpdateThoughtCompletionMutation = () => {
+    return useMutation({
+      mutationKey: [REACT_QUERY_KEYS.updateThoughtCompletion],
+      mutationFn: updateThoughtCompletion,
+    });
+  };
+
   return {
     useGenerateNoteMutation,
     useInsertNoteAndThoughtsMutation,
@@ -349,6 +357,7 @@ export const useNotesAndThoughtsController = () => {
     useFetchNoteDetails,
     useSeedDatabaseMutation,
     useUpdateNoteAndThoughtsMutation,
+    useUpdateThoughtCompletionMutation,
     useDeleteThoughtsByIdsMutation,
     useDeleteNoteByIdMutation,
     useUpdateNoteFolderIdMutation,

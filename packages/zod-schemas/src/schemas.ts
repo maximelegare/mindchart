@@ -68,6 +68,12 @@ export type CategoryWithThoughtsInfos = z.infer<
   typeof CategoryWithThoughtsInfosSchema
 >;
 
+/** SQLite json_object emits 0/1 for boolean columns. */
+const sqliteBoolean = z.preprocess(
+  (value) => value === true || value === 1 || value === "1" || value === "true",
+  z.boolean()
+);
+
 export const ThoughtSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -80,6 +86,8 @@ export const ThoughtSchema = z.object({
   categoryId: z.string(),
   thoughtId: z.string(),
   createdAt: z.string().nullable(),
+  isCompletable: sqliteBoolean,
+  isCompleted: sqliteBoolean,
 });
 
 export const EmbeddingSchema = z.object({

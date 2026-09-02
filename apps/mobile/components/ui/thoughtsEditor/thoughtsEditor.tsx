@@ -31,11 +31,14 @@ import {
 import {
   BULLET_EDITOR_GUARD_SCRIPT,
   CATEGORY_COLLAPSE_SCRIPT,
+  CHECKLIST_SCRIPT,
   GRAPH_BUTTON_CLICK_SCRIPT,
   REFRESH_CATEGORY_TIMERS_SCRIPT,
+  SYNC_CHECKLIST_LAYOUT_SCRIPT,
   clearThoughtValidationErrorsScript,
   setShowTitlesScript,
   setSimplifiedModeScript,
+  setThoughtListTypeScript,
   setThoughtValidationErrorsScript,
 } from "./bulletEditorScript";
 import {
@@ -248,6 +251,8 @@ type ThoughtsEditorProps = {
   simplified?: boolean;
   /** Dock the format toolbar to the keyboard (note details). */
   dockToolbarToKeyboard?: boolean;
+  /** Persist completion when the checkbox is toggled in view mode. */
+  onToggleCompleted?: (thought: { id: string; isCompleted: boolean }) => void;
 };
 
 export type ThoughtsEditorHandle = {
@@ -266,6 +271,7 @@ function ThoughtsEditorInner(
     plain = false,
     simplified = false,
     dockToolbarToKeyboard = false,
+    onToggleCompleted,
   }: ThoughtsEditorProps,
   ref: React.ForwardedRef<ThoughtsEditorHandle>
 ) {
@@ -285,6 +291,7 @@ function ThoughtsEditorInner(
     italic: false,
     underline: false,
   });
+  const [caretIsChecklist, setCaretIsChecklist] = React.useState(false);
   const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
@@ -514,8 +521,10 @@ function ThoughtsEditorInner(
     if (showGraphButtons) {
       richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
     }
+    richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
+      richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
     });
   }, [
     applyEditorFlags,
@@ -545,6 +554,7 @@ function ThoughtsEditorInner(
     // setContentHTML does not fire the WebView input listener.
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
+      richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
     });
   }, []);
 
@@ -624,6 +634,11 @@ function ThoughtsEditorInner(
     },
     []
   );
+
+  const handleListType = React.useCallback((completable: boolean) => {
+    setCaretIsChecklist(completable);
+    richRef.current?.injectJavascript(setThoughtListTypeScript(completable));
+  }, []);
 
   const handleShowTitlesChange = React.useCallback(
     (nextShowTitles: boolean) => {
@@ -705,6 +720,69 @@ function ThoughtsEditorInner(
         });
         return;
       }
+      if (message.type === "CARET_LIST_TYPE") {
+        const completable = Boolean(
+          (message.data as { completable?: boolean } | undefined)?.completable
+        );
+        setCaretIsChecklist(completable);
+        return;
+      }
+      if (message.type === "LIST_TYPE") {
+        const payload = message.data as
+          | { index?: number; completable?: boolean }
+          | undefined;
+        const index = Number(payload?.index);
+        const completable = Boolean(payload?.completable);
+        if (!Number.isFinite(index) || index < 0) return;
+        setCaretIsChecklist(completable);
+        const previous = getValues("thoughts");
+        const current = previous[index];
+        if (!current) return;
+        setValue(
+          "thoughts",
+          previous.map((thought, thoughtIndex) =>
+            thoughtIndex === index
+              ? {
+                  ...thought,
+                  isCompletable: completable,
+                  isCompleted: completable ? thought.isCompleted : false,
+                }
+              : thought
+          ),
+          { shouldDirty: true }
+        );
+        return;
+      }
+      if (message.type === "TOGGLE_COMPLETED") {
+        const payload = message.data as
+          | { index?: number; completed?: boolean }
+          | undefined;
+        const index = Number(payload?.index);
+        const completed = Boolean(payload?.completed);
+        if (!Number.isFinite(index) || index < 0) return;
+        const previous = getValues("thoughts");
+        const current = previous[index];
+        if (!current) return;
+        const nextThought = {
+          ...current,
+          isCompletable: true,
+          isCompleted: completed,
+        };
+        setValue(
+          "thoughts",
+          previous.map((thought, thoughtIndex) =>
+            thoughtIndex === index ? nextThought : thought
+          ),
+          { shouldDirty: !readOnly }
+        );
+        if (readOnly) {
+          onToggleCompleted?.({
+            id: nextThought.id,
+            isCompleted: completed,
+          });
+        }
+        return;
+      }
       if (readOnly || message.type !== "SELECT_CATEGORY") return;
       const index = Number(message.data);
       if (!Number.isFinite(index) || index < 0) return;
@@ -712,7 +790,7 @@ function ThoughtsEditorInner(
       Keyboard.dismiss();
       setCategoryPickerIndex(index);
     },
-    [push, readOnly]
+    [getValues, onToggleCompleted, push, readOnly, setValue]
   );
 
   const handleSelectCategory = React.useCallback(
@@ -902,6 +980,9 @@ function ThoughtsEditorInner(
                     padding-left: 22px;
                     padding-right: ${showGraphButtons ? "40px" : "0"};
                   }
+                  li.thought-item.is-checklist.is-single-line:not(.has-title) {
+                    padding-right: ${showGraphButtons ? "68px" : "28px"};
+                  }
                   .thought-rail {
                     position: absolute;
                     left: 0;
@@ -912,6 +993,60 @@ function ThoughtsEditorInner(
                     user-select: none;
                     -webkit-user-select: none;
                     z-index: 2;
+                  }
+                  .thought-check {
+                    display: none;
+                    position: absolute;
+                    z-index: 4;
+                    width: 32px;
+                    height: 32px;
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    background: transparent;
+                    color: ${textColor};
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    align-items: center;
+                    justify-content: center;
+                  }
+                  li.thought-item.is-checklist .thought-check {
+                    display: flex;
+                  }
+                  .thought-check-box {
+                    display: block;
+                    box-sizing: border-box;
+                    width: 16px;
+                    height: 16px;
+                    border: 1.5px solid currentColor;
+                    border-radius: 3px;
+                    position: relative;
+                    opacity: 0.72;
+                  }
+                  li.thought-item.is-completed .thought-check-box {
+                    background: currentColor;
+                    opacity: 0.88;
+                  }
+                  li.thought-item.is-completed .thought-check-box::after {
+                    content: "";
+                    position: absolute;
+                    left: 4px;
+                    top: 1px;
+                    width: 5px;
+                    height: 9px;
+                    border: solid ${plain ? hsl("card", colorScheme) : backgroundColor};
+                    border-width: 0 1.5px 1.5px 0;
+                    transform: rotate(45deg);
+                  }
+                  li.thought-item.is-completed .thought-title,
+                  li.thought-item.is-completed .thought-summary {
+                    text-decoration: line-through;
+                    opacity: 0.55;
+                  }
+                  li.thought-item.is-completed .thought-title u,
+                  li.thought-item.is-completed .thought-summary u {
+                    text-decoration: underline line-through;
                   }
                   .thought-stripe {
                     position: absolute;
@@ -1104,6 +1239,8 @@ function ThoughtsEditorInner(
               onShowTitlesChange={handleShowTitlesChange}
               activeFormats={activeFormats}
               onFormat={handleFormat}
+              isChecklist={caretIsChecklist}
+              onListTypeChange={handleListType}
             />
           ) : null}
         </View>
@@ -1115,6 +1252,8 @@ function ThoughtsEditorInner(
             onShowTitlesChange={handleShowTitlesChange}
             activeFormats={activeFormats}
             onFormat={handleFormat}
+            isChecklist={caretIsChecklist}
+            onListTypeChange={handleListType}
           />
         ) : null}
       </View>

@@ -12,6 +12,8 @@ export const insertThoughtsQuery = async (db: DB, data: Thought[]) => {
       semanticLabel: thought.semanticLabel,
       title: thought.title,
       summary: thought.summary,
+      isCompletable: thought.isCompletable ?? false,
+      isCompleted: thought.isCompleted ?? false,
       createdAt: thought.createdAt ?? new Date().toISOString(),
     });
 

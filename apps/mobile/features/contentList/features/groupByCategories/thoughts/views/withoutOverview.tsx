@@ -32,6 +32,8 @@ export const ThoughtsListGroupByCategoriesWithoutOverviewFeature = () => {
               {...thought}
               createdAt={thought.createdAt ?? null}
               noteId={thought.noteId ?? ""}
+              isCompletable={thought.isCompletable ?? false}
+              isCompleted={thought.isCompleted ?? false}
             />
           ))}
         </CategorySection>

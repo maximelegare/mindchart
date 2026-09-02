@@ -64,6 +64,8 @@ export const parseNoteAndThoughts = (
       title: thought.title ?? "",
       summary: thought.summary ?? "",
       semanticLabel: thought.semanticLabel ?? "",
+      isCompletable: Boolean(thought.isCompletable),
+      isCompleted: Boolean(thought.isCompleted),
     })),
   }));
 
