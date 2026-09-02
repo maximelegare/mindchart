@@ -122,7 +122,7 @@ function ToolbarContent({
           onPress={() => onListTypeChange(false)}
         />
         <FormatButton
-          icon="square"
+          icon="square-check"
           active={isChecklist}
           label={thoughtsEditorChecklistAccessibilityLabel()}
           onPress={() => onListTypeChange(true)}
