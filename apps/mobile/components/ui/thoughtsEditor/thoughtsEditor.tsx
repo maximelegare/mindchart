@@ -134,6 +134,22 @@ function buildCategoryColorCss(categories: Category[]): string {
     .join("\n");
 }
 
+function setCategoryColorCssScript(css: string): string {
+  return `
+(function () {
+  var id = "mindchart-category-colors";
+  var style = document.getElementById(id);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    (document.head || document.documentElement).appendChild(style);
+  }
+  style.textContent = ${JSON.stringify(css)};
+  true;
+})();
+`;
+}
+
 type CategoryListItemProps = {
   item: Category;
   label: string;
@@ -286,6 +302,8 @@ function ThoughtsEditorInner(
     () => buildCategoryColorCss(categories),
     [categories]
   );
+  const categoryColorsCssRef = React.useRef(categoryColorsCss);
+  categoryColorsCssRef.current = categoryColorsCss;
   const { ref: categorySheetRef, close: closeCategorySheet } = useBottomSheet();
 
   const thoughts = watch("thoughts");
@@ -386,6 +404,15 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
   }, []);
 
+  const applyCategoryColors = React.useCallback((css: string) => {
+    if (!css) return;
+    richRef.current?.injectJavascript(setCategoryColorCssScript(css));
+  }, []);
+
+  React.useEffect(() => {
+    applyCategoryColors(categoryColorsCss);
+  }, [applyCategoryColors, categoryColorsCss, fontFaceCss]);
+
   const applySimplifiedMode = React.useCallback((nextSimplified: boolean) => {
     richRef.current?.injectJavascript(
       setSimplifiedModeScript(nextSimplified, borderColorRef.current)
@@ -396,6 +423,7 @@ function ThoughtsEditorInner(
     // Apply simplified before collapse timers so plain bullets never animate.
     applyEditorFlags(showTitlesRef.current);
     applySimplifiedMode(simplifiedRef.current);
+    applyCategoryColors(categoryColorsCssRef.current);
     richRef.current?.registerToolbar((items) => {
       const has = (action: string) =>
         items.some(
@@ -426,6 +454,7 @@ function ThoughtsEditorInner(
   }, [
     applyEditorFlags,
     applySimplifiedMode,
+    applyCategoryColors,
     readOnly,
     showGraphButtons,
     thoughtPlaceholders,
