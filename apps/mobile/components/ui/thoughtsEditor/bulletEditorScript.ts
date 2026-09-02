@@ -973,6 +973,21 @@ export function setSimplifiedModeScript(
       .thought-stripe.is-bouncing {
         animation: none !important;
       }
+      li.thought-item.is-checklist .thought-stripe {
+        display: none !important;
+      }
+      li.thought-item.is-checklist .thought-check {
+        left: 7px !important;
+        right: auto !important;
+        top: 3px !important;
+        transition: none !important;
+      }
+      li.thought-item.is-checklist.is-single-line:not(.has-title) {
+        padding-right: 40px !important;
+      }
+      li.thought-item.is-checklist.is-single-line:not(.has-title):not(.has-graph) {
+        padding-right: 0 !important;
+      }
     `
     : "";
 
@@ -1010,6 +1025,9 @@ export function setSimplifiedModeScript(
 
   if (!window.__mcSimplified && typeof window.__mcRefreshCategoryTimers === "function") {
     window.__mcRefreshCategoryTimers();
+  }
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
   }
   return true;
 })();
@@ -1316,7 +1334,11 @@ export const CHECKLIST_SCRIPT = `
       return;
     }
 
-    if (singleLine) {
+    if (window.__mcSimplified) {
+      check.style.left = "7px";
+      check.style.right = "auto";
+      check.style.top = "3px";
+    } else if (singleLine) {
       check.style.left = "auto";
       check.style.right = graph ? "32px" : "0px";
       check.style.top = "8px";
