@@ -548,27 +548,51 @@ function ThoughtsEditorInner(
     });
   }, []);
 
-  // View mode only installs collapse chrome; install the Enter/backspace guard when editing.
+  const wasEditingRef = React.useRef(!readOnly);
+
+  // Entering edit installs the guard and drops graph chrome. Leaving edit
+  // rebuilds HTML so graph buttons come back.
   React.useEffect(() => {
-    if (readOnly) return;
-    // Set titles flag before the guard installs/normalizes, or titles get stripped.
-    applyEditorFlags(showTitles);
-    applySimplifiedMode(false);
-    richRef.current?.injectJavascript(
-      buildThoughtPlaceholdersScript(thoughtPlaceholders)
-    );
-    richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+    if (!readOnly) {
+      wasEditingRef.current = true;
+      applyEditorFlags(showTitles);
+      applySimplifiedMode(false);
+      richRef.current?.injectJavascript(
+        buildThoughtPlaceholdersScript(thoughtPlaceholders)
+      );
+      richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+      richRef.current?.setContentHTML(
+        thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
+      );
+      refreshCategoryTimers();
+      return;
+    }
+
+    if (!wasEditingRef.current) return;
+    wasEditingRef.current = false;
+
+    const titles = simplifiedRef.current ? false : showTitlesRef.current;
+    applyEditorFlags(titles);
+    applySimplifiedMode(simplifiedRef.current);
     richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
+      thoughtsToHtml(getValues("thoughts"), titles, htmlOptions)
     );
+    richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
+    if (showGraphButtons) {
+      richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
+    }
+    applyCategoryColors(categoryColorsCssRef.current);
     refreshCategoryTimers();
-    // Intentionally keyed on edit entry only (readOnly / graph chrome), not Titles toggle.
   }, [
+    applyCategoryColors,
     applyEditorFlags,
     applySimplifiedMode,
+    getValues,
+    htmlOptions,
     readOnly,
     refreshCategoryTimers,
-    htmlOptions,
+    showGraphButtons,
+    showTitles,
     thoughtPlaceholders,
   ]);
 
