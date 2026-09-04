@@ -22,6 +22,7 @@ import {
 } from "@/features/notes/noteDetails/noteDetailsLabels";
 import { Person } from "@repo/zod-schemas";
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
 
 type NoteDetailsFeatureProps = {
   isPending: boolean;
@@ -30,7 +31,6 @@ type NoteDetailsFeatureProps = {
   onEditingChange: (editing: boolean) => void;
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
-  simplified?: boolean;
   /** Current folder from the header selector (preferred over stale note data). */
   folderId?: string | null;
   persons?: Person[];
@@ -82,7 +82,6 @@ type NoteDetailsContentProps = {
   onEditingChange: (editing: boolean) => void;
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
-  simplified: boolean;
   folderId: string | null;
   persons: Person[];
   feeling: FeelingValue | null;
@@ -98,7 +97,6 @@ function NoteDetailsContent({
   onEditingChange,
   saveActionRef,
   onSavingChange,
-  simplified,
   folderId,
   persons,
   feeling,
@@ -117,6 +115,7 @@ function NoteDetailsContent({
   const { mutate: persistThoughtCompletion } =
     useUpdateThoughtCompletionMutation();
   const { mutate: persistThoughtCategory } = useUpdateThoughtCategoryMutation();
+  const simplified = useNoteDetailsViewStore((state) => state.simplified);
   const { data: categoriesData } = useFetchAllCategoriesQuery();
   const { colorScheme } = useColorScheme();
   const [titleRequiredError, setTitleRequiredError] = React.useState(false);
@@ -456,7 +455,6 @@ export const NoteDetailsFeature = ({
   onEditingChange,
   saveActionRef,
   onSavingChange,
-  simplified = false,
   folderId = null,
   persons = [],
   feeling = null,
@@ -477,7 +475,6 @@ export const NoteDetailsFeature = ({
       onEditingChange={onEditingChange}
       saveActionRef={saveActionRef}
       onSavingChange={onSavingChange}
-      simplified={simplified}
       folderId={folderId ?? noteRow.folderId ?? null}
       persons={persons}
       feeling={feeling}

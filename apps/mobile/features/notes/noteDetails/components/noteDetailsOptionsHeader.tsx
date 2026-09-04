@@ -14,10 +14,8 @@ import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/
 import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
 import { Person } from "@repo/zod-schemas";
 import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
-import {
-  NoteDetailsCompleteViewLabel,
-  NoteDetailsSimplifiedViewLabel,
-} from "@/features/notes/noteDetails/noteDetailsLabels";
+import { NoteDetailsViewModeChipLabel } from "@/features/notes/noteDetails/noteDetailsLabels";
+import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
 
 type NoteDetailsOptionsHeaderProps = {
   folder: FolderSelection;
@@ -29,8 +27,6 @@ type NoteDetailsOptionsHeaderProps = {
   locationId: string | null;
   locationName: string | null;
   onLocationChange: (location: Location | null) => void;
-  simplified: boolean;
-  onSimplifiedChange: (simplified: boolean) => void;
   folderError?: boolean;
 };
 
@@ -44,11 +40,13 @@ export function NoteDetailsOptionsHeader({
   locationId,
   locationName,
   onLocationChange,
-  simplified,
-  onSimplifiedChange,
   folderError = false,
 }: NoteDetailsOptionsHeaderProps) {
   const [expanded, setExpanded] = useState(false);
+  const simplified = useNoteDetailsViewStore((state) => state.simplified);
+  const toggleSimplified = useNoteDetailsViewStore(
+    (state) => state.toggleSimplified
+  );
 
   return (
     <PageOptionsHeaderContainer
@@ -61,15 +59,8 @@ export function NoteDetailsOptionsHeader({
             >
               <OptionChip
                 icon="eye"
-                label={
-                  simplified ? (
-                    <NoteDetailsCompleteViewLabel />
-                  ) : (
-                    <NoteDetailsSimplifiedViewLabel />
-                  )
-                }
-                selected={simplified}
-                onPress={() => onSimplifiedChange(!simplified)}
+                label={<NoteDetailsViewModeChipLabel simplified={simplified} />}
+                onPress={toggleSimplified}
               />
             </View>
           </Gutter>
