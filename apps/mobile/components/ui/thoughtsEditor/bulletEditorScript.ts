@@ -986,7 +986,8 @@ true;
 /** Toggle simplified (plain bullets) chrome inside the editor WebView. */
 export function setSimplifiedModeScript(
   simplified: boolean,
-  borderColor: string
+  borderColor: string,
+  surfaceColor: string
 ): string {
   const css = simplified
     ? `
@@ -1035,11 +1036,29 @@ export function setSimplifiedModeScript(
       }
       li.thought-item {
         --category-stack: 0px !important;
+        padding-right: 0 !important;
       }
       li.thought-item.is-checklist .thought-check {
         left: 4px !important;
         right: auto !important;
         transition: none !important;
+        top: calc(
+          var(--category-stack, 0px) + var(--check-nudge, 2px)
+        ) !important;
+      }
+      .thought-check-box {
+        border-color: ${borderColor} !important;
+        background: ${surfaceColor} !important;
+      }
+      li.thought-item.is-completed .thought-check-box {
+        background-color: ${borderColor} !important;
+        border-color: ${borderColor} !important;
+      }
+      li.thought-item.is-completed .thought-check-box svg {
+        color: ${surfaceColor} !important;
+      }
+      .thought-graph {
+        display: none !important;
       }
     `
     : "";

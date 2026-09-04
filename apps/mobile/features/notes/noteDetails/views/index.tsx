@@ -430,7 +430,7 @@ function NoteDetailsContent({
             categories={categoriesData ?? []}
             defaultShowTitles={showTitles}
             readOnly={!isEditing}
-            showGraphButtons={!isEditing}
+            showGraphButtons={!isEditing && !simplified}
             plain
             simplified={simplified}
             dockToolbarToKeyboard

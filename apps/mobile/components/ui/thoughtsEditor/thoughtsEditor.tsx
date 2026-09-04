@@ -325,6 +325,12 @@ function ThoughtsEditorInner(
   simplifiedRef.current = effectiveSimplified;
   const borderColorRef = React.useRef(hsl("border", colorScheme));
   borderColorRef.current = hsl("border", colorScheme);
+  const surfaceColorRef = React.useRef(
+    plain ? hsl("background", colorScheme) : hsl("card", colorScheme)
+  );
+  surfaceColorRef.current = plain
+    ? hsl("background", colorScheme)
+    : hsl("card", colorScheme);
   const thoughtPlaceholders = React.useMemo(
     () => getThoughtFieldPlaceholders(),
     []
@@ -485,7 +491,11 @@ function ThoughtsEditorInner(
 
   const applySimplifiedMode = React.useCallback((nextSimplified: boolean) => {
     richRef.current?.injectJavascript(
-      setSimplifiedModeScript(nextSimplified, borderColorRef.current)
+      setSimplifiedModeScript(
+        nextSimplified,
+        borderColorRef.current,
+        surfaceColorRef.current
+      )
     );
   }, []);
 
@@ -719,11 +729,15 @@ function ThoughtsEditorInner(
     );
     refreshCategoryTimers();
     applySimplifiedMode(false);
+    if (showGraphButtons) {
+      richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
+    }
   }, [
     applyEditorFlags,
     applySimplifiedMode,
     effectiveSimplified,
     getValues,
+    htmlOptions,
     refreshCategoryTimers,
     showGraphButtons,
     showTitles,
