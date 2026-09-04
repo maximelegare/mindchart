@@ -44,10 +44,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
+          cache: yarn
 
       - name: 📦 Install dependencies
-        run: yarn install
+        run: yarn install --immutable
 
       - name: 🧪 Run TypeScript check
         run: yarn check-types
@@ -65,386 +65,176 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # =========================================================
-      # CHECKOUT
-      # =========================================================
+      # ------------------------------------------------------------
+      # Checkout
+      # ------------------------------------------------------------
 
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
-      # =========================================================
-      # INITIAL DISK DIAGNOSTICS
-      # =========================================================
+      # ------------------------------------------------------------
+      # Free as much runner disk as possible
+      # ------------------------------------------------------------
 
-      - name: 💾 Check initial disk space
+      - name: 🧹 Free runner disk space
         run: |
-          echo "========================================"
-          echo "INITIAL DISK SPACE"
-          echo "========================================"
+          set -eux
 
+          echo "===== BEFORE CLEANUP ====="
           df -h /
-
-          echo ""
-          echo "========================================"
-          echo "INODE USAGE"
-          echo "========================================"
-
           df -ih /
 
-          echo ""
-          echo "========================================"
-          echo "LARGEST ROOT DIRECTORIES"
-          echo "========================================"
+          echo "===== LARGE RUNNER DIRECTORIES ====="
+          sudo du -xhd1 / 2>/dev/null | sort -h | tail -20 || true
 
-          sudo du -xhd1 / 2>/dev/null | sort -h | tail -20
-
-          echo ""
-          echo "========================================"
-          echo "ANDROID SDK"
-          echo "========================================"
-
-          sudo du -sh /usr/local/lib/android/sdk/* 2>/dev/null | sort -h || true
-
-      # =========================================================
-      # FREE DISK SPACE
-      # =========================================================
-
-      - name: 🧹 Free disk space
-        run: |
-          set -e
-
-          echo "========================================"
-          echo "REMOVING UNUSED RUNNER SOFTWARE"
-          echo "========================================"
+          echo "===== REMOVE UNUSED SOFTWARE ====="
 
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/share/powershell
-
-          echo ""
-          echo "========================================"
-          echo "CLEANING DOCKER"
-          echo "========================================"
-
-          sudo docker system prune -af || true
-
-          echo ""
-          echo "========================================"
-          echo "CLEANING USER CACHES"
-          echo "========================================"
-
-          rm -rf ~/.cache
-          rm -rf ~/.npm
-
-          echo ""
-          echo "========================================"
-          echo "CLEANING GRADLE"
-          echo "========================================"
-
-          rm -rf ~/.gradle/caches
-          rm -rf ~/.gradle/wrapper
-          rm -rf ~/.gradle/daemon
-
-          echo ""
-          echo "========================================"
-          echo "CLEANING ANDROID EMULATOR"
-          echo "========================================"
-
+          sudo rm -rf /usr/local/share/chromium
           sudo rm -rf /usr/local/lib/android/sdk/system-images
           sudo rm -rf /usr/local/lib/android/sdk/emulator
 
-          echo ""
-          echo "========================================"
-          echo "CLEANING TEMPORARY FILES"
-          echo "========================================"
+          echo "===== CLEAN DOCKER ====="
 
-          sudo rm -rf /tmp/*
-          sudo rm -rf /var/tmp/*
+          sudo docker system prune -af --volumes || true
 
-          echo ""
-          echo "========================================"
-          echo "DISK AFTER CLEANUP"
-          echo "========================================"
+          echo "===== CLEAN USER CACHES ====="
+
+          rm -rf ~/.cache || true
+          rm -rf ~/.npm || true
+
+          echo "===== CLEAN GRADLE TEMPORARY STATE ====="
+
+          rm -rf ~/.gradle/daemon || true
+          rm -rf ~/.gradle/notifications || true
+          rm -rf ~/.gradle/native || true
+
+          echo "===== CLEAN TEMP ====="
+
+          sudo find /tmp -mindepth 1 -maxdepth 1 -exec rm -rf {} + || true
+          sudo find /var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf {} + || true
+
+          echo "===== AFTER CLEANUP ====="
 
           df -h /
-
-          echo ""
-          echo "========================================"
-          echo "INODES AFTER CLEANUP"
-          echo "========================================"
-
           df -ih /
 
-      # =========================================================
-      # DISK CHECK
-      # =========================================================
-
-      - name: 💾 Check disk after cleanup
-        run: |
-          echo "========================================"
-          echo "FILESYSTEM"
-          echo "========================================"
-
-          df -h /
-
-          echo ""
-          echo "========================================"
-          echo "LARGEST ROOT DIRECTORIES"
-          echo "========================================"
-
-          sudo du -xhd1 / 2>/dev/null | sort -h | tail -20
-
-          echo ""
-          echo "========================================"
-          echo "ANDROID SDK"
-          echo "========================================"
-
-          sudo du -sh /usr/local/lib/android/sdk/* 2>/dev/null | sort -h || true
-
-          echo ""
-          echo "========================================"
-          echo "TMP"
-          echo "========================================"
-
-          sudo du -sh /tmp 2>/dev/null || true
-          sudo du -sh /var/tmp 2>/dev/null || true
-
-      # =========================================================
-      # NODE
-      # =========================================================
+      # ------------------------------------------------------------
+      # Node
+      # ------------------------------------------------------------
 
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
-
-      # =========================================================
-      # DEPENDENCIES
-      # =========================================================
+          cache: yarn
 
       - name: 📦 Install dependencies
-        run: yarn install
+        run: yarn install --immutable
 
-      - name: 💾 Check disk after dependency installation
+      # ------------------------------------------------------------
+      # Android / Gradle
+      # ------------------------------------------------------------
+
+      - name: 🧹 Configure Gradle
         run: |
-          echo "========================================"
-          echo "FILESYSTEM"
-          echo "========================================"
+          mkdir -p ~/.gradle
 
-          df -h /
+          cat > ~/.gradle/gradle.properties <<'EOF'
+          org.gradle.daemon=false
+          org.gradle.caching=true
+          org.gradle.parallel=false
+          org.gradle.configureondemand=false
+          org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m
+          EOF
 
-          echo ""
-          echo "========================================"
-          echo "NODE MODULES"
-          echo "========================================"
+          cat ~/.gradle/gradle.properties
 
-          du -sh node_modules 2>/dev/null || true
-          du -sh apps/mobile/node_modules 2>/dev/null || true
+      # ------------------------------------------------------------
+      # Restrict Android native builds to ARM64
+      # ------------------------------------------------------------
 
-          echo ""
-          echo "========================================"
-          echo "GRADLE"
-          echo "========================================"
+      - name: 📱 Configure Android architecture
+        run: |
+          echo "Using ARM64 Android build"
 
-          du -sh ~/.gradle 2>/dev/null || true
+          echo "ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a" >> "$GITHUB_ENV"
 
-          echo ""
-          echo "========================================"
-          echo "TMP"
-          echo "========================================"
-
-          du -sh /tmp 2>/dev/null || true
-          du -sh /var/tmp 2>/dev/null || true
-
-      # =========================================================
-      # EAS CLI
-      # =========================================================
-
-      - name: 📦 Install EAS CLI
-        run: npm install -g eas-cli@latest
-
-      - name: 🔄 Verify EAS CLI
-        run: eas --version
-
-      # =========================================================
-      # ANDROID CREDENTIALS
-      # =========================================================
+      # ------------------------------------------------------------
+      # Restore signing key
+      # ------------------------------------------------------------
 
       - name: 🔑 Restore Android Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" |
             base64 --decode > apps/mobile/MindChart.keystore
 
+      # ------------------------------------------------------------
+      # Generate credentials
+      # ------------------------------------------------------------
+
       - name: 📝 Create local credentials.json
         working-directory: apps/mobile
-        run: |
-          echo '{
-            "android": {
-              "keystore": {
-                "keystorePath": "./MindChart.keystore",
-                "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
-                "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
-                "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
-              }
-            }
-          }' > credentials.json
         env:
           EAS_BUILD_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
           EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-
-      # =========================================================
-      # GRADLE CONFIGURATION
-      # =========================================================
-
-      - name: 🧹 Prepare Gradle for CI
         run: |
-          rm -rf ~/.gradle/caches
-          rm -rf ~/.gradle/daemon
-
-          mkdir -p ~/.gradle
-
-          cat > ~/.gradle/gradle.properties <<'EOF'
-          org.gradle.daemon=false
-          org.gradle.caching=false
-          org.gradle.parallel=false
-          org.gradle.configureondemand=false
+          cat > credentials.json <<EOF
+          {
+            "android": {
+              "keystore": {
+                "keystorePath": "./MindChart.keystore",
+                "keystorePassword": "${EAS_BUILD_KEYSTORE_PASSWORD}",
+                "keyAlias": "${EAS_BUILD_KEYSTORE_ALIAS}",
+                "keyPassword": "${EAS_BUILD_KEY_PASSWORD}"
+              }
+            }
+          }
           EOF
 
-          echo "========================================"
-          echo "GRADLE CONFIGURATION"
-          echo "========================================"
+      # ------------------------------------------------------------
+      # Expo prebuild
+      # ------------------------------------------------------------
 
-          cat ~/.gradle/gradle.properties
-
-          echo ""
-          echo "========================================"
-          echo "DISK"
-          echo "========================================"
-
-          df -h /
-
-      # =========================================================
-      # FINAL DISK CHECK BEFORE BUILD
-      # =========================================================
-
-      - name: 💾 Check disk before Android build
+      - name: ⚙️ Generate Android project
+        working-directory: apps/mobile
+        env:
+          NODE_ENV: production
         run: |
-          echo "========================================"
-          echo "DISK BEFORE ANDROID BUILD"
-          echo "========================================"
+          npx expo prebuild \
+            --platform android \
+            --non-interactive \
+            --no-install
 
+      # ------------------------------------------------------------
+      # Check disk before Gradle
+      # ------------------------------------------------------------
+
+      - name: 💾 Check disk before Gradle
+        run: |
+          echo "===== DISK ====="
           df -h /
-
-          echo ""
-          echo "========================================"
-          echo "INODES"
-          echo "========================================"
-
           df -ih /
 
-          echo ""
-          echo "========================================"
-          echo "GRADLE"
-          echo "========================================"
-
+          echo "===== GRADLE ====="
           du -sh ~/.gradle 2>/dev/null || true
 
-          echo ""
-          echo "========================================"
-          echo "NODE MODULES"
-          echo "========================================"
-
+          echo "===== NODE MODULES ====="
           du -sh node_modules 2>/dev/null || true
           du -sh apps/mobile/node_modules 2>/dev/null || true
 
-          echo ""
-          echo "========================================"
-          echo "ANDROID SDK"
-          echo "========================================"
+          echo "===== ANDROID ====="
+          du -sh apps/mobile/android 2>/dev/null || true
 
-          sudo du -sh /usr/local/lib/android/sdk/* 2>/dev/null | sort -h || true
+      # ------------------------------------------------------------
+      # Build directly with Gradle
+      # ------------------------------------------------------------
 
-          echo ""
-          echo "========================================"
-          echo "TMP"
-          echo "========================================"
-
-          sudo du -sh /tmp 2>/dev/null || true
-          sudo du -sh /var/tmp 2>/dev/null || true
-
-          echo ""
-          echo "========================================"
-          echo "WORKSPACE"
-          echo "========================================"
-
-          du -xhd2 . 2>/dev/null | sort -h | tail -30
-
-      # =========================================================
-      # DISK MONITOR
-      # =========================================================
-
-      - name: 📊 Start disk monitor
-        run: |
-          (
-            while true; do
-              echo "========================================"
-              echo "===== $(date) ====="
-              echo "========================================"
-
-              echo ""
-              echo "DISK:"
-              df -h /
-
-              echo ""
-              echo "INODES:"
-              df -ih /
-
-              echo ""
-              echo "GRADLE:"
-              du -sh ~/.gradle 2>/dev/null || true
-
-              echo ""
-              echo "TMP:"
-              du -sh /tmp 2>/dev/null || true
-              du -sh /var/tmp 2>/dev/null || true
-
-              echo ""
-              echo "WORKSPACE:"
-              du -sh . 2>/dev/null || true
-
-              echo ""
-              echo "LARGEST TMP DIRECTORIES:"
-              sudo du -xhd1 /tmp 2>/dev/null | sort -h | tail -10 || true
-
-              echo ""
-              echo "LARGEST WORKSPACE DIRECTORIES:"
-              du -xhd2 . 2>/dev/null | sort -h | tail -15 || true
-
-              echo ""
-              sleep 10
-            done
-          ) > /tmp/disk-monitor.log 2>&1 &
-
-          echo $! > /tmp/disk-monitor.pid
-
-      # =========================================================
-      # ANDROID BUILD
-      # =========================================================
-
-      - name: 📱 Build QA APK
-        if: github.event_name == 'push' || github.event.inputs.buildType == 'dev'
-        working-directory: apps/mobile
-        run: |
-          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
-
-          eas build \
-            --platform android \
-            --profile production \
-            --local \
-            --non-interactive \
-            --output=../../MindChart-dev.apk
+      - name: 📱 Build Android APK
+        working-directory: apps/mobile/android
         env:
           NODE_ENV: production
 
@@ -452,85 +242,72 @@ jobs:
             -Dorg.gradle.jvmargs=-Xmx4096m
             -XX:MaxMetaspaceSize=1024m
             -Dorg.gradle.daemon=false
-            -Dorg.gradle.caching=false
+            -Dorg.gradle.caching=true
+            -Dorg.gradle.parallel=false
 
-          EAS_BUILD_KEYSTORE_PATH: "./MindChart.keystore"
-          EAS_BUILD_KEYSTORE_ALIAS: "${{ secrets.KEY_ALIAS }}"
-          EAS_BUILD_KEYSTORE_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
-          EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
+        run: |
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --build-cache \
+            --max-workers=2
 
-      # =========================================================
-      # STOP DISK MONITOR
-      # =========================================================
+      # ------------------------------------------------------------
+      # Locate APK
+      # ------------------------------------------------------------
 
-      - name: 🛑 Stop disk monitor
+      - name: 📦 Copy APK
+        run: |
+          set -eux
+
+          APK=$(find apps/mobile/android/app/build/outputs/apk/release \
+            -type f \
+            -name "*.apk" \
+            | head -n 1)
+
+          test -n "$APK"
+
+          cp "$APK" ./MindChart-dev.apk
+
+          ls -lh ./MindChart-dev.apk
+
+      # ------------------------------------------------------------
+      # Disk diagnostics if anything goes wrong
+      # ------------------------------------------------------------
+
+      - name: 💾 Final disk check
         if: always()
         run: |
-          if [ -f /tmp/disk-monitor.pid ]; then
-            kill "$(cat /tmp/disk-monitor.pid)" || true
-          fi
-
-          echo "========================================"
-          echo "DISK MONITOR LOG"
-          echo "========================================"
-
-          cat /tmp/disk-monitor.log || true
-
-      # =========================================================
-      # POST-BUILD DISK DIAGNOSTICS
-      # =========================================================
-
-      - name: 💾 Check disk after Android build
-        if: always()
-        run: |
-          echo "========================================"
-          echo "FILESYSTEM AFTER BUILD"
-          echo "========================================"
-
+          echo "===== FILESYSTEM ====="
           df -h /
-
-          echo ""
-          echo "========================================"
-          echo "INODES AFTER BUILD"
-          echo "========================================"
-
           df -ih /
 
-          echo ""
-          echo "========================================"
-          echo "GRADLE"
-          echo "========================================"
-
+          echo "===== GRADLE ====="
           du -sh ~/.gradle 2>/dev/null || true
 
-          echo ""
-          echo "========================================"
-          echo "TMP"
-          echo "========================================"
+          echo "===== WORKSPACE ====="
+          du -xhd2 "$GITHUB_WORKSPACE" 2>/dev/null |
+            sort -h |
+            tail -30 || true
 
+          echo "===== TEMP ====="
           sudo du -sh /tmp 2>/dev/null || true
           sudo du -sh /var/tmp 2>/dev/null || true
 
-          echo ""
-          echo "========================================"
-          echo "WORKSPACE"
-          echo "========================================"
+      # ------------------------------------------------------------
+      # Checksum
+      # ------------------------------------------------------------
 
-          du -xhd2 . 2>/dev/null | sort -h | tail -30
-
-      # =========================================================
-      # APK CHECKSUM
-      # =========================================================
-
-      - name: 🔑 Generate SHA256 for APK
+      - name: 🔑 Generate SHA256
+        if: success()
         run: |
           sha256sum ./MindChart-dev.apk > MindChart-dev.apk.sha256
 
-      # =========================================================
-      # ARTIFACTS
-      # =========================================================
+      # ------------------------------------------------------------
+      # Upload
+      # ------------------------------------------------------------
 
-      - name: 📦 Upload build artifacts to GitHub
+      - name: 📦 Upload build artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-builds
@@ -538,4 +315,3 @@ jobs:
             ./MindChart-dev.apk
             ./MindChart-dev.apk.sha256
           retention-days: 7
-
