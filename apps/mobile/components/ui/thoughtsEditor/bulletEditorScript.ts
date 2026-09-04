@@ -62,7 +62,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function thoughtItemInnerHtml(categoryId, fieldsHtml) {
       return (
         '<div class="thought-rail" contenteditable="false">' +
-        '<div class="thought-stripe"></div></div>' +
+        '<div class="thought-stripe"></div>' +
+        '<div class="thought-dot"></div></div>' +
         thoughtCheckHtml() +
         '<div class="thought-body">' +
         categoryLabelHtml(categoryId) +
@@ -229,14 +230,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function bounceStripe(li) {
       if (window.__mcSimplified) return;
-      var stripe = li && li.querySelector(".thought-stripe");
-      if (!stripe) return;
-      stripe.classList.remove("is-bouncing");
-      // Retrigger CSS animation.
-      void stripe.offsetWidth;
-      stripe.classList.add("is-bouncing");
+      if (li && li.classList.contains("is-checklist")) return;
+      var dot = li && li.querySelector(".thought-dot");
+      if (!dot) return;
+      dot.classList.remove("is-bouncing");
+      void dot.offsetWidth;
+      dot.classList.add("is-bouncing");
       li.__mcBounceTimer = setTimeout(function () {
-        stripe.classList.remove("is-bouncing");
+        dot.classList.remove("is-bouncing");
         li.__mcBounceTimer = null;
       }, 1800);
     }
@@ -1010,21 +1011,26 @@ export function setSimplifiedModeScript(
       .thought-stripe,
       li.thought-item .thought-stripe,
       li.thought-item.is-collapsed .thought-stripe {
-        top: 8px !important;
-        bottom: auto !important;
-        width: 6px !important;
-        height: 6px !important;
-        margin-left: -3px !important;
-        border-radius: 999px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
+      .thought-dot {
+        top: 6px !important;
+        width: 8px !important;
+        height: 8px !important;
+        margin-left: -4px !important;
         background-color: ${borderColor} !important;
         transition: none !important;
         animation: none !important;
         transform: none !important;
       }
-      .thought-stripe.is-bouncing {
+      .thought-dot.is-bouncing {
         animation: none !important;
       }
-      li.thought-item.is-checklist .thought-stripe {
+      li.thought-item.is-checklist .thought-stripe,
+      li.thought-item.is-checklist .thought-dot {
         display: none !important;
       }
       li.thought-item {
@@ -1130,17 +1136,18 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
 
   function bounceStripe(li) {
     if (window.__mcSimplified) return;
-    var stripe = li && li.querySelector(".thought-stripe");
-    if (!stripe) return;
+    if (li && li.classList.contains("is-checklist")) return;
+    var dot = li && li.querySelector(".thought-dot");
+    if (!dot) return;
     if (li.__mcBounceTimer) {
       clearTimeout(li.__mcBounceTimer);
       li.__mcBounceTimer = null;
     }
-    stripe.classList.remove("is-bouncing");
-    void stripe.offsetWidth;
-    stripe.classList.add("is-bouncing");
+    dot.classList.remove("is-bouncing");
+    void dot.offsetWidth;
+    dot.classList.add("is-bouncing");
     li.__mcBounceTimer = setTimeout(function () {
-      stripe.classList.remove("is-bouncing");
+      dot.classList.remove("is-bouncing");
       li.__mcBounceTimer = null;
     }, 1800);
   }
@@ -1375,6 +1382,18 @@ export const CHECKLIST_SCRIPT = `
     return check;
   }
 
+  function ensureDot(li) {
+    if (!li) return null;
+    var rail = li.querySelector(".thought-rail");
+    var dot = li.querySelector(".thought-dot");
+    if (dot) return dot;
+    if (!rail) return null;
+    dot = document.createElement("div");
+    dot.className = "thought-dot";
+    rail.appendChild(dot);
+    return dot;
+  }
+
   function fieldLineHeight(el) {
     if (!el) return 23;
     var raw = window.getComputedStyle(el).lineHeight;
@@ -1420,30 +1439,34 @@ export const CHECKLIST_SCRIPT = `
       li.style.removeProperty("--graph-nudge");
     }
 
-    if (!check) return;
-
-    if (!completable) {
-      check.style.left = "";
-      check.style.right = "";
-      check.style.top = "";
-      li.style.removeProperty("--check-nudge");
-      return;
-    }
-
     // Keep top in CSS so it eases with the category line (0.38s).
     // Only measure the first-line nudge; do not write offsetTop.
     var target =
       hasTitle && title && !window.__mcSimplified ? title : summary || title;
-    check.style.left = "";
-    check.style.right = "";
-    check.style.top = "";
     if (target) {
       var alignLineH = fieldLineHeight(target);
-      var checkH = check.offsetHeight || 22;
+      var checkH = (check && check.offsetHeight) || 22;
       var nudge = Math.max(0, Math.round((alignLineH - checkH) / 2));
       li.style.setProperty("--check-nudge", nudge + "px");
     } else {
       li.style.removeProperty("--check-nudge");
+    }
+
+    var dot = ensureDot(li);
+    if (dot && !dot.classList.contains("is-anchored")) {
+      requestAnimationFrame(function () {
+        dot.classList.add("is-anchored");
+      });
+    }
+
+    if (!check) return;
+
+    check.style.left = "";
+    check.style.right = "";
+    check.style.top = "";
+
+    if (!completable) {
+      return;
     }
 
     if (!check.classList.contains("is-anchored")) {

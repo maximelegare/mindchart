@@ -305,6 +305,7 @@ function thoughtItemHtml(
     `<li class="${classNames.join(" ")}" data-category-id="${escapeHtml(id)}" data-completable="${completable}" data-completed="${completed}"${thoughtIdAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
+    `<div class="thought-dot"></div>` +
     `</div>` +
     thoughtCheckHtml() +
     `<div class="thought-body">` +

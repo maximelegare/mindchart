@@ -131,7 +131,8 @@ function buildCategoryColorCss(categories: Category[]): string {
   return categories
     .map(
       (category) => `
-      li[data-category-id="${category.id}"] .thought-stripe {
+      li[data-category-id="${category.id}"] .thought-stripe,
+      li[data-category-id="${category.id}"] .thought-dot {
         background-color: ${category.color};
       }
       li[data-category-id="${category.id}"] .thought-check-box {
@@ -1020,6 +1021,7 @@ function ThoughtsEditorInner(
                     padding-right: ${showGraphButtons ? "40px" : "0"};
                     overflow: visible;
                     --category-stack: 25px;
+                    --dot-size: 8px;
                   }
                   li.thought-item.is-collapsed {
                     --category-stack: 2px;
@@ -1110,14 +1112,27 @@ function ThoughtsEditorInner(
                     width: 4px;
                     margin-left: -2px;
                     border-radius: 2px;
-                    transform-origin: center center;
-                    transition:
-                      top 0.38s ease,
-                      bottom 0.38s ease,
-                      width 0.38s ease,
-                      height 0.38s ease,
-                      margin-left 0.38s ease,
-                      border-radius 0.38s ease;
+                    pointer-events: none;
+                    transition: opacity 0.38s ease;
+                  }
+                  .thought-dot {
+                    position: absolute;
+                    left: 50%;
+                    width: var(--dot-size);
+                    height: var(--dot-size);
+                    margin-left: calc(var(--dot-size) / -2);
+                    border-radius: 999px;
+                    top: calc(
+                      var(--category-stack, 0px) + var(--check-nudge, 2px) - 3px +
+                        (22px - var(--dot-size)) / 2
+                    );
+                    z-index: 1;
+                  }
+                  .thought-dot.is-anchored {
+                    transition: top 0.38s ease;
+                  }
+                  li.thought-item.is-checklist .thought-dot {
+                    display: none;
                   }
                   .thought-body {
                     min-width: 0;
@@ -1206,18 +1221,8 @@ function ThoughtsEditorInner(
                     pointer-events: none;
                   }
                   li.thought-item.is-collapsed .thought-stripe {
-                    top: 8px;
-                    bottom: auto;
-                    width: 6px;
-                    height: 6px;
-                    margin-left: -3px;
-                    border-radius: 999px;
-                  }
-                  li.thought-item.is-checklist.is-collapsed .thought-stripe {
-                    opacity: 0 !important;
-                    visibility: hidden;
+                    opacity: 0;
                     pointer-events: none;
-                    animation: none !important;
                   }
                   @keyframes thought-dot-pulse {
                     0%,
@@ -1230,7 +1235,7 @@ function ThoughtsEditorInner(
                       opacity: 0.4;
                     }
                   }
-                  .thought-stripe.is-bouncing {
+                  .thought-dot.is-bouncing {
                     animation: thought-dot-pulse 0.56s ease-in-out 3;
                   }
                   .thought-title,
