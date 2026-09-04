@@ -274,6 +274,7 @@ type ThoughtItemOptions = {
   showGraphButton?: boolean;
   isCompletable?: boolean;
   isCompleted?: boolean;
+  startCollapsed?: boolean;
 };
 
 function thoughtItemHtml(
@@ -290,6 +291,7 @@ function thoughtItemHtml(
   const classNames = ["thought-item"];
   if (completable) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
+  if (options.startCollapsed) classNames.push("is-collapsed");
   const graph =
     options.showGraphButton && options.thoughtId
       ? graphButtonHtml(options.thoughtId)
@@ -319,6 +321,7 @@ function liToHtml(
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
+    startCollapsed: showGraphButton,
     isCompletable: thought.isCompletable,
     isCompleted: thought.isCompleted,
   };

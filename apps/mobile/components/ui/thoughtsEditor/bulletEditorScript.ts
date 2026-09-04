@@ -1260,21 +1260,40 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
     return null;
   }
 
+  function setGraphPressed(btn, pressed) {
+    if (!btn) return;
+    btn.classList.toggle("is-pressed", !!pressed);
+  }
+
+  function onGraphPointer(event) {
+    var btn = closestGraph(event.target);
+    if (!btn) return;
+    event.preventDefault();
+    event.stopPropagation();
+    var thoughtId = btn.getAttribute("data-thought-id");
+    if (!thoughtId || !window.ReactNativeWebView) return;
+    var now = Date.now();
+    if (window.__mcGraphAt && now - window.__mcGraphAt < 400) return;
+    window.__mcGraphAt = now;
+    setGraphPressed(btn, true);
+    setTimeout(function () {
+      setGraphPressed(btn, false);
+    }, 180);
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
+    );
+  }
+
   content.addEventListener(
-    "click",
+    "touchstart",
     function (event) {
       var btn = closestGraph(event.target);
-      if (!btn) return;
-      event.preventDefault();
-      event.stopPropagation();
-      var thoughtId = btn.getAttribute("data-thought-id");
-      if (!thoughtId || !window.ReactNativeWebView) return;
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
-      );
+      if (btn) setGraphPressed(btn, true);
     },
     true
   );
+  content.addEventListener("click", onGraphPointer, true);
+  content.addEventListener("touchend", onGraphPointer, true);
   return true;
 })();
 `;
@@ -1382,6 +1401,19 @@ export const CHECKLIST_SCRIPT = `
     var singleLine = !hasTitle && fieldH <= lineH * 1.6;
     li.classList.toggle("is-single-line", singleLine);
     li.classList.toggle("has-graph", !!graph);
+
+    var fieldsBox = li.querySelector(".thought-fields");
+    if (graph && fieldsBox) {
+      var graphNudge = Math.round((fieldsBox.offsetHeight - 32) / 2);
+      li.style.setProperty("--graph-nudge", graphNudge + "px");
+      if (!graph.classList.contains("is-anchored")) {
+        requestAnimationFrame(function () {
+          graph.classList.add("is-anchored");
+        });
+      }
+    } else {
+      li.style.removeProperty("--graph-nudge");
+    }
 
     if (!check) return;
 

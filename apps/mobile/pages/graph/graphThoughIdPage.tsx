@@ -34,6 +34,8 @@ export const GraphThoughIdPage = () => {
   useFocusEffect(
     useCallback(() => {
       if (!areBreadcrumbsLinked()) return;
+      // Thought / category deep-links must keep their focus node.
+      if (graph === "category") return;
       const folderId = useOptionsBar.getState().currentFolderId;
       const desiredId = graphIdFromFolderId(folderId);
       const currentId =
@@ -43,7 +45,7 @@ export const GraphThoughIdPage = () => {
         id: desiredId,
         _t: Date.now().toString(),
       });
-    }, [setParams])
+    }, [graph, setParams])
   );
 
   return (

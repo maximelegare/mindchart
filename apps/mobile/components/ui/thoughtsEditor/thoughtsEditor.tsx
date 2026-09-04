@@ -21,6 +21,7 @@ import { cn } from "@/lib/cn";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useRouter } from "expo-router";
+import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import { type ThoughtsEditorFormValues } from "./types";
 import {
   htmlToThoughts,
@@ -726,10 +727,12 @@ function ThoughtsEditorInner(
       if (message.type === "OPEN_GRAPH") {
         const thoughtId = String(message.data ?? "");
         if (!thoughtId) return;
+        setGraphModeImmediate("category");
         push({
           pathname: "/graph/[id]",
           params: {
             id: thoughtId,
+            graph: "category",
             _t: Date.now(),
           },
         });
@@ -850,6 +853,10 @@ function ThoughtsEditorInner(
   const caretColor = hsl("primary", colorScheme);
   const mutedFg = hsl("muted-foreground", colorScheme);
   const graphButtonColor = mutedFg;
+  const graphButtonFill = hsl("primary", colorScheme).replace(
+    /^hsl\((.*)\)$/,
+    "hsla($1, 0.16)"
+  );
   const showToolbar = !readOnly;
 
   React.useImperativeHandle(
@@ -1070,7 +1077,7 @@ function ThoughtsEditorInner(
                     border-radius: 3px;
                     position: relative;
                     z-index: 1;
-                    background: ${hsl("card", colorScheme)};
+                    background: ${hsl("background", colorScheme)};
                   }
                   li.thought-item.is-completed .thought-check-box {
                     background: currentColor;
@@ -1119,7 +1126,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-graph {
                     position: absolute;
-                    top: 0;
+                    top: calc(var(--category-stack, 0px) + var(--graph-nudge, 0px));
                     right: 0;
                     width: 32px;
                     height: 32px;
@@ -1127,11 +1134,22 @@ function ThoughtsEditorInner(
                     align-items: center;
                     justify-content: center;
                     color: ${graphButtonColor};
-                    opacity: 0.8;
+                    background: ${graphButtonFill};
+                    border-radius: 999px;
+                    opacity: 0.85;
                     cursor: pointer;
                     user-select: none;
                     -webkit-user-select: none;
                     z-index: 3;
+                  }
+                  .thought-graph.is-anchored {
+                    transition:
+                      top 0.38s ease,
+                      opacity 0.16s ease;
+                  }
+                  .thought-graph.is-pressed,
+                  .thought-graph:active {
+                    opacity: 0.35;
                   }
                   .thought-graph svg {
                     display: block;
