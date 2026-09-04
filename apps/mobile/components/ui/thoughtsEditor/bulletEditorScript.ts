@@ -53,7 +53,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function thoughtCheckHtml() {
       return (
         '<button type="button" class="thought-check" contenteditable="false">' +
-        '<span class="thought-check-box"></span></button>'
+        '<span class="thought-check-box">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">' +
+        '<path d="M20 6L9 17l-5-5"/></svg></span></button>'
       );
     }
 
@@ -1358,7 +1360,10 @@ export const CHECKLIST_SCRIPT = `
     check.type = "button";
     check.className = "thought-check";
     check.setAttribute("contenteditable", "false");
-    check.innerHTML = '<span class="thought-check-box"></span>';
+    check.innerHTML =
+      '<span class="thought-check-box">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">' +
+      '<path d="M20 6L9 17l-5-5"/></svg></span>';
     var rail = li.querySelector(".thought-rail");
     if (rail && rail.nextSibling) {
       li.insertBefore(check, rail.nextSibling);

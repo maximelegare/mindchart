@@ -1069,29 +1069,29 @@ function ThoughtsEditorInner(
                     top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
                   }
                   .thought-check-box {
-                    display: block;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     box-sizing: border-box;
                     width: 20px;
                     height: 20px;
-                    border: 1.5px solid currentColor;
+                    border: 2px solid currentColor;
                     border-radius: 3px;
                     position: relative;
                     z-index: 1;
-                    background: ${hsl("background", colorScheme)};
+                    background: ${plain ? hsl("background", colorScheme) : backgroundColor};
+                  }
+                  .thought-check-box svg {
+                    display: none;
+                    width: 16px;
+                    height: 16px;
+                    color: ${hsl("popover", colorScheme)};
                   }
                   li.thought-item.is-completed .thought-check-box {
                     background: currentColor;
                   }
-                  li.thought-item.is-completed .thought-check-box::after {
-                    content: "";
-                    position: absolute;
-                    left: 5px;
-                    top: 2px;
-                    width: 5px;
-                    height: 11px;
-                    border: solid ${plain ? hsl("card", colorScheme) : backgroundColor};
-                    border-width: 0 1.5px 1.5px 0;
-                    transform: rotate(45deg);
+                  li.thought-item.is-completed .thought-check-box svg {
+                    display: block;
                   }
                   li.thought-item.is-completed .thought-title,
                   li.thought-item.is-completed .thought-summary {

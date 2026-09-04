@@ -261,10 +261,15 @@ function graphButtonHtml(thoughtId: string): string {
   );
 }
 
+const CHECK_ICON_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">` +
+  `<path d="M20 6L9 17l-5-5"/>` +
+  `</svg>`;
+
 function thoughtCheckHtml(): string {
   return (
     '<button type="button" class="thought-check" contenteditable="false" aria-label="Toggle complete">' +
-    '<span class="thought-check-box"></span>' +
+    `<span class="thought-check-box">${CHECK_ICON_SVG}</span>` +
     "</button>"
   );
 }
