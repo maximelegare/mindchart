@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
-import { Button, Typography } from "@/components/ui";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { PageOptionsHeaderContainer } from "@/components/layout/page/pageOptionsHeaderContainer";
+import { Gutter } from "@/components/ui/gutter";
 import {
   FolderSelector,
   type FolderSelection,
@@ -11,13 +11,11 @@ import { PersonSelector } from "@/features/notes/shared/ui/personSelector";
 import { FeelingSelector } from "@/features/notes/shared/ui/feelingSelector";
 import { LocationSelector } from "@/features/notes/shared/ui/locationSelector";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
-import { Icon } from "@/components/ui/icons/icon";
+import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
 import { Person } from "@repo/zod-schemas";
 import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
-import {
-  NoteDetailsCompleteViewLabel,
-  NoteDetailsSimplifiedViewLabel,
-} from "@/features/notes/noteDetails/noteDetailsLabels";
+import { NoteDetailsViewModeChipLabel } from "@/features/notes/noteDetails/noteDetailsLabels";
+import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
 
 type NoteDetailsOptionsHeaderProps = {
   folder: FolderSelection;
@@ -29,8 +27,6 @@ type NoteDetailsOptionsHeaderProps = {
   locationId: string | null;
   locationName: string | null;
   onLocationChange: (location: Location | null) => void;
-  simplified: boolean;
-  onSimplifiedChange: (simplified: boolean) => void;
   folderError?: boolean;
 };
 
@@ -44,36 +40,30 @@ export function NoteDetailsOptionsHeader({
   locationId,
   locationName,
   onLocationChange,
-  simplified,
-  onSimplifiedChange,
   folderError = false,
 }: NoteDetailsOptionsHeaderProps) {
   const [expanded, setExpanded] = useState(false);
+  const simplified = useNoteDetailsViewStore((state) => state.simplified);
+  const toggleSimplified = useNoteDetailsViewStore(
+    (state) => state.toggleSimplified
+  );
 
   return (
     <PageOptionsHeaderContainer
       footer={
         <CollapsibleContainer expanded={expanded}>
-          <View className="flex-row">
-            <Button
-              variant="ghost"
-              className="mx-2 mb-2 flex-row items-center gap-2 rounded-full px-2.5 py-1.5"
-              onPress={() => onSimplifiedChange(!simplified)}
+          <Gutter size="md" className="mb-2">
+            <View
+              className="flex-row flex-wrap items-center py-3"
+              style={{ rowGap: 12, columnGap: 8 }}
             >
-              <Icon name="eye" color="foreground" size={20} />
-              <Typography
-                variant="h4"
-                className="text-sm text-muted-foreground"
-                numberOfLines={1}
-              >
-                {simplified ? (
-                  <NoteDetailsCompleteViewLabel />
-                ) : (
-                  <NoteDetailsSimplifiedViewLabel />
-                )}
-              </Typography>
-            </Button>
-          </View>
+              <OptionChip
+                icon="eye"
+                label={<NoteDetailsViewModeChipLabel simplified={simplified} />}
+                onPress={toggleSimplified}
+              />
+            </View>
+          </Gutter>
         </CollapsibleContainer>
       }
     >

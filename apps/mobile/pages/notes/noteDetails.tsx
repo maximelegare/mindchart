@@ -55,7 +55,6 @@ export const NoteDetailsPage = () => {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
-  const [simplified, setSimplified] = useState(false);
   const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
   const [headerPersons, setHeaderPersons] = useState<Person[]>([]);
   const [headerFeeling, setHeaderFeeling] = useState<FeelingValue | null>(null);
@@ -355,8 +354,6 @@ export const NoteDetailsPage = () => {
           locationId={headerLocationId}
           locationName={headerLocationName}
           onLocationChange={handleLocationChange}
-          simplified={simplified}
-          onSimplifiedChange={setSimplified}
           folderError={folderRequiredError}
         />
       }
@@ -386,7 +383,6 @@ export const NoteDetailsPage = () => {
         onEditingChange={handleEditingChange}
         saveActionRef={saveActionRef}
         onSavingChange={setIsSaving}
-        simplified={simplified}
         folderId={headerFolder?.id ?? null}
         persons={headerPersons}
         feeling={headerFeeling}

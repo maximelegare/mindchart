@@ -24,6 +24,8 @@ import {
   thoughtsEditorItalicAccessibilityLabel,
   thoughtsEditorShowTitlesAccessibilityLabel,
   thoughtsEditorUnderlineAccessibilityLabel,
+  thoughtsEditorBulletAccessibilityLabel,
+  thoughtsEditorChecklistAccessibilityLabel,
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
@@ -38,6 +40,8 @@ type ThoughtsEditorToolbarProps = {
   onShowTitlesChange: (next: boolean) => void;
   activeFormats: Record<FormatCommand, boolean>;
   onFormat: (command: FormatCommand) => void;
+  isChecklist: boolean;
+  onListTypeChange: (completable: boolean) => void;
 };
 
 function FormatButton({
@@ -74,6 +78,8 @@ function ToolbarContent({
   onShowTitlesChange,
   activeFormats,
   onFormat,
+  isChecklist,
+  onListTypeChange,
 }: Omit<ThoughtsEditorToolbarProps, "dockToKeyboard">) {
   const { colorScheme } = useColorScheme();
 
@@ -100,6 +106,26 @@ function ToolbarContent({
           active={activeFormats.underline}
           label={thoughtsEditorUnderlineAccessibilityLabel()}
           onPress={() => onFormat("underline")}
+        />
+        <View
+          style={{
+            width: StyleSheet.hairlineWidth,
+            height: 20,
+            marginHorizontal: 4,
+            backgroundColor: hsl("input", colorScheme),
+          }}
+        />
+        <FormatButton
+          icon="list"
+          active={!isChecklist}
+          label={thoughtsEditorBulletAccessibilityLabel()}
+          onPress={() => onListTypeChange(false)}
+        />
+        <FormatButton
+          icon="square-check"
+          active={isChecklist}
+          label={thoughtsEditorChecklistAccessibilityLabel()}
+          onPress={() => onListTypeChange(true)}
         />
       </View>
       {showTitlesToggle ? (
@@ -133,6 +159,9 @@ export function ThoughtsEditorToolbar({
   const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
   const bottomInset = insets.bottom;
+  // KeyboardBackgroundView maps Gboard dark to #1c1c2c (navy). Use true black
+  // in dark mode so the bar matches the keyboard instead of that blue-gray.
+  const darkKeyboardFill = "#000000";
 
   React.useEffect(() => {
     if (!dockToKeyboard || Platform.OS !== "android") return;
@@ -198,10 +227,20 @@ export function ThoughtsEditorToolbar({
           pointerEvents="box-none"
           style={[styles.docked, dockedStyle, { borderTopColor: borderColor }]}
         >
-          <KeyboardBackgroundView
-            pointerEvents="none"
-            style={StyleSheet.absoluteFill}
-          />
+          {colorScheme === "dark" ? (
+            <View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFill,
+                { backgroundColor: darkKeyboardFill },
+              ]}
+            />
+          ) : (
+            <KeyboardBackgroundView
+              pointerEvents="none"
+              style={StyleSheet.absoluteFill}
+            />
+          )}
           <View style={styles.dockedRow}>{content}</View>
         </Animated.View>
       </View>

@@ -36,6 +36,8 @@ export const updateThoughtsQuery = async (
             semanticLabel: thought.semanticLabel,
             categoryId: thought.categoryId,
             noteId: thought.noteId,
+            isCompletable: thought.isCompletable ?? false,
+            isCompleted: thought.isCompleted ?? false,
             createdAt: thought.createdAt ?? new Date().toISOString(),
           }))
         );
@@ -66,6 +68,8 @@ export const updateThoughtsQuery = async (
             title: thought.title,
             semanticLabel: thought.semanticLabel,
             categoryId: thought.categoryId,
+            isCompletable: thought.isCompletable ?? false,
+            isCompleted: thought.isCompleted ?? false,
           })
           .where(eq(ThoughtTable.id, thought.id));
 
@@ -91,4 +95,24 @@ export const updateThoughtsQuery = async (
       throw error;
     }
   });
+};
+
+export const updateThoughtCompletionQuery = async (
+  db: DB,
+  data: { id: string; isCompleted: boolean }
+) => {
+  await db
+    .update(ThoughtTable)
+    .set({ isCompleted: data.isCompleted })
+    .where(eq(ThoughtTable.id, data.id));
+};
+
+export const updateThoughtCategoryQuery = async (
+  db: DB,
+  data: { id: string; categoryId: string }
+) => {
+  await db
+    .update(ThoughtTable)
+    .set({ categoryId: data.categoryId || "uncategorized" })
+    .where(eq(ThoughtTable.id, data.id));
 };

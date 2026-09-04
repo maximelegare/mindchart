@@ -85,6 +85,10 @@ function stripChrome(liHtml: string): string {
       ""
     )
     .replace(
+      /<button\b[^>]*class=["'][^"']*\bthought-check\b[^"']*["'][^>]*>[\s\S]*?<\/button>/i,
+      ""
+    )
+    .replace(
       /<div\b[^>]*class=["'][^"']*\bthought-graph\b[^"']*["'][^>]*>[\s\S]*?<\/div>/i,
       ""
     )
@@ -104,7 +108,16 @@ function stripChrome(liHtml: string): string {
 type LiItem = {
   categoryId: string | null;
   innerHtml: string;
+  isCompletable: boolean | null;
+  isCompleted: boolean | null;
 };
+
+function parseDataBool(attrs: string, name: string): boolean | null {
+  const match = attrs.match(new RegExp(`data-${name}=["']([^"']*)["']`, "i"));
+  if (!match) return null;
+  const value = (match[1] ?? "").toLowerCase();
+  return value === "true" || value === "1";
+}
 
 function extractLiItems(html: string): LiItem[] {
   const items: LiItem[] = [];
@@ -116,6 +129,8 @@ function extractLiItems(html: string): LiItem[] {
     items.push({
       categoryId: categoryMatch?.[1] ?? null,
       innerHtml: match[2] ?? "",
+      isCompletable: parseDataBool(attrs, "completable"),
+      isCompleted: parseDataBool(attrs, "completed"),
     });
   }
   return items;
@@ -246,9 +261,25 @@ function graphButtonHtml(thoughtId: string): string {
   );
 }
 
+const CHECK_ICON_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">` +
+  `<path d="M20 6L9 17l-5-5"/>` +
+  `</svg>`;
+
+function thoughtCheckHtml(): string {
+  return (
+    '<button type="button" class="thought-check" contenteditable="false" aria-label="Toggle complete">' +
+    `<span class="thought-check-box">${CHECK_ICON_SVG}</span>` +
+    "</button>"
+  );
+}
+
 type ThoughtItemOptions = {
   thoughtId?: string;
   showGraphButton?: boolean;
+  isCompletable?: boolean;
+  isCompleted?: boolean;
+  startCollapsed?: boolean;
 };
 
 function thoughtItemHtml(
@@ -260,15 +291,23 @@ function thoughtItemHtml(
   const thoughtIdAttr = options.thoughtId
     ? ` data-thought-id="${escapeHtml(options.thoughtId)}"`
     : "";
+  const completable = Boolean(options.isCompletable);
+  const completed = completable && Boolean(options.isCompleted);
+  const classNames = ["thought-item"];
+  if (completable) classNames.push("is-checklist");
+  if (completed) classNames.push("is-completed");
+  if (options.startCollapsed) classNames.push("is-collapsed");
   const graph =
     options.showGraphButton && options.thoughtId
       ? graphButtonHtml(options.thoughtId)
       : "";
   return (
-    `<li class="thought-item" data-category-id="${escapeHtml(id)}"${thoughtIdAttr}>` +
+    `<li class="${classNames.join(" ")}" data-category-id="${escapeHtml(id)}" data-completable="${completable}" data-completed="${completed}"${thoughtIdAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
+    `<div class="thought-dot"></div>` +
     `</div>` +
+    thoughtCheckHtml() +
     `<div class="thought-body">` +
     categoryLabelHtml(id) +
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
@@ -288,6 +327,9 @@ function liToHtml(
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
+    startCollapsed: showGraphButton,
+    isCompletable: thought.isCompletable,
+    isCompleted: thought.isCompleted,
   };
 
   if (showTitles) {
@@ -384,12 +426,18 @@ export function htmlToThoughts(
       const nextSummary = hasSummaryField ? summary : summary || base.summary;
       const fieldsPresent = hasTitleField || hasSummaryField;
       const label = nextTitle || nextSummary;
+      const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
+      const isCompleted = isCompletable
+        ? (item.isCompleted ?? base.isCompleted ?? false)
+        : false;
       return {
         ...base,
         title: nextTitle,
         summary: nextSummary,
         categoryId,
         semanticLabel: fieldsPresent ? label : label || base.semanticLabel,
+        isCompletable,
+        isCompleted,
       };
     }
 
@@ -400,6 +448,10 @@ export function htmlToThoughts(
     // Present-but-empty `.thought-summary` must clear, not keep stale text.
     const nextSummary =
       summaryField != null ? summary : summary || base.summary;
+    const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
+    const isCompleted = isCompletable
+      ? (item.isCompleted ?? base.isCompleted ?? false)
+      : false;
     return {
       ...base,
       summary: nextSummary,
@@ -408,6 +460,8 @@ export function htmlToThoughts(
         summaryField != null
           ? nextSummary
           : base.semanticLabel || nextSummary || base.title,
+      isCompletable,
+      isCompleted,
     };
   });
 

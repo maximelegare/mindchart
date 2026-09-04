@@ -71,7 +71,11 @@ import { insertEmbeddingsQuery } from "./src/queries/embeddings/insertEmbeddings
 import { seedDatabaseQuery } from "./src/queries/bulk/seedDatabase";
 import { updateNoteQuery } from "./src/queries/notes/updateNote";
 import { updateNoteLastViewedAtQuery } from "./src/queries/notes/updateNoteLastViewedAt";
-import { updateThoughtsQuery } from "./src/queries/thoughts/updateThouhts";
+import {
+  updateThoughtsQuery,
+  updateThoughtCompletionQuery,
+  updateThoughtCategoryQuery,
+} from "./src/queries/thoughts/updateThouhts";
 import { updateEmbeddingsQuery } from "./src/queries/embeddings/updateEmbeddings";
 import { deleteThoughByIdQuery } from "./src/queries/thoughts/deleteThoughById";
 import { deleteThoughtsByIdsQuery } from "./src/queries/thoughts/deleteThoughtsByIds";
@@ -157,6 +161,8 @@ export {
   updateNoteQuery,
   updateNoteLastViewedAtQuery,
   updateThoughtsQuery,
+  updateThoughtCompletionQuery,
+  updateThoughtCategoryQuery,
   updateEmbeddingsQuery,
   deleteThoughByIdQuery,
   deleteThoughtsByIdsQuery,

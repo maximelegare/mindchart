@@ -12,12 +12,16 @@ export function noteDetailsSettingsMenuLabel() {
   return fbs("Settings", "Note details menu: settings");
 }
 
-export function NoteDetailsCompleteViewLabel() {
-  return <fbt desc="Note details view mode: complete">Complete View</fbt>;
-}
+export function NoteDetailsViewModeChipLabel({
+  simplified,
+}: {
+  simplified: boolean;
+}) {
+  if (simplified) {
+    return <fbt desc="Note details view mode: simplified">Simplified View</fbt>;
+  }
 
-export function NoteDetailsSimplifiedViewLabel() {
-  return <fbt desc="Note details view mode: simplified">Simplified View</fbt>;
+  return <fbt desc="Note details view mode: complete">Complete View</fbt>;
 }
 
 export function NoteDetailsTitlePlaceholder() {

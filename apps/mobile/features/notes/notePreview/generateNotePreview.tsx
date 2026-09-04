@@ -51,6 +51,8 @@ export const GenerateNotePreview = ({
       noteId: string;
       categoryId: string;
       thoughtId: string;
+      isCompletable: boolean;
+      isCompleted: boolean;
     }>;
   };
 
@@ -73,6 +75,8 @@ export const GenerateNotePreview = ({
         noteId: thought.noteId,
         categoryId: thought.categoryId,
         thoughtId: thought.thoughtId,
+        isCompletable: thought.isCompletable ?? false,
+        isCompleted: thought.isCompleted ?? false,
       })),
     },
   });
@@ -133,6 +137,8 @@ export const GenerateNotePreview = ({
       noteId: note.id,
       categoryId: "uncategorized",
       thoughtId: thoughtId,
+      isCompletable: false,
+      isCompleted: false,
     });
   };
 

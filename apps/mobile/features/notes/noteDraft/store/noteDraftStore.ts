@@ -61,6 +61,8 @@ export const createGeneratedDraftNote = (
       title: thought.title ?? "",
       summary: thought.summary ?? "",
       semanticLabel: thought.semanticLabel ?? "",
+      isCompletable: thought.isCompletable ?? false,
+      isCompleted: thought.isCompleted ?? false,
     })),
   };
 };

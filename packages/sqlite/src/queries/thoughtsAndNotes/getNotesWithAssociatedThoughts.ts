@@ -34,7 +34,9 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
               'createdAt', ${ThoughtTable.createdAt},
               'semanticLabel', ${ThoughtTable.semanticLabel},
               'categoryId', ${ThoughtTable.categoryId},
-              'noteId', ${ThoughtTable.noteId}
+              'noteId', ${ThoughtTable.noteId},
+              'isCompletable', ${ThoughtTable.isCompletable},
+              'isCompleted', ${ThoughtTable.isCompleted}
             )
           ) FILTER (WHERE ${ThoughtTable.id} IS NOT NULL)
         `.as("thoughts_json"),

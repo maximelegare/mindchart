@@ -10617,35 +10617,6 @@
     },
     {
       "hashToLeaf": {
-        "J5Eve7XfOC1ieVjKXCvBfQ==": {
-          "desc": "Thoughts editor clear content button",
-          "text": "Clear"
-        }
-      },
-      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 8,
-          "column": 9,
-          "index": 198
-        },
-        "end": {
-          "line": 8,
-          "column": 69,
-          "index": 258
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Thoughts editor clear content button",
-          "text": "Clear"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
         "HNW0gK+C6jgrA3EjJF8N3Q==": {
           "desc": "Thoughts editor show titles toggle",
           "text": "Titles"
@@ -10654,14 +10625,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 12,
+          "line": 8,
           "column": 9,
-          "index": 324
+          "index": 205
         },
         "end": {
-          "line": 12,
+          "line": 8,
           "column": 68,
-          "index": 383
+          "index": 264
         }
       },
       "project": "",
@@ -10670,6 +10641,93 @@
         "t": {
           "desc": "Thoughts editor show titles toggle",
           "text": "Titles"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "6eupotjkJB7VKKzM8RxSNQ==": {
+          "desc": "Accessibility label for bold formatting button",
+          "text": "Bold"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 335
+        },
+        "end": {
+          "line": 12,
+          "column": 70,
+          "index": 396
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for bold formatting button",
+          "text": "Bold"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "+uY8upBWS0NpKAl22EZeZg==": {
+          "desc": "Accessibility label for italic formatting button",
+          "text": "Italic"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 469
+        },
+        "end": {
+          "line": 16,
+          "column": 74,
+          "index": 534
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for italic formatting button",
+          "text": "Italic"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "UjptwAUHT9wYaNLHkDqnAw==": {
+          "desc": "Accessibility label for underline formatting button",
+          "text": "Underline"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 20,
+          "column": 9,
+          "index": 610
+        },
+        "end": {
+          "line": 23,
+          "column": 3,
+          "index": 693
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for underline formatting button",
+          "text": "Underline"
         }
       }
     },
@@ -10683,14 +10741,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 16,
+          "line": 27,
           "column": 9,
-          "index": 460
+          "index": 770
         },
         "end": {
-          "line": 19,
+          "line": 30,
           "column": 3,
-          "index": 552
+          "index": 862
         }
       },
       "project": "",
@@ -10704,6 +10762,64 @@
     },
     {
       "hashToLeaf": {
+        "yaWPce6Mp3LoNFj5SCDcBA==": {
+          "desc": "Accessibility label for bullet thought type button",
+          "text": "Bullet list"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 34,
+          "column": 9,
+          "index": 935
+        },
+        "end": {
+          "line": 37,
+          "column": 3,
+          "index": 1019
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for bullet thought type button",
+          "text": "Bullet list"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "xdQHjmRq6g0UvyJ05MW3Wg==": {
+          "desc": "Accessibility label for checklist thought type button",
+          "text": "Checklist"
+        }
+      },
+      "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 41,
+          "column": 9,
+          "index": 1095
+        },
+        "end": {
+          "line": 44,
+          "column": 3,
+          "index": 1180
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for checklist thought type button",
+          "text": "Checklist"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "WKEz3QN+mpH02UIioBjhgQ==": {
           "desc": "Thought editor title field placeholder",
           "text": "Title"
@@ -10712,14 +10828,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 33,
+          "line": 58,
           "column": 11,
-          "index": 827
+          "index": 1455
         },
         "end": {
-          "line": 33,
+          "line": 58,
           "column": 65,
-          "index": 881
+          "index": 1509
         }
       },
       "project": "",
@@ -10741,14 +10857,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 34,
+          "line": 59,
           "column": 13,
-          "index": 896
+          "index": 1524
         },
         "end": {
-          "line": 34,
+          "line": 59,
           "column": 71,
-          "index": 954
+          "index": 1582
         }
       },
       "project": "",
@@ -10770,14 +10886,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 35,
+          "line": 60,
           "column": 12,
-          "index": 968
+          "index": 1596
         },
         "end": {
-          "line": 38,
+          "line": 63,
           "column": 5,
-          "index": 1056
+          "index": 1684
         }
       },
       "project": "",
@@ -10799,14 +10915,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 39,
+          "line": 64,
           "column": 19,
-          "index": 1077
+          "index": 1705
         },
         "end": {
-          "line": 42,
+          "line": 67,
           "column": 5,
-          "index": 1163
+          "index": 1791
         }
       },
       "project": "",
@@ -10828,14 +10944,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 43,
+          "line": 68,
           "column": 21,
-          "index": 1186
+          "index": 1814
         },
         "end": {
-          "line": 46,
+          "line": 71,
           "column": 5,
-          "index": 1276
+          "index": 1904
         }
       },
       "project": "",
@@ -10857,14 +10973,14 @@
       "filename": "components/ui/thoughtsEditor/thoughtsEditorLabels.tsx",
       "loc": {
         "start": {
-          "line": 47,
+          "line": 72,
           "column": 17,
-          "index": 1295
+          "index": 1923
         },
         "end": {
-          "line": 50,
+          "line": 75,
           "column": 5,
-          "index": 1392
+          "index": 2020
         }
       },
       "project": "",

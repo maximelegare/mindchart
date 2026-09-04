@@ -1750,17 +1750,6 @@
       ],
       "types": []
     },
-    "J5Eve7XfOC1ieVjKXCvBfQ==": {
-      "description": "Thoughts editor clear content button",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Effacer",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
     "HNW0gK+C6jgrA3EjJF8N3Q==": {
       "description": "Thoughts editor show titles toggle",
       "tokens": [],
@@ -4946,6 +4935,61 @@
       "translations": [
         {
           "translation": "Annuler",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "6eupotjkJB7VKKzM8RxSNQ==": {
+      "description": "Accessibility label for bold formatting button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Gras",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "+uY8upBWS0NpKAl22EZeZg==": {
+      "description": "Accessibility label for italic formatting button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Italique",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "UjptwAUHT9wYaNLHkDqnAw==": {
+      "description": "Accessibility label for underline formatting button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Souligné",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "yaWPce6Mp3LoNFj5SCDcBA==": {
+      "description": "Accessibility label for bullet thought type button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Liste à puces",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "xdQHjmRq6g0UvyJ05MW3Wg==": {
+      "description": "Accessibility label for checklist thought type button",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Liste à cocher",
           "variations": {}
         }
       ],

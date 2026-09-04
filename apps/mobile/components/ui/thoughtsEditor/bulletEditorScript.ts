@@ -50,10 +50,21 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
+    function thoughtCheckHtml() {
+      return (
+        '<button type="button" class="thought-check" contenteditable="false">' +
+        '<span class="thought-check-box">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">' +
+        '<path d="M20 6L9 17l-5-5"/></svg></span></button>'
+      );
+    }
+
     function thoughtItemInnerHtml(categoryId, fieldsHtml) {
       return (
         '<div class="thought-rail" contenteditable="false">' +
-        '<div class="thought-stripe"></div></div>' +
+        '<div class="thought-stripe"></div>' +
+        '<div class="thought-dot"></div></div>' +
+        thoughtCheckHtml() +
         '<div class="thought-body">' +
         categoryLabelHtml(categoryId) +
         '<div class="thought-fields">' +
@@ -219,24 +230,27 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function bounceStripe(li) {
       if (window.__mcSimplified) return;
-      var stripe = li && li.querySelector(".thought-stripe");
-      if (!stripe) return;
-      stripe.classList.remove("is-bouncing");
-      // Retrigger CSS animation.
-      void stripe.offsetWidth;
-      stripe.classList.add("is-bouncing");
+      if (li && li.classList.contains("is-checklist")) return;
+      var dot = li && li.querySelector(".thought-dot");
+      if (!dot) return;
+      dot.classList.remove("is-bouncing");
+      void dot.offsetWidth;
+      dot.classList.add("is-bouncing");
       li.__mcBounceTimer = setTimeout(function () {
-        stripe.classList.remove("is-bouncing");
+        dot.classList.remove("is-bouncing");
         li.__mcBounceTimer = null;
       }, 1800);
     }
 
     function collapseThoughtCategory(li) {
-      if (!li || window.__mcSimplified) return;
+      if (!li || window.__mcSimplified || window.__mcEditing) return;
       li.classList.add("is-collapsed");
       li.__mcBounceTimer = setTimeout(function () {
         bounceStripe(li);
       }, COLLAPSE_TRANSITION_MS);
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
     }
 
     function expandThoughtCategory(li, reschedule) {
@@ -248,10 +262,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (reschedule !== false) {
         scheduleCollapse(li);
       }
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
     }
 
     function scheduleCollapse(li) {
-      if (!li || window.__mcSimplified) return;
+      if (!li || window.__mcSimplified || window.__mcEditing) return;
       clearCollapseTimer(li);
       li.classList.remove("is-collapsed");
       var stripe = li.querySelector(".thought-stripe");
@@ -271,7 +288,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var lis = content.querySelectorAll("ul > li");
       for (var i = 0; i < lis.length; i++) {
         ensureCategoryChrome(lis[i]);
-        if (!lis[i].classList.contains("is-collapsed")) {
+        if (window.__mcEditing) {
+          expandThoughtCategory(lis[i], false);
+        } else if (!lis[i].classList.contains("is-collapsed")) {
           scheduleCollapse(lis[i]);
         }
       }
@@ -306,7 +325,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } else {
         var clone = li.cloneNode(true);
         var stripSel = clone.querySelectorAll(
-          ".thought-rail, .thought-category, .thought-body, .thought-fields"
+          ".thought-rail, .thought-check, .thought-graph, .thought-category, .thought-body, .thought-fields"
         );
         for (var s = 0; s < stripSel.length; s++) {
           var node = stripSel[s];
@@ -327,12 +346,15 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } else {
         scheduleCollapse(li);
       }
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
     }
 
     function ensureUl() {
       if (content.querySelector("ul")) return;
       content.innerHTML =
-        '<ul><li class="thought-item" data-category-id="uncategorized">' +
+        '<ul><li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
         emptyLiHtml("uncategorized") +
         "</li></ul>";
     }
@@ -498,8 +520,11 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
       var newLi = document.createElement("li");
       var categoryId = liCategoryId(li);
-      newLi.className = "thought-item";
+      var completable = li.getAttribute("data-completable") === "true";
+      newLi.className = completable ? "thought-item is-checklist" : "thought-item";
       newLi.setAttribute("data-category-id", categoryId);
+      newLi.setAttribute("data-completable", completable ? "true" : "false");
+      newLi.setAttribute("data-completed", "false");
       newLi.innerHTML = emptyLiHtml(categoryId);
       if (li.nextSibling) {
         li.parentNode.insertBefore(newLi, li.nextSibling);
@@ -507,6 +532,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         li.parentNode.appendChild(newLi);
       }
       scheduleCollapse(newLi);
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
       var focusField = window.__mcShowTitles
         ? newLi.querySelector(".thought-title")
         : newLi.querySelector(".thought-summary");
@@ -523,7 +551,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
       if (!parent.querySelector("li")) {
         parent.innerHTML =
-          '<li class="thought-item" data-category-id="uncategorized">' +
+          '<li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
           emptyLiHtml("uncategorized") +
           "</li>";
         var only = parent.querySelector("li");
@@ -658,8 +686,30 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
+    function onViewThoughtPointer(e) {
+      if (window.__mcEditing || window.__mcSimplified) return;
+      if (closestClass(e.target, "thought-check")) return;
+      if (closestClass(e.target, "thought-graph")) return;
+      var li = closestLi(e.target);
+      if (!li) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var wantsPicker =
+        closestClass(e.target, "thought-category") ||
+        closestClass(e.target, "thought-stripe") ||
+        closestClass(e.target, "thought-rail");
+      if (wantsPicker && !li.classList.contains("is-collapsed")) {
+        expandThoughtCategory(li, true);
+        openCategoryPicker(li);
+        return;
+      }
+      expandThoughtCategory(li, true);
+    }
+
     function onCategoryChromePointer(e) {
       if (window.__mcSimplified) return;
+      if (!window.__mcEditing) return;
+      if (closestClass(e.target, "thought-check")) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
       var chip = closestClass(e.target, "thought-category");
@@ -671,13 +721,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var li = closestLi(e.target);
       if (!li) return;
 
-      if (li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, true);
-        // Collapsed label is not hittable; stripe/rail expands only.
-        return;
-      }
-
-      // Expanded: open category picker from label or stripe.
+      // Edit mode keeps categories open; chrome opens the picker.
       openCategoryPicker(li);
     }
 
@@ -722,6 +766,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       true
     );
 
+    content.addEventListener("click", onViewThoughtPointer, true);
+    content.addEventListener("touchend", onViewThoughtPointer, true);
     content.addEventListener("click", onCategoryChromePointer, true);
     // Android WebView often delivers contenteditable=false taps more reliably here.
     content.addEventListener(
@@ -753,6 +799,36 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
 export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;
+}
+
+export function setEditingModeScript(editing: boolean): string {
+  return `
+(function () {
+  window.__mcEditing = ${editing ? "true" : "false"};
+  var root =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!root) return true;
+  var lis = root.querySelectorAll("ul > li");
+  if (window.__mcEditing) {
+    for (var i = 0; i < lis.length; i++) {
+      var li = lis[i];
+      if (li.__mcCollapseTimer) {
+        clearTimeout(li.__mcCollapseTimer);
+        li.__mcCollapseTimer = null;
+      }
+      li.classList.remove("is-collapsed");
+      var stripe = li.querySelector(".thought-stripe");
+      if (stripe) stripe.classList.remove("is-bouncing");
+    }
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
+    }
+  } else if (typeof window.__mcRefreshCategoryTimers === "function") {
+    window.__mcRefreshCategoryTimers();
+  }
+  true;
+})();
+`;
 }
 
 const DEFAULT_EMPTY_BULLET_ERROR = "Add at least one bullet point";
@@ -835,7 +911,7 @@ export function setThoughtValidationErrorsScript(options: {
           emptyMsg +
           '"><br></div>';
       content.innerHTML =
-        '<ul><li class="thought-item" data-category-id="uncategorized">' +
+        '<ul><li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
         '<div class="thought-fields">' +
         emptyFields +
         "</div></li></ul>";
@@ -910,7 +986,8 @@ true;
 /** Toggle simplified (plain bullets) chrome inside the editor WebView. */
 export function setSimplifiedModeScript(
   simplified: boolean,
-  borderColor: string
+  borderColor: string,
+  surfaceColor: string
 ): string {
   const css = simplified
     ? `
@@ -935,19 +1012,53 @@ export function setSimplifiedModeScript(
       .thought-stripe,
       li.thought-item .thought-stripe,
       li.thought-item.is-collapsed .thought-stripe {
-        top: 8px !important;
-        bottom: auto !important;
-        width: 6px !important;
-        height: 6px !important;
-        margin-left: -3px !important;
-        border-radius: 999px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transition: none !important;
+        animation: none !important;
+      }
+      .thought-dot {
+        top: 6px !important;
+        width: 8px !important;
+        height: 8px !important;
+        margin-left: -4px !important;
         background-color: ${borderColor} !important;
         transition: none !important;
         animation: none !important;
         transform: none !important;
       }
-      .thought-stripe.is-bouncing {
+      .thought-dot.is-bouncing {
         animation: none !important;
+      }
+      li.thought-item.is-checklist .thought-stripe,
+      li.thought-item.is-checklist .thought-dot {
+        display: none !important;
+      }
+      li.thought-item {
+        --category-stack: 0px !important;
+        padding-right: 0 !important;
+      }
+      li.thought-item.is-checklist .thought-check {
+        left: 4px !important;
+        right: auto !important;
+        transition: none !important;
+        top: calc(
+          var(--category-stack, 0px) + var(--check-nudge, 2px)
+        ) !important;
+      }
+      .thought-check-box {
+        border-color: ${borderColor} !important;
+        background: ${surfaceColor} !important;
+      }
+      li.thought-item.is-completed .thought-check-box {
+        background-color: ${borderColor} !important;
+        border-color: ${borderColor} !important;
+      }
+      li.thought-item.is-completed .thought-check-box svg {
+        color: ${surfaceColor} !important;
+      }
+      .thought-graph {
+        display: none !important;
       }
     `
     : "";
@@ -986,6 +1097,9 @@ export function setSimplifiedModeScript(
 
   if (!window.__mcSimplified && typeof window.__mcRefreshCategoryTimers === "function") {
     window.__mcRefreshCategoryTimers();
+  }
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
   }
   return true;
 })();
@@ -1041,27 +1155,31 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
 
   function bounceStripe(li) {
     if (window.__mcSimplified) return;
-    var stripe = li && li.querySelector(".thought-stripe");
-    if (!stripe) return;
+    if (li && li.classList.contains("is-checklist")) return;
+    var dot = li && li.querySelector(".thought-dot");
+    if (!dot) return;
     if (li.__mcBounceTimer) {
       clearTimeout(li.__mcBounceTimer);
       li.__mcBounceTimer = null;
     }
-    stripe.classList.remove("is-bouncing");
-    void stripe.offsetWidth;
-    stripe.classList.add("is-bouncing");
+    dot.classList.remove("is-bouncing");
+    void dot.offsetWidth;
+    dot.classList.add("is-bouncing");
     li.__mcBounceTimer = setTimeout(function () {
-      stripe.classList.remove("is-bouncing");
+      dot.classList.remove("is-bouncing");
       li.__mcBounceTimer = null;
     }, 1800);
   }
 
   function collapseThoughtCategory(li) {
-    if (!li || window.__mcSimplified) return;
+    if (!li || window.__mcSimplified || window.__mcEditing) return;
     li.classList.add("is-collapsed");
     li.__mcBounceTimer = setTimeout(function () {
       bounceStripe(li);
     }, COLLAPSE_TRANSITION_MS);
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
+    }
   }
 
   function expandThoughtCategory(li, reschedule) {
@@ -1073,10 +1191,13 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     if (reschedule !== false) {
       scheduleCollapse(li);
     }
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
+    }
   }
 
   function scheduleCollapse(li) {
-    if (!li || window.__mcSimplified) return;
+    if (!li || window.__mcSimplified || window.__mcEditing) return;
     clearCollapseTimer(li);
     li.classList.remove("is-collapsed");
     var stripe = li.querySelector(".thought-stripe");
@@ -1095,37 +1216,51 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     if (window.__mcSimplified) return;
     var lis = content.querySelectorAll("ul > li.thought-item");
     for (var i = 0; i < lis.length; i++) {
-      if (!lis[i].classList.contains("is-collapsed")) {
+      if (window.__mcEditing) {
+        expandThoughtCategory(lis[i], false);
+      } else if (!lis[i].classList.contains("is-collapsed")) {
         scheduleCollapse(lis[i]);
       }
     }
   };
 
-  content.addEventListener(
-    "click",
-    function (e) {
-      // Edit mode owns category chrome clicks (opens the picker).
-      if (window.__mcBulletGuardInstalled) return;
-      if (window.__mcSimplified) return;
-      var rail = closestClass(e.target, "thought-rail");
-      var stripe = closestClass(e.target, "thought-stripe");
-      var chip = closestClass(e.target, "thought-category");
-      if (!rail && !stripe && !chip) return;
+  function openCategoryPicker(li) {
+    if (!li || !li.parentNode || !window.ReactNativeWebView) return;
+    var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+    if (index < 0) return;
+    var now = Date.now();
+    if (window.__mcCategoryPickerAt && now - window.__mcCategoryPickerAt < 400) {
+      return;
+    }
+    window.__mcCategoryPickerAt = now;
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ type: "SELECT_CATEGORY", data: index })
+    );
+  }
 
-      e.preventDefault();
-      e.stopPropagation();
+  function onViewThoughtPointer(e) {
+    if (window.__mcBulletGuardInstalled) return;
+    if (window.__mcEditing || window.__mcSimplified) return;
+    if (closestClass(e.target, "thought-check")) return;
+    if (closestClass(e.target, "thought-graph")) return;
+    var li = closestLi(e.target);
+    if (!li) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var wantsPicker =
+      closestClass(e.target, "thought-category") ||
+      closestClass(e.target, "thought-stripe") ||
+      closestClass(e.target, "thought-rail");
+    if (wantsPicker && !li.classList.contains("is-collapsed")) {
+      expandThoughtCategory(li, true);
+      openCategoryPicker(li);
+      return;
+    }
+    expandThoughtCategory(li, true);
+  }
 
-      var li = closestLi(e.target);
-      if (!li) return;
-
-      if (li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, true);
-      } else {
-        scheduleCollapse(li);
-      }
-    },
-    true
-  );
+  content.addEventListener("click", onViewThoughtPointer, true);
+  content.addEventListener("touchend", onViewThoughtPointer, true);
 
   window.__mcRefreshCategoryTimers();
   return true;
@@ -1153,21 +1288,338 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
     return null;
   }
 
+  function setGraphPressed(btn, pressed) {
+    if (!btn) return;
+    btn.classList.toggle("is-pressed", !!pressed);
+  }
+
+  function onGraphPointer(event) {
+    var btn = closestGraph(event.target);
+    if (!btn) return;
+    event.preventDefault();
+    event.stopPropagation();
+    var thoughtId = btn.getAttribute("data-thought-id");
+    if (!thoughtId || !window.ReactNativeWebView) return;
+    var now = Date.now();
+    if (window.__mcGraphAt && now - window.__mcGraphAt < 400) return;
+    window.__mcGraphAt = now;
+    setGraphPressed(btn, true);
+    setTimeout(function () {
+      setGraphPressed(btn, false);
+    }, 180);
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
+    );
+  }
+
   content.addEventListener(
-    "click",
+    "touchstart",
     function (event) {
       var btn = closestGraph(event.target);
-      if (!btn) return;
-      event.preventDefault();
-      event.stopPropagation();
-      var thoughtId = btn.getAttribute("data-thought-id");
-      if (!thoughtId || !window.ReactNativeWebView) return;
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
-      );
+      if (btn) setGraphPressed(btn, true);
     },
     true
   );
+  content.addEventListener("click", onGraphPointer, true);
+  content.addEventListener("touchend", onGraphPointer, true);
+  return true;
+})();
+`;
+
+export function setThoughtListTypeScript(completable: boolean): string {
+  return `
+(function () {
+  if (typeof window.__mcSetThoughtListType === "function") {
+    window.__mcSetThoughtListType(${completable ? "true" : "false"});
+  }
+  true;
+})();
+`;
+}
+
+export const SYNC_CHECKLIST_LAYOUT_SCRIPT = `
+(function () {
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
+  }
+  true;
+})();
+`;
+
+/** Checkbox chrome, layout, and completion toggles inside the pell WebView. */
+export const CHECKLIST_SCRIPT = `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+
+  function closest(node, predicate) {
+    while (node && node !== document.body) {
+      if (predicate(node)) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function closestLi(node) {
+    return closest(node, function (n) {
+      return n.nodeName === "LI";
+    });
+  }
+
+  function closestClass(node, className) {
+    return closest(node, function (n) {
+      return n.classList && n.classList.contains(className);
+    });
+  }
+
+  function isTrueAttr(el, name) {
+    var value = el && el.getAttribute(name);
+    return value === "true" || value === "1";
+  }
+
+  function ensureCheckbox(li) {
+    if (!li) return null;
+    var check = li.querySelector(".thought-check");
+    if (check) return check;
+    check = document.createElement("button");
+    check.type = "button";
+    check.className = "thought-check";
+    check.setAttribute("contenteditable", "false");
+    check.innerHTML =
+      '<span class="thought-check-box">' +
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">' +
+      '<path d="M20 6L9 17l-5-5"/></svg></span>';
+    var rail = li.querySelector(".thought-rail");
+    if (rail && rail.nextSibling) {
+      li.insertBefore(check, rail.nextSibling);
+    } else if (rail) {
+      li.appendChild(check);
+    } else {
+      li.insertBefore(check, li.firstChild);
+    }
+    return check;
+  }
+
+  function ensureDot(li) {
+    if (!li) return null;
+    var rail = li.querySelector(".thought-rail");
+    var dot = li.querySelector(".thought-dot");
+    if (dot) return dot;
+    if (!rail) return null;
+    dot = document.createElement("div");
+    dot.className = "thought-dot";
+    rail.appendChild(dot);
+    return dot;
+  }
+
+  function fieldLineHeight(el) {
+    if (!el) return 23;
+    var raw = window.getComputedStyle(el).lineHeight;
+    var parsed = parseFloat(raw);
+    if (parsed && !isNaN(parsed)) return parsed;
+    return 23;
+  }
+
+  function syncChecklistLayout(li) {
+    if (!li) return;
+    var check = ensureCheckbox(li);
+    var completable = isTrueAttr(li, "data-completable");
+    var completed = completable && isTrueAttr(li, "data-completed");
+    li.classList.toggle("is-checklist", completable);
+    li.classList.toggle("is-completed", completed);
+    if (check) {
+      check.setAttribute("aria-checked", completed ? "true" : "false");
+    }
+
+    var title = li.querySelector(".thought-title");
+    var summary = li.querySelector(".thought-summary");
+    var graph = li.querySelector(".thought-graph");
+    var hasTitle = !!window.__mcShowTitles && !!title;
+    li.classList.toggle("has-title", hasTitle);
+
+    var field = summary || title;
+    var lineH = fieldLineHeight(field);
+    var fieldH = field ? field.offsetHeight : 0;
+    var singleLine = !hasTitle && fieldH <= lineH * 1.6;
+    li.classList.toggle("is-single-line", singleLine);
+    li.classList.toggle("has-graph", !!graph);
+
+    var fieldsBox = li.querySelector(".thought-fields");
+    if (graph && fieldsBox) {
+      var graphNudge = Math.round((fieldsBox.offsetHeight - 32) / 2);
+      li.style.setProperty("--graph-nudge", graphNudge + "px");
+      if (!graph.classList.contains("is-anchored")) {
+        requestAnimationFrame(function () {
+          graph.classList.add("is-anchored");
+        });
+      }
+    } else {
+      li.style.removeProperty("--graph-nudge");
+    }
+
+    // Keep top in CSS so it eases with the category line (0.38s).
+    // Only measure the first-line nudge; do not write offsetTop.
+    var target =
+      hasTitle && title && !window.__mcSimplified ? title : summary || title;
+    if (target) {
+      var alignLineH = fieldLineHeight(target);
+      var checkH = (check && check.offsetHeight) || 22;
+      var nudge = Math.max(0, Math.round((alignLineH - checkH) / 2));
+      li.style.setProperty("--check-nudge", nudge + "px");
+    } else {
+      li.style.removeProperty("--check-nudge");
+    }
+
+    var dot = ensureDot(li);
+    if (dot && !dot.classList.contains("is-anchored")) {
+      requestAnimationFrame(function () {
+        dot.classList.add("is-anchored");
+      });
+    }
+
+    if (!check) return;
+
+    check.style.left = "";
+    check.style.right = "";
+    check.style.top = "";
+
+    if (!completable) {
+      return;
+    }
+
+    if (!check.classList.contains("is-anchored")) {
+      requestAnimationFrame(function () {
+        check.classList.add("is-anchored");
+      });
+    }
+  }
+
+  function syncAll() {
+    var root =
+      document.querySelector(".pell-content") || document.getElementById("editor");
+    if (!root) return;
+    var lis = root.querySelectorAll("ul > li");
+    for (var i = 0; i < lis.length; i++) {
+      syncChecklistLayout(lis[i]);
+    }
+  }
+
+  function postCaretType(li) {
+    if (!window.ReactNativeWebView || !li) return;
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        type: "CARET_LIST_TYPE",
+        data: { completable: isTrueAttr(li, "data-completable") },
+      })
+    );
+  }
+
+  function toggleCompleted(li) {
+    if (!li || !isTrueAttr(li, "data-completable")) return;
+    var now = Date.now();
+    if (li.__mcCheckAt && now - li.__mcCheckAt < 400) return;
+    li.__mcCheckAt = now;
+    var next = !isTrueAttr(li, "data-completed");
+    li.setAttribute("data-completed", next ? "true" : "false");
+    syncChecklistLayout(li);
+    try {
+      content.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch (err) {}
+    if (!window.ReactNativeWebView || !li.parentNode) return;
+    var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        type: "TOGGLE_COMPLETED",
+        data: { index: index, completed: next },
+      })
+    );
+  }
+
+  window.__mcSyncChecklistLayouts = syncAll;
+
+  window.__mcSetThoughtListType = function (completable) {
+    var sel = window.getSelection();
+    var li = closestLi(sel && sel.anchorNode);
+    if (!li) li = content.querySelector("ul > li");
+    if (!li) return true;
+    li.setAttribute("data-completable", completable ? "true" : "false");
+    if (!completable) {
+      li.setAttribute("data-completed", "false");
+    }
+    syncChecklistLayout(li);
+    try {
+      content.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch (err) {}
+    postCaretType(li);
+    if (window.ReactNativeWebView && li.parentNode) {
+      var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "LIST_TYPE",
+          data: { index: index, completable: !!completable },
+        })
+      );
+    }
+    return true;
+  };
+
+  if (!window.__mcChecklistInstalled) {
+    window.__mcChecklistInstalled = true;
+
+    function isCategoryChrome(node) {
+      return (
+        closestClass(node, "thought-rail") ||
+        closestClass(node, "thought-stripe") ||
+        closestClass(node, "thought-category") ||
+        closestClass(node, "thought-graph")
+      );
+    }
+
+    function onChecklistPointer(e) {
+      if (isCategoryChrome(e.target)) return;
+      var check = closestClass(e.target, "thought-check");
+      if (!check) return;
+      var li = closestLi(e.target);
+      e.preventDefault();
+      e.stopPropagation();
+      if (li) toggleCompleted(li);
+    }
+
+    content.addEventListener("click", onChecklistPointer, true);
+    content.addEventListener("touchend", onChecklistPointer, true);
+
+    content.addEventListener(
+      "transitionend",
+      function (e) {
+        if (
+          !e.target ||
+          !e.target.classList ||
+          !e.target.classList.contains("thought-category")
+        ) {
+          return;
+        }
+        var li = closestLi(e.target);
+        if (li) syncChecklistLayout(li);
+      },
+      true
+    );
+
+    document.addEventListener("selectionchange", function () {
+      var sel = window.getSelection();
+      var li = closestLi(sel && sel.anchorNode);
+      if (li) postCaretType(li);
+    });
+
+    if (typeof ResizeObserver !== "undefined") {
+      var observer = new ResizeObserver(function () {
+        syncAll();
+      });
+      observer.observe(content);
+    }
+  }
+
+  syncAll();
   return true;
 })();
 `;

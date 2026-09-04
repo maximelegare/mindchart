@@ -26,6 +26,12 @@ export const ThoughtTable = sqliteTable(
     summary: text("summary"),
     semanticLabel: text("semantic_label"),
     categoryId: text("category_id").notNull().default("uncategorized"),
+    isCompletable: integer("is_completable", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    isCompleted: integer("is_completed", { mode: "boolean" })
+      .notNull()
+      .default(false),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

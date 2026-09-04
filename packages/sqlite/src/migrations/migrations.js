@@ -1,5 +1,5 @@
 // This file is required for Expo/React Native SQLite migrations - https://orm.drizzle.team/quick-sqlite/expo
-// inline-import cache bump: 3
+// inline-import cache bump: 4
 
 import journal from "./meta/_journal.json";
 import m0000 from "./0000_damp_stone_men.sql";
@@ -17,6 +17,7 @@ import m0011 from "./0011_remove_topic.sql";
 import m0012 from "./0012_add_category_color.sql";
 import m0013 from "./0013_add_category_translations.sql";
 import m0014 from "./0014_tense_fat_cobra.sql";
+import m0015 from "./0015_thought_checklist.sql";
 
 export default {
   journal,
@@ -36,5 +37,6 @@ export default {
     m0012,
     m0013,
     m0014,
+    m0015,
   },
 };

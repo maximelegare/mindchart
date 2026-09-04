@@ -22,6 +22,7 @@ import {
 } from "@/features/notes/noteDetails/noteDetailsLabels";
 import { Person } from "@repo/zod-schemas";
 import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
 
 type NoteDetailsFeatureProps = {
   isPending: boolean;
@@ -30,7 +31,6 @@ type NoteDetailsFeatureProps = {
   onEditingChange: (editing: boolean) => void;
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
-  simplified?: boolean;
   /** Current folder from the header selector (preferred over stale note data). */
   folderId?: string | null;
   persons?: Person[];
@@ -59,6 +59,8 @@ const mapThoughtToFormValue = (
     noteId: string;
     categoryId: string;
     thoughtId: string;
+    isCompletable?: boolean;
+    isCompleted?: boolean;
   },
   noteId: string
 ): ThoughtsFormValue => ({
@@ -70,6 +72,8 @@ const mapThoughtToFormValue = (
   noteId: thought.noteId ?? noteId,
   categoryId: thought.categoryId ?? "uncategorized",
   thoughtId: thought.thoughtId ?? thought.id,
+  isCompletable: thought.isCompletable ?? false,
+  isCompleted: thought.isCompleted ?? false,
 });
 
 type NoteDetailsContentProps = {
@@ -78,7 +82,6 @@ type NoteDetailsContentProps = {
   onEditingChange: (editing: boolean) => void;
   saveActionRef?: React.MutableRefObject<(() => void) | null>;
   onSavingChange?: (saving: boolean) => void;
-  simplified: boolean;
   folderId: string | null;
   persons: Person[];
   feeling: FeelingValue | null;
@@ -94,7 +97,6 @@ function NoteDetailsContent({
   onEditingChange,
   saveActionRef,
   onSavingChange,
-  simplified,
   folderId,
   persons,
   feeling,
@@ -106,6 +108,14 @@ function NoteDetailsContent({
   const { editNoteAction } = useEditNote();
   const { saveNewNote } = useSaveNewNote();
   const { useFetchAllCategoriesQuery } = useControllers().categories;
+  const {
+    useUpdateThoughtCompletionMutation,
+    useUpdateThoughtCategoryMutation,
+  } = useControllers().notesAndThoughts;
+  const { mutate: persistThoughtCompletion } =
+    useUpdateThoughtCompletionMutation();
+  const { mutate: persistThoughtCategory } = useUpdateThoughtCategoryMutation();
+  const simplified = useNoteDetailsViewStore((state) => state.simplified);
   const { data: categoriesData } = useFetchAllCategoriesQuery();
   const { colorScheme } = useColorScheme();
   const [titleRequiredError, setTitleRequiredError] = React.useState(false);
@@ -116,6 +126,9 @@ function NoteDetailsContent({
   const thoughtsEditorRef = React.useRef<ThoughtsEditorHandle>(null);
   // Latest title from the input — RHF getValues can lag behind native TextInput.
   const titleDraftRef = React.useRef(note.title ?? "");
+  const keepDraftOnExitRef = React.useRef(false);
+  const wasEditingRef = React.useRef(isEditing);
+  const [editorGeneration, setEditorGeneration] = React.useState(0);
 
   const originalThoughtIds = React.useMemo(
     () => new Set(note.thoughts.map((thought) => thought.id)),
@@ -137,16 +150,34 @@ function NoteDetailsContent({
   });
   const { control, reset, getValues, setValue } = form;
 
-  // Keep form in sync when leaving edit or when note data refreshes in view mode.
-  React.useEffect(() => {
-    if (isEditing) return;
+  const restoreOriginalNote = React.useCallback(() => {
     titleDraftRef.current = note.title ?? "";
     setTitleRequiredError(false);
     reset({
       title: note.title,
       thoughts: initialThoughts,
     });
-  }, [initialThoughts, isEditing, note.title, reset]);
+  }, [initialThoughts, note.title, reset]);
+
+  // Discard must reset before the editor rebuilds HTML (child useEffect).
+  React.useLayoutEffect(() => {
+    const wasEditing = wasEditingRef.current;
+    wasEditingRef.current = isEditing;
+    if (isEditing || !wasEditing) return;
+    if (keepDraftOnExitRef.current) return;
+    restoreOriginalNote();
+    setEditorGeneration((generation) => generation + 1);
+  }, [isEditing, restoreOriginalNote]);
+
+  // Keep form in sync when note data refreshes in view mode.
+  React.useEffect(() => {
+    if (isEditing) return;
+    if (keepDraftOnExitRef.current) {
+      keepDraftOnExitRef.current = false;
+      return;
+    }
+    restoreOriginalNote();
+  }, [isEditing, restoreOriginalNote]);
 
   // Entering edit: seed draft from current form/note so validation matches the field.
   React.useEffect(() => {
@@ -250,6 +281,7 @@ function NoteDetailsContent({
       setTitleRequiredError(false);
       onFolderErrorChange?.(false);
       thoughtsEditorRef.current?.clearValidationErrors();
+      keepDraftOnExitRef.current = true;
       onEditingChange(false);
     } finally {
       onSavingChange?.(false);
@@ -392,15 +424,23 @@ function NoteDetailsContent({
         >
           <ThoughtsEditor
             ref={thoughtsEditorRef}
-            key={note.id}
+            key={`${note.id}-${editorGeneration}`}
             noteId={note.id}
             categories={categoriesData ?? []}
             defaultShowTitles={showTitles}
             readOnly={!isEditing}
-            showGraphButtons={!isEditing}
+            showGraphButtons={!isEditing && !simplified}
             plain
             simplified={simplified}
             dockToolbarToKeyboard
+            onToggleCompleted={({ id, isCompleted }) => {
+              if (isEditing || isNew) return;
+              persistThoughtCompletion({ id, isCompleted });
+            }}
+            onChangeCategory={({ id, categoryId }) => {
+              if (isEditing || isNew) return;
+              persistThoughtCategory({ id, categoryId });
+            }}
           />
         </View>
       </View>
@@ -415,7 +455,6 @@ export const NoteDetailsFeature = ({
   onEditingChange,
   saveActionRef,
   onSavingChange,
-  simplified = false,
   folderId = null,
   persons = [],
   feeling = null,
@@ -436,7 +475,6 @@ export const NoteDetailsFeature = ({
       onEditingChange={onEditingChange}
       saveActionRef={saveActionRef}
       onSavingChange={onSavingChange}
-      simplified={simplified}
       folderId={folderId ?? noteRow.folderId ?? null}
       persons={persons}
       feeling={feeling}

@@ -56,6 +56,8 @@ export const EditNotePreview = ({
       noteId: string;
       categoryId: string;
       thoughtId: string;
+      isCompletable: boolean;
+      isCompleted: boolean;
       status: "new" | "updated";
     }>;
   };
@@ -73,6 +75,8 @@ export const EditNotePreview = ({
         noteId: thought.noteId,
         categoryId: thought.categoryId,
         thoughtId: thought.thoughtId,
+        isCompletable: thought.isCompletable ?? false,
+        isCompleted: thought.isCompleted ?? false,
         status: "updated",
       })),
     },
@@ -131,6 +135,8 @@ export const EditNotePreview = ({
       noteId: note.id,
       categoryId: "uncategorized",
       thoughtId: thoughtId,
+      isCompletable: false,
+      isCompleted: false,
       status: "new",
     });
   };

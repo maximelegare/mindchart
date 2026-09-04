@@ -31,6 +31,8 @@ export const parseCategoriesWithThoughts = (
           categoryId: thought.categoryId ?? row.category_id,
           noteId: thought.noteId,
           createdAt: thought.createdAt ?? null,
+          isCompletable: Boolean(thought.isCompletable),
+          isCompleted: Boolean(thought.isCompleted),
         })
       ),
     }))

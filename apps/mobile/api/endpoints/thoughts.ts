@@ -3,6 +3,8 @@ import {
   deleteThoughtsByIdsQuery,
   getAllThoughtsGroupByCategoryQuery,
   getOPDatabase,
+  updateThoughtCompletionQuery,
+  updateThoughtCategoryQuery,
 } from "@repo/sqlite";
 import { getAllThoughtsWithEmbeddingsQuery } from "@repo/sqlite";
 
@@ -24,4 +26,20 @@ export const deleteThoughById = async (id: string) => {
 export const getAllThoughtsGroupByCategory = async () => {
   const db = getOPDatabase();
   return await getAllThoughtsGroupByCategoryQuery(db);
+};
+
+export const updateThoughtCompletion = async (data: {
+  id: string;
+  isCompleted: boolean;
+}) => {
+  const db = getOPDatabase();
+  return await updateThoughtCompletionQuery(db, data);
+};
+
+export const updateThoughtCategory = async (data: {
+  id: string;
+  categoryId: string;
+}) => {
+  const db = getOPDatabase();
+  return await updateThoughtCategoryQuery(db, data);
 };

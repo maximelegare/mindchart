@@ -74,6 +74,7 @@ export type IconName =
   | "sliders-horizontal"
   | "sparkles"
   | "sprout"
+  | "square-check"
   | "square-dashed-mouse-pointer"
   | "square-mouse-pointer"
   | "square"
@@ -288,7 +289,7 @@ export const ICON_METADATA: Record<
   },
   "map-pin-simple": {
     viewBox: "0 0 256 256",
-    content: `<path d="M184 72a56 56 0 1 0-64 55.42V232a8 8 0 0 0 16 0V127.42A56.09 56.09 0 0 0 184 72m-56 40a40 40 0 1 1 40-40a40 40 0 0 1-40 40"></path>`,
+    content: `<path fill="currentColor" d="M184 72a56 56 0 1 0-64 55.42V232a8 8 0 0 0 16 0V127.42A56.09 56.09 0 0 0 184 72m-56 40a40 40 0 1 1 40-40a40 40 0 0 1-40 40"></path>`,
   },
   "map-pin": {
     viewBox: "0 0 24 24",
@@ -381,6 +382,10 @@ export const ICON_METADATA: Record<
   sprout: {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4a4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3M4 9a5 5 0 0 1 8 4a5 5 0 0 1-8-4m1 12h14"></path>`,
+  },
+  "square-check": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="m9 12l2 2l4-4"></path></g>`,
   },
   "square-dashed-mouse-pointer": {
     viewBox: "0 0 24 24",
