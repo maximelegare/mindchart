@@ -304,7 +304,9 @@ function ThoughtsEditorInner(
     italic: false,
     underline: false,
   });
-  const [caretIsChecklist, setCaretIsChecklist] = React.useState(false);
+  const [caretIsChecklist, setCaretIsChecklist] = React.useState(() =>
+    Boolean(getValues("thoughts")?.[0]?.isCompletable)
+  );
   const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
@@ -588,8 +590,10 @@ function ThoughtsEditorInner(
         buildThoughtPlaceholdersScript(thoughtPlaceholders)
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
+      const nextThoughts = getValues("thoughts");
+      setCaretIsChecklist(Boolean(nextThoughts?.[0]?.isCompletable));
       richRef.current?.setContentHTML(
-        thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
+        thoughtsToHtml(nextThoughts, showTitles, htmlOptions)
       );
       refreshCategoryTimers();
       return;
@@ -601,8 +605,10 @@ function ThoughtsEditorInner(
     const titles = simplifiedRef.current ? false : showTitlesRef.current;
     applyEditorFlags(titles);
     applySimplifiedMode(simplifiedRef.current);
+    const nextThoughts = getValues("thoughts");
+    setCaretIsChecklist(Boolean(nextThoughts?.[0]?.isCompletable));
     richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), titles, htmlOptions)
+      thoughtsToHtml(nextThoughts, titles, htmlOptions)
     );
     richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
     if (showGraphButtons) {

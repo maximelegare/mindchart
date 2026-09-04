@@ -127,6 +127,9 @@ function NoteDetailsContent({
   const thoughtsEditorRef = React.useRef<ThoughtsEditorHandle>(null);
   // Latest title from the input — RHF getValues can lag behind native TextInput.
   const titleDraftRef = React.useRef(note.title ?? "");
+  const keepDraftOnExitRef = React.useRef(false);
+  const wasEditingRef = React.useRef(isEditing);
+  const [editorGeneration, setEditorGeneration] = React.useState(0);
 
   const originalThoughtIds = React.useMemo(
     () => new Set(note.thoughts.map((thought) => thought.id)),
@@ -148,16 +151,34 @@ function NoteDetailsContent({
   });
   const { control, reset, getValues, setValue } = form;
 
-  // Keep form in sync when leaving edit or when note data refreshes in view mode.
-  React.useEffect(() => {
-    if (isEditing) return;
+  const restoreOriginalNote = React.useCallback(() => {
     titleDraftRef.current = note.title ?? "";
     setTitleRequiredError(false);
     reset({
       title: note.title,
       thoughts: initialThoughts,
     });
-  }, [initialThoughts, isEditing, note.title, reset]);
+  }, [initialThoughts, note.title, reset]);
+
+  // Discard must reset before the editor rebuilds HTML (child useEffect).
+  React.useLayoutEffect(() => {
+    const wasEditing = wasEditingRef.current;
+    wasEditingRef.current = isEditing;
+    if (isEditing || !wasEditing) return;
+    if (keepDraftOnExitRef.current) return;
+    restoreOriginalNote();
+    setEditorGeneration((generation) => generation + 1);
+  }, [isEditing, restoreOriginalNote]);
+
+  // Keep form in sync when note data refreshes in view mode.
+  React.useEffect(() => {
+    if (isEditing) return;
+    if (keepDraftOnExitRef.current) {
+      keepDraftOnExitRef.current = false;
+      return;
+    }
+    restoreOriginalNote();
+  }, [isEditing, restoreOriginalNote]);
 
   // Entering edit: seed draft from current form/note so validation matches the field.
   React.useEffect(() => {
@@ -261,6 +282,7 @@ function NoteDetailsContent({
       setTitleRequiredError(false);
       onFolderErrorChange?.(false);
       thoughtsEditorRef.current?.clearValidationErrors();
+      keepDraftOnExitRef.current = true;
       onEditingChange(false);
     } finally {
       onSavingChange?.(false);
@@ -403,7 +425,7 @@ function NoteDetailsContent({
         >
           <ThoughtsEditor
             ref={thoughtsEditorRef}
-            key={note.id}
+            key={`${note.id}-${editorGeneration}`}
             noteId={note.id}
             categories={categoriesData ?? []}
             defaultShowTitles={showTitles}
