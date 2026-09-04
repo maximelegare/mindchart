@@ -74,6 +74,7 @@ import { updateNoteLastViewedAtQuery } from "./src/queries/notes/updateNoteLastV
 import {
   updateThoughtsQuery,
   updateThoughtCompletionQuery,
+  updateThoughtCategoryQuery,
 } from "./src/queries/thoughts/updateThouhts";
 import { updateEmbeddingsQuery } from "./src/queries/embeddings/updateEmbeddings";
 import { deleteThoughByIdQuery } from "./src/queries/thoughts/deleteThoughById";
@@ -161,6 +162,7 @@ export {
   updateNoteLastViewedAtQuery,
   updateThoughtsQuery,
   updateThoughtCompletionQuery,
+  updateThoughtCategoryQuery,
   updateEmbeddingsQuery,
   deleteThoughByIdQuery,
   deleteThoughtsByIdsQuery,

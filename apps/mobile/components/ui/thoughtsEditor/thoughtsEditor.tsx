@@ -36,6 +36,7 @@ import {
   REFRESH_CATEGORY_TIMERS_SCRIPT,
   SYNC_CHECKLIST_LAYOUT_SCRIPT,
   clearThoughtValidationErrorsScript,
+  setEditingModeScript,
   setShowTitlesScript,
   setSimplifiedModeScript,
   setThoughtListTypeScript,
@@ -260,6 +261,8 @@ type ThoughtsEditorProps = {
   dockToolbarToKeyboard?: boolean;
   /** Persist completion when the checkbox is toggled in view mode. */
   onToggleCompleted?: (thought: { id: string; isCompleted: boolean }) => void;
+  /** Persist category when it is changed in view mode. */
+  onChangeCategory?: (thought: { id: string; categoryId: string }) => void;
 };
 
 export type ThoughtsEditorHandle = {
@@ -279,6 +282,7 @@ function ThoughtsEditorInner(
     simplified = false,
     dockToolbarToKeyboard = false,
     onToggleCompleted,
+    onChangeCategory,
   }: ThoughtsEditorProps,
   ref: React.ForwardedRef<ThoughtsEditorHandle>
 ) {
@@ -458,9 +462,13 @@ function ThoughtsEditorInner(
 `);
   }, [keyboardOpen, readOnly, dockToolbarToKeyboard]);
 
-  const applyEditorFlags = React.useCallback((nextShowTitles: boolean) => {
-    richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
-  }, []);
+  const applyEditorFlags = React.useCallback(
+    (nextShowTitles: boolean) => {
+      richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
+      richRef.current?.injectJavascript(setEditingModeScript(!readOnly));
+    },
+    [readOnly]
+  );
 
   const applyCategoryColors = React.useCallback((css: string) => {
     if (!css) return;
@@ -790,7 +798,7 @@ function ThoughtsEditorInner(
         }
         return;
       }
-      if (readOnly || message.type !== "SELECT_CATEGORY") return;
+      if (message.type !== "SELECT_CATEGORY") return;
       const index = Number(message.data);
       if (!Number.isFinite(index) || index < 0) return;
       richRef.current?.dismissKeyboard();
@@ -809,14 +817,30 @@ function ThoughtsEditorInner(
           ? { ...thought, categoryId: category.id }
           : thought
       );
-      setValue("thoughts", next, { shouldDirty: true });
+      setValue("thoughts", next, { shouldDirty: !readOnly });
       richRef.current?.injectJavascript(
         setThoughtCategoryScript(categoryPickerIndex, category.id)
       );
+      if (readOnly) {
+        const thought = next[categoryPickerIndex];
+        if (thought?.id) {
+          onChangeCategory?.({
+            id: thought.id,
+            categoryId: category.id,
+          });
+        }
+      }
       closeCategorySheet();
       setCategoryPickerIndex(null);
     },
-    [categoryPickerIndex, closeCategorySheet, getValues, setValue]
+    [
+      categoryPickerIndex,
+      closeCategorySheet,
+      getValues,
+      onChangeCategory,
+      readOnly,
+      setValue,
+    ]
   );
 
   const backgroundColor = plain ? "transparent" : hsl("card", colorScheme);
@@ -965,6 +989,7 @@ function ThoughtsEditorInner(
                   font-size: 16px;
                   line-height: 1.45;
                   padding: ${plain ? (!readOnly ? "8px 0" : "8px 2px") : "12px"};
+                  padding-left: 0;
                   padding-bottom: ${
                     showToolbar && dockToolbarToKeyboard
                       ? THOUGHTS_EDITOR_TOOLBAR_HEIGHT + 12
@@ -992,12 +1017,9 @@ function ThoughtsEditorInner(
                   li.thought-item.is-collapsed {
                     --category-stack: 2px;
                   }
-                  li.thought-item.is-checklist.is-single-line:not(.has-title) {
-                    padding-right: ${showGraphButtons ? "68px" : "32px"};
-                  }
                   .thought-rail {
                     position: absolute;
-                    left: 8px;
+                    left: 6px;
                     top: 0;
                     bottom: 0;
                     width: 18px;
@@ -1010,9 +1032,9 @@ function ThoughtsEditorInner(
                     display: none;
                     position: absolute;
                     z-index: 4;
-                    left: 7px;
-                    width: 20px;
-                    height: 20px;
+                    left: 4px;
+                    width: 22px;
+                    height: 22px;
                     padding: 0;
                     margin: 0;
                     border: none;
@@ -1024,10 +1046,7 @@ function ThoughtsEditorInner(
                     justify-content: center;
                   }
                   .thought-check.is-anchored {
-                    transition:
-                      top 0.38s ease,
-                      left 0.38s ease,
-                      right 0.38s ease;
+                    transition: top 0.38s ease;
                   }
                   .thought-check::before {
                     content: "";
@@ -1039,19 +1058,14 @@ function ThoughtsEditorInner(
                   }
                   li.thought-item.is-checklist .thought-check {
                     display: flex;
-                  }
-                  li.thought-item.is-checklist:not(.is-single-line) .thought-check {
-                    left: 7px;
-                    top: calc(var(--category-stack, 0px) + 1.45em + 4px);
-                  }
-                  li.thought-item.has-title.is-checklist:not(.is-single-line) .thought-check {
-                    top: calc(var(--category-stack, 0px) + var(--title-h, 1.45em) + 2px);
+                    left: 4px;
+                    top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
                   }
                   .thought-check-box {
                     display: block;
                     box-sizing: border-box;
-                    width: 18px;
-                    height: 18px;
+                    width: 20px;
+                    height: 20px;
                     border: 1.5px solid currentColor;
                     border-radius: 3px;
                     position: relative;
@@ -1067,7 +1081,7 @@ function ThoughtsEditorInner(
                     left: 5px;
                     top: 2px;
                     width: 5px;
-                    height: 10px;
+                    height: 11px;
                     border: solid ${plain ? hsl("card", colorScheme) : backgroundColor};
                     border-width: 0 1.5px 1.5px 0;
                     transform: rotate(45deg);
@@ -1129,7 +1143,7 @@ function ThoughtsEditorInner(
                     min-height: 18px;
                     margin: 0 0 4px;
                     padding: 2px 0;
-                    overflow: hidden;
+                    overflow: visible;
                     font-family: 'QuicksandRegular', sans-serif;
                     font-size: 12px;
                     line-height: 14px;
@@ -1145,6 +1159,14 @@ function ThoughtsEditorInner(
                       min-height 0.38s ease,
                       padding 0.38s ease;
                   }
+                  .thought-category::before {
+                    content: "";
+                    position: absolute;
+                    top: -10px;
+                    right: 0;
+                    bottom: -10px;
+                    left: -36px;
+                  }
                   .thought-category-name {
                     display: block;
                     white-space: nowrap;
@@ -1152,6 +1174,7 @@ function ThoughtsEditorInner(
                     text-overflow: ellipsis;
                     text-decoration: underline;
                     text-underline-offset: 2px;
+                    pointer-events: none;
                   }
                   .thought-fields {
                     min-width: 0;
@@ -1171,6 +1194,12 @@ function ThoughtsEditorInner(
                     height: 6px;
                     margin-left: -3px;
                     border-radius: 999px;
+                  }
+                  li.thought-item.is-checklist.is-collapsed .thought-stripe {
+                    opacity: 0 !important;
+                    visibility: hidden;
+                    pointer-events: none;
+                    animation: none !important;
                   }
                   @keyframes thought-dot-pulse {
                     0%,
@@ -1293,45 +1322,43 @@ function ThoughtsEditorInner(
         ) : null}
       </View>
 
-      {!readOnly ? (
-        <BottomSheetContent
-          ref={categorySheetRef}
-          style={{ zIndex: 100 }}
-          snapPoints={["100%"]}
-          enableDynamicSizing={false}
-          enablePanDownToClose
-          enableContentPanningGesture={false}
-          keyboardBehavior="extend"
-          keyboardBlurBehavior="restore"
-          android_keyboardInputMode="adjustResize"
-          onDismiss={() => setCategoryPickerIndex(null)}
-        >
-          <BottomSheetView className="gap-5 pt-6 bg-background flex-1">
-            <BottomSheetHeader className="bg-background">
-              <View className="flex-row items-center gap-2">
-                <Icon name="shapes" color="foreground" size={18} />
-                <Typography variant="h3">Categories</Typography>
-              </View>
-            </BottomSheetHeader>
-            <ScrollView
-              className="flex-1"
-              contentContainerStyle={{ paddingBottom: 120 }}
-            >
-              <View className="flex flex-col w-full flex-wrap gap-2">
-                {categories.map((category) => (
-                  <CategoryListItem
-                    key={category.id}
-                    item={category}
-                    label={categoryLabels.get(category.id) ?? category.name}
-                    onPress={() => handleSelectCategory(category)}
-                    selected={selectedCategoryId === category.id}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-          </BottomSheetView>
-        </BottomSheetContent>
-      ) : null}
+      <BottomSheetContent
+        ref={categorySheetRef}
+        style={{ zIndex: 100 }}
+        snapPoints={["100%"]}
+        enableDynamicSizing={false}
+        enablePanDownToClose
+        enableContentPanningGesture={false}
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        onDismiss={() => setCategoryPickerIndex(null)}
+      >
+        <BottomSheetView className="gap-5 pt-6 bg-background flex-1">
+          <BottomSheetHeader className="bg-background">
+            <View className="flex-row items-center gap-2">
+              <Icon name="shapes" color="foreground" size={18} />
+              <Typography variant="h3">Categories</Typography>
+            </View>
+          </BottomSheetHeader>
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ paddingBottom: 120 }}
+          >
+            <View className="flex flex-col w-full flex-wrap gap-2">
+              {categories.map((category) => (
+                <CategoryListItem
+                  key={category.id}
+                  item={category}
+                  label={categoryLabels.get(category.id) ?? category.name}
+                  onPress={() => handleSelectCategory(category)}
+                  selected={selectedCategoryId === category.id}
+                />
+              ))}
+            </View>
+          </ScrollView>
+        </BottomSheetView>
+      </BottomSheetContent>
     </BottomSheet>
   );
 }

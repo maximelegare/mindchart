@@ -106,3 +106,13 @@ export const updateThoughtCompletionQuery = async (
     .set({ isCompleted: data.isCompleted })
     .where(eq(ThoughtTable.id, data.id));
 };
+
+export const updateThoughtCategoryQuery = async (
+  db: DB,
+  data: { id: string; categoryId: string }
+) => {
+  await db
+    .update(ThoughtTable)
+    .set({ categoryId: data.categoryId || "uncategorized" })
+    .where(eq(ThoughtTable.id, data.id));
+};

@@ -240,7 +240,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function collapseThoughtCategory(li) {
-      if (!li || window.__mcSimplified) return;
+      if (!li || window.__mcSimplified || window.__mcEditing) return;
       li.classList.add("is-collapsed");
       li.__mcBounceTimer = setTimeout(function () {
         bounceStripe(li);
@@ -265,7 +265,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function scheduleCollapse(li) {
-      if (!li || window.__mcSimplified) return;
+      if (!li || window.__mcSimplified || window.__mcEditing) return;
       clearCollapseTimer(li);
       li.classList.remove("is-collapsed");
       var stripe = li.querySelector(".thought-stripe");
@@ -285,7 +285,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var lis = content.querySelectorAll("ul > li");
       for (var i = 0; i < lis.length; i++) {
         ensureCategoryChrome(lis[i]);
-        if (!lis[i].classList.contains("is-collapsed")) {
+        if (window.__mcEditing) {
+          expandThoughtCategory(lis[i], false);
+        } else if (!lis[i].classList.contains("is-collapsed")) {
           scheduleCollapse(lis[i]);
         }
       }
@@ -681,8 +683,29 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
+    function onViewThoughtPointer(e) {
+      if (window.__mcEditing || window.__mcSimplified) return;
+      if (closestClass(e.target, "thought-check")) return;
+      if (closestClass(e.target, "thought-graph")) return;
+      var li = closestLi(e.target);
+      if (!li) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var wantsPicker =
+        closestClass(e.target, "thought-category") ||
+        closestClass(e.target, "thought-stripe") ||
+        closestClass(e.target, "thought-rail");
+      if (wantsPicker && !li.classList.contains("is-collapsed")) {
+        expandThoughtCategory(li, true);
+        openCategoryPicker(li);
+        return;
+      }
+      expandThoughtCategory(li, true);
+    }
+
     function onCategoryChromePointer(e) {
       if (window.__mcSimplified) return;
+      if (!window.__mcEditing) return;
       if (closestClass(e.target, "thought-check")) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
@@ -695,13 +718,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var li = closestLi(e.target);
       if (!li) return;
 
-      if (li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, true);
-        // Collapsed label is not hittable; stripe/rail expands only.
-        return;
-      }
-
-      // Expanded: open category picker from label or stripe.
+      // Edit mode keeps categories open; chrome opens the picker.
       openCategoryPicker(li);
     }
 
@@ -746,6 +763,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       true
     );
 
+    content.addEventListener("click", onViewThoughtPointer, true);
+    content.addEventListener("touchend", onViewThoughtPointer, true);
     content.addEventListener("click", onCategoryChromePointer, true);
     // Android WebView often delivers contenteditable=false taps more reliably here.
     content.addEventListener(
@@ -777,6 +796,36 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
 export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;
+}
+
+export function setEditingModeScript(editing: boolean): string {
+  return `
+(function () {
+  window.__mcEditing = ${editing ? "true" : "false"};
+  var root =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!root) return true;
+  var lis = root.querySelectorAll("ul > li");
+  if (window.__mcEditing) {
+    for (var i = 0; i < lis.length; i++) {
+      var li = lis[i];
+      if (li.__mcCollapseTimer) {
+        clearTimeout(li.__mcCollapseTimer);
+        li.__mcCollapseTimer = null;
+      }
+      li.classList.remove("is-collapsed");
+      var stripe = li.querySelector(".thought-stripe");
+      if (stripe) stripe.classList.remove("is-bouncing");
+    }
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
+    }
+  } else if (typeof window.__mcRefreshCategoryTimers === "function") {
+    window.__mcRefreshCategoryTimers();
+  }
+  true;
+})();
+`;
 }
 
 const DEFAULT_EMPTY_BULLET_ERROR = "Add at least one bullet point";
@@ -976,17 +1025,13 @@ export function setSimplifiedModeScript(
       li.thought-item.is-checklist .thought-stripe {
         display: none !important;
       }
+      li.thought-item {
+        --category-stack: 0px !important;
+      }
       li.thought-item.is-checklist .thought-check {
-        left: 7px !important;
+        left: 4px !important;
         right: auto !important;
-        top: 3px !important;
         transition: none !important;
-      }
-      li.thought-item.is-checklist.is-single-line:not(.has-title) {
-        padding-right: 40px !important;
-      }
-      li.thought-item.is-checklist.is-single-line:not(.has-title):not(.has-graph) {
-        padding-right: 0 !important;
       }
     `
     : "";
@@ -1099,7 +1144,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   }
 
   function collapseThoughtCategory(li) {
-    if (!li || window.__mcSimplified) return;
+    if (!li || window.__mcSimplified || window.__mcEditing) return;
     li.classList.add("is-collapsed");
     li.__mcBounceTimer = setTimeout(function () {
       bounceStripe(li);
@@ -1124,7 +1169,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   }
 
   function scheduleCollapse(li) {
-    if (!li || window.__mcSimplified) return;
+    if (!li || window.__mcSimplified || window.__mcEditing) return;
     clearCollapseTimer(li);
     li.classList.remove("is-collapsed");
     var stripe = li.querySelector(".thought-stripe");
@@ -1143,38 +1188,51 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     if (window.__mcSimplified) return;
     var lis = content.querySelectorAll("ul > li.thought-item");
     for (var i = 0; i < lis.length; i++) {
-      if (!lis[i].classList.contains("is-collapsed")) {
+      if (window.__mcEditing) {
+        expandThoughtCategory(lis[i], false);
+      } else if (!lis[i].classList.contains("is-collapsed")) {
         scheduleCollapse(lis[i]);
       }
     }
   };
 
-  content.addEventListener(
-    "click",
-    function (e) {
-      // Edit mode owns category chrome clicks (opens the picker).
-      if (window.__mcBulletGuardInstalled) return;
-      if (window.__mcSimplified) return;
-      if (closestClass(e.target, "thought-check")) return;
-      var rail = closestClass(e.target, "thought-rail");
-      var stripe = closestClass(e.target, "thought-stripe");
-      var chip = closestClass(e.target, "thought-category");
-      if (!rail && !stripe && !chip) return;
+  function openCategoryPicker(li) {
+    if (!li || !li.parentNode || !window.ReactNativeWebView) return;
+    var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+    if (index < 0) return;
+    var now = Date.now();
+    if (window.__mcCategoryPickerAt && now - window.__mcCategoryPickerAt < 400) {
+      return;
+    }
+    window.__mcCategoryPickerAt = now;
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ type: "SELECT_CATEGORY", data: index })
+    );
+  }
 
-      e.preventDefault();
-      e.stopPropagation();
+  function onViewThoughtPointer(e) {
+    if (window.__mcBulletGuardInstalled) return;
+    if (window.__mcEditing || window.__mcSimplified) return;
+    if (closestClass(e.target, "thought-check")) return;
+    if (closestClass(e.target, "thought-graph")) return;
+    var li = closestLi(e.target);
+    if (!li) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var wantsPicker =
+      closestClass(e.target, "thought-category") ||
+      closestClass(e.target, "thought-stripe") ||
+      closestClass(e.target, "thought-rail");
+    if (wantsPicker && !li.classList.contains("is-collapsed")) {
+      expandThoughtCategory(li, true);
+      openCategoryPicker(li);
+      return;
+    }
+    expandThoughtCategory(li, true);
+  }
 
-      var li = closestLi(e.target);
-      if (!li) return;
-
-      if (li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, true);
-      } else {
-        scheduleCollapse(li);
-      }
-    },
-    true
-  );
+  content.addEventListener("click", onViewThoughtPointer, true);
+  content.addEventListener("touchend", onViewThoughtPointer, true);
 
   window.__mcRefreshCategoryTimers();
   return true;
@@ -1331,26 +1389,24 @@ export const CHECKLIST_SCRIPT = `
       check.style.left = "";
       check.style.right = "";
       check.style.top = "";
+      li.style.removeProperty("--check-nudge");
       return;
     }
 
-    if (window.__mcSimplified) {
-      check.style.left = "7px";
-      check.style.right = "auto";
-      check.style.top = "3px";
-    } else if (singleLine) {
-      check.style.left = "auto";
-      check.style.right = graph ? "32px" : "0px";
-      check.style.top = "8px";
+    // Keep top in CSS so it eases with the category line (0.38s).
+    // Only measure the first-line nudge; do not write offsetTop.
+    var target =
+      hasTitle && title && !window.__mcSimplified ? title : summary || title;
+    check.style.left = "";
+    check.style.right = "";
+    check.style.top = "";
+    if (target) {
+      var alignLineH = fieldLineHeight(target);
+      var checkH = check.offsetHeight || 22;
+      var nudge = Math.max(0, Math.round((alignLineH - checkH) / 2));
+      li.style.setProperty("--check-nudge", nudge + "px");
     } else {
-      check.style.left = "";
-      check.style.right = "";
-      check.style.top = "";
-      if (hasTitle && title) {
-        li.style.setProperty("--title-h", title.offsetHeight + "px");
-      } else {
-        li.style.removeProperty("--title-h");
-      }
+      li.style.removeProperty("--check-nudge");
     }
 
     if (!check.classList.contains("is-anchored")) {
@@ -1441,31 +1497,14 @@ export const CHECKLIST_SCRIPT = `
       );
     }
 
-    function isThoughtText(node) {
-      return (
-        closestClass(node, "thought-title") ||
-        closestClass(node, "thought-summary")
-      );
-    }
-
     function onChecklistPointer(e) {
       if (isCategoryChrome(e.target)) return;
       var check = closestClass(e.target, "thought-check");
+      if (!check) return;
       var li = closestLi(e.target);
-      if (check) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (li) toggleCompleted(li);
-        return;
-      }
-      // View mode: tapping the thought text toggles complete.
-      // Edit mode keeps the caret so the user can still type.
-      if (window.__mcBulletGuardInstalled) return;
-      if (!li || !isTrueAttr(li, "data-completable")) return;
-      if (!isThoughtText(e.target)) return;
       e.preventDefault();
       e.stopPropagation();
-      toggleCompleted(li);
+      if (li) toggleCompleted(li);
     }
 
     content.addEventListener("click", onChecklistPointer, true);

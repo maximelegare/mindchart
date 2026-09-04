@@ -4,6 +4,7 @@ import {
   getAllThoughtsGroupByCategoryQuery,
   getOPDatabase,
   updateThoughtCompletionQuery,
+  updateThoughtCategoryQuery,
 } from "@repo/sqlite";
 import { getAllThoughtsWithEmbeddingsQuery } from "@repo/sqlite";
 
@@ -33,4 +34,12 @@ export const updateThoughtCompletion = async (data: {
 }) => {
   const db = getOPDatabase();
   return await updateThoughtCompletionQuery(db, data);
+};
+
+export const updateThoughtCategory = async (data: {
+  id: string;
+  categoryId: string;
+}) => {
+  const db = getOPDatabase();
+  return await updateThoughtCategoryQuery(db, data);
 };

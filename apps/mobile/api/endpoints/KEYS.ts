@@ -66,6 +66,7 @@ export const REACT_QUERY_KEYS = {
   updateNoteLocation: "update_note_location",
   updateNoteLastViewedAt: "update_note_last_viewed_at",
   updateThoughtCompletion: "update_thought_completion",
+  updateThoughtCategory: "update_thought_category",
   fetchAllPersons: "fetch_all_persons",
   insertPerson: "insert_person",
   upsertPersonsFromContacts: "upsert_persons_from_contacts",

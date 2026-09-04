@@ -110,10 +110,13 @@ function NoteDetailsContent({
   const { editNoteAction } = useEditNote();
   const { saveNewNote } = useSaveNewNote();
   const { useFetchAllCategoriesQuery } = useControllers().categories;
-  const { useUpdateThoughtCompletionMutation } =
-    useControllers().notesAndThoughts;
+  const {
+    useUpdateThoughtCompletionMutation,
+    useUpdateThoughtCategoryMutation,
+  } = useControllers().notesAndThoughts;
   const { mutate: persistThoughtCompletion } =
     useUpdateThoughtCompletionMutation();
+  const { mutate: persistThoughtCategory } = useUpdateThoughtCategoryMutation();
   const { data: categoriesData } = useFetchAllCategoriesQuery();
   const { colorScheme } = useColorScheme();
   const [titleRequiredError, setTitleRequiredError] = React.useState(false);
@@ -412,6 +415,10 @@ function NoteDetailsContent({
             onToggleCompleted={({ id, isCompleted }) => {
               if (isEditing || isNew) return;
               persistThoughtCompletion({ id, isCompleted });
+            }}
+            onChangeCategory={({ id, categoryId }) => {
+              if (isEditing || isNew) return;
+              persistThoughtCategory({ id, categoryId });
             }}
           />
         </View>
