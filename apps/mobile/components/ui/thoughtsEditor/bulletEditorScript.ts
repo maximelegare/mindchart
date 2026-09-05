@@ -1038,6 +1038,9 @@ export function setSimplifiedModeScript(
         --category-stack: 0px !important;
         padding-right: 0 !important;
       }
+      .thought-body {
+        padding-right: 0 !important;
+      }
       li.thought-item.is-checklist .thought-check {
         left: 4px !important;
         right: auto !important;

@@ -1038,8 +1038,9 @@ function ThoughtsEditorInner(
                     position: relative;
                     margin-bottom: 0.85em;
                     padding-left: 30px;
-                    padding-right: ${showGraphButtons ? "40px" : "0"};
+                    padding-right: 0;
                     overflow: visible;
+                    box-sizing: border-box;
                     --category-stack: 25px;
                     --dot-size: 8px;
                   }
@@ -1156,8 +1157,11 @@ function ThoughtsEditorInner(
                   }
                   .thought-body {
                     min-width: 0;
+                    max-width: 100%;
                     display: flex;
                     flex-direction: column;
+                    box-sizing: border-box;
+                    padding-right: ${showGraphButtons ? "44px" : "0"};
                   }
                   .thought-graph {
                     position: absolute;
@@ -1262,6 +1266,8 @@ function ThoughtsEditorInner(
                   .thought-summary {
                     position: relative;
                     min-height: 1.35em;
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
                   }
                   .thought-title {
                     font-family: 'QuicksandBold', sans-serif;
