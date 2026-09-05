@@ -1,25 +1,18 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Alert, TouchableOpacity, View } from "react-native";
+import { Alert, TouchableOpacity } from "react-native";
 import {
   BottomSheet,
   BottomSheetContent,
-  BottomSheetHeader,
   BottomSheetOpenTrigger,
   BottomSheetView,
   useBottomSheet,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Icon } from "@/components/ui/icons/icon";
-import { Typography } from "@/components/ui";
-import {
-  EditNoteSheetTitle,
-  noteMoveFailedAlertTitle,
-} from "./noteBottomSheetLabels";
+import { noteMoveFailedAlertTitle } from "./noteBottomSheetLabels";
 import {
   folderPickerNoFolderLabel,
   folderPickerNoteUntitledLabel,
 } from "@/features/notes/shared/ui/folderPickerLabels";
-import { EditNoteFeature } from "@/features/notes/editNote/views";
-import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { useControllers } from "@/api/controllers/useControllers";
 import {
   FolderPickerSheet,
@@ -29,16 +22,15 @@ import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAnd
 import { EditNote } from "./components/editNote";
 import { DeleteNote } from "./components/deleteNote";
 import { MoveNote } from "./components/moveNote";
+import { useRouter } from "expo-router";
 
 type NoteBottomSheetProps = {
   noteId: string;
 };
 
 export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
-  const { editNoteAction } = useEditNote();
-  const editSheet = useBottomSheet();
+  const router = useRouter();
   const moveSheet = useBottomSheet();
-  const [editOpen, setEditOpen] = useState(false);
   const [moveActive, setMoveActive] = useState(false);
 
   const { notesAndThoughts, folders } = useControllers();
@@ -63,12 +55,12 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
     return raw.length > 28 ? `${raw.slice(0, 28)}…` : raw;
   }, [parsedNote]);
 
-  const openEditSheet = useCallback(() => {
-    setEditOpen(true);
-    setTimeout(() => {
-      editSheet.open();
-    }, 200);
-  }, [editSheet]);
+  const openEditPage = useCallback(() => {
+    router.push({
+      pathname: "/notes/[id]",
+      params: { id: noteId, mode: "edit" },
+    });
+  }, [noteId, router]);
 
   const openMoveSheet = useCallback(() => {
     setMoveActive(true);
@@ -107,41 +99,10 @@ export const NoteBottomSheet = ({ noteId }: NoteBottomSheetProps) => {
           enableContentPanningGesture={false}
         >
           <BottomSheetView className="gap-3 pt-6 bg-background">
-            <EditNote onPress={openEditSheet} />
+            <EditNote onPress={openEditPage} />
             <MoveNote onPress={openMoveSheet} />
             <DeleteNote noteId={noteId} />
           </BottomSheetView>
-        </BottomSheetContent>
-      </BottomSheet>
-
-      <BottomSheet>
-        <BottomSheetContent
-          ref={editSheet.ref}
-          snapPoints={["100%"]}
-          index={0}
-          enableContentPanningGesture={false}
-          enablePanDownToClose={false}
-        >
-          {editOpen ? (
-            <BottomSheetView className="flex-1 gap-5 pt-6 bg-background h-full">
-              <BottomSheetHeader
-                className="bg-background gap-2"
-                onDismiss={() => setEditOpen(false)}
-              >
-                <View className="flex-row justify-start items-center gap-2">
-                  <Icon name="pencil" color="foreground" />
-                  <Typography variant="h3">
-                    <EditNoteSheetTitle />
-                  </Typography>
-                </View>
-              </BottomSheetHeader>
-              <EditNoteFeature
-                noteId={noteId}
-                setOpen={setEditOpen}
-                onAction={editNoteAction}
-              />
-            </BottomSheetView>
-          ) : null}
         </BottomSheetContent>
       </BottomSheet>
 
