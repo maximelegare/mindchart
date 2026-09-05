@@ -983,6 +983,13 @@ true;
 `;
 }
 
+const GRAPH_BODY_PAD = `
+      li.thought-item.has-graph .thought-body,
+      li.thought-item:has(> .thought-graph) .thought-body {
+        padding-right: 44px !important;
+      }
+    `;
+
 /** Toggle simplified (plain bullets) chrome inside the editor WebView. */
 export function setSimplifiedModeScript(
   simplified: boolean,
@@ -1038,6 +1045,9 @@ export function setSimplifiedModeScript(
         --category-stack: 0px !important;
         padding-right: 0 !important;
       }
+      .thought-body {
+        padding-right: 0 !important;
+      }
       li.thought-item.is-checklist .thought-check {
         left: 4px !important;
         right: auto !important;
@@ -1061,7 +1071,7 @@ export function setSimplifiedModeScript(
         display: none !important;
       }
     `
-    : "";
+    : GRAPH_BODY_PAD;
 
   return `
 (function () {

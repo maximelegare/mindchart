@@ -1,9 +1,5 @@
 import { fbs } from "fbtee";
 
-export function EditNoteSheetTitle() {
-  return <fbt desc="Note bottom sheet edit view title">Edit Note</fbt>;
-}
-
 export function EditNoteActionLabel() {
   return <fbt desc="Note bottom sheet action: edit note">Edit note</fbt>;
 }

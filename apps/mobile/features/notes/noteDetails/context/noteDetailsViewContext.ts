@@ -11,7 +11,7 @@ type NoteDetailsViewStore = {
 export const useNoteDetailsViewStore = create<NoteDetailsViewStore>()(
   persist(
     (set) => ({
-      simplified: false,
+      simplified: true,
       setSimplified: (simplified) => set({ simplified }),
       toggleSimplified: () =>
         set((state) => ({ simplified: !state.simplified })),

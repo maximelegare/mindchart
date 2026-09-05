@@ -42,7 +42,7 @@ export function NoteDetailsOptionsHeader({
   onLocationChange,
   folderError = false,
 }: NoteDetailsOptionsHeaderProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const simplified = useNoteDetailsViewStore((state) => state.simplified);
   const toggleSimplified = useNoteDetailsViewStore(
     (state) => state.toggleSimplified
