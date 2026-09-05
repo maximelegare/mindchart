@@ -178,12 +178,10 @@ const ThoughtRowActions = ({
   lineHeight,
   emphasized,
   noteId,
-  onOpenNote,
 }: {
   lineHeight: number;
   emphasized: boolean;
   noteId?: string;
-  onOpenNote: (noteId?: string) => void;
 }) => (
   <View
     style={{
@@ -200,11 +198,7 @@ const ThoughtRowActions = ({
       </View>
     ) : null}
     {noteId ? (
-      <Pressable
-        onPress={() => onOpenNote(noteId)}
-        hitSlop={10}
-        accessibilityRole="button"
-        accessibilityLabel="Open note"
+      <View
         style={{
           height: lineHeight,
           width: lineHeight + 4,
@@ -218,7 +212,7 @@ const ThoughtRowActions = ({
           name="notebook-text"
           style={{ opacity: 0.8 }}
         />
-      </Pressable>
+      </View>
     ) : null}
   </View>
 );
@@ -565,7 +559,6 @@ function ThoughtTitleRow({
         lineHeight={TITLE_LINE_HEIGHT}
         emphasized={emphasized}
         noteId={node.noteId}
-        onOpenNote={onOpenNote}
       />
     </View>
   );
@@ -632,7 +625,6 @@ function ThoughtContentRow({
           lineHeight={BODY_LINE_HEIGHT}
           emphasized={emphasized}
           noteId={node.noteId}
-          onOpenNote={onOpenNote}
         />
       </View>
     </NoteActionsWrap>
