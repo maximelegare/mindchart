@@ -18,12 +18,7 @@ export const GraphLoadingPlaceholder = () => {
         },
       ]}
     >
-      <View
-        style={[
-          styles.header,
-          { borderBottomColor: hsl("border", colorScheme) },
-        ]}
-      >
+      <View style={styles.header}>
         <GraphModeTabs />
       </View>
       <View style={styles.canvasArea}>
@@ -42,12 +37,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    width: "100%",
   },
   canvasArea: {
     width: GRAPH_CANVAS_SIZE,

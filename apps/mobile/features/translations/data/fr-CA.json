@@ -4994,6 +4994,28 @@
         }
       ],
       "types": []
+    },
+    "aoshGCMOTtPzPsENbYdj4w==": {
+      "description": "Graph mode tab: categories",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Catégories",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "VRWbXx5JXLQQ09TVv6pNWA==": {
+      "description": "Graph mode tab: folders",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
     }
   }
 }

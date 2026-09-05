@@ -4,8 +4,6 @@ import {
   Canvas,
   Circle,
   Group,
-  Line,
-  Skia,
   Text,
   RoundedRect,
   useFont,
@@ -406,26 +404,6 @@ const resolveNodeLabel = (
   return categoryLabels.get(rawName) ?? rawName;
 };
 
-const buildHatchLines = (r: number, lineColor: string) => {
-  const spacing = Math.max(3, r * 0.12);
-  const strokeWidth = Math.max(0.5, r * 0.035);
-  const span = r * 2.5;
-  const lines: React.ReactNode[] = [];
-  let key = 0;
-  for (let d = -span; d <= span; d += spacing) {
-    lines.push(
-      <Line
-        key={key++}
-        p1={{ x: d - r, y: -r }}
-        p2={{ x: d + r, y: r }}
-        color={lineColor}
-        strokeWidth={strokeWidth}
-      />
-    );
-  }
-  return lines;
-};
-
 interface Props {
   data: NodeDatum;
   graphMode?: GraphMode;
@@ -496,8 +474,6 @@ function CirclePackSkiaRenderer({
   const categoryColorMap = useCategoryColorMap();
   const categoryLabels = useCategoryLabelsMap();
   const isTransitioningInternal = useRef(false);
-  const [hatchHighlightActive, setHatchHighlightActive] =
-    useState(!!focusedThoughtId);
   const { rootNode, allNodes, nodeMap } = layout;
 
   // ---------- 2. Shared Values ----------
@@ -516,14 +492,9 @@ function CirclePackSkiaRenderer({
   const navigateToNode = (
     node: NodeInfo,
     isToggleBack = false,
-    dismissFocusHighlight = false,
     /** When true, mirror this navigation into notes (linked breadcrumbs). */
     syncNotesFolder = false
   ) => {
-    if (dismissFocusHighlight && hatchHighlightActive) {
-      setHatchHighlightActive(false);
-    }
-
     if (!isToggleBack) {
       previousInternalId.value = activeInternalId.value;
     }
@@ -548,12 +519,6 @@ function CirclePackSkiaRenderer({
   };
 
   // ---------- 4. External Focus Effect ----------
-  useEffect(() => {
-    if (focusedThoughtId) {
-      setHatchHighlightActive(true);
-    }
-  }, [focusedThoughtId, trigger]);
-
   useEffect(() => {
     // If we are already moving because the user tapped a circle,
     // don't restart the animation from the effect.
@@ -639,11 +604,11 @@ function CirclePackSkiaRenderer({
           targetToProcess.rawData.name?.toLowerCase() !== "root" &&
           canToggleBack
         ) {
-          runOnJS(navigateToNode)(prev, true, true, true);
+          runOnJS(navigateToNode)(prev, true, true);
         } else if (!isSameTarget) {
-          runOnJS(navigateToNode)(targetToProcess, false, true, true);
+          runOnJS(navigateToNode)(targetToProcess, false, true);
         } else {
-          runOnJS(navigateToNode)(rootNode, false, true, true);
+          runOnJS(navigateToNode)(rootNode, false, true);
         }
         break;
       }
@@ -656,16 +621,16 @@ function CirclePackSkiaRenderer({
     const current = nodeMap.get(activeInternalId.value);
     if (current?.parentId) {
       const parent = nodeMap.get(current.parentId);
-      if (parent) navigateToNode(parent, false, true, true);
+      if (parent) navigateToNode(parent, false, true);
     } else if (current && current.internalId !== rootNode.internalId) {
-      navigateToNode(rootNode, false, true, true);
+      navigateToNode(rootNode, false, true);
     }
   };
 
   const handleZoomOut = () => {
     const current = nodeMap.get(activeInternalId.value);
     if (current?.rawData.name === "Root") return;
-    else navigateToNode(rootNode, false, true, true);
+    else navigateToNode(rootNode, false, true);
   };
 
   const packLayerCounts = useMemo(
@@ -721,8 +686,6 @@ function CirclePackSkiaRenderer({
       shadeCategoryLayer(hslColor(categoryColor), layerIndex, layerCount)
     );
   };
-
-  const focusedDbId = focusedThoughtId ? String(focusedThoughtId) : undefined;
 
   const labelsByInternalId = useMemo(() => {
     const labels = new Map<string, { text: string; empty: boolean }>();
@@ -793,12 +756,7 @@ function CirclePackSkiaRenderer({
           },
         ]}
       >
-        <View
-          style={[
-            styles.header,
-            { borderBottomColor: hsl("border", colorScheme) },
-          ]}
-        >
+        <View style={styles.header}>
           <GraphModeTabs />
         </View>
         <View style={styles.canvasContainer}>
@@ -820,16 +778,6 @@ function CirclePackSkiaRenderer({
                     borderColor={
                       isEmpty ? emptyFolderStroke(colorScheme) : "#FFFFFF"
                     }
-                    isFocusedThought={
-                      hatchHighlightActive &&
-                      !!focusedDbId &&
-                      !node.hasChildren &&
-                      (node.dbId === focusedDbId ||
-                        node.dbId === `note-${focusedDbId}` ||
-                        node.rawData.noteId === focusedDbId ||
-                        !!node.rawData.relatedThoughtIds?.includes(focusedDbId))
-                    }
-                    hatchLineColor={hsl("border", colorScheme, 10)}
                   />
                 );
               })}
@@ -987,8 +935,6 @@ type SkCircleProps = {
   color: string;
   showBorder?: boolean;
   borderColor?: string;
-  isFocusedThought: boolean;
-  hatchLineColor: string;
 };
 
 const SkCircle = ({
@@ -999,8 +945,6 @@ const SkCircle = ({
   color,
   showBorder = false,
   borderColor = "rgba(0,0,0,0.1)",
-  isFocusedThought,
-  hatchLineColor,
 }: SkCircleProps) => {
   const transform = useDerivedValue(() => {
     const k = SIZE / (viewR.value * 2);
@@ -1017,27 +961,9 @@ const SkCircle = ({
     return k > 0 ? 1 / k : 1;
   });
 
-  const clipPath = useMemo(() => {
-    const p = Skia.Path.Make();
-    p.addCircle(0, 0, node.r);
-    return p;
-  }, [node.r]);
-
-  const hatchLines = useMemo(
-    () => buildHatchLines(node.r, hatchLineColor),
-    [node.r, hatchLineColor]
-  );
-
   return (
     <Group transform={transform}>
-      {isFocusedThought ? (
-        <Group clip={clipPath}>
-          <Circle cx={0} cy={0} r={node.r} color="white" />
-          {hatchLines}
-        </Group>
-      ) : (
-        <Circle cx={0} cy={0} r={node.r} color={color} />
-      )}
+      <Circle cx={0} cy={0} r={node.r} color={color} />
       {showBorder ? (
         <Circle
           cx={0}
@@ -1061,12 +987,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    width: "100%",
   },
   canvasContainer: {
     width: SIZE,
