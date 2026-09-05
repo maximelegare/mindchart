@@ -584,6 +584,7 @@ function ThoughtsEditorInner(
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
+      richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
     });
   }, []);
 
@@ -1161,7 +1162,11 @@ function ThoughtsEditorInner(
                     display: flex;
                     flex-direction: column;
                     box-sizing: border-box;
-                    padding-right: ${showGraphButtons ? "44px" : "0"};
+                    padding-right: 0;
+                  }
+                  li.thought-item.has-graph .thought-body,
+                  li.thought-item:has(> .thought-graph) .thought-body {
+                    padding-right: 44px;
                   }
                   .thought-graph {
                     position: absolute;
