@@ -323,8 +323,8 @@ function ThoughtsEditorInner(
   showTitlesRef.current = effectiveShowTitles;
   const simplifiedRef = React.useRef(effectiveSimplified);
   simplifiedRef.current = effectiveSimplified;
-  const borderColorRef = React.useRef(hsl("border", colorScheme));
-  borderColorRef.current = hsl("border", colorScheme);
+  const markerColorRef = React.useRef(hsl("muted-foreground", colorScheme));
+  markerColorRef.current = hsl("muted-foreground", colorScheme);
   const surfaceColorRef = React.useRef(
     plain ? hsl("background", colorScheme) : hsl("card", colorScheme)
   );
@@ -493,7 +493,7 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(
       setSimplifiedModeScript(
         nextSimplified,
-        borderColorRef.current,
+        markerColorRef.current,
         surfaceColorRef.current
       )
     );
@@ -1099,7 +1099,7 @@ function ThoughtsEditorInner(
                     box-sizing: border-box;
                     width: 20px;
                     height: 20px;
-                    border: 2px solid currentColor;
+                    border: 2px solid ${mutedFg};
                     border-radius: 3px;
                     position: relative;
                     z-index: 1;
@@ -1109,10 +1109,11 @@ function ThoughtsEditorInner(
                     display: none;
                     width: 16px;
                     height: 16px;
-                    color: ${hsl("popover", colorScheme)};
+                    color: ${hsl("card", colorScheme)};
                   }
                   li.thought-item.is-completed .thought-check-box {
-                    background: currentColor;
+                    background: ${mutedFg};
+                    border-color: ${mutedFg};
                   }
                   li.thought-item.is-completed .thought-check-box svg {
                     display: block;
@@ -1144,6 +1145,7 @@ function ThoughtsEditorInner(
                     height: var(--dot-size);
                     margin-left: calc(var(--dot-size) / -2);
                     border-radius: 999px;
+                    background-color: ${mutedFg};
                     top: calc(
                       var(--category-stack, 0px) + var(--check-nudge, 2px) - 3px +
                         (22px - var(--dot-size)) / 2
