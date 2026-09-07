@@ -33,7 +33,10 @@ import {
   updateThoughtCompletion,
   updateThoughtCategory,
 } from "@/api/endpoints/thoughts";
-import { invalidateNotesAndThoughtsQueries } from "@/api/utils/invalidateNotesAndThoughtsQueries";
+import {
+  invalidateNotesAndThoughtsQueries,
+  patchThoughtCompletionInNoteDetailsCache,
+} from "@/api/utils/invalidateNotesAndThoughtsQueries";
 import { useGraphController } from "./useGraphController";
 
 import { useGenerateNoteService } from "@/features/notes/noteCreation/features/generateNote/services/generateNoteService";
@@ -206,6 +209,8 @@ export const useNotesAndThoughtsController = () => {
     useQuery<Awaited<ReturnType<typeof fetchNoteDetails>>>({
       queryKey: [REACT_QUERY_KEYS.fetchNoteDetails, id],
       queryFn: () => fetchNoteDetails(id),
+      refetchOnMount: "always",
+      structuralSharing: false,
       ...options,
     });
 
@@ -342,9 +347,19 @@ export const useNotesAndThoughtsController = () => {
   };
 
   const useUpdateThoughtCompletionMutation = () => {
+    const queryClient = useQueryClient();
     return useMutation({
       mutationKey: [REACT_QUERY_KEYS.updateThoughtCompletion],
       mutationFn: updateThoughtCompletion,
+      onMutate: async ({ id, isCompleted }) => {
+        await queryClient.cancelQueries({
+          queryKey: [REACT_QUERY_KEYS.fetchNoteDetails],
+        });
+        patchThoughtCompletionInNoteDetailsCache(queryClient, id, isCompleted);
+      },
+      onSuccess: async () => {
+        await invalidateNotesAndThoughtsQueries(queryClient);
+      },
     });
   };
 
