@@ -430,17 +430,6 @@
       ],
       "types": []
     },
-    "9CGh0wj4YlDbe4qjoBt0EQ==": {
-      "description": "Note bottom sheet edit view title",
-      "tokens": [],
-      "translations": [
-        {
-          "translation": "Modifier la note",
-          "variations": {}
-        }
-      ],
-      "types": []
-    },
     "BRsd98lnSSo5Dl6iEsLDPg==": {
       "description": "Note bottom sheet action: edit note",
       "tokens": [],
@@ -5012,6 +5001,83 @@
       "translations": [
         {
           "translation": "Dossiers",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "cxFBm3OwlguO0Vh86rN8qw==": {
+      "description": "Search input placeholder",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "FQVvQLZrRqnwuZtgUmgF5Q==": {
+      "description": "Search toggle: include original transcript",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Transcription originale",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "lUI2j1u+qojAFPJe3O7JRg==": {
+      "description": "Search results count",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "{count} résultats trouvés",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "fkUyIe8vjvFn74XPIYjgTw==": {
+      "description": "Search result fallback note title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Note sans titre",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "mPiCqHmsFmkwq5c9DbFvyg==": {
+      "description": "Search result transcript snippet label",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Transcription",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "uBa4qxFTDdTGFqLxDXH4Qg==": {
+      "description": "Search sheet header title",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Rechercher",
+          "variations": {}
+        }
+      ],
+      "types": []
+    },
+    "TAu385hauqjPeqImztU34g==": {
+      "description": "Accessibility label for search options chip",
+      "tokens": [],
+      "translations": [
+        {
+          "translation": "Options de recherche",
           "variations": {}
         }
       ],

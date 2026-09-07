@@ -1,6 +1,23 @@
-import { getOPDatabase, searchThoughtsInFTSQuery } from "@repo/sqlite";
+import {
+  getOPDatabase,
+  searchThoughtsInFTSQuery,
+  type SearchNotesQueryOptions,
+} from "@repo/sqlite";
 
-export const searchNotes = async (query: string) => {
+export type SearchNotesParams = {
+  query: string;
+} & SearchNotesQueryOptions;
+
+export const searchNotes = async ({
+  query,
+  includeTranscript = false,
+  limit,
+  offset,
+}: SearchNotesParams) => {
   const db = getOPDatabase();
-  return await searchThoughtsInFTSQuery(db, query);
+  return await searchThoughtsInFTSQuery(db, query, {
+    includeTranscript,
+    limit,
+    offset,
+  });
 };

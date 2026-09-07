@@ -125,13 +125,22 @@ export const SearchResultItemSchema = z.object({
   thoughtSummary: z.string(),
   categoryId: z.string(),
   createdAt: z.string(),
+  transcriptSnippet: z.string().optional().default(""),
 });
 
 export const SearchResultsSchema = z.array(SearchResultItemSchema);
 
+export const PaginatedSearchResultsSchema = z.object({
+  items: SearchResultsSchema,
+  totalCount: z.number(),
+});
+
 export type SearchResultsSchemaModel = z.infer<typeof SearchResultsSchema>;
 export type SearchResultItemSchemaModel = z.infer<
   typeof SearchResultItemSchema
+>;
+export type PaginatedSearchResultsSchemaModel = z.infer<
+  typeof PaginatedSearchResultsSchema
 >;
 
 export type SeedLocalAIResNoteSchemaModel = z.infer<

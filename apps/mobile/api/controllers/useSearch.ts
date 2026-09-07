@@ -1,13 +1,22 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { REACT_QUERY_KEYS, ReactQueryOptions } from "@/api/endpoints/KEYS";
-import { searchNotes } from "../endpoints/search";
+import { searchNotes, type SearchNotesParams } from "../endpoints/search";
 
 export const useSearchController = () => {
-  const useSearchNotesQuery = (query: string, options?: ReactQueryOptions) =>
+  const useSearchNotesQuery = (
+    params: SearchNotesParams,
+    options?: ReactQueryOptions
+  ) =>
     useQuery<Awaited<ReturnType<typeof searchNotes>>>({
-      queryKey: [REACT_QUERY_KEYS.searchNotes, query],
-      queryFn: () => searchNotes(query),
-      enabled: query.trim().length > 0,
+      queryKey: [
+        REACT_QUERY_KEYS.searchNotes,
+        params.query,
+        params.includeTranscript ?? false,
+        params.limit ?? null,
+        params.offset ?? null,
+      ],
+      queryFn: () => searchNotes(params),
+      enabled: params.query.trim().length > 0,
       placeholderData: keepPreviousData,
       ...options,
     });

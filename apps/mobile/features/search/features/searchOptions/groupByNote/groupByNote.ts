@@ -1,9 +1,11 @@
 import { SearchResultItemSchemaModel } from "@repo/zod-schemas";
+import { searchUntitledNoteLabel } from "@/features/search/searchLabels";
 
 export interface GroupedNoteResult {
   noteId: string;
   noteTitle: string;
-
+  createdAt: string;
+  transcriptSnippet: string;
   thoughts: Array<{
     categoryId: string;
     id: string;
@@ -11,6 +13,10 @@ export interface GroupedNoteResult {
     summary: string;
     createdAt: string | number;
   }>;
+}
+
+function isThoughtHit(row: SearchResultItemSchemaModel) {
+  return Boolean(row.thoughtTitle || row.thoughtSummary);
 }
 
 export function groupSearchResultsByNote(
@@ -22,13 +28,20 @@ export function groupSearchResultsByNote(
     if (!map.has(row.noteId)) {
       map.set(row.noteId, {
         noteId: row.noteId,
-        // The first matched item sets the note context title
-        noteTitle: row.noteTitle || "Untitled Note",
+        noteTitle: row.noteTitle || String(searchUntitledNoteLabel()),
+        createdAt: row.createdAt,
+        transcriptSnippet: row.transcriptSnippet ?? "",
         thoughts: [],
       });
     }
 
-    map.get(row.noteId)!.thoughts.push({
+    const group = map.get(row.noteId)!;
+    if (!group.transcriptSnippet && row.transcriptSnippet) {
+      group.transcriptSnippet = row.transcriptSnippet;
+    }
+    if (!isThoughtHit(row)) continue;
+
+    group.thoughts.push({
       id: row.id,
       title: row.thoughtTitle,
       summary: row.thoughtSummary,

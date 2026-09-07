@@ -80,7 +80,10 @@ import { updateEmbeddingsQuery } from "./src/queries/embeddings/updateEmbeddings
 import { deleteThoughByIdQuery } from "./src/queries/thoughts/deleteThoughById";
 import { deleteThoughtsByIdsQuery } from "./src/queries/thoughts/deleteThoughtsByIds";
 import { deleteNoteByIdQuery } from "./src/queries/notes/deleteNoteById";
-import { searchThoughtsInFTSQuery } from "./src/queries/search/fts5/search";
+import {
+  searchThoughtsInFTSQuery,
+  type SearchNotesQueryOptions,
+} from "./src/queries/search/fts5/search";
 import { getAllCategoriesWithThoughtsInfosQuery } from "./src/queries/categories/getAllCategoriesWithThoughtsInfos";
 import {
   getAllCategoryTranslationsQuery,
@@ -168,6 +171,7 @@ export {
   deleteThoughtsByIdsQuery,
   deleteNoteByIdQuery,
   searchThoughtsInFTSQuery,
+  type SearchNotesQueryOptions,
   getAllCategoriesWithThoughtsInfosQuery,
   getAllCategoryTranslationsQuery,
   getCategoryTranslationsByLangQuery,
