@@ -993,7 +993,7 @@ const GRAPH_BODY_PAD = `
 /** Toggle simplified (plain bullets) chrome inside the editor WebView. */
 export function setSimplifiedModeScript(
   simplified: boolean,
-  borderColor: string,
+  markerColor: string,
   surfaceColor: string
 ): string {
   const css = simplified
@@ -1029,7 +1029,7 @@ export function setSimplifiedModeScript(
         width: 8px !important;
         height: 8px !important;
         margin-left: -4px !important;
-        background-color: ${borderColor} !important;
+        background-color: ${markerColor} !important;
         transition: none !important;
         animation: none !important;
         transform: none !important;
@@ -1057,12 +1057,12 @@ export function setSimplifiedModeScript(
         ) !important;
       }
       .thought-check-box {
-        border-color: ${borderColor} !important;
+        border-color: ${markerColor} !important;
         background: ${surfaceColor} !important;
       }
       li.thought-item.is-completed .thought-check-box {
-        background-color: ${borderColor} !important;
-        border-color: ${borderColor} !important;
+        background-color: ${markerColor} !important;
+        border-color: ${markerColor} !important;
       }
       li.thought-item.is-completed .thought-check-box svg {
         color: ${surfaceColor} !important;

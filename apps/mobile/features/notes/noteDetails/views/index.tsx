@@ -463,9 +463,10 @@ export const NoteDetailsFeature = ({
   isNew = false,
   onFolderErrorChange,
 }: NoteDetailsFeatureProps) => {
-  if (isPending) return null;
-  const noteRow = note?.[0];
-  if (!noteRow) return null;
+  if (isPending || !note?.[0]) {
+    return <View className="flex-1" collapsable={false} />;
+  }
+  const noteRow = note[0];
 
   return (
     <NoteDetailsContent

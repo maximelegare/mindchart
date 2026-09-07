@@ -3,7 +3,6 @@ import { View } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -37,13 +36,12 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   useEffect(() => {
     if (hidden) {
-      opacity.value = withTiming(0, { duration: FADE_MS }, (finished) => {
-        if (finished) {
-          runOnJS(setMounted)(false);
-        }
-      });
+      opacity.value = withTiming(0, { duration: FADE_MS });
       translateY.value = withTiming(12, { duration: FADE_MS });
-      return;
+      // Wait out the stack push before dropping height so ScreenContentWrapper
+      // isn't left with a null child mid-draw on Android.
+      const timeout = setTimeout(() => setMounted(false), 450);
+      return () => clearTimeout(timeout);
     }
 
     setMounted(true);
@@ -59,11 +57,14 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   }));
 
   if (!mounted) {
-    return null;
+    return (
+      <View collapsable={false} pointerEvents="none" style={{ height: 0 }} />
+    );
   }
 
   return (
     <Animated.View
+      collapsable={false}
       pointerEvents={hidden ? "none" : "auto"}
       style={[animatedStyle, { backgroundColor: sideChrome, zIndex: 30 }]}
     >

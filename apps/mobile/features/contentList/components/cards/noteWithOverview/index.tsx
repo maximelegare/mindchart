@@ -1,60 +1,141 @@
 import { memo } from "react";
-import { View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
 import { useRouter } from "expo-router";
-import { BulletList } from "@/components/ui/bulletList";
-import { CardTitleRow } from "../shared/cardTitleRow";
+import { CardTitleRow, pushNoteDetails } from "../shared/cardTitleRow";
 import { NoteBottomSheet } from "@/features/notes/noteBottomSheet";
+import {
+  CHECKBOX_MARK_SIZE,
+  StaticCheckboxMark,
+} from "../shared/staticCheckboxMark";
+import { stripHtml } from "@/components/ui/thoughtsEditor";
+import { hsl } from "@/utils/hsl";
+import { useColorScheme } from "@/lib/useColorScheme";
 
 const MAX_VISIBLE_BULLETS = 4;
+const BULLET_SIZE = 6;
+const TEXT_LINE_HEIGHT = 22;
+
+export type NoteOverviewItem = {
+  text: string;
+  isChecklist?: boolean;
+  isCompleted?: boolean;
+};
+
+export function thoughtToOverviewItem(thought: {
+  summary?: string | null;
+  title?: string | null;
+  isCompletable?: boolean;
+  isCompleted?: boolean;
+}): NoteOverviewItem {
+  return {
+    text: stripHtml(thought.summary || thought.title || ""),
+    isChecklist: Boolean(thought.isCompletable),
+    isCompleted: Boolean(thought.isCompleted),
+  };
+}
 
 type ListItemProps = {
   id: string;
   title: string;
   date?: string | null;
   category?: string | null;
-  overviewItems: string[];
+  overviewItems: NoteOverviewItem[];
 };
 
 export const NoteWithThoughts: React.FC<ListItemProps> = memo(
   ({ title, id, date, overviewItems }) => {
     const { push } = useRouter();
+    const { colorScheme } = useColorScheme();
+    const markerColor = hsl("muted-foreground", colorScheme);
     const hasMore = overviewItems.length > MAX_VISIBLE_BULLETS;
     const visibleItems = hasMore
       ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
       : overviewItems;
 
+    const openDetails = () => pushNoteDetails(push, id);
+
     return (
-      <View className="bg-card w-full rounded-2xl p-3.5 pb-4">
-        <View className="flex-row items-center justify-between mb-1">
-          <DisplayDate date={date} />
-        </View>
-        <CardTitleRow
-          title={title}
-          onTitlePress={() => push({ pathname: "/notes/[id]", params: { id } })}
-          menu={<NoteBottomSheet noteId={id} />}
+      <View
+        className="bg-card w-full rounded-2xl p-3.5 pb-4"
+        collapsable={false}
+      >
+        <Pressable
+          onPress={openDetails}
+          accessibilityRole="button"
+          accessibilityLabel={title}
+          style={StyleSheet.absoluteFillObject}
         />
-        {visibleItems.length > 0 && (
-          <View className="gap-3 mt-4">
-            <BulletList
-              bulletClassName="mt-[10px]"
-              bulletColor="border"
-              items={visibleItems.map((summary, idx) => (
-                <>
-                  <View key={idx}>
-                    <Typography variant="p">{summary}</Typography>
-                  </View>
-                  {idx === visibleItems.length - 1 && hasMore && (
-                    <Typography variant="muted" className="ml-4 -mt-2">
-                      ...
-                    </Typography>
-                  )}
-                </>
-              ))}
-            />
+        <View pointerEvents="box-none">
+          <View
+            className="flex-row items-center justify-between mb-1"
+            pointerEvents="none"
+          >
+            <DisplayDate date={date} />
           </View>
-        )}
+          <CardTitleRow title={title} menu={<NoteBottomSheet noteId={id} />} />
+          {visibleItems.length > 0 && (
+            <View className="mt-4 ml-2" pointerEvents="none">
+              {visibleItems.map((item, idx) => {
+                const completed = Boolean(item.isChecklist && item.isCompleted);
+                return (
+                  <View
+                    key={idx}
+                    className="flex-row items-start"
+                    style={{ marginBottom: 10 }}
+                  >
+                    <View
+                      style={{
+                        width: CHECKBOX_MARK_SIZE,
+                        height: TEXT_LINE_HEIGHT,
+                        marginRight: 10,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {item.isChecklist ? (
+                        <StaticCheckboxMark completed={completed} />
+                      ) : (
+                        <View
+                          className="rounded-full"
+                          style={{
+                            width: BULLET_SIZE,
+                            height: BULLET_SIZE,
+                            backgroundColor: markerColor,
+                          }}
+                        />
+                      )}
+                    </View>
+                    <View className="flex-1">
+                      <Typography
+                        variant="p"
+                        padding={false}
+                        style={{
+                          lineHeight: TEXT_LINE_HEIGHT,
+                          includeFontPadding: false,
+                          ...(completed
+                            ? {
+                                textDecorationLine: "line-through" as const,
+                                opacity: 0.55,
+                              }
+                            : null),
+                        }}
+                      >
+                        {item.text}
+                      </Typography>
+                      {idx === visibleItems.length - 1 && hasMore ? (
+                        <Typography variant="muted" padding={false}>
+                          ...
+                        </Typography>
+                      ) : null}
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
       </View>
     );
   },

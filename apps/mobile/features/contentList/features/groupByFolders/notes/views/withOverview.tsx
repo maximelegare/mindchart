@@ -1,12 +1,14 @@
 import { View } from "react-native";
-import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
+import {
+  NoteWithThoughts,
+  thoughtToOverviewItem,
+} from "@/features/contentList/components/cards/noteWithOverview";
 import { FolderSection } from "../components/folderSection";
 import { PaginationControls } from "@/features/contentList/features/pagination/components/paginationControls";
 import {
   useGroupByFoldersNotesPagination,
   useGroupByFoldersNotesWithOverviewData,
 } from "../hooks/useGroupByFoldersNotesData";
-import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 export const NotesListGroupByFoldersWithOverviewFeature = () => {
   const parsedData = useGroupByFoldersNotesWithOverviewData();
@@ -30,9 +32,7 @@ export const NotesListGroupByFoldersWithOverviewFeature = () => {
               title={note.title}
               category="idea"
               date={note.createdAt ?? ""}
-              overviewItems={note.thoughts.map((thought) =>
-                stripHtml(thought.summary)
-              )}
+              overviewItems={note.thoughts.map(thoughtToOverviewItem)}
             />
           ))}
         </FolderSection>
