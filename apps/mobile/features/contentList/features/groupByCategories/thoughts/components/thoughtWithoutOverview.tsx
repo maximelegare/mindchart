@@ -1,10 +1,13 @@
 import { memo } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Separator } from "@/components/ui/separator";
 import { DisplayDate } from "@/components/ui/date";
 import { useRouter } from "expo-router";
 import { Thought } from "@repo/zod-schemas";
-import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
+import {
+  CardTitleRow,
+  pushNoteDetails,
+} from "@/features/contentList/components/cards/shared/cardTitleRow";
 import { StaticCheckboxMark } from "@/features/contentList/components/cards/shared/staticCheckboxMark";
 
 export const ThoughtWithoutOverview: React.FC<Thought> = memo(
@@ -12,7 +15,12 @@ export const ThoughtWithoutOverview: React.FC<Thought> = memo(
     const { push } = useRouter();
 
     return (
-      <View className="bg-card w-full rounded-2xl p-3.5 pb-4">
+      <Pressable
+        onPress={() => pushNoteDetails(push, noteId)}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        className="bg-card w-full rounded-2xl p-3.5 pb-4"
+      >
         <View className="flex-row items-center justify-between mb-1">
           <DisplayDate date={createdAt} />
         </View>
@@ -22,15 +30,10 @@ export const ThoughtWithoutOverview: React.FC<Thought> = memo(
             <StaticCheckboxMark completed={Boolean(isCompleted)} />
           ) : null}
           <View className="flex-1">
-            <CardTitleRow
-              title={title}
-              onTitlePress={() =>
-                push({ pathname: "/notes/[id]", params: { id: noteId } })
-              }
-            />
+            <CardTitleRow title={title} />
           </View>
         </View>
-      </View>
+      </Pressable>
     );
   }
 );

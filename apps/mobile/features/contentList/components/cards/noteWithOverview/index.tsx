@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
 import { useRouter } from "expo-router";
-import { CardTitleRow } from "../shared/cardTitleRow";
+import { CardTitleRow, pushNoteDetails } from "../shared/cardTitleRow";
 import { NoteBottomSheet } from "@/features/notes/noteBottomSheet";
 import {
   CHECKBOX_MARK_SIZE,
@@ -54,76 +54,88 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
       ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
       : overviewItems;
 
+    const openDetails = () => pushNoteDetails(push, id);
+
     return (
-      <View className="bg-card w-full rounded-2xl p-3.5 pb-4">
-        <View className="flex-row items-center justify-between mb-1">
-          <DisplayDate date={date} />
-        </View>
-        <CardTitleRow
-          title={title}
-          onTitlePress={() => push({ pathname: "/notes/[id]", params: { id } })}
-          menu={<NoteBottomSheet noteId={id} />}
+      <View
+        className="bg-card w-full rounded-2xl p-3.5 pb-4"
+        collapsable={false}
+      >
+        <Pressable
+          onPress={openDetails}
+          accessibilityRole="button"
+          accessibilityLabel={title}
+          style={StyleSheet.absoluteFillObject}
         />
-        {visibleItems.length > 0 && (
-          <View className="mt-4 ml-2">
-            {visibleItems.map((item, idx) => {
-              const completed = Boolean(item.isChecklist && item.isCompleted);
-              return (
-                <View
-                  key={idx}
-                  className="flex-row items-start"
-                  style={{ marginBottom: 10 }}
-                >
+        <View pointerEvents="box-none">
+          <View
+            className="flex-row items-center justify-between mb-1"
+            pointerEvents="none"
+          >
+            <DisplayDate date={date} />
+          </View>
+          <CardTitleRow title={title} menu={<NoteBottomSheet noteId={id} />} />
+          {visibleItems.length > 0 && (
+            <View className="mt-4 ml-2" pointerEvents="none">
+              {visibleItems.map((item, idx) => {
+                const completed = Boolean(item.isChecklist && item.isCompleted);
+                return (
                   <View
-                    style={{
-                      width: CHECKBOX_MARK_SIZE,
-                      height: TEXT_LINE_HEIGHT,
-                      marginRight: 10,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
+                    key={idx}
+                    className="flex-row items-start"
+                    style={{ marginBottom: 10 }}
                   >
-                    {item.isChecklist ? (
-                      <StaticCheckboxMark completed={completed} />
-                    ) : (
-                      <View
-                        className="rounded-full"
-                        style={{
-                          width: BULLET_SIZE,
-                          height: BULLET_SIZE,
-                          backgroundColor: markerColor,
-                        }}
-                      />
-                    )}
-                  </View>
-                  <View className="flex-1">
-                    <Typography
-                      variant="p"
-                      padding={false}
+                    <View
                       style={{
-                        lineHeight: TEXT_LINE_HEIGHT,
-                        includeFontPadding: false,
-                        ...(completed
-                          ? {
-                              textDecorationLine: "line-through" as const,
-                              opacity: 0.55,
-                            }
-                          : null),
+                        width: CHECKBOX_MARK_SIZE,
+                        height: TEXT_LINE_HEIGHT,
+                        marginRight: 10,
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      {item.text}
-                    </Typography>
-                    {idx === visibleItems.length - 1 && hasMore ? (
-                      <Typography variant="muted" padding={false}>
-                        ...
+                      {item.isChecklist ? (
+                        <StaticCheckboxMark completed={completed} />
+                      ) : (
+                        <View
+                          className="rounded-full"
+                          style={{
+                            width: BULLET_SIZE,
+                            height: BULLET_SIZE,
+                            backgroundColor: markerColor,
+                          }}
+                        />
+                      )}
+                    </View>
+                    <View className="flex-1">
+                      <Typography
+                        variant="p"
+                        padding={false}
+                        style={{
+                          lineHeight: TEXT_LINE_HEIGHT,
+                          includeFontPadding: false,
+                          ...(completed
+                            ? {
+                                textDecorationLine: "line-through" as const,
+                                opacity: 0.55,
+                              }
+                            : null),
+                        }}
+                      >
+                        {item.text}
                       </Typography>
-                    ) : null}
+                      {idx === visibleItems.length - 1 && hasMore ? (
+                        <Typography variant="muted" padding={false}>
+                          ...
+                        </Typography>
+                      ) : null}
+                    </View>
                   </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
+                );
+              })}
+            </View>
+          )}
+        </View>
       </View>
     );
   },

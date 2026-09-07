@@ -1,12 +1,15 @@
 import { memo, ReactElement, ReactNode } from "react";
-import { View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Separator } from "@/components/ui/separator";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
 import { Icon } from "@/components/ui/icons/icon";
 import { useRouter } from "expo-router";
-import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
+import {
+  CardTitleRow,
+  pushNoteDetails,
+} from "@/features/contentList/components/cards/shared/cardTitleRow";
 import { StaticCheckboxMark } from "@/features/contentList/components/cards/shared/staticCheckboxMark";
 import { Button } from "@/components/ui";
 
@@ -37,50 +40,64 @@ export const ExpandableThoughtWithOverview: React.FC<ExpandableThoughtProps> =
     }) => {
       const { push } = useRouter();
 
+      const openDetails = () => pushNoteDetails(push, noteId);
+
       return (
-        <View className="bg-card w-full rounded-2xl p-3.5 pb-4">
-          <View className="flex-row items-center justify-between mb-1">
-            <DisplayDate date={date} />
-          </View>
-          <Separator className="mb-2" color="border" />
-          <View className="flex-row items-center gap-2">
-            {isChecklist ? (
-              <StaticCheckboxMark completed={Boolean(isCompleted)} />
-            ) : null}
-            <View className="flex-1">
-              <CardTitleRow
-                title={title}
-                onTitlePress={() =>
-                  push({ pathname: "/notes/[id]", params: { id: noteId } })
-                }
-              />
+        <View
+          className="bg-card w-full rounded-2xl p-3.5 pb-4"
+          collapsable={false}
+        >
+          <Pressable
+            onPress={openDetails}
+            accessibilityRole="button"
+            accessibilityLabel={title}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <View pointerEvents="box-none">
+            <View
+              className="flex-row items-center justify-between mb-1"
+              pointerEvents="none"
+            >
+              <DisplayDate date={date} />
+            </View>
+            <Separator className="mb-2" color="border" pointerEvents="none" />
+            <View className="flex-row items-center gap-2" pointerEvents="none">
+              {isChecklist ? (
+                <StaticCheckboxMark completed={Boolean(isCompleted)} />
+              ) : null}
+              <View className="flex-1">
+                <CardTitleRow title={title} />
+              </View>
+            </View>
+            <View
+              className="flex-row items-center justify-between"
+              pointerEvents="auto"
+              style={{ marginTop: 20 }}
+            >
+              <Button
+                variant="outline"
+                size="xs"
+                className="flex-row items-center gap-2 px-1"
+                onPress={() => onPress?.(id)}
+              >
+                <Icon
+                  name={expanded ? "chevron-up" : "chevron-down"}
+                  color="text"
+                  style={{ marginTop: 4 }}
+                  size={15}
+                />
+                <Typography style={{ fontSize: 10 }} variant="p">
+                  {expanded ? "Hide Overview" : "Show Overview"}
+                </Typography>
+              </Button>
+            </View>
+
+            <View pointerEvents="none">
+              <CollapsibleContainer expanded={expanded}>
+                {children}
+              </CollapsibleContainer>
             </View>
           </View>
-          <View
-            className="flex-row items-center justify-between"
-            style={{ marginTop: 20 }}
-          >
-            <Button
-              variant="outline"
-              size="xs"
-              className="flex-row items-center gap-2 px-1"
-              onPress={() => onPress?.(id)}
-            >
-              <Icon
-                name={expanded ? "chevron-up" : "chevron-down"}
-                color="text"
-                style={{ marginTop: 4 }}
-                size={15}
-              />
-              <Typography style={{ fontSize: 10 }} variant="p">
-                {expanded ? "Hide Overview" : "Show Overview"}
-              </Typography>
-            </Button>
-          </View>
-
-          <CollapsibleContainer expanded={expanded}>
-            {children}
-          </CollapsibleContainer>
         </View>
       );
     },
