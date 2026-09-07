@@ -7,6 +7,7 @@ import { DisplayDate } from "@/components/ui/date";
 import { Icon } from "@/components/ui/icons/icon";
 import { useRouter } from "expo-router";
 import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
+import { StaticCheckboxMark } from "@/features/contentList/components/cards/shared/staticCheckboxMark";
 import { Button } from "@/components/ui";
 
 type ExpandableThoughtProps = {
@@ -17,11 +18,23 @@ type ExpandableThoughtProps = {
   children: ReactElement | ReactNode;
   expanded: boolean;
   onPress?: (id: string) => void;
+  isChecklist?: boolean;
+  isCompleted?: boolean;
 };
 
 export const ExpandableThoughtWithOverview: React.FC<ExpandableThoughtProps> =
   memo(
-    ({ children, title, id, noteId, date, onPress, expanded }) => {
+    ({
+      children,
+      title,
+      id,
+      noteId,
+      date,
+      onPress,
+      expanded,
+      isChecklist,
+      isCompleted,
+    }) => {
       const { push } = useRouter();
 
       return (
@@ -30,12 +43,19 @@ export const ExpandableThoughtWithOverview: React.FC<ExpandableThoughtProps> =
             <DisplayDate date={date} />
           </View>
           <Separator className="mb-2" color="border" />
-          <CardTitleRow
-            title={title}
-            onTitlePress={() =>
-              push({ pathname: "/notes/[id]", params: { id: noteId } })
-            }
-          />
+          <View className="flex-row items-center gap-2">
+            {isChecklist ? (
+              <StaticCheckboxMark completed={Boolean(isCompleted)} />
+            ) : null}
+            <View className="flex-1">
+              <CardTitleRow
+                title={title}
+                onTitlePress={() =>
+                  push({ pathname: "/notes/[id]", params: { id: noteId } })
+                }
+              />
+            </View>
+          </View>
           <View
             className="flex-row items-center justify-between"
             style={{ marginTop: 20 }}
@@ -67,5 +87,7 @@ export const ExpandableThoughtWithOverview: React.FC<ExpandableThoughtProps> =
     (prevProps, nextProps) =>
       prevProps.expanded === nextProps.expanded &&
       prevProps.title === nextProps.title &&
-      prevProps.id === nextProps.id
+      prevProps.id === nextProps.id &&
+      prevProps.isChecklist === nextProps.isChecklist &&
+      prevProps.isCompleted === nextProps.isCompleted
   );

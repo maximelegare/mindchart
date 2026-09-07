@@ -1,5 +1,8 @@
 import { View } from "react-native";
-import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
+import {
+  NoteWithThoughts,
+  thoughtToOverviewItem,
+} from "@/features/contentList/components/cards/noteWithOverview";
 import { PaginationControls } from "@/features/contentList/features/pagination/components/paginationControls";
 import { DateSection } from "../components/dateSection";
 import {
@@ -29,7 +32,7 @@ export const NotesListGroupByDatesWithOverviewFeature = () => {
               title={note.title}
               category="idea"
               date={note.createdAt ?? ""}
-              overviewItems={note.thoughts.map((thought) => thought.summary)}
+              overviewItems={note.thoughts.map(thoughtToOverviewItem)}
             />
           ))}
         </DateSection>

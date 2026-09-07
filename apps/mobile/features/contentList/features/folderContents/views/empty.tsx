@@ -2,7 +2,10 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import { Typography } from "@/components/ui";
 import { useControllers } from "@/api/controllers/useControllers";
-import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
+import {
+  NoteWithThoughts,
+  thoughtToOverviewItem,
+} from "@/features/contentList/components/cards/noteWithOverview";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import { useContentListSort } from "@/features/contentList/hooks/useContentListSort";
 import { useNotesAttributeFilters } from "@/features/contentList/hooks/useContentListFilter";
@@ -74,7 +77,7 @@ export const FolderContentsView = () => {
           title={note.title}
           category="idea"
           date={note.createdAt ?? ""}
-          overviewItems={note.thoughts.map((thought) => thought.summary)}
+          overviewItems={note.thoughts.map(thoughtToOverviewItem)}
         />
       ))}
     </View>

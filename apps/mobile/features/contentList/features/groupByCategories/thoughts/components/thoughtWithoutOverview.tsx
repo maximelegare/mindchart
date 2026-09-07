@@ -5,9 +5,10 @@ import { DisplayDate } from "@/components/ui/date";
 import { useRouter } from "expo-router";
 import { Thought } from "@repo/zod-schemas";
 import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
+import { StaticCheckboxMark } from "@/features/contentList/components/cards/shared/staticCheckboxMark";
 
 export const ThoughtWithoutOverview: React.FC<Thought> = memo(
-  ({ title, noteId, createdAt }) => {
+  ({ title, noteId, createdAt, isCompletable, isCompleted }) => {
     const { push } = useRouter();
 
     return (
@@ -16,12 +17,19 @@ export const ThoughtWithoutOverview: React.FC<Thought> = memo(
           <DisplayDate date={createdAt} />
         </View>
         <Separator className="mb-2" color="border" />
-        <CardTitleRow
-          title={title}
-          onTitlePress={() =>
-            push({ pathname: "/notes/[id]", params: { id: noteId } })
-          }
-        />
+        <View className="flex-row items-center gap-2">
+          {isCompletable ? (
+            <StaticCheckboxMark completed={Boolean(isCompleted)} />
+          ) : null}
+          <View className="flex-1">
+            <CardTitleRow
+              title={title}
+              onTitlePress={() =>
+                push({ pathname: "/notes/[id]", params: { id: noteId } })
+              }
+            />
+          </View>
+        </View>
       </View>
     );
   }

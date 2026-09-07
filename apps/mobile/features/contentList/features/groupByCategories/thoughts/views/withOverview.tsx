@@ -45,6 +45,8 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
               date={thought.createdAt ?? ""}
               expanded={expandedCardId === thought.id}
               onPress={handleExpandableCardPress}
+              isChecklist={thought.isCompletable ?? false}
+              isCompleted={thought.isCompleted ?? false}
             >
               <View className="gap-3 mt-2">
                 <Separator />

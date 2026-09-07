@@ -1,5 +1,8 @@
 import { View } from "react-native";
-import { NoteWithThoughts } from "@/features/contentList/components/cards/noteWithOverview";
+import {
+  NoteWithThoughts,
+  thoughtToOverviewItem,
+} from "@/features/contentList/components/cards/noteWithOverview";
 import { PaginationControls } from "@/features/contentList/features/pagination/components/paginationControls";
 import { usePaginatedNotes } from "@/features/contentList/features/pagination/hooks/usePaginatedNotes";
 import { useFocusEffect } from "expo-router";
@@ -24,7 +27,7 @@ export const NotesListWithOverviewFeature = () => {
           title={n.title}
           category="idea"
           date={n.createdAt ?? ""}
-          overviewItems={n.thoughts.map((t) => t.summary)}
+          overviewItems={n.thoughts.map(thoughtToOverviewItem)}
         />
       ))}
       <PaginationControls
