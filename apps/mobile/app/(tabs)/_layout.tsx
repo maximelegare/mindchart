@@ -7,6 +7,7 @@ import { LAYOUT_SIZES } from "@/components/layout/constants";
 import { FloatingModal } from "@/features/notes/noteCreation/features/floatingButton/views";
 import { NoteCreationProvider } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { FolderTreeSidebar } from "@/features/contentList/components/folderTree/folderTreeSidebar";
+import { PellEditorWarmup } from "@/components/ui/thoughtsEditor";
 
 export const unstable_settings = {
   initialRouteName: "notes",
@@ -19,6 +20,7 @@ export default function TabLayout() {
   return (
     <NoteCreationProvider>
       <View style={styles.root}>
+        <PellEditorWarmup />
         <Tabs
           screenOptions={{
             header: () => null,

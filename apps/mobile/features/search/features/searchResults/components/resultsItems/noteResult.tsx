@@ -2,14 +2,15 @@ import React from "react";
 import { Pressable, View } from "react-native";
 import { Highlight } from "../highlight";
 import { DisplayDate } from "@/components/ui/date";
-import { useBottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
+import { Typography } from "@/components/ui/typography";
 import { GroupedNoteResult } from "@/features/search/features/searchOptions/groupByNote/groupByNote";
 import {
   DEFAULT_CATEGORY_COLOR,
   useCategoryColorMap,
 } from "@/features/categories/hooks/useCategoryColor";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
+import { searchTranscriptMatchLabel } from "@/features/search/searchLabels";
+import { useSearchContext } from "@/features/search/context/search";
 
 export const NoteResult = ({
   query,
@@ -18,20 +19,13 @@ export const NoteResult = ({
   query: string;
   data: GroupedNoteResult;
 }) => {
-  const { noteTitle, thoughts, noteId } = data;
+  const { noteTitle, thoughts, noteId, transcriptSnippet, createdAt } = data;
   const categoryColorMap = useCategoryColorMap();
+  const requestOpenNote = useSearchContext((state) => state.requestOpenNote);
 
-  const { push } = useRouter();
-  const { dismiss } = useBottomSheetModal();
   const handlePress = () => {
-    dismiss();
-    push({
-      pathname: "/notes/[id]",
-      params: { id: noteId },
-    });
+    requestOpenNote(noteId);
   };
-
-  const createdAt = new Date(thoughts[0]?.createdAt);
 
   return (
     <Pressable
@@ -45,30 +39,44 @@ export const NoteResult = ({
           query={query}
           contextWindow={20}
         />
-        <View style={{ marginTop: 10, paddingLeft: 16 }}>
-          {thoughts.map((thought) => (
-            <View key={thought.id} className="mb-2 relative">
-              <View
-                className="rounded-full w-2 h-2 absolute top-2"
-                style={{
-                  left: -12,
-                  backgroundColor:
-                    categoryColorMap.get(thought.categoryId) ??
-                    DEFAULT_CATEGORY_COLOR,
-                }}
-              ></View>
-              <View>
-                <Highlight
-                  variant="h3"
-                  className="text-base"
-                  text={stripHtml(thought.title)}
-                  query={query}
+        {transcriptSnippet ? (
+          <View className="mt-2">
+            <Typography variant="muted" padding={false} className="mb-1">
+              {searchTranscriptMatchLabel()}
+            </Typography>
+            <Highlight
+              text={transcriptSnippet}
+              query={query}
+              contextWindow={40}
+            />
+          </View>
+        ) : null}
+        {thoughts.length > 0 ? (
+          <View style={{ marginTop: 10, paddingLeft: 16 }}>
+            {thoughts.map((thought) => (
+              <View key={thought.id} className="mb-2 relative">
+                <View
+                  className="rounded-full w-2 h-2 absolute top-2"
+                  style={{
+                    left: -12,
+                    backgroundColor:
+                      categoryColorMap.get(thought.categoryId) ??
+                      DEFAULT_CATEGORY_COLOR,
+                  }}
                 />
-                <Highlight text={stripHtml(thought.summary)} query={query} />
+                <View>
+                  <Highlight
+                    variant="h3"
+                    className="text-base"
+                    text={stripHtml(thought.title)}
+                    query={query}
+                  />
+                  <Highlight text={stripHtml(thought.summary)} query={query} />
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        ) : null}
       </View>
       <View style={{ marginTop: 8 }}>
         <DisplayDate

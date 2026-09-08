@@ -5078,6 +5078,209 @@
     },
     {
       "hashToLeaf": {
+        "uBa4qxFTDdTGFqLxDXH4Qg==": {
+          "desc": "Search sheet header title",
+          "text": "Search"
+        }
+      },
+      "filename": "features/search/searchLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 4,
+          "column": 9,
+          "index": 80
+        },
+        "end": {
+          "line": 4,
+          "column": 51,
+          "index": 122
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Search sheet header title",
+          "text": "Search"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "cxFBm3OwlguO0Vh86rN8qw==": {
+          "desc": "Search input placeholder",
+          "text": "Search"
+        }
+      },
+      "filename": "features/search/searchLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 9,
+          "index": 174
+        },
+        "end": {
+          "line": 8,
+          "column": 50,
+          "index": 215
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Search input placeholder",
+          "text": "Search"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "TAu385hauqjPeqImztU34g==": {
+          "desc": "Accessibility label for search options chip",
+          "text": "Search options"
+        }
+      },
+      "filename": "features/search/searchLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 12,
+          "column": 9,
+          "index": 281
+        },
+        "end": {
+          "line": 12,
+          "column": 77,
+          "index": 349
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Accessibility label for search options chip",
+          "text": "Search options"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "FQVvQLZrRqnwuZtgUmgF5Q==": {
+          "desc": "Search toggle: include original transcript",
+          "text": "Original transcript"
+        }
+      },
+      "filename": "features/search/searchLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 16,
+          "column": 9,
+          "index": 411
+        },
+        "end": {
+          "line": 19,
+          "column": 3,
+          "index": 495
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Search toggle: include original transcript",
+          "text": "Original transcript"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "lUI2j1u+qojAFPJe3O7JRg==": {
+          "desc": "Search results count",
+          "text": "{count} results found"
+        }
+      },
+      "filename": "features/search/searchLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 24,
+          "column": 4,
+          "index": 587
+        },
+        "end": {
+          "line": 26,
+          "column": 10,
+          "index": 695
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Search results count",
+          "text": "{count} results found"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "fkUyIe8vjvFn74XPIYjgTw==": {
+          "desc": "Search result fallback note title",
+          "text": "Untitled Note"
+        }
+      },
+      "filename": "features/search/searchLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 31,
+          "column": 9,
+          "index": 757
+        },
+        "end": {
+          "line": 31,
+          "column": 66,
+          "index": 814
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Search result fallback note title",
+          "text": "Untitled Note"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
+        "mPiCqHmsFmkwq5c9DbFvyg==": {
+          "desc": "Search result transcript snippet label",
+          "text": "Transcript"
+        }
+      },
+      "filename": "features/search/searchLabels.tsx",
+      "loc": {
+        "start": {
+          "line": 35,
+          "column": 9,
+          "index": 875
+        },
+        "end": {
+          "line": 35,
+          "column": 68,
+          "index": 934
+        }
+      },
+      "project": "",
+      "jsfbt": {
+        "m": [],
+        "t": {
+          "desc": "Search result transcript snippet label",
+          "text": "Transcript"
+        }
+      }
+    },
+    {
+      "hashToLeaf": {
         "ZqeIrCSUmcdHaWusaw7G/w==": {
           "desc": "Folder picker sheet default title",
           "text": "Move to…"
@@ -6847,35 +7050,6 @@
     },
     {
       "hashToLeaf": {
-        "9CGh0wj4YlDbe4qjoBt0EQ==": {
-          "desc": "Note bottom sheet edit view title",
-          "text": "Edit Note"
-        }
-      },
-      "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
-      "loc": {
-        "start": {
-          "line": 4,
-          "column": 9,
-          "index": 78
-        },
-        "end": {
-          "line": 4,
-          "column": 70,
-          "index": 139
-        }
-      },
-      "project": "",
-      "jsfbt": {
-        "m": [],
-        "t": {
-          "desc": "Note bottom sheet edit view title",
-          "text": "Edit Note"
-        }
-      }
-    },
-    {
-      "hashToLeaf": {
         "BRsd98lnSSo5Dl6iEsLDPg==": {
           "desc": "Note bottom sheet action: edit note",
           "text": "Edit note"
@@ -6884,14 +7058,14 @@
       "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
       "loc": {
         "start": {
-          "line": 8,
+          "line": 4,
           "column": 9,
-          "index": 193
+          "index": 79
         },
         "end": {
-          "line": 8,
+          "line": 4,
           "column": 72,
-          "index": 256
+          "index": 142
         }
       },
       "project": "",
@@ -6913,14 +7087,14 @@
       "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
       "loc": {
         "start": {
-          "line": 12,
+          "line": 8,
           "column": 9,
-          "index": 310
+          "index": 196
         },
         "end": {
-          "line": 12,
+          "line": 8,
           "column": 72,
-          "index": 373
+          "index": 259
         }
       },
       "project": "",
@@ -6942,14 +7116,14 @@
       "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
       "loc": {
         "start": {
-          "line": 16,
+          "line": 12,
           "column": 9,
-          "index": 429
+          "index": 315
         },
         "end": {
-          "line": 16,
+          "line": 12,
           "column": 76,
-          "index": 496
+          "index": 382
         }
       },
       "project": "",
@@ -6971,14 +7145,14 @@
       "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
       "loc": {
         "start": {
-          "line": 20,
+          "line": 16,
           "column": 9,
-          "index": 555
+          "index": 441
         },
         "end": {
-          "line": 20,
+          "line": 16,
           "column": 67,
-          "index": 613
+          "index": 499
         }
       },
       "project": "",
@@ -7000,14 +7174,14 @@
       "filename": "features/notes/noteBottomSheet/noteBottomSheetLabels.tsx",
       "loc": {
         "start": {
-          "line": 24,
+          "line": 20,
           "column": 9,
-          "index": 674
+          "index": 560
         },
         "end": {
-          "line": 24,
+          "line": 20,
           "column": 71,
-          "index": 736
+          "index": 622
         }
       },
       "project": "",

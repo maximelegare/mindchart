@@ -43,13 +43,15 @@ export const Highlight = ({
 
   const highlightRanges = getHighlightRanges(text, trimmedQuery);
 
-  // If query isn't matched contiguously within this block of text, return contextual snippet
   if (highlightRanges.length === 0) {
     return (
-      <Typography variant={variant} className={className} {...props}>
-        {text.slice(0, contextWindow)}
-        {" ... "}
-        {text.slice(-contextWindow)}
+      <Typography
+        variant={variant}
+        className={className}
+        style={style}
+        {...props}
+      >
+        {text}
       </Typography>
     );
   }
