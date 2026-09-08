@@ -28,6 +28,7 @@ import {
   setThoughtCategoryScript,
   stripHtml,
   thoughtsToHtml,
+  buildCategoryLabelsScript,
 } from "./thoughtsHtml";
 import {
   BULLET_EDITOR_GUARD_SCRIPT,
@@ -53,6 +54,7 @@ import {
   THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
 } from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
+import { classifyCategory } from "@/features/categories/utils/classifyCategory";
 
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
 const QUICKSAND_BOLD = require("@/assets/fonts/Quicksand-Bold.ttf");
@@ -341,6 +343,10 @@ function ThoughtsEditorInner(
     () => getThoughtFieldPlaceholders(),
     []
   );
+  const categoryLabelsRecord = React.useMemo(
+    () => Object.fromEntries(categoryLabels),
+    [categoryLabels]
+  );
   const htmlOptions = React.useMemo(
     () => ({
       showGraphButtons,
@@ -349,8 +355,9 @@ function ThoughtsEditorInner(
         summary: thoughtPlaceholders.summary,
         bullet: thoughtPlaceholders.bullet,
       },
+      categoryLabels: categoryLabelsRecord,
     }),
-    [showGraphButtons, thoughtPlaceholders]
+    [showGraphButtons, thoughtPlaceholders, categoryLabelsRecord]
   );
   const validationMessages = React.useMemo(
     () => ({
@@ -376,6 +383,7 @@ function ThoughtsEditorInner(
     categoryPickerIndex != null
       ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
       : null;
+  const pendingCategoryByIndexRef = React.useRef(new Map<number, string>());
 
   const scrollCaretIntoView = React.useCallback(() => {
     const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 28;
@@ -546,10 +554,16 @@ function ThoughtsEditorInner(
       applyPendingFormat(items);
     });
     if (readOnly) {
+      richRef.current?.injectJavascript(
+        buildCategoryLabelsScript(categoryLabelsRecord)
+      );
       richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
     } else {
       richRef.current?.injectJavascript(
         buildThoughtPlaceholdersScript(thoughtPlaceholders)
+      );
+      richRef.current?.injectJavascript(
+        buildCategoryLabelsScript(categoryLabelsRecord)
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
     }
@@ -566,10 +580,17 @@ function ThoughtsEditorInner(
     applySimplifiedMode,
     applyCategoryColors,
     applyPendingFormat,
+    categoryLabelsRecord,
     readOnly,
     showGraphButtons,
     thoughtPlaceholders,
   ]);
+
+  React.useEffect(() => {
+    richRef.current?.injectJavascript(
+      buildCategoryLabelsScript(categoryLabelsRecord)
+    );
+  }, [categoryLabelsRecord]);
 
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
@@ -579,7 +600,12 @@ function ThoughtsEditorInner(
         noteId,
         previous,
         showTitlesRef.current
-      );
+      ).map((thought, index) => {
+        const classified = pendingCategoryByIndexRef.current.get(index);
+        if (!classified) return thought;
+        pendingCategoryByIndexRef.current.delete(index);
+        return { ...thought, categoryId: classified };
+      });
       setValue("thoughts", next, { shouldDirty: true });
     },
     [getValues, noteId, setValue]
@@ -605,6 +631,9 @@ function ThoughtsEditorInner(
       applySimplifiedMode(false);
       richRef.current?.injectJavascript(
         buildThoughtPlaceholdersScript(thoughtPlaceholders)
+      );
+      richRef.current?.injectJavascript(
+        buildCategoryLabelsScript(categoryLabelsRecord)
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
       const nextThoughts = getValues("thoughts");
@@ -644,6 +673,7 @@ function ThoughtsEditorInner(
     showGraphButtons,
     showTitles,
     thoughtPlaceholders,
+    categoryLabelsRecord,
   ]);
 
   const handleFormat = React.useCallback(
@@ -829,6 +859,34 @@ function ThoughtsEditorInner(
         }
         return;
       }
+      if (message.type === "CLASSIFY_BULLET") {
+        const payload = message.data as
+          | { index?: number; text?: string }
+          | undefined;
+        const index = Number(payload?.index);
+        if (!Number.isFinite(index) || index < 0) return;
+        const categoryId = classifyCategory(String(payload?.text ?? ""));
+        pendingCategoryByIndexRef.current.set(index, categoryId);
+        const previous = getValues("thoughts");
+        const current = previous[index];
+        if (current && current.categoryId !== categoryId) {
+          setValue(
+            "thoughts",
+            previous.map((thought, thoughtIndex) =>
+              thoughtIndex === index ? { ...thought, categoryId } : thought
+            ),
+            { shouldDirty: true }
+          );
+        }
+        richRef.current?.injectJavascript(
+          setThoughtCategoryScript(
+            index,
+            categoryId,
+            categoryLabels.get(categoryId)
+          )
+        );
+        return;
+      }
       if (message.type !== "SELECT_CATEGORY") return;
       const index = Number(message.data);
       if (!Number.isFinite(index) || index < 0) return;
@@ -836,7 +894,7 @@ function ThoughtsEditorInner(
       Keyboard.dismiss();
       setCategoryPickerIndex(index);
     },
-    [getValues, onToggleCompleted, push, readOnly, setValue]
+    [categoryLabels, getValues, onToggleCompleted, push, readOnly, setValue]
   );
 
   const handleSelectCategory = React.useCallback(
@@ -850,7 +908,11 @@ function ThoughtsEditorInner(
       );
       setValue("thoughts", next, { shouldDirty: !readOnly });
       richRef.current?.injectJavascript(
-        setThoughtCategoryScript(categoryPickerIndex, category.id)
+        setThoughtCategoryScript(
+          categoryPickerIndex,
+          category.id,
+          categoryLabels.get(category.id)
+        )
       );
       if (readOnly) {
         const thought = next[categoryPickerIndex];
@@ -865,6 +927,7 @@ function ThoughtsEditorInner(
       setCategoryPickerIndex(null);
     },
     [
+      categoryLabels,
       categoryPickerIndex,
       closeCategorySheet,
       getValues,

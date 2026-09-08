@@ -70,9 +70,14 @@ export function sanitizeInlineHtml(html: string): string {
   return value.replace(/^(<br>)+|(<br>)+$/gi, "").trim();
 }
 
-function formatCategoryLabel(categoryId: string): string {
-  if (!categoryId) return "Uncategorized";
-  return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+function formatCategoryLabel(
+  categoryId: string,
+  labels?: Record<string, string>
+): string {
+  const id = categoryId || "uncategorized";
+  const translated = labels?.[id];
+  if (translated) return translated;
+  return id.charAt(0).toUpperCase() + id.slice(1);
 }
 
 function stripChrome(liHtml: string): string {
@@ -238,9 +243,12 @@ function titledFieldHtml(
   return `<div class="${classes}" data-placeholder="${placeholder}">${empty ? "<br>" : body}</div>`;
 }
 
-function categoryLabelHtml(categoryId: string): string {
+function categoryLabelHtml(
+  categoryId: string,
+  labels?: Record<string, string>
+): string {
   const id = categoryId || "uncategorized";
-  const label = formatCategoryLabel(id);
+  const label = formatCategoryLabel(id, labels);
   return (
     `<div class="${CATEGORY_CLASS}" contenteditable="false" data-category-id="${escapeHtml(id)}">` +
     `<span class="thought-category-name">${escapeHtml(label)}</span>` +
@@ -285,7 +293,8 @@ type ThoughtItemOptions = {
 function thoughtItemHtml(
   categoryId: string,
   fieldsHtml: string,
-  options: ThoughtItemOptions = {}
+  options: ThoughtItemOptions = {},
+  labels?: Record<string, string>
 ): string {
   const id = categoryId || "uncategorized";
   const thoughtIdAttr = options.thoughtId
@@ -309,7 +318,7 @@ function thoughtItemHtml(
     `</div>` +
     thoughtCheckHtml() +
     `<div class="thought-body">` +
-    categoryLabelHtml(id) +
+    categoryLabelHtml(id, labels) +
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
     graph +
@@ -321,7 +330,8 @@ function liToHtml(
   thought: ThoughtsFormValue,
   showTitles: boolean,
   showGraphButton: boolean,
-  placeholders: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">
+  placeholders: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">,
+  labels?: Record<string, string>
 ) {
   const categoryId = thought.categoryId || "uncategorized";
   const options: ThoughtItemOptions = {
@@ -337,7 +347,8 @@ function liToHtml(
       categoryId,
       titledFieldHtml(TITLE_CLASS, placeholders.title, thought.title) +
         titledFieldHtml(SUMMARY_CLASS, placeholders.summary, thought.summary),
-      options
+      options,
+      labels
     );
   }
 
@@ -345,13 +356,15 @@ function liToHtml(
   return thoughtItemHtml(
     categoryId,
     titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, summaryText),
-    options
+    options,
+    labels
   );
 }
 
 export type ThoughtsToHtmlOptions = {
   showGraphButtons?: boolean;
   placeholders?: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">;
+  categoryLabels?: Record<string, string>;
 };
 
 /** Serialize thoughts into an HTML unordered list for the rich editor. */
@@ -361,6 +374,7 @@ export function thoughtsToHtml(
   options: ThoughtsToHtmlOptions = {}
 ): string {
   const showGraphButtons = options.showGraphButtons ?? false;
+  const labels = options.categoryLabels;
   const placeholders = {
     title: options.placeholders?.title ?? TITLE_PLACEHOLDER,
     summary: options.placeholders?.summary ?? SUMMARY_PLACEHOLDER,
@@ -372,12 +386,12 @@ export function thoughtsToHtml(
       ? titledFieldHtml(TITLE_CLASS, placeholders.title, "") +
         titledFieldHtml(SUMMARY_CLASS, placeholders.summary, "")
       : titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, "");
-    return `<ul>${thoughtItemHtml("uncategorized", body)}</ul>`;
+    return `<ul>${thoughtItemHtml("uncategorized", body, {}, labels)}</ul>`;
   }
 
   return `<ul>${thoughts
     .map((thought) =>
-      liToHtml(thought, showTitles, showGraphButtons, placeholders)
+      liToHtml(thought, showTitles, showGraphButtons, placeholders, labels)
     )
     .join("")}</ul>`;
 }
@@ -478,11 +492,12 @@ export function htmlToThoughts(
 /** Build a JS snippet that updates one thought's category chrome in the editor. */
 export function setThoughtCategoryScript(
   index: number,
-  categoryId: string
+  categoryId: string,
+  label?: string
 ): string {
   const id = JSON.stringify(categoryId || "uncategorized");
-  const label = JSON.stringify(
-    formatCategoryLabel(categoryId || "uncategorized")
+  const chipLabel = JSON.stringify(
+    label || formatCategoryLabel(categoryId || "uncategorized")
   );
   return `
 (function () {
@@ -493,7 +508,7 @@ export function setThoughtCategoryScript(
   var li = lis[${index}];
   if (!li) return true;
   var categoryId = ${id};
-  var label = ${label};
+  var label = ${chipLabel};
   li.setAttribute("data-category-id", categoryId);
   var chip = li.querySelector(".thought-category");
   if (chip) {
@@ -507,6 +522,29 @@ export function setThoughtCategoryScript(
   try {
     content.dispatchEvent(new Event("input", { bubbles: true }));
   } catch (e) {}
+  return true;
+})();
+`;
+}
+
+export function buildCategoryLabelsScript(
+  labels: Record<string, string>
+): string {
+  return `
+(function () {
+  window.__mcCategoryLabels = ${JSON.stringify(labels)};
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+  var chips = content.querySelectorAll(".thought-category");
+  for (var i = 0; i < chips.length; i++) {
+    var chip = chips[i];
+    var id = chip.getAttribute("data-category-id") || "uncategorized";
+    var label = window.__mcCategoryLabels[id];
+    if (!label) continue;
+    var name = chip.querySelector(".thought-category-name");
+    if (name) name.textContent = label;
+  }
   return true;
 })();
 `;
