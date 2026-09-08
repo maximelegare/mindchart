@@ -5,10 +5,12 @@ import {
   useNoteDraftStore,
 } from "@/features/notes/noteDraft/store/noteDraftStore";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
+import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 
 export const useCreateBlankNote = () => {
   const currentFolderId = useOptionsBar((s) => s.currentFolderId);
   const setDraft = useNoteDraftStore((s) => s.setDraft);
+  const requestFabClose = useNoteCreationStore((s) => s.requestFabClose);
 
   const createBlankNote = useCallback(
     (folderIdOverride?: string | null) => {
@@ -16,13 +18,14 @@ export const useCreateBlankNote = () => {
         folderIdOverride !== undefined ? folderIdOverride : currentFolderId;
       const draft = createBlankDraftNote(folderId);
       setDraft(draft);
+      requestFabClose();
 
       router.push({
         pathname: "/notes/[id]",
         params: { id: draft.id, mode: "new" },
       });
     },
-    [currentFolderId, setDraft]
+    [currentFolderId, requestFabClose, setDraft]
   );
 
   return { createBlankNote };
