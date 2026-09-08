@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { fbs } from "fbtee";
 import {
@@ -7,6 +7,7 @@ import {
   BottomSheetHeader,
   BottomSheetOpenTrigger,
   BottomSheetScrollView,
+  useBottomSheet,
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Button } from "@/components/ui";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,7 +59,15 @@ export const SearchFeature = () => {
   } = useSearchContext();
   const { items, totalCount, pageCount, isFetching, isEmptyQuery } =
     useSearch();
+  const pendingNoteId = useSearchContext((state) => state.pendingNoteId);
+  const searchSheet = useBottomSheet();
   const [optionsExpanded, setOptionsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!pendingNoteId) return;
+    setOptionsExpanded(false);
+    searchSheet.close();
+  }, [pendingNoteId, searchSheet.close]);
 
   const hasAttributeFilters =
     hasActiveAttributeFilters({
@@ -77,9 +86,7 @@ export const SearchFeature = () => {
   const openPendingNote = () => {
     const id = useSearchContext.getState().consumePendingNoteId();
     if (!id) return;
-    setTimeout(() => {
-      router.push({ pathname: "/notes/[id]", params: { id } });
-    }, 100);
+    router.push({ pathname: "/notes/[id]", params: { id } });
   };
 
   return (
@@ -90,6 +97,7 @@ export const SearchFeature = () => {
         </Button>
       </BottomSheetOpenTrigger>
       <BottomSheetContent
+        ref={searchSheet.ref}
         snapPoints={["100%"]}
         style={{ zIndex: 100 }}
         enableDynamicSizing={false}
@@ -118,59 +126,66 @@ export const SearchFeature = () => {
               <ConventionalSearch onSearch={setQuery} />
             </View>
             <CollapsibleContainer expanded={optionsExpanded}>
-              <View
-                className="flex-row flex-wrap items-center py-3"
-                style={{ rowGap: 12, columnGap: 8 }}
-              >
-                <OptionChip
-                  icon={
-                    sortDirection === "asc"
-                      ? "arrow-down-wide-narrow"
-                      : "arrow-up-narrow-wide"
-                  }
-                  label={<SortDirectionChipLabel value={sortDirection} />}
-                  unstyledLabel
-                  onPress={toggleSortDirection}
-                  accessibilityLabel={
-                    sortDirection === "asc"
-                      ? fbs(
-                          "Sort from beginning to end",
-                          "Accessibility label for ascending sort direction"
-                        )
-                      : fbs(
-                          "Sort from end to beginning",
-                          "Accessibility label for descending sort direction"
-                        )
-                  }
-                />
-                <OptionsSheet
-                  title={<SortSheetTitle />}
-                  value={sortField}
-                  options={SORT_FIELD_OPTIONS}
-                  renderOptionLabel={(value) => (
-                    <SortFieldOptionLabel value={value} />
-                  )}
-                  renderChipLabel={renderSortFieldChipLabel}
-                  onValueChange={setSortField}
-                />
-                <NotesFilterSheet source="search" />
-                <PageSizeChip pageSize={pageSize} setPageSize={setPageSize} />
-              </View>
-              <View className="flex-row items-center gap-3 pb-3">
-                <Checkbox
-                  checked={includeTranscript}
-                  onCheckedChange={setIncludeTranscript}
-                  accessibilityLabel={String(searchTranscriptToggleLabel())}
-                />
-                <Pressable
-                  className="flex-1"
-                  onPress={() => setIncludeTranscript(!includeTranscript)}
-                >
-                  <Typography variant="p" padding={false}>
-                    {searchTranscriptToggleLabel()}
-                  </Typography>
-                </Pressable>
-              </View>
+              {optionsExpanded ? (
+                <>
+                  <View
+                    className="flex-row flex-wrap items-center py-3"
+                    style={{ rowGap: 12, columnGap: 8 }}
+                  >
+                    <OptionChip
+                      icon={
+                        sortDirection === "asc"
+                          ? "arrow-down-wide-narrow"
+                          : "arrow-up-narrow-wide"
+                      }
+                      label={<SortDirectionChipLabel value={sortDirection} />}
+                      unstyledLabel
+                      onPress={toggleSortDirection}
+                      accessibilityLabel={
+                        sortDirection === "asc"
+                          ? fbs(
+                              "Sort from beginning to end",
+                              "Accessibility label for ascending sort direction"
+                            )
+                          : fbs(
+                              "Sort from end to beginning",
+                              "Accessibility label for descending sort direction"
+                            )
+                      }
+                    />
+                    <OptionsSheet
+                      title={<SortSheetTitle />}
+                      value={sortField}
+                      options={SORT_FIELD_OPTIONS}
+                      renderOptionLabel={(value) => (
+                        <SortFieldOptionLabel value={value} />
+                      )}
+                      renderChipLabel={renderSortFieldChipLabel}
+                      onValueChange={setSortField}
+                    />
+                    <NotesFilterSheet source="search" />
+                    <PageSizeChip
+                      pageSize={pageSize}
+                      setPageSize={setPageSize}
+                    />
+                  </View>
+                  <View className="flex-row items-center gap-3 pb-3">
+                    <Checkbox
+                      checked={includeTranscript}
+                      onCheckedChange={setIncludeTranscript}
+                      accessibilityLabel={String(searchTranscriptToggleLabel())}
+                    />
+                    <Pressable
+                      className="flex-1"
+                      onPress={() => setIncludeTranscript(!includeTranscript)}
+                    >
+                      <Typography variant="p" padding={false}>
+                        {searchTranscriptToggleLabel()}
+                      </Typography>
+                    </Pressable>
+                  </View>
+                </>
+              ) : null}
             </CollapsibleContainer>
           </View>
         </View>

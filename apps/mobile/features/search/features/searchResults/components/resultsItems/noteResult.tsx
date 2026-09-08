@@ -1,9 +1,8 @@
 import React from "react";
-import { Keyboard, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Highlight } from "../highlight";
 import { DisplayDate } from "@/components/ui/date";
 import { Typography } from "@/components/ui/typography";
-import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { GroupedNoteResult } from "@/features/search/features/searchOptions/groupByNote/groupByNote";
 import {
   DEFAULT_CATEGORY_COLOR,
@@ -24,11 +23,8 @@ export const NoteResult = ({
   const categoryColorMap = useCategoryColorMap();
   const requestOpenNote = useSearchContext((state) => state.requestOpenNote);
 
-  const { dismiss } = useBottomSheetModal();
   const handlePress = () => {
     requestOpenNote(noteId);
-    Keyboard.dismiss();
-    dismiss();
   };
 
   return (

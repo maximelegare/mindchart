@@ -57,14 +57,17 @@ import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLab
 const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
 const QUICKSAND_BOLD = require("@/assets/fonts/Quicksand-Bold.ttf");
 
+let cachedEditorFontFaceCss: string | null = null;
+
 async function loadEditorFontFaceCss(): Promise<string> {
+  if (cachedEditorFontFaceCss != null) return cachedEditorFontFaceCss;
   const [regular, bold] = await Asset.loadAsync([
     QUICKSAND_REGULAR,
     QUICKSAND_BOLD,
   ]);
   const regularUri = regular.localUri ?? regular.uri;
   const boldUri = bold.localUri ?? bold.uri;
-  return `
+  cachedEditorFontFaceCss = `
     @font-face {
       font-family: 'QuicksandRegular';
       src: url('${regularUri}') format('truetype');
@@ -78,6 +81,7 @@ async function loadEditorFontFaceCss(): Promise<string> {
       font-style: normal;
     }
   `;
+  return cachedEditorFontFaceCss;
 }
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
@@ -307,7 +311,9 @@ function ThoughtsEditorInner(
   const [caretIsChecklist, setCaretIsChecklist] = React.useState(() =>
     Boolean(getValues("thoughts")?.[0]?.isCompletable)
   );
-  const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(null);
+  const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(
+    () => cachedEditorFontFaceCss
+  );
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
   >(null);

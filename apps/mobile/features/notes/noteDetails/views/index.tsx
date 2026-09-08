@@ -1,5 +1,6 @@
 import React from "react";
 import { Keyboard, TextInput, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Typography } from "@/components/ui/typography";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
@@ -463,7 +464,27 @@ export const NoteDetailsFeature = ({
   isNew = false,
   onFolderErrorChange,
 }: NoteDetailsFeatureProps) => {
-  if (isPending || !note?.[0]) {
+  const navigation = useNavigation();
+  const [surfaceReady, setSurfaceReady] = React.useState(false);
+
+  React.useEffect(() => {
+    const onEnd = (event: { data?: { closing?: boolean } }) => {
+      if (event.data?.closing) return;
+      setSurfaceReady(true);
+    };
+    const unsub = navigation.addListener("transitionEnd", onEnd);
+    const unsubParent = navigation
+      .getParent()
+      ?.addListener("transitionEnd", onEnd);
+    return () => {
+      unsub();
+      unsubParent?.();
+    };
+  }, [navigation]);
+
+  const willMountEditor = surfaceReady && !isPending && Boolean(note?.[0]);
+
+  if (!willMountEditor) {
     return <View className="flex-1" collapsable={false} />;
   }
   const noteRow = note[0];
