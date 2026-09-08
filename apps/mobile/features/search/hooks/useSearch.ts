@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useSearchController } from "@/api/controllers/useSearch";
+import { buildNoteListFilters } from "@/features/contentList/features/pagination/utils/buildNoteListFilters";
 import {
   clampPage,
   paginationOffset,
@@ -12,13 +13,36 @@ function normalizeQuery(query: string) {
 }
 
 export const useSearch = () => {
-  const { query, includeTranscript, page, pageSize, setPage } =
-    useSearchContext();
+  const {
+    query,
+    includeTranscript,
+    page,
+    pageSize,
+    setPage,
+    sortField,
+    sortDirection,
+    selectedFolderId,
+    filterPersonIds,
+    filterFeelings,
+    filterLocationIds,
+  } = useSearchContext();
   const { useSearchNotesQuery } = useSearchController();
 
   const normalizedQuery = useMemo(() => normalizeQuery(query), [query]);
   const shouldSearch = normalizedQuery.length > 0;
   const offset = paginationOffset(page, pageSize);
+  const filters = useMemo(
+    () =>
+      buildNoteListFilters({
+        selectedFolderId,
+        selectedCategoryId: null,
+        groupBy: "none",
+        personIds: filterPersonIds,
+        feelings: filterFeelings,
+        locationIds: filterLocationIds,
+      }),
+    [selectedFolderId, filterPersonIds, filterFeelings, filterLocationIds]
+  );
 
   const { data, isLoading, isFetching, error } = useSearchNotesQuery(
     {
@@ -26,6 +50,9 @@ export const useSearch = () => {
       includeTranscript,
       limit: pageSize,
       offset,
+      sortField,
+      sortDirection,
+      filters,
     },
     {
       enabled: shouldSearch,

@@ -12,12 +12,21 @@ import { Check } from "@/lib/icons/Check";
 import { cn } from "@/lib/cn";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import { PAGE_SIZE_OPTIONS } from "../constants";
+import type { PageSize } from "../types";
 import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
 
-export const PageSizeChip = () => {
+export const PageSizeChip = ({
+  pageSize: pageSizeProp,
+  setPageSize: setPageSizeProp,
+}: {
+  pageSize?: PageSize;
+  setPageSize?: (size: PageSize) => void;
+} = {}) => {
   const sheet = useBottomSheet();
-  const pageSize = useOptionsBar((state) => state.pageSize);
-  const setPageSize = useOptionsBar((state) => state.setPageSize);
+  const storePageSize = useOptionsBar((state) => state.pageSize);
+  const storeSetPageSize = useOptionsBar((state) => state.setPageSize);
+  const pageSize = pageSizeProp ?? storePageSize;
+  const setPageSize = setPageSizeProp ?? storeSetPageSize;
 
   return (
     <>

@@ -18,6 +18,7 @@ import { useControllers } from "@/api/controllers/useControllers";
 import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import { hasActiveAttributeFilters } from "@/features/contentList/utils/filterNotesByAttributes";
+import { useSearchContext } from "@/features/search/context/search";
 import {
   FilterAttributePicker,
   type FilterAttributeOption,
@@ -45,25 +46,77 @@ import {
   renderFilterSelectedSummary,
 } from "./notesFilterLabels";
 
-export const NotesFilterSheet = () => {
+export type NotesFilterSource = "contentList" | "search";
+
+export type NotesFilterControls = {
+  filterPersonIds: string[];
+  filterFeelings: FeelingValue[];
+  filterLocationIds: string[];
+  selectedFolderId: string | null;
+  setFilterPersonIds: (ids: string[]) => void;
+  setFilterFeelings: (feelings: FeelingValue[]) => void;
+  setFilterLocationIds: (ids: string[]) => void;
+  handleSelectedFolderChange: (folderId: string | null) => void;
+  clearAttributeFilters: () => void;
+};
+
+function useNotesFilterControls(
+  source: NotesFilterSource
+): NotesFilterControls {
+  const contentList: NotesFilterControls = {
+    filterPersonIds: useOptionsBar((state) => state.filterPersonIds),
+    filterFeelings: useOptionsBar((state) => state.filterFeelings),
+    filterLocationIds: useOptionsBar((state) => state.filterLocationIds),
+    selectedFolderId: useOptionsBar((state) => state.selectedFolderId),
+    setFilterPersonIds: useOptionsBar((state) => state.setFilterPersonIds),
+    setFilterFeelings: useOptionsBar((state) => state.setFilterFeelings),
+    setFilterLocationIds: useOptionsBar((state) => state.setFilterLocationIds),
+    handleSelectedFolderChange: useOptionsBar(
+      (state) => state.handleSelectedFolderChange
+    ),
+    clearAttributeFilters: useOptionsBar(
+      (state) => state.clearAttributeFilters
+    ),
+  };
+  const search: NotesFilterControls = {
+    filterPersonIds: useSearchContext((state) => state.filterPersonIds),
+    filterFeelings: useSearchContext((state) => state.filterFeelings),
+    filterLocationIds: useSearchContext((state) => state.filterLocationIds),
+    selectedFolderId: useSearchContext((state) => state.selectedFolderId),
+    setFilterPersonIds: useSearchContext((state) => state.setFilterPersonIds),
+    setFilterFeelings: useSearchContext((state) => state.setFilterFeelings),
+    setFilterLocationIds: useSearchContext(
+      (state) => state.setFilterLocationIds
+    ),
+    handleSelectedFolderChange: useSearchContext(
+      (state) => state.handleSelectedFolderChange
+    ),
+    clearAttributeFilters: useSearchContext(
+      (state) => state.clearAttributeFilters
+    ),
+  };
+
+  return source === "search" ? search : contentList;
+}
+
+export const NotesFilterSheet = ({
+  source = "contentList",
+}: {
+  source?: NotesFilterSource;
+} = {}) => {
   const sheet = useBottomSheet();
   const { openModal } = useModal();
-
-  const filterPersonIds = useOptionsBar((state) => state.filterPersonIds);
-  const filterFeelings = useOptionsBar((state) => state.filterFeelings);
-  const filterLocationIds = useOptionsBar((state) => state.filterLocationIds);
-  const selectedFolderId = useOptionsBar((state) => state.selectedFolderId);
-  const setFilterPersonIds = useOptionsBar((state) => state.setFilterPersonIds);
-  const setFilterFeelings = useOptionsBar((state) => state.setFilterFeelings);
-  const setFilterLocationIds = useOptionsBar(
-    (state) => state.setFilterLocationIds
-  );
-  const handleSelectedFolderChange = useOptionsBar(
-    (state) => state.handleSelectedFolderChange
-  );
-  const clearAttributeFilters = useOptionsBar(
-    (state) => state.clearAttributeFilters
-  );
+  const {
+    filterPersonIds,
+    filterFeelings,
+    filterLocationIds,
+    selectedFolderId,
+    setFilterPersonIds,
+    setFilterFeelings,
+    setFilterLocationIds,
+    handleSelectedFolderChange,
+    clearAttributeFilters,
+  } = useNotesFilterControls(source);
 
   const { data: allFolders = [] } =
     useControllers().folders.useFetchAllFoldersQuery();
@@ -87,10 +140,13 @@ export const NotesFilterSheet = () => {
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
-        <FolderFilterModalContent onChange={handleSelectedFolderChange} />
+        <FolderFilterModalContent
+          source={source}
+          onChange={handleSelectedFolderChange}
+        />
       ),
     });
-  }, [handleSelectedFolderChange, openModal]);
+  }, [handleSelectedFolderChange, openModal, source]);
 
   const openPeoplePicker = useCallback(() => {
     openModal({
@@ -98,10 +154,13 @@ export const NotesFilterSheet = () => {
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
-        <PeopleFilterModalContent onChange={setFilterPersonIds} />
+        <PeopleFilterModalContent
+          source={source}
+          onChange={setFilterPersonIds}
+        />
       ),
     });
-  }, [openModal, setFilterPersonIds]);
+  }, [openModal, setFilterPersonIds, source]);
 
   const openFeelingPicker = useCallback(() => {
     openModal({
@@ -109,10 +168,13 @@ export const NotesFilterSheet = () => {
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
-        <FeelingFilterModalContent onChange={setFilterFeelings} />
+        <FeelingFilterModalContent
+          source={source}
+          onChange={setFilterFeelings}
+        />
       ),
     });
-  }, [openModal, setFilterFeelings]);
+  }, [openModal, setFilterFeelings, source]);
 
   const openLocationPicker = useCallback(() => {
     openModal({
@@ -120,10 +182,13 @@ export const NotesFilterSheet = () => {
       aboveBottomSheet: true,
       dismissOnBackgroundPress: true,
       customContent: () => (
-        <LocationFilterModalContent onChange={setFilterLocationIds} />
+        <LocationFilterModalContent
+          source={source}
+          onChange={setFilterLocationIds}
+        />
       ),
     });
-  }, [openModal, setFilterLocationIds]);
+  }, [openModal, setFilterLocationIds, source]);
 
   const folderSummary = useMemo((): ReactNode => {
     if (!selectedFolderId) {
@@ -260,11 +325,13 @@ function FilterRow({
 }
 
 function FolderFilterModalContent({
+  source,
   onChange,
 }: {
+  source: NotesFilterSource;
   onChange: (folderId: string | null) => void;
 }) {
-  const selectedFolderId = useOptionsBar((state) => state.selectedFolderId);
+  const selectedFolderId = useNotesFilterControls(source).selectedFolderId;
   const { data: folders = [] } =
     useControllers().folders.useFetchAllFoldersWithNotesInfosQuery();
   const options = useMemo<FilterAttributeOption[]>(
@@ -292,11 +359,13 @@ function FolderFilterModalContent({
 }
 
 function PeopleFilterModalContent({
+  source,
   onChange,
 }: {
+  source: NotesFilterSource;
   onChange: (ids: string[]) => void;
 }) {
-  const selectedIds = useOptionsBar((state) => state.filterPersonIds);
+  const selectedIds = useNotesFilterControls(source).filterPersonIds;
   const { data: allPersons = [] } =
     useControllers().persons.useFetchAllPersonsQuery();
   const options = useMemo<FilterAttributeOption[]>(
@@ -321,11 +390,13 @@ function PeopleFilterModalContent({
 }
 
 function FeelingFilterModalContent({
+  source,
   onChange,
 }: {
+  source: NotesFilterSource;
   onChange: (feelings: FeelingValue[]) => void;
 }) {
-  const selectedFeelings = useOptionsBar((state) => state.filterFeelings);
+  const selectedFeelings = useNotesFilterControls(source).filterFeelings;
   const options = useMemo<FilterAttributeOption[]>(
     () =>
       FEELINGS_DEFINITIONS.map((feeling) => ({
@@ -347,11 +418,13 @@ function FeelingFilterModalContent({
 }
 
 function LocationFilterModalContent({
+  source,
   onChange,
 }: {
+  source: NotesFilterSource;
   onChange: (ids: string[]) => void;
 }) {
-  const selectedIds = useOptionsBar((state) => state.filterLocationIds);
+  const selectedIds = useNotesFilterControls(source).filterLocationIds;
   const { data: allLocations = [] } =
     useControllers().locations.useFetchAllLocationsQuery();
   const options = useMemo<FilterAttributeOption[]>(

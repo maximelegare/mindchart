@@ -1,9 +1,17 @@
 import { sql } from "drizzle-orm";
+import { NoteTable } from "../../../schema.root";
 import { DB } from "../../../utils/initialize/getOPDatabase";
 import {
   PaginatedSearchResultsSchema,
   type SearchResultItemSchemaModel,
 } from "../../../../../zod-schemas/src/client";
+import {
+  buildNoteListWhere,
+  noteListOrderBy,
+  type NoteListFilters,
+  type NoteListSortDirection,
+  type NoteListSortField,
+} from "../../notes/noteListQuery";
 
 /** Minimum chars before a token is used in FTS (1-char prefixes match almost everything). */
 const MIN_FTS_TOKEN_LEN = 2;
@@ -14,6 +22,9 @@ export type SearchNotesQueryOptions = {
   includeTranscript?: boolean;
   limit?: number;
   offset?: number;
+  sortField?: NoteListSortField;
+  sortDirection?: NoteListSortDirection;
+  filters?: NoteListFilters;
 };
 
 function escapeRegex(str: string): string {
@@ -87,6 +98,11 @@ export const searchThoughtsInFTSQuery = async (
   const includeTranscript = Boolean(options.includeTranscript);
   const limit = Math.max(1, options.limit ?? DEFAULT_PAGE_SIZE);
   const offset = Math.max(0, options.offset ?? 0);
+  const sortField = options.sortField ?? "createdAt";
+  const sortDirection = options.sortDirection ?? "asc";
+  const filterWhere = buildNoteListWhere(options.filters);
+  const filterClause = filterWhere ? sql`AND ${filterWhere}` : sql``;
+  const orderBy = noteListOrderBy(sortField, sortDirection);
 
   if (!normalized || normalized.length < MIN_FTS_TOKEN_LEN) {
     return PaginatedSearchResultsSchema.parse({ items: [], totalCount: 0 });
@@ -116,26 +132,29 @@ export const searchThoughtsInFTSQuery = async (
 
   const thoughtHitClause =
     thoughtHitNoteIds.length > 0
-      ? sql`OR n.id IN (${inList(thoughtHitNoteIds)})`
+      ? sql`OR ${NoteTable.id} IN (${inList(thoughtHitNoteIds)})`
       : sql``;
 
   try {
     const pageResult = await db.run(sql`
       SELECT
-        n.id as noteId,
-        COALESCE(n.title, '') as noteTitle,
-        n.created_at as createdAt,
-        COALESCE(n.raw_text, '') as rawText,
+        ${NoteTable.id} as noteId,
+        COALESCE(${NoteTable.title}, '') as noteTitle,
+        ${NoteTable.createdAt} as createdAt,
+        COALESCE(${NoteTable.rawText}, '') as rawText,
         COUNT(*) OVER() as totalCount
-      FROM note n
+      FROM ${NoteTable}
       WHERE
-        instr(lower(COALESCE(n.title, '')), ${normalized}) > 0
-        OR (
-          ${includeTranscript ? 1 : 0}
-          AND instr(lower(COALESCE(n.raw_text, '')), ${normalized}) > 0
+        (
+          instr(lower(COALESCE(${NoteTable.title}, '')), ${normalized}) > 0
+          OR (
+            ${includeTranscript ? 1 : 0}
+            AND instr(lower(COALESCE(${NoteTable.rawText}, '')), ${normalized}) > 0
+          )
+          ${thoughtHitClause}
         )
-        ${thoughtHitClause}
-      ORDER BY n.created_at DESC
+        ${filterClause}
+      ORDER BY ${orderBy}
       LIMIT ${limit} OFFSET ${offset}
     `);
 

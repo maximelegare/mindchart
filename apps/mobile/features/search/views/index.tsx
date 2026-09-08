@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Pressable, View } from "react-native";
+import { fbs } from "fbtee";
 import {
   BottomSheet,
   BottomSheetContent,
@@ -12,16 +13,28 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
 import { CollapsibleContainer } from "@/components/ui/collapsibleContainer";
+import { OPTIONS_BAR_DEFAULTS } from "@/features/contentList/components/optionsBar/context/optionBarContext";
+import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
+import {
+  OptionsSheet,
+  SORT_FIELD_OPTIONS,
+} from "@/features/contentList/components/optionsBar/components/optionsSheet";
+import {
+  renderSortFieldChipLabel,
+  SortDirectionChipLabel,
+  SortFieldOptionLabel,
+  SortSheetTitle,
+} from "@/features/contentList/components/optionsBar/components/optionsBarLabels";
+import { NotesFilterSheet } from "@/features/contentList/features/notesFilters/components/notesFilterSheet";
+import { PageSizeChip } from "@/features/contentList/features/pagination/components/pageSizeChip";
+import { DEFAULT_PAGE_SIZE } from "@/features/contentList/features/pagination/constants";
+import { hasActiveAttributeFilters } from "@/features/contentList/utils/filterNotesByAttributes";
 import { SearchResultsList } from "../features/searchResults/components/searchResultsList";
 import { useSearch } from "../hooks/useSearch";
 import { ConventionalSearch } from "../features/conventionalSearch/search";
 import { useSearchContext } from "../context/search";
-import {
-  searchOptionsAccessibilityLabel,
-  searchPageTitle,
-  searchTranscriptToggleLabel,
-} from "../searchLabels";
+import { searchPageTitle, searchTranscriptToggleLabel } from "../searchLabels";
 import { router } from "expo-router";
 
 export const SearchFeature = () => {
@@ -32,10 +45,34 @@ export const SearchFeature = () => {
     setIncludeTranscript,
     page,
     setPage,
+    pageSize,
+    setPageSize,
+    sortField,
+    setSortField,
+    sortDirection,
+    toggleSortDirection,
+    selectedFolderId,
+    filterPersonIds,
+    filterFeelings,
+    filterLocationIds,
   } = useSearchContext();
   const { items, totalCount, pageCount, isFetching, isEmptyQuery } =
     useSearch();
   const [optionsExpanded, setOptionsExpanded] = useState(false);
+
+  const hasAttributeFilters =
+    hasActiveAttributeFilters({
+      personIds: filterPersonIds,
+      feelings: filterFeelings,
+      locationIds: filterLocationIds,
+    }) || selectedFolderId != null;
+
+  const hasNonDefaultOptions =
+    includeTranscript ||
+    hasAttributeFilters ||
+    sortField !== OPTIONS_BAR_DEFAULTS.sortField ||
+    sortDirection !== OPTIONS_BAR_DEFAULTS.sortDirection ||
+    pageSize !== DEFAULT_PAGE_SIZE;
 
   const openPendingNote = () => {
     const id = useSearchContext.getState().consumePendingNoteId();
@@ -74,15 +111,52 @@ export const SearchFeature = () => {
                 <TriggerFilterChip
                   icon="settings-2"
                   selected={optionsExpanded}
-                  showDot={includeTranscript}
+                  showDot={hasNonDefaultOptions}
                   onPress={() => setOptionsExpanded((prev) => !prev)}
-                  accessibilityLabel={String(searchOptionsAccessibilityLabel())}
                 />
               </View>
               <ConventionalSearch onSearch={setQuery} />
             </View>
             <CollapsibleContainer expanded={optionsExpanded}>
-              <View className="flex-row items-center gap-3 py-3">
+              <View
+                className="flex-row flex-wrap items-center py-3"
+                style={{ rowGap: 12, columnGap: 8 }}
+              >
+                <OptionChip
+                  icon={
+                    sortDirection === "asc"
+                      ? "arrow-down-wide-narrow"
+                      : "arrow-up-narrow-wide"
+                  }
+                  label={<SortDirectionChipLabel value={sortDirection} />}
+                  unstyledLabel
+                  onPress={toggleSortDirection}
+                  accessibilityLabel={
+                    sortDirection === "asc"
+                      ? fbs(
+                          "Sort from beginning to end",
+                          "Accessibility label for ascending sort direction"
+                        )
+                      : fbs(
+                          "Sort from end to beginning",
+                          "Accessibility label for descending sort direction"
+                        )
+                  }
+                />
+                <OptionsSheet
+                  title={<SortSheetTitle />}
+                  value={sortField}
+                  options={SORT_FIELD_OPTIONS}
+                  renderOptionLabel={(value) => (
+                    <SortFieldOptionLabel value={value} />
+                  )}
+                  renderChipLabel={renderSortFieldChipLabel}
+                  onValueChange={setSortField}
+                />
+                <NotesFilterSheet source="search" />
+                <PageSizeChip pageSize={pageSize} setPageSize={setPageSize} />
+              </View>
+              <View className="flex-row items-center gap-3 pb-3">
                 <Checkbox
                   checked={includeTranscript}
                   onCheckedChange={setIncludeTranscript}

@@ -8,16 +8,7 @@ export type SearchNotesParams = {
   query: string;
 } & SearchNotesQueryOptions;
 
-export const searchNotes = async ({
-  query,
-  includeTranscript = false,
-  limit,
-  offset,
-}: SearchNotesParams) => {
+export const searchNotes = async ({ query, ...options }: SearchNotesParams) => {
   const db = getOPDatabase();
-  return await searchThoughtsInFTSQuery(db, query, {
-    includeTranscript,
-    limit,
-    offset,
-  });
+  return await searchThoughtsInFTSQuery(db, query, options);
 };
