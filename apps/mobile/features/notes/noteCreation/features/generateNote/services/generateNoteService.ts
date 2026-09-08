@@ -33,7 +33,6 @@ export const useGenerateNoteService = () => {
 
         return generateContentService({
           transcript,
-          categories: data.categories,
           provider: llamaProvider,
         });
       } catch (error) {

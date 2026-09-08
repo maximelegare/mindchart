@@ -15,10 +15,7 @@ export const useLlamaService = () => {
   const { generate, currentModelId } = useLlamaChat();
 
   const generateLocalNote = useCallback(
-    async (
-      transcript: string,
-      categories: string
-    ): Promise<GenerateLocalNoteResult> => {
+    async (transcript: string): Promise<GenerateLocalNoteResult> => {
       if (!currentModelId) {
         return ServiceResponse.failure("Model not selected", null);
       }
@@ -29,7 +26,7 @@ export const useLlamaService = () => {
 
       try {
         const promptFn = QUERIES[currentModelId as keyof typeof QUERIES];
-        const prompt = promptFn(transcript, { categories });
+        const prompt = promptFn(transcript);
 
         const chatResponse = await generate(prompt);
         if (!chatResponse) {

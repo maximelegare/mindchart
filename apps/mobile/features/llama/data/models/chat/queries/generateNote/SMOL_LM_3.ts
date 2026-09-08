@@ -1,7 +1,4 @@
-export const SMOL_LM_3_PROMPT = (
-  input: string,
-  options: { categories: string }
-) => `
+export const SMOL_LM_3_PROMPT = (input: string) => `
 You are a JSON-only extraction assistant.
 
 {
@@ -33,18 +30,13 @@ You are a JSON-only extraction assistant.
             "description": "A 1-2 sentence summary expanding on the bullet",
             "maxLength": 120
           },
-          "category": {
-            "type": "string",
-            "description": "A category strictly chosen from the list of categories provided: [${options?.categories}]. Do not create new categories. Do not use synonyms. Use lowercase.",
-            "maxLength": 70
-          },
           "semanticLabel": {
             "type": "string",
             "description": "A 2-4 word semantic label that captures the main idea of the thought",
             "maxLength": 70
           }
         },
-        "required": ["title", "summary", "category", "semanticLabel"],
+        "required": ["title", "summary", "semanticLabel"],
         "additionalProperties": false
       }
     }
@@ -54,15 +46,9 @@ You are a JSON-only extraction assistant.
 }
 
 ## OUTPUT RULES:
-- thoughts: each main idea as an object with title, summary, category (lowercase), and semanticLabel (2-4 words)
+- thoughts: each main idea as an object with title, summary, and semanticLabel (2-4 words)
 - Always include all fields, even if empty.
 - Return only JSON. Do not add explanations, code fences, or extra text.
-
-### STRICT CATEGORY RULES
-You MUST choose the "category" field ONLY from this list: [${options?.categories}, "other"].
-- Do not create new categories.
-- Do not use synonyms.
-- Use lowercase.
 
 Transcription:
 ${input}

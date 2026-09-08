@@ -7,7 +7,6 @@ import { AIProvider } from "@repo/constants";
 
 export type GenerateContentServiceInput = {
   transcript: string;
-  categories: string;
   provider: AIProvider;
 };
 
@@ -17,7 +16,6 @@ export const useGenerateContentService = () => {
   const generateContentService = useCallback(
     async ({
       transcript,
-      categories,
       provider,
     }: GenerateContentServiceInput): Promise<GenerateLocalNoteResult> => {
       if (!transcript.trim()) {
@@ -25,7 +23,7 @@ export const useGenerateContentService = () => {
       }
 
       if (provider === "local") {
-        return generateLocalNote(transcript, categories);
+        return generateLocalNote(transcript);
       }
       if (provider === "cloud") {
         throw new Error("Cloud content generation is not implemented yet");

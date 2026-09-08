@@ -4,7 +4,6 @@ import { useAISettingsPreferences } from "@/features/settings/context/ai";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { loadingModalGeneratingNoteTitle } from "@/components/ui/modal/data/loadingModalLabels";
-import { CategoryKey } from "@repo/sqlite";
 import { useNoteCreationStore } from "@/features/notes/noteCreation/context/noteCreationContext";
 import { router } from "expo-router";
 import {
@@ -23,7 +22,7 @@ export const useGenerateNoteAction = ({
   currentView: "audio" | "input";
   onSuccess?: () => void;
 }) => {
-  const { notesAndThoughts, categories } = useControllers();
+  const { notesAndThoughts } = useControllers();
   const { aiProviders } = useAISettingsPreferences();
   const { openModal, closeModal } = useModal();
   const requestFabClose = useNoteCreationStore(
@@ -33,11 +32,6 @@ export const useGenerateNoteAction = ({
 
   const { useGenerateNoteMutation } = notesAndThoughts;
   const { mutateAsync: generateNoteMutateAsync } = useGenerateNoteMutation();
-
-  const { useFetchAllCategoriesQuery } = categories;
-  const { data: categoriesData } = useFetchAllCategoriesQuery({
-    enabled: !!fileURI || !!inputText,
-  });
 
   const isInputValid =
     currentView === "audio" ? !!fileURI : inputText.trim().length > 0;
@@ -56,7 +50,6 @@ export const useGenerateNoteAction = ({
     });
 
     try {
-      const categoryNames = categoriesData?.map((c) => c.id) as CategoryKey[];
       let response;
 
       if (currentView === "audio") {
@@ -64,7 +57,6 @@ export const useGenerateNoteAction = ({
           data: {
             text: undefined,
             audio: { uri: fileURI!, name: "audio.m4a", type: "audio/m4a" },
-            categories: categoryNames.join(","),
           },
           options: { providers: aiProviders },
         });
@@ -73,7 +65,6 @@ export const useGenerateNoteAction = ({
           data: {
             text: inputText,
             audio: undefined,
-            categories: categoryNames.join(","),
           },
           options: { providers: aiProviders },
         });

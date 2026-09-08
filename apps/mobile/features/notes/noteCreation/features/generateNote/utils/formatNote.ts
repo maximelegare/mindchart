@@ -6,6 +6,7 @@ import {
   Thought,
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
+import { classifyCategory } from "@/features/categories/utils/classifyCategory";
 
 export const formatNote = (
   data: LocalAIResNoteSchemaModel,
@@ -25,10 +26,11 @@ export const formatNote = (
 
   const formatedToughts = thoughts.map((t: LocalAIResThought) => {
     const recordId = generateID();
-    const categoryId = t.category ?? "uncategorized";
     const thoughtId = t.thoughtId ?? recordId;
     const thoughtTitle = (t.title ?? "").trim();
     const thoughtSummary = (t.summary ?? "").trim();
+    const semanticLabel =
+      (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtSummary;
 
     return {
       id: recordId,
@@ -36,9 +38,10 @@ export const formatNote = (
       noteId,
       title: thoughtTitle,
       summary: thoughtSummary,
-      semanticLabel:
-        (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtSummary,
-      categoryId: categoryId.toLowerCase(),
+      semanticLabel,
+      categoryId: classifyCategory(
+        `${thoughtTitle} ${thoughtSummary} ${semanticLabel}`
+      ),
       createdAt: new Date().toISOString(),
       isCompletable: false,
       isCompleted: false,
