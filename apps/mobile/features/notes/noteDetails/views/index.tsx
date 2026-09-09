@@ -77,6 +77,17 @@ const mapThoughtToFormValue = (
   isCompleted: thought.isCompleted ?? false,
 });
 
+type TransitionEndEvent = { data?: { closing?: boolean } };
+
+/** Native stack emits this at runtime; generic NavigationProp types omit it. */
+type NavigationWithTransitionEnd = {
+  addListener: (
+    event: "transitionEnd",
+    callback: (event: TransitionEndEvent) => void
+  ) => () => void;
+  getParent: () => NavigationWithTransitionEnd | undefined;
+};
+
 type NoteDetailsContentProps = {
   note: NoteRow;
   isEditing: boolean;
@@ -469,6 +480,7 @@ export const NoteDetailsFeature = ({
 
   React.useEffect(() => {
     let cancelled = false;
+    const nav = navigation as NavigationWithTransitionEnd;
 
     const markReady = () => {
       if (cancelled) return;
@@ -479,15 +491,13 @@ export const NoteDetailsFeature = ({
       });
     };
 
-    const onEnd = (event: { data?: { closing?: boolean } }) => {
+    const onEnd = (event: TransitionEndEvent) => {
       if (event.data?.closing) return;
       markReady();
     };
 
-    const unsub = navigation.addListener("transitionEnd", onEnd);
-    const unsubParent = navigation
-      .getParent()
-      ?.addListener("transitionEnd", onEnd);
+    const unsub = nav.addListener("transitionEnd", onEnd);
+    const unsubParent = nav.getParent()?.addListener("transitionEnd", onEnd);
     // FAB / already-focused pushes may never emit transitionEnd.
     const fallback = setTimeout(markReady, 400);
 
@@ -499,12 +509,12 @@ export const NoteDetailsFeature = ({
     };
   }, [navigation]);
 
-  const willMountEditor = surfaceReady && !isPending && Boolean(note?.[0]);
+  const noteRow = note?.[0];
+  const willMountEditor = surfaceReady && !isPending && Boolean(noteRow);
 
-  if (!willMountEditor) {
+  if (!willMountEditor || !noteRow) {
     return <View className="flex-1" collapsable={false} />;
   }
-  const noteRow = note[0];
 
   return (
     <NoteDetailsContent
