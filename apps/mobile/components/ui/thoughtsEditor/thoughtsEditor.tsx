@@ -1421,27 +1421,19 @@ function ThoughtsEditorInner(
       <BottomSheetContent
         ref={categorySheetRef}
         style={{ zIndex: 100 }}
-        snapPoints={["100%"]}
-        enableDynamicSizing={false}
         enablePanDownToClose
         enableContentPanningGesture={false}
-        keyboardBehavior="extend"
-        keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
         onDismiss={() => setCategoryPickerIndex(null)}
       >
-        <BottomSheetView className="gap-5 pt-6 bg-background flex-1">
+        <BottomSheetView className="gap-5 pt-6 bg-background">
           <BottomSheetHeader className="bg-background">
             <View className="flex-row items-center gap-2">
               <Icon name="shapes" color="foreground" size={18} />
               <Typography variant="h3">Categories</Typography>
             </View>
           </BottomSheetHeader>
-          <ScrollView
-            className="flex-1"
-            contentContainerStyle={{ paddingBottom: 120 }}
-          >
-            <View className="flex flex-col w-full flex-wrap gap-2">
+          <ScrollView style={{ maxHeight: 400 }}>
+            <View className="flex flex-col w-full flex-wrap gap-2 pb-6">
               {categories.map((category) => (
                 <CategoryListItem
                   key={category.id}
