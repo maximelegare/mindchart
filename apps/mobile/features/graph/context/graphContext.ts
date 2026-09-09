@@ -18,6 +18,11 @@ type GraphStore = {
     hierarchy: NodeDatum | null,
     activeId: string | null
   ) => void;
+  /** Imperative zoom from infos/breadcrumbs — not persisted. */
+  focusGraphNode: ((nodeId: string) => void) | null;
+  setFocusGraphNode: (
+    focusGraphNode: ((nodeId: string) => void) | null
+  ) => void;
 };
 
 let pendingUpdate: ReturnType<typeof setTimeout> | null = null;
@@ -48,6 +53,8 @@ export const useGraphStore = create<GraphStore>()(
         set({ selectedCategoryId }),
       setBreadcrumbNav: (breadcrumbHierarchy, breadcrumbActiveId) =>
         set({ breadcrumbHierarchy, breadcrumbActiveId }),
+      focusGraphNode: null,
+      setFocusGraphNode: (focusGraphNode) => set({ focusGraphNode }),
     }),
     {
       ...mmkv("graph"),

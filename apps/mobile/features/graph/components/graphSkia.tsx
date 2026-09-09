@@ -38,6 +38,7 @@ import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBread
 import { isEmptyFolderNode } from "@/features/graph/utils/buildGraphByFolder";
 import { isNoteLeafId } from "@/features/graph/utils/mapNoteToLeaf";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
+import { useGraphStore } from "../context/graphContext";
 
 /** Folder-mode note leaf fill. */
 const NOTE_LEAF_FILL = "#E3F0FC";
@@ -160,6 +161,64 @@ type Layout = {
   rootNode: NodeInfo;
   allNodes: NodeInfo[];
   nodeMap: Map<string, NodeInfo>;
+};
+
+/** O(1) lookup for infos/deep-link ids. First write wins (matches previous find order). */
+const buildFocusIndex = (allNodes: NodeInfo[]) => {
+  const index = new Map<string, NodeInfo>();
+  const add = (key: string | undefined | null, node: NodeInfo) => {
+    if (!key || index.has(key)) return;
+    index.set(key, node);
+  };
+
+  for (const node of allNodes) {
+    add(node.dbId, node);
+  }
+  for (const node of allNodes) {
+    const data = node.rawData;
+    add(data.id, node);
+    if (data.noteId) {
+      add(data.noteId, node);
+      add(`note-${data.noteId}`, node);
+    }
+    if (data.thoughtId) add(data.thoughtId, node);
+    if (data.folderId) {
+      add(data.folderId, node);
+      add(`folder-${data.folderId}`, node);
+    }
+    for (const thoughtId of data.relatedThoughtIds ?? []) {
+      add(thoughtId, node);
+    }
+  }
+
+  return index;
+};
+
+const resolveFocusTarget = (
+  focusId: string | undefined,
+  rootNode: NodeInfo,
+  nodeMap: Map<string, NodeInfo>,
+  focusIndex: Map<string, NodeInfo>
+): NodeInfo => {
+  let target = rootNode;
+  if (focusId) {
+    const found =
+      focusIndex.get(focusId) ??
+      focusIndex.get(`note-${focusId}`) ??
+      focusIndex.get(`folder-${focusId}`);
+    if (found) target = found;
+  }
+
+  if (
+    !target.hasChildren &&
+    !isEmptyFolderNode(target.rawData) &&
+    target.parentId
+  ) {
+    const parent = nodeMap.get(target.parentId);
+    if (parent) target = parent;
+  }
+
+  return target;
 };
 
 const isCategoryPackNode = (node: NodeInfo) =>
@@ -475,6 +534,7 @@ function CirclePackSkiaRenderer({
   const categoryLabels = useCategoryLabelsMap();
   const isTransitioningInternal = useRef(false);
   const { rootNode, allNodes, nodeMap } = layout;
+  const focusIndex = useMemo(() => buildFocusIndex(allNodes), [allNodes]);
 
   // ---------- 2. Shared Values ----------
   const viewX = useSharedValue(rootNode.x);
@@ -517,6 +577,21 @@ function CirclePackSkiaRenderer({
       onGraphBreadcrumbNavigate(targetId);
     }
   };
+  const navigateToNodeRef = useRef(navigateToNode);
+  navigateToNodeRef.current = navigateToNode;
+
+  const focusNodeById = (nodeId: string) => {
+    isTransitioningInternal.current = true;
+    const target = resolveFocusTarget(nodeId, rootNode, nodeMap, focusIndex);
+    navigateToNodeRef.current(target, false);
+  };
+
+  useEffect(() => {
+    useGraphStore.getState().setFocusGraphNode(focusNodeById);
+    return () => {
+      useGraphStore.getState().setFocusGraphNode(null);
+    };
+  }, [focusIndex, nodeMap, rootNode]);
 
   // ---------- 4. External Focus Effect ----------
   useEffect(() => {
@@ -527,45 +602,15 @@ function CirclePackSkiaRenderer({
       return;
     }
 
-    let target = rootNode;
-    if (focusedThoughtId) {
-      const focusId = String(focusedThoughtId);
-      const found =
-        allNodes.find((n) => n.dbId === focusId) ??
-        // Folder-mode note leaf by note id or note-… graph id
-        allNodes.find((n) => n.dbId === `note-${focusId}`) ??
-        allNodes.find(
-          (n) =>
-            !n.rawData.thoughtId &&
-            n.rawData.noteId != null &&
-            (n.rawData.noteId === focusId || n.dbId === `note-${focusId}`)
-        ) ??
-        // Thought deep-link in folder mode → parent note leaf
-        allNodes.find((n) => n.rawData.relatedThoughtIds?.includes(focusId)) ??
-        allNodes.find((n) => n.rawData.thoughtId === focusId) ??
-        allNodes.find((n) => n.rawData.folderId === focusId) ??
-        allNodes.find(
-          (n) =>
-            n.rawData.folderId != null &&
-            (n.dbId === `folder-${n.rawData.folderId}` ||
-              n.dbId.endsWith(`-${n.rawData.folderId}`)) &&
-            focusId.endsWith(n.rawData.folderId)
-        );
-      if (found) target = found;
-    }
+    const target = resolveFocusTarget(
+      focusedThoughtId ? String(focusedThoughtId) : undefined,
+      rootNode,
+      nodeMap,
+      focusIndex
+    );
 
-    // Content leaves zoom to their parent; empty folders stay focusable.
-    if (
-      !target.hasChildren &&
-      !isEmptyFolderNode(target.rawData) &&
-      target.parentId
-    ) {
-      const parent = nodeMap.get(target.parentId);
-      if (parent) target = parent;
-    }
-
-    navigateToNode(target, false);
-  }, [focusedThoughtId, trigger, allNodes, rootNode]);
+    navigateToNodeRef.current(target, false);
+  }, [focusedThoughtId, trigger, focusIndex, nodeMap, rootNode]);
 
   // ---------- 5. Interaction Handlers ----------
   const tap = Gesture.Tap().onEnd((e) => {

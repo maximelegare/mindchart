@@ -20,17 +20,18 @@ import {
   useCategoryColorMap,
 } from "@/features/categories/hooks/useCategoryColor";
 import capitalize from "@/utils/stringManipulations/capitalize";
-import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { FileActionsMenu } from "@/features/contentList/components/folderTree/fileActionsMenu";
 import type { FolderTreeFile } from "@/features/contentList/components/folderTree/folderTreeUtils";
 import { useControllers } from "@/api/controllers/useControllers";
+import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";
 import {
   resolveListItemCategoryShade,
   resolveNodeCategoryKey,
 } from "../../utils/resolveNodeCategoryKey";
+import { navigateGraphSelection } from "../../utils/focusGraphNode";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import type { GraphMode, NodeDatum } from "../../types/types";
 import type { Folder } from "@repo/zod-schemas/src/schemas";
@@ -1144,11 +1145,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
 
   const navigateToNode = useCallback(
     (nodeId: string) => {
-      setParams({
-        id: nodeId,
-        _t: Date.now().toString(),
-      });
-      onGraphBreadcrumbNavigate(nodeId);
+      navigateGraphSelection(nodeId, setParams);
     },
     [setParams]
   );
