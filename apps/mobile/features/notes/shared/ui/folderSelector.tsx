@@ -1,6 +1,24 @@
-import React, { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, TouchableOpacity, View } from "react-native";
-import { getFolderIdsFromPath, isFolderPathUnder } from "@repo/sqlite";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  buildChildFolderPath,
+  buildRootFolderPath,
+  canCreateChildFolder,
+  getFolderIdsFromPath,
+  isFolderPathUnder,
+} from "@repo/sqlite";
 import {
   BottomSheet,
   BottomSheetContent,
@@ -18,7 +36,14 @@ import { hsl } from "@/utils/hsl";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Icon } from "@/components/ui/icons/icon";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { NewFolderButton } from "@/features/contentList/components/optionsBar/components/optionsBar";
 import { FolderTree } from "@/features/contentList/components/folderTree/folderTree";
+import { useFolderFormSheet } from "@/features/contentList/features/folderContents/components/folderFormSheet";
+import {
+  folderFormMaximumDepthAlertTitle,
+  folderNestingLimitErrorMessage,
+} from "@/features/contentList/features/folderContents/components/folderFormLabels";
+import { generateID } from "@/utils/genrateID";
 import {
   FOLDER_TREE_ROOT_ID,
   FolderSelection,
@@ -316,8 +341,10 @@ export function FolderPickerBrowser({
   const noteKindLabel = folderPickerNoteKindLabel();
   const { dismiss } = useBottomSheetModal();
   const { colorScheme } = useColorScheme();
-  const { notesAndThoughts } = useControllers();
+  const { folders: foldersApi, notesAndThoughts } = useControllers();
+  const { mutateAsync: insertFolder } = foldersApi.useInsertFolderMutation();
   const { data: allNotes = [] } = notesAndThoughts.useFetchAllNotesQuery();
+  const { openFolderFormSheet, closeFolderFormSheet } = useFolderFormSheet();
 
   const foldersById = useMemo(
     () => new Map(folders.map((folder) => [folder.id, folder])),
@@ -419,18 +446,50 @@ export function FolderPickerBrowser({
   const currentBg = hsl("card", colorScheme);
   const [showContentPanel, setShowContentPanel] = useState(true);
 
+  const canCreateHere = canCreateChildFolder(browseFolder?.path ?? null);
+
+  const handleCreateFolder = useCallback(() => {
+    const parentPath = browseFolder?.path ?? null;
+    if (!canCreateChildFolder(parentPath)) {
+      Alert.alert(
+        folderFormMaximumDepthAlertTitle(),
+        folderNestingLimitErrorMessage()
+      );
+      return;
+    }
+    openFolderFormSheet({
+      mode: "create",
+      parentFolder: browseFolder,
+      onSave: async (label, selectedParent) => {
+        const parent = selectedParent ?? null;
+        const id = generateID();
+        const path = parent
+          ? buildChildFolderPath(parent.path, id)
+          : buildRootFolderPath(id);
+        await insertFolder({ data: { id, path, label } });
+        setBrowseFolderId(id);
+        closeFolderFormSheet();
+      },
+    });
+  }, [browseFolder, closeFolderFormSheet, insertFolder, openFolderFormSheet]);
+
   return (
     <View className="flex-1 gap-3">
-      <View
-        className="h-10 w-full flex-row items-center overflow-hidden rounded-full shrink-0"
-        style={{ backgroundColor: currentBg }}
-      >
-        <Breadcrumbs
-          items={breadcrumbItems}
-          onNavigate={(id) =>
-            setBrowseFolderId(id === FOLDER_TREE_ROOT_ID ? null : id)
-          }
-        />
+      <View className="w-full flex-row items-center gap-2 shrink-0">
+        <View
+          className="h-10 min-w-0 flex-1 flex-row items-center overflow-hidden rounded-full"
+          style={{ backgroundColor: currentBg }}
+        >
+          <Breadcrumbs
+            items={breadcrumbItems}
+            onNavigate={(id) =>
+              setBrowseFolderId(id === FOLDER_TREE_ROOT_ID ? null : id)
+            }
+          />
+        </View>
+        {canCreateHere ? (
+          <NewFolderButton onPress={handleCreateFolder} />
+        ) : null}
       </View>
 
       <View className="flex-1 min-h-[280px] overflow-hidden rounded-3xl bg-card">
