@@ -2,7 +2,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { settingsAiConnectingTitle } from "@/features/settings/features/ai/labels/settingsAiLabels";
 import { useAiAutoConnect } from "@/features/settings/features/ai/autoConnect/hooks/useAutoConnect";
-import { useRouter } from "expo-router";
+import { useRouter, useSegments } from "expo-router";
 import { useEffect, useRef } from "react";
 
 export const AutoConnectService = ({
@@ -13,11 +13,15 @@ export const AutoConnectService = ({
   const { setupRequired, isReady, isInitializing } = useAiAutoConnect();
   const { openModal, closeModal } = useModal();
   const router = useRouter();
+  const segments = useSegments();
+  const isMainAppLaunched = segments[0] === "(tabs)";
 
   const hasShownSetupModal = useRef(false);
   const connectingModalOpen = useRef(false);
 
   useEffect(() => {
+    if (!isMainAppLaunched) return;
+
     if (isInitializing) {
       connectingModalOpen.current = true;
       openModal({
@@ -33,9 +37,10 @@ export const AutoConnectService = ({
       connectingModalOpen.current = false;
       closeModal();
     }
-  }, [isInitializing, openModal, closeModal]);
+  }, [isInitializing, isMainAppLaunched, openModal, closeModal]);
 
   useEffect(() => {
+    if (!isMainAppLaunched) return;
     if (!isReady || isInitializing) return;
 
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -59,7 +64,15 @@ export const AutoConnectService = ({
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [setupRequired, isReady, isInitializing, openModal, closeModal, router]);
+  }, [
+    setupRequired,
+    isReady,
+    isInitializing,
+    isMainAppLaunched,
+    openModal,
+    closeModal,
+    router,
+  ]);
 
   return <>{children}</>;
 };

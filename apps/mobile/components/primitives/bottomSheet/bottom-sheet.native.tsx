@@ -14,7 +14,6 @@ import {
   useBottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import type { BottomSheetModalMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
-import { useTheme } from "@react-navigation/native";
 import * as Slot from "../slot";
 import * as React from "react";
 import {
@@ -91,7 +90,7 @@ const CustomHandle = (props: any) => {
       indicatorStyle={{
         width: 50,
         height: 5,
-        backgroundColor: hsl("foreground", colorScheme),
+        backgroundColor: hsl("muted-foreground", colorScheme),
       }}
     ></BottomSheetHandle>
   );
@@ -113,8 +112,7 @@ const BottomSheetContent = React.forwardRef<
     ref
   ) => {
     const insets = useSafeAreaInsets();
-    const { isDarkColorScheme } = useColorScheme();
-    const { colors } = useTheme();
+    const { colorScheme, isDarkColorScheme } = useColorScheme();
     const { sheetRef } = useBottomSheetContext();
 
     React.useImperativeHandle(
@@ -174,7 +172,7 @@ const BottomSheetContent = React.forwardRef<
           />
         );
       },
-      [backdropProps, colors]
+      [backdropProps, isDarkColorScheme]
     );
 
     return (
@@ -187,14 +185,14 @@ const BottomSheetContent = React.forwardRef<
         enableDynamicSizing={enableDynamicSizing}
         backgroundStyle={[
           {
-            backgroundColor: colors.card,
+            backgroundColor: hsl("background", colorScheme),
             borderTopLeftRadius: SHEET_TOP_RADIUS,
             borderTopRightRadius: SHEET_TOP_RADIUS,
           },
           backgroundStyle,
         ]}
         handleIndicatorStyle={{
-          backgroundColor: colors.text,
+          backgroundColor: hsl("muted-foreground", colorScheme),
         }}
         topInset={insets.top}
         android_keyboardInputMode={android_keyboardInputMode}

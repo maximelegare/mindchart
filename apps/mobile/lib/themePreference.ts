@@ -15,7 +15,7 @@ function readStoredPreference(): ThemePreference {
   if (stored === "light" || stored === "dark" || stored === "system") {
     return stored;
   }
-  return "system";
+  return "dark";
 }
 
 function emit() {
