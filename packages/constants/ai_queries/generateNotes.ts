@@ -1,7 +1,4 @@
-export const generateNotesQ = (
-  input: string,
-  options: { categories: string }
-) =>
+export const generateNotesQ = (input: string) =>
   `
       You are an assistant helping organize a voice note transcription.
   
@@ -23,9 +20,6 @@ export const generateNotesQ = (
       3. For each bullet point, create a detailed “thought” with:
          - A short title (3-6 words)
          - A 1-2 sentence summary expanding on the bullet
-         - A category label. Choose from the categories provided: ${options?.categories}
-         - If no category from the list is appropriate, create a new category (1-3 words).
-         - If you create a new category, use the Other category. 
          - Create a semantic label for the thought that is 2-4 words that captures the main idea of the thought.
 
 
@@ -42,7 +36,6 @@ export const generateNotesQ = (
           {
             "title": "...",
             "summary": "...",
-            "category": "...",
             "semanticLabel": "..."
           },
           ...

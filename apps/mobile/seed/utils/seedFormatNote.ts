@@ -5,7 +5,24 @@ import {
   Note,
   Thought,
 } from "@repo/zod-schemas";
+import { CATEGORIES_DEFINITIONS, type CategoryKey } from "@repo/sqlite";
 import { generateID } from "@/utils/genrateID";
+import { classifyCategory } from "@/features/categories/utils/classifyCategory";
+
+const CATEGORY_IDS = new Set<string>(
+  CATEGORIES_DEFINITIONS.map((category) => category.id)
+);
+
+const resolveSeedCategory = (
+  thought: LocalAIResThought,
+  text: string
+): CategoryKey => {
+  const fromSeed = thought.category?.trim().toLowerCase();
+  if (fromSeed && CATEGORY_IDS.has(fromSeed)) {
+    return fromSeed as CategoryKey;
+  }
+  return classifyCategory(text, "en-US");
+};
 
 export const seedFormatNote = (
   data: SeedLocalAIResNoteSchemaModel
@@ -28,15 +45,23 @@ export const seedFormatNote = (
 
   const formatedToughts = thoughts.map((t: LocalAIResThought) => {
     const recordId = generateID();
-    const categoryId = t.category ?? "uncategorized";
     const thoughtId = t.thoughtId ?? recordId;
+    const thoughtTitle = (t.title ?? "").trim();
+    const thoughtSummary = (t.summary ?? "").trim();
+    const semanticLabel =
+      (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtSummary;
 
     return {
-      ...t,
       noteId,
       id: recordId,
       thoughtId,
-      categoryId: categoryId.toLowerCase(),
+      title: thoughtTitle,
+      summary: thoughtSummary,
+      semanticLabel,
+      categoryId: resolveSeedCategory(
+        t,
+        `${thoughtTitle} ${thoughtSummary} ${semanticLabel}`
+      ),
       createdAt: new Date().toISOString(),
       isCompletable: false,
       isCompleted: false,

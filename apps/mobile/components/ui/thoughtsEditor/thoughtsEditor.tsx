@@ -1,7 +1,6 @@
 import { Category } from "@repo/zod-schemas";
-import { Asset } from "expo-asset";
 import React from "react";
-import { Keyboard, Pressable, ScrollView, View } from "react-native";
+import { Keyboard, Platform, Pressable, ScrollView, View } from "react-native";
 import { useFormContext } from "react-hook-form";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RichEditor, actions } from "react-native-pell-rich-editor";
@@ -28,6 +27,7 @@ import {
   setThoughtCategoryScript,
   stripHtml,
   thoughtsToHtml,
+  buildCategoryLabelsScript,
 } from "./thoughtsHtml";
 import {
   BULLET_EDITOR_GUARD_SCRIPT,
@@ -53,36 +53,7 @@ import {
   THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
 } from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
-
-const QUICKSAND_REGULAR = require("@/assets/fonts/Quicksand-Regular.ttf");
-const QUICKSAND_BOLD = require("@/assets/fonts/Quicksand-Bold.ttf");
-
-let cachedEditorFontFaceCss: string | null = null;
-
-async function loadEditorFontFaceCss(): Promise<string> {
-  if (cachedEditorFontFaceCss != null) return cachedEditorFontFaceCss;
-  const [regular, bold] = await Asset.loadAsync([
-    QUICKSAND_REGULAR,
-    QUICKSAND_BOLD,
-  ]);
-  const regularUri = regular.localUri ?? regular.uri;
-  const boldUri = bold.localUri ?? bold.uri;
-  cachedEditorFontFaceCss = `
-    @font-face {
-      font-family: 'QuicksandRegular';
-      src: url('${regularUri}') format('truetype');
-      font-weight: normal;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'QuicksandBold';
-      src: url('${boldUri}') format('truetype');
-      font-weight: normal;
-      font-style: normal;
-    }
-  `;
-  return cachedEditorFontFaceCss;
-}
+import { classifyCategory } from "@/features/categories/utils/classifyCategory";
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
@@ -311,14 +282,12 @@ function ThoughtsEditorInner(
   const [caretIsChecklist, setCaretIsChecklist] = React.useState(() =>
     Boolean(getValues("thoughts")?.[0]?.isCompletable)
   );
-  const [fontFaceCss, setFontFaceCss] = React.useState<string | null>(
-    () => cachedEditorFontFaceCss
-  );
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
   >(null);
 
   const richRef = React.useRef<RichEditor>(null);
+  const editorReadyRef = React.useRef(false);
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const pendingFormatRef = React.useRef<"bold" | "italic" | "underline" | null>(
@@ -341,6 +310,10 @@ function ThoughtsEditorInner(
     () => getThoughtFieldPlaceholders(),
     []
   );
+  const categoryLabelsRecord = React.useMemo(
+    () => Object.fromEntries(categoryLabels),
+    [categoryLabels]
+  );
   const htmlOptions = React.useMemo(
     () => ({
       showGraphButtons,
@@ -349,8 +322,9 @@ function ThoughtsEditorInner(
         summary: thoughtPlaceholders.summary,
         bullet: thoughtPlaceholders.bullet,
       },
+      categoryLabels: categoryLabelsRecord,
     }),
-    [showGraphButtons, thoughtPlaceholders]
+    [showGraphButtons, thoughtPlaceholders, categoryLabelsRecord]
   );
   const validationMessages = React.useMemo(
     () => ({
@@ -376,6 +350,12 @@ function ThoughtsEditorInner(
     categoryPickerIndex != null
       ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
       : null;
+  const pendingCategoryByIndexRef = React.useRef(new Map<number, string>());
+
+  const injectIfReady = React.useCallback((script: string) => {
+    if (!editorReadyRef.current) return;
+    richRef.current?.injectJavascript(script);
+  }, []);
 
   const scrollCaretIntoView = React.useCallback(() => {
     const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 28;
@@ -386,20 +366,6 @@ function ThoughtsEditorInner(
     const pending = pendingFormatRef.current;
     if (!pending) return;
     richRef.current?.injectJavascript(applyFormatInThoughtFieldScript(pending));
-  }, []);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    loadEditorFontFaceCss()
-      .then((css) => {
-        if (!cancelled) setFontFaceCss(css);
-      })
-      .catch(() => {
-        if (!cancelled) setFontFaceCss("");
-      });
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   React.useEffect(() => {
@@ -442,7 +408,7 @@ function ThoughtsEditorInner(
   React.useEffect(() => {
     if (readOnly || !dockToolbarToKeyboard) return;
     const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
-    richRef.current?.injectJavascript(`
+    injectIfReady(`
 (function () {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
@@ -450,12 +416,12 @@ function ThoughtsEditorInner(
   true;
 })();
 `);
-  }, [readOnly, dockToolbarToKeyboard, fontFaceCss]);
+  }, [readOnly, dockToolbarToKeyboard, injectIfReady]);
 
   React.useEffect(() => {
     if (readOnly || !keyboardOpen || dockToolbarToKeyboard) return;
     const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
-    richRef.current?.injectJavascript(`
+    injectIfReady(`
 (function () {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
@@ -464,11 +430,17 @@ function ThoughtsEditorInner(
 })();
 `);
     scrollCaretIntoView();
-  }, [keyboardOpen, readOnly, dockToolbarToKeyboard, scrollCaretIntoView]);
+  }, [
+    keyboardOpen,
+    readOnly,
+    dockToolbarToKeyboard,
+    scrollCaretIntoView,
+    injectIfReady,
+  ]);
 
   React.useEffect(() => {
     if (readOnly || keyboardOpen || dockToolbarToKeyboard) return;
-    richRef.current?.injectJavascript(`
+    injectIfReady(`
 (function () {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
@@ -476,10 +448,11 @@ function ThoughtsEditorInner(
   true;
 })();
 `);
-  }, [keyboardOpen, readOnly, dockToolbarToKeyboard]);
+  }, [keyboardOpen, readOnly, dockToolbarToKeyboard, injectIfReady]);
 
   const applyEditorFlags = React.useCallback(
     (nextShowTitles: boolean) => {
+      if (!editorReadyRef.current) return;
       richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
       richRef.current?.injectJavascript(setEditingModeScript(!readOnly));
     },
@@ -487,15 +460,16 @@ function ThoughtsEditorInner(
   );
 
   const applyCategoryColors = React.useCallback((css: string) => {
-    if (!css) return;
+    if (!css || !editorReadyRef.current) return;
     richRef.current?.injectJavascript(setCategoryColorCssScript(css));
   }, []);
 
   React.useEffect(() => {
     applyCategoryColors(categoryColorsCss);
-  }, [applyCategoryColors, categoryColorsCss, fontFaceCss]);
+  }, [applyCategoryColors, categoryColorsCss]);
 
   const applySimplifiedMode = React.useCallback((nextSimplified: boolean) => {
+    if (!editorReadyRef.current) return;
     richRef.current?.injectJavascript(
       setSimplifiedModeScript(
         nextSimplified,
@@ -538,6 +512,7 @@ function ThoughtsEditorInner(
   );
 
   const handleEditorInitialized = React.useCallback(() => {
+    editorReadyRef.current = true;
     // Apply simplified before collapse timers so plain bullets never animate.
     applyEditorFlags(showTitlesRef.current);
     applySimplifiedMode(simplifiedRef.current);
@@ -546,10 +521,16 @@ function ThoughtsEditorInner(
       applyPendingFormat(items);
     });
     if (readOnly) {
+      richRef.current?.injectJavascript(
+        buildCategoryLabelsScript(categoryLabelsRecord)
+      );
       richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
     } else {
       richRef.current?.injectJavascript(
         buildThoughtPlaceholdersScript(thoughtPlaceholders)
+      );
+      richRef.current?.injectJavascript(
+        buildCategoryLabelsScript(categoryLabelsRecord)
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
     }
@@ -566,10 +547,15 @@ function ThoughtsEditorInner(
     applySimplifiedMode,
     applyCategoryColors,
     applyPendingFormat,
+    categoryLabelsRecord,
     readOnly,
     showGraphButtons,
     thoughtPlaceholders,
   ]);
+
+  React.useEffect(() => {
+    injectIfReady(buildCategoryLabelsScript(categoryLabelsRecord));
+  }, [categoryLabelsRecord, injectIfReady]);
 
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
@@ -579,15 +565,22 @@ function ThoughtsEditorInner(
         noteId,
         previous,
         showTitlesRef.current
-      );
+      ).map((thought, index) => {
+        const classified = pendingCategoryByIndexRef.current.get(index);
+        if (!classified) return thought;
+        pendingCategoryByIndexRef.current.delete(index);
+        return { ...thought, categoryId: classified };
+      });
       setValue("thoughts", next, { shouldDirty: true });
     },
     [getValues, noteId, setValue]
   );
 
   const refreshCategoryTimers = React.useCallback(() => {
+    if (!editorReadyRef.current) return;
     // setContentHTML does not fire the WebView input listener.
     requestAnimationFrame(() => {
+      if (!editorReadyRef.current) return;
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
       richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
@@ -597,14 +590,24 @@ function ThoughtsEditorInner(
   const wasEditingRef = React.useRef(!readOnly);
 
   // Entering edit installs the guard and drops graph chrome. Leaving edit
-  // rebuilds HTML so graph buttons come back.
+  // rebuilds HTML so graph buttons come back. Skip the initial mount —
+  // editorInitializedCallback already installs scripts, and injecting
+  // before the WebView exists crashes Android.
   React.useEffect(() => {
-    if (!readOnly) {
-      wasEditingRef.current = true;
+    const enteringEdit = !readOnly;
+    const wasEditing = wasEditingRef.current;
+    if (enteringEdit === wasEditing) return;
+    wasEditingRef.current = enteringEdit;
+    if (!editorReadyRef.current) return;
+
+    if (enteringEdit) {
       applyEditorFlags(showTitles);
       applySimplifiedMode(false);
       richRef.current?.injectJavascript(
         buildThoughtPlaceholdersScript(thoughtPlaceholders)
+      );
+      richRef.current?.injectJavascript(
+        buildCategoryLabelsScript(categoryLabelsRecord)
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
       const nextThoughts = getValues("thoughts");
@@ -615,9 +618,6 @@ function ThoughtsEditorInner(
       refreshCategoryTimers();
       return;
     }
-
-    if (!wasEditingRef.current) return;
-    wasEditingRef.current = false;
 
     const titles = simplifiedRef.current ? false : showTitlesRef.current;
     applyEditorFlags(titles);
@@ -637,6 +637,7 @@ function ThoughtsEditorInner(
     applyCategoryColors,
     applyEditorFlags,
     applySimplifiedMode,
+    categoryLabelsRecord,
     getValues,
     htmlOptions,
     readOnly,
@@ -829,6 +830,34 @@ function ThoughtsEditorInner(
         }
         return;
       }
+      if (message.type === "CLASSIFY_BULLET") {
+        const payload = message.data as
+          | { index?: number; text?: string }
+          | undefined;
+        const index = Number(payload?.index);
+        if (!Number.isFinite(index) || index < 0) return;
+        const categoryId = classifyCategory(String(payload?.text ?? ""));
+        pendingCategoryByIndexRef.current.set(index, categoryId);
+        const previous = getValues("thoughts");
+        const current = previous[index];
+        if (current && current.categoryId !== categoryId) {
+          setValue(
+            "thoughts",
+            previous.map((thought, thoughtIndex) =>
+              thoughtIndex === index ? { ...thought, categoryId } : thought
+            ),
+            { shouldDirty: true }
+          );
+        }
+        richRef.current?.injectJavascript(
+          setThoughtCategoryScript(
+            index,
+            categoryId,
+            categoryLabels.get(categoryId)
+          )
+        );
+        return;
+      }
       if (message.type !== "SELECT_CATEGORY") return;
       const index = Number(message.data);
       if (!Number.isFinite(index) || index < 0) return;
@@ -836,7 +865,7 @@ function ThoughtsEditorInner(
       Keyboard.dismiss();
       setCategoryPickerIndex(index);
     },
-    [getValues, onToggleCompleted, push, readOnly, setValue]
+    [categoryLabels, getValues, onToggleCompleted, push, readOnly, setValue]
   );
 
   const handleSelectCategory = React.useCallback(
@@ -850,7 +879,11 @@ function ThoughtsEditorInner(
       );
       setValue("thoughts", next, { shouldDirty: !readOnly });
       richRef.current?.injectJavascript(
-        setThoughtCategoryScript(categoryPickerIndex, category.id)
+        setThoughtCategoryScript(
+          categoryPickerIndex,
+          category.id,
+          categoryLabels.get(category.id)
+        )
       );
       if (readOnly) {
         const thought = next[categoryPickerIndex];
@@ -865,6 +898,7 @@ function ThoughtsEditorInner(
       setCategoryPickerIndex(null);
     },
     [
+      categoryLabels,
       categoryPickerIndex,
       closeCategorySheet,
       getValues,
@@ -967,11 +1001,16 @@ function ThoughtsEditorInner(
           </Label>
         ) : null}
 
+        {/* Android: clipping/rounding a WebView parent overflows HWUI while drawing. */}
         <View
           className={
             plain
-              ? "relative flex-1 min-h-0 overflow-hidden"
-              : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
+              ? Platform.OS === "android"
+                ? "relative flex-1 min-h-0"
+                : "relative flex-1 min-h-0 overflow-hidden"
+              : Platform.OS === "android"
+                ? "relative flex-1 min-h-0 border border-input"
+                : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
           }
           style={
             plain
@@ -997,29 +1036,25 @@ function ThoughtsEditorInner(
               }
             }}
           >
-            {fontFaceCss == null ? null : (
-              <RichEditor
-                ref={richRef}
-                style={{ flex: 1 }}
-                useContainer={false}
-                scrollEnabled
-                nestedScrollEnabled
-                disabled={readOnly}
-                pasteAsPlainText
-                initialContentHTML={initialHtmlRef.current}
-                placeholder=""
-                editorInitializedCallback={handleEditorInitialized}
-                allowFileAccess
-                allowFileAccessFromFileURLs
-                allowUniversalAccessFromFileURLs
-                originWhitelist={["*"]}
-                editorStyle={{
-                  backgroundColor,
-                  color: textColor,
-                  caretColor,
-                  placeholderColor,
-                  initialCSSText: fontFaceCss,
-                  contentCSSText: `
+            {/* Don't load Quicksand via file:// @font-face — Android SIGBUS in FreeType. */}
+            <RichEditor
+              ref={richRef}
+              style={{ flex: 1 }}
+              useContainer={false}
+              scrollEnabled
+              nestedScrollEnabled
+              disabled={readOnly}
+              pasteAsPlainText
+              initialContentHTML={initialHtmlRef.current}
+              placeholder=""
+              editorInitializedCallback={handleEditorInitialized}
+              originWhitelist={["*"]}
+              editorStyle={{
+                backgroundColor,
+                color: textColor,
+                caretColor,
+                placeholderColor,
+                contentCSSText: `
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
                   line-height: 1.45;
@@ -1035,7 +1070,7 @@ function ThoughtsEditorInner(
                   min-height: 100%;
                   box-sizing: border-box;
                 `,
-                  cssText: `
+                cssText: `
                   ul {
                     padding-left: 0;
                     margin: 0;
@@ -1335,28 +1370,27 @@ function ThoughtsEditorInner(
                   }
                   ${categoryColorsCss}
                 `,
-                }}
-                onChange={
-                  readOnly
-                    ? undefined
-                    : (html) => {
-                        syncThoughtsFromHtml(html);
-                        if (keyboardOpenRef.current) {
-                          scrollCaretIntoView();
-                        }
-                      }
-                }
-                onCursorPosition={
-                  readOnly
-                    ? undefined
-                    : () => {
-                        tryApplyPendingFormat();
+              }}
+              onChange={
+                readOnly
+                  ? undefined
+                  : (html) => {
+                      syncThoughtsFromHtml(html);
+                      if (keyboardOpenRef.current) {
                         scrollCaretIntoView();
                       }
-                }
-                onMessage={handleEditorMessage}
-              />
-            )}
+                    }
+              }
+              onCursorPosition={
+                readOnly
+                  ? undefined
+                  : () => {
+                      tryApplyPendingFormat();
+                      scrollCaretIntoView();
+                    }
+              }
+              onMessage={handleEditorMessage}
+            />
           </View>
           {showToolbar && !dockToolbarToKeyboard ? (
             <ThoughtsEditorToolbar

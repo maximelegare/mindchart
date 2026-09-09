@@ -82,7 +82,7 @@ export const setupDB = async (retries = 10, delay = 200) => {
     try {
       await runRawSqliteTransaction(async () => {
         await db.insert(SettingTable).values(settings);
-        await db.insert(CategoryTable).values(categories);
+        await db.insert(CategoryTable).values(categories).onConflictDoNothing();
         await db
           .insert(CategoryTranslationTable)
           .values(categoryTranslations)

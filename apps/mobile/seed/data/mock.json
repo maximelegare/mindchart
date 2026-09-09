@@ -7,13 +7,13 @@
       {
         "title": "Simplify Social Login Integration",
         "summary": "Implement OAuth for Google and Apple to allow one-tap registration and reduce drop-off rates.",
-        "category": "tasks",
+        "category": "idea",
         "semanticLabel": "Authentication optimization"
       },
       {
         "title": "Gamified Progress Tracking",
         "summary": "Using a visual progress bar during setup makes the user feel a sense of achievement immediately.",
-        "category": "ideas",
+        "category": "idea",
         "semanticLabel": "Engagement strategy"
       }
     ]
@@ -26,13 +26,13 @@
       {
         "title": "Overspending in Cloud Infrastructure",
         "summary": "The AWS bill has increased by 15% due to inefficient database queries that need optimization.",
-        "category": "problems",
+        "category": "problem",
         "semanticLabel": "Budgetary leak"
       },
       {
         "title": "Hiring Three New Growth Marketers",
         "summary": "Allocate funds to bring in specialists for SEO and paid social media acquisition.",
-        "category": "plans",
+        "category": "idea",
         "semanticLabel": "Team expansion"
       }
     ]
@@ -45,13 +45,13 @@
       {
         "title": "Passive Cooling System Efficiency",
         "summary": "Natural ventilation designs can reduce building energy consumption by up to 30% without mechanical air conditioning.",
-        "category": "learning",
+        "category": "insight",
         "semanticLabel": "Energy efficiency"
       },
       {
         "title": "Bosco Verticale Case Study",
         "summary": "The Milan apartment towers serve as a primary example of integrating biological systems into high-rise living.",
-        "category": "places",
+        "category": "uncategorized",
         "semanticLabel": "Architectural landmark"
       }
     ]
@@ -64,13 +64,13 @@
       {
         "title": "Morning Calm Increases Clarity",
         "summary": "The absence of digital notifications in the early hours creates a space for better creative thinking.",
-        "category": "other",
+        "category": "insight",
         "semanticLabel": "Mental well-being"
       },
       {
         "title": "Inconsistent Sleep Schedule Impact",
         "summary": "Failing to go to bed by 10 PM makes the early wake-up call much harder to sustain long-term.",
-        "category": "insights",
+        "category": "problem",
         "semanticLabel": "Habit consistency"
       }
     ]
@@ -83,13 +83,13 @@
       {
         "title": "Final UI Polish Deadline",
         "summary": "All high-fidelity screens must be handed over to the frontend team by Friday evening.",
-        "category": "projects",
+        "category": "uncategorized",
         "semanticLabel": "Milestone deadline"
       },
       {
         "title": "Sarah to Lead Beta Testing",
         "summary": "Sarah will coordinate with the selected 50 users to gather qualitative feedback on the core features.",
-        "category": "other",
+        "category": "uncategorized",
         "semanticLabel": "Resource allocation"
       }
     ]
@@ -102,13 +102,13 @@
       {
         "title": "Rotate Tomato Crop Location",
         "summary": "Move the tomatoes to the north bed to prevent soil-borne diseases from the previous year.",
-        "category": "tasks",
+        "category": "idea",
         "semanticLabel": "Crop rotation"
       },
       {
         "title": "Need More Nitrogen Rich Fertilizer",
         "summary": "The leafy greens are looking a bit yellow, indicating a deficiency in the current soil mix.",
-        "category": "goals",
+        "category": "problem",
         "semanticLabel": "Soil health"
       }
     ]
@@ -121,13 +121,13 @@
       {
         "title": "Shallow Work vs Deep Work",
         "summary": "Shallow work like emails provides the illusion of productivity while deep work produces real value.",
-        "category": "learning",
+        "category": "insight",
         "semanticLabel": "Work classification"
       },
       {
         "title": "Schedule Internet Blocks",
         "summary": "Avoid the urge to check the web by scheduling specific times for connectivity.",
-        "category": "plans",
+        "category": "idea",
         "semanticLabel": "Focus technique"
       }
     ]
@@ -140,13 +140,13 @@
       {
         "title": "Kaaterskill Falls Trailhead",
         "summary": "The best spot to start the morning hike to avoid the heavy afternoon crowds.",
-        "category": "places",
+        "category": "uncategorized",
         "semanticLabel": "Travel destination"
       },
       {
-        "title": "Book Cabin by Wednesday",
-        "summary": "Confirm the Airbnb reservation before the weekend rates increase or the spot is taken.",
-        "category": "tasks",
+        "title": "Book Cabin by Wednesday?",
+        "summary": "Should we confirm the Airbnb reservation before the weekend rates increase or the spot is taken?",
+        "category": "question",
         "semanticLabel": "Logistics"
       }
     ]
@@ -159,13 +159,13 @@
       {
         "title": "The Rise and Fall of Segway",
         "summary": "An episode exploring why the 'future of transport' failed to gain mainstream consumer adoption.",
-        "category": "ideas",
+        "category": "idea",
         "semanticLabel": "Episode concept"
       },
       {
         "title": "Who to Interview for Ep 1?",
         "summary": "Search for former engineers or marketing leads from the original product team.",
-        "category": "questions",
+        "category": "question",
         "semanticLabel": "Research inquiry"
       }
     ]
@@ -178,13 +178,13 @@
       {
         "title": "Murphy Bed Installation",
         "summary": "Using a fold-down bed will maximize floor space for yoga or office work during the day.",
-        "category": "ideas",
+        "category": "idea",
         "semanticLabel": "Space optimization"
       },
       {
         "title": "Paint Color Palette",
         "summary": "Preferring sage green or a neutral slate to keep the room feeling calm and professional.",
-        "category": "preferences",
+        "category": "idea",
         "semanticLabel": "Aesthetic choice"
       }
     ]
@@ -197,13 +197,13 @@
       {
         "title": "Treasury Inflation-Protected Securities",
         "summary": "TIPS provide a hedge as the principal increases with the Consumer Price Index.",
-        "category": "learning",
+        "category": "insight",
         "semanticLabel": "Financial instrument"
       },
       {
         "title": "Real Estate as an Inflation Hedge",
         "summary": "Physical assets and rental income often scale alongside rising cost of living.",
-        "category": "insights",
+        "category": "insight",
         "semanticLabel": "Market analysis"
       }
     ]
@@ -216,13 +216,13 @@
       {
         "title": "The Grand Canyon Vista",
         "summary": "Looking over the rim for the first time was an overwhelming sensory experience.",
-        "category": "memories",
+        "category": "memory",
         "semanticLabel": "Personal history"
       },
       {
         "title": "Car Breakdown in Nevada",
         "summary": "Waiting for three hours in the heat taught us the importance of carrying extra water.",
-        "category": "memories",
+        "category": "memory",
         "semanticLabel": "Past event"
       }
     ]
@@ -235,13 +235,13 @@
       {
         "title": "Induction Heating Speed",
         "summary": "The ability to boil water in half the time is a major selling point for induction.",
-        "category": "preferences",
+        "category": "insight",
         "semanticLabel": "Feature comparison"
       },
       {
         "title": "Gas Range Reliability",
         "summary": "Works during power outages and is often preferred by traditional home chefs for flame control.",
-        "category": "other",
+        "category": "uncategorized",
         "semanticLabel": "Technical trade-off"
       }
     ]
@@ -254,13 +254,13 @@
       {
         "title": "Bulk Cook Quinoa and Chickpeas",
         "summary": "Prepare these on Sunday to quickly assemble salads during the busy work week.",
-        "category": "tasks",
+        "category": "idea",
         "semanticLabel": "Preparation"
       },
       {
         "title": "Try New Lemon Tahini Dressing",
         "summary": "A variation on the classic recipe using roasted garlic for extra depth.",
-        "category": "ideas",
+        "category": "idea",
         "semanticLabel": "Recipe experiment"
       }
     ]
@@ -273,13 +273,13 @@
       {
         "title": "Lead the API Migration Project",
         "summary": "Successfully moved the legacy system to a new architecture without any downtime.",
-        "category": "goals",
+        "category": "memory",
         "semanticLabel": "Major achievement"
       },
       {
         "title": "Improve Public Speaking Skills",
         "summary": "A goal for next year is to present at least one technical talk at a local meetup.",
-        "category": "goals",
+        "category": "idea",
         "semanticLabel": "Self-improvement"
       }
     ]
@@ -292,13 +292,13 @@
       {
         "title": "AI as a First Draft Tool",
         "summary": "Using models to overcome the blank page syndrome rather than generating final copy.",
-        "category": "insights",
+        "category": "insight",
         "semanticLabel": "Workflow shift"
       },
       {
         "title": "The Value of Human Tone",
         "summary": "Brand voice and emotional nuance remain difficult for algorithms to replicate perfectly.",
-        "category": "insights",
+        "category": "insight",
         "semanticLabel": "Competitive advantage"
       }
     ]
@@ -311,13 +311,13 @@
       {
         "title": "Confirm Table Count for Seating",
         "summary": "The final guest list is 120, meaning we need exactly 15 circular tables.",
-        "category": "events",
+        "category": "uncategorized",
         "semanticLabel": "Logistics detail"
       },
       {
-        "title": "Peonies vs Roses for Centerpieces",
+        "title": "Peonies vs Roses for Centerpieces?",
         "summary": "Peonies are in season but slightly more expensive than the standard rose options.",
-        "category": "preferences",
+        "category": "question",
         "semanticLabel": "Design choice"
       }
     ]
@@ -330,13 +330,13 @@
       {
         "title": "Dark Mode Contrast Issues",
         "summary": "Text in the footer is unreadable when the user toggles the system to dark mode.",
-        "category": "problems",
+        "category": "problem",
         "semanticLabel": "UI bug"
       },
       {
         "title": "Slow Loading on Mobile Safari",
         "summary": "The homepage takes over 4 seconds to load specifically on iOS devices.",
-        "category": "problems",
+        "category": "problem",
         "semanticLabel": "Performance issue"
       }
     ]
@@ -349,13 +349,13 @@
       {
         "title": "Weightless Sensation",
         "summary": "Recalling the feeling of floating between shelves without any effort.",
-        "category": "memories",
+        "category": "memory",
         "semanticLabel": "Dream imagery"
       },
       {
         "title": "Unreadable Script",
         "summary": "The text on the pages changed every time I looked at it, glowing in different colors.",
-        "category": "random",
+        "category": "memory",
         "semanticLabel": "Subconscious detail"
       }
     ]

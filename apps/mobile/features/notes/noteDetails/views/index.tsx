@@ -468,15 +468,32 @@ export const NoteDetailsFeature = ({
   const [surfaceReady, setSurfaceReady] = React.useState(false);
 
   React.useEffect(() => {
+    let cancelled = false;
+
+    const markReady = () => {
+      if (cancelled) return;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!cancelled) setSurfaceReady(true);
+        });
+      });
+    };
+
     const onEnd = (event: { data?: { closing?: boolean } }) => {
       if (event.data?.closing) return;
-      setSurfaceReady(true);
+      markReady();
     };
+
     const unsub = navigation.addListener("transitionEnd", onEnd);
     const unsubParent = navigation
       .getParent()
       ?.addListener("transitionEnd", onEnd);
+    // FAB / already-focused pushes may never emit transitionEnd.
+    const fallback = setTimeout(markReady, 400);
+
     return () => {
+      cancelled = true;
+      clearTimeout(fallback);
       unsub();
       unsubParent?.();
     };

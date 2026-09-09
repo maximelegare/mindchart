@@ -40,7 +40,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function categoryLabelHtml(categoryId) {
       var id = categoryId || "uncategorized";
-      var label = id.charAt(0).toUpperCase() + id.slice(1);
+      var labels = window.__mcCategoryLabels;
+      var label =
+        (labels && labels[id]) || id.charAt(0).toUpperCase() + id.slice(1);
       return (
         '<div class="thought-category" contenteditable="false" data-category-id="' +
         id +
@@ -215,6 +217,34 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function liCategoryId(li) {
       if (!li) return "uncategorized";
       return li.getAttribute("data-category-id") || "uncategorized";
+    }
+
+    function fieldPlainText(el) {
+      if (!el) return "";
+      return (el.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .replace(/\\n/g, " ")
+        .trim();
+    }
+
+    function liClassifyText(li) {
+      var title = fieldPlainText(li.querySelector(".thought-title"));
+      var summary = fieldPlainText(li.querySelector(".thought-summary"));
+      return (title + " " + summary).trim();
+    }
+
+    function requestClassifyBullet(li) {
+      if (!li || !li.parentNode || !window.ReactNativeWebView) return;
+      var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+      if (index < 0) return;
+      var text = liClassifyText(li);
+      if (!text) return;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "CLASSIFY_BULLET",
+          data: { index: index, text: text },
+        })
+      );
     }
 
     function clearCollapseTimer(li) {
@@ -518,14 +548,15 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         }
       }
 
+      requestClassifyBullet(li);
+
       var newLi = document.createElement("li");
-      var categoryId = liCategoryId(li);
       var completable = li.getAttribute("data-completable") === "true";
       newLi.className = completable ? "thought-item is-checklist" : "thought-item";
-      newLi.setAttribute("data-category-id", categoryId);
+      newLi.setAttribute("data-category-id", "uncategorized");
       newLi.setAttribute("data-completable", completable ? "true" : "false");
       newLi.setAttribute("data-completed", "false");
-      newLi.innerHTML = emptyLiHtml(categoryId);
+      newLi.innerHTML = emptyLiHtml("uncategorized");
       if (li.nextSibling) {
         li.parentNode.insertBefore(newLi, li.nextSibling);
       } else {

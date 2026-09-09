@@ -16,5 +16,4 @@ export type GenerateNoteServiceData = {
     type: string;
   };
   text?: string;
-  categories: string;
 };

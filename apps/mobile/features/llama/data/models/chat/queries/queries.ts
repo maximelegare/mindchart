@@ -3,7 +3,7 @@ import { CHAT_MODELS } from "../chatModels";
 import { QUEN_2_5_PROMPT } from "./generateNote/QUEN_2.5";
 export const QUERIES: Record<
   keyof typeof CHAT_MODELS,
-  (input: string, options: { categories: string }) => string
+  (input: string, options?: { categories?: string }) => string
 > = {
   // INTERNVL3_2B: SMOL_LM_3_PROMPT,
   // GEMMA_3_4B_QAT: SMOL_LM_3_PROMPT,
