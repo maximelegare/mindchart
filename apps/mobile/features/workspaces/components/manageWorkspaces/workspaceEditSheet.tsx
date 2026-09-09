@@ -45,7 +45,7 @@ export const WorkspaceEditSheetProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const sheet = useBottomSheet();
+  const bottomSheet = useBottomSheet();
   const { colorScheme } = useColorScheme();
   const [active, setActive] = useState(false);
   const [options, setOptions] = useState<WorkspaceEditSheetOptions | null>(
@@ -54,8 +54,8 @@ export const WorkspaceEditSheetProvider = ({
   const optionsRef = useRef<WorkspaceEditSheetOptions | null>(null);
 
   const closeWorkspaceEditSheet = useCallback(() => {
-    sheet.close();
-  }, [sheet]);
+    bottomSheet.close();
+  }, [bottomSheet]);
 
   const openWorkspaceEditSheet = useCallback(
     (next: WorkspaceEditSheetOptions) => {
@@ -63,10 +63,10 @@ export const WorkspaceEditSheetProvider = ({
       setOptions(next);
       setActive(true);
       setTimeout(() => {
-        sheet.open();
+        bottomSheet.open();
       }, 50);
     },
-    [sheet]
+    [bottomSheet]
   );
 
   React.useEffect(() => {
@@ -93,7 +93,7 @@ export const WorkspaceEditSheetProvider = ({
       {children}
       <BottomSheet>
         <BottomSheetContent
-          ref={sheet.ref}
+          ref={bottomSheet.ref}
           style={{ zIndex: 200 }}
           snapPoints={["100%"]}
           enableDynamicSizing={false}

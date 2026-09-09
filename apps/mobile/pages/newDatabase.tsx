@@ -2,15 +2,17 @@ import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { useWorkSpaces } from "@/features/workspaces/hooks/useWorkSpaces";
 import { useWorkspaceEditSheet } from "@/features/workspaces/components/manageWorkspaces/workspaceEditSheet";
-import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { router } from "expo-router";
-import { View, Image } from "react-native";
+import { Image, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const POPOVER_BG = hsl("popover", "theme", "light");
+const BUTTON_BG = hsl("secondary", "theme", "light");
+const BUTTON_FG = hsl("secondary-foreground", "theme", "light");
+
 export const NewDatabaseScreen = () => {
-  const { colorScheme } = useColorScheme();
-  const { bottom } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
 
   const { createWorkspace, importWorkspace, loading } = useWorkSpaces();
   const { openWorkspaceEditSheet, closeWorkspaceEditSheet } =
@@ -38,45 +40,48 @@ export const NewDatabaseScreen = () => {
 
   return (
     <View
-      className="h-full w-full justify-center"
-      style={{ backgroundColor: hsl("border", colorScheme, 30) }}
+      className="flex-1 w-full"
+      style={{
+        backgroundColor: POPOVER_BG,
+        paddingTop: top,
+        paddingBottom: bottom,
+      }}
     >
-      <View className="flex-col items-center justify-center relative h-full">
+      <View className="flex-1 items-center justify-center px-6 gap-10">
         <Image
           source={require("../assets/images/icon.png")}
-          style={{ opacity: 0.06, width: 1500, height: 1500 }}
-          className="absolute"
+          style={{ width: 100, height: 129 }}
+          resizeMode="contain"
         />
-        <View
-          className="flex-col items-center justify-between absolute"
-          style={{ height: "50%", bottom: bottom + 100 }}
-        >
-          <View className="flex-col gap-4 items-center justify-between">
-            <Button
-              variant="secondary"
-              onPress={handleCreateWorkspace}
-              disabled={loading}
-            >
-              <View className="flex-row items-center justify-center gap-3">
-                <Icon name="plus" color="background" size={18} />
-                <Typography>New Workspace</Typography>
-              </View>
-            </Button>
-            <Button
-              variant="secondary"
-              onPress={handleImportWorkspace}
-              disabled={loading}
-            >
-              <View className="flex-row items-center justify-center gap-3">
-                <Icon name="import" color="background" size={18} />
-                <Typography>Import Workspace (.zip)</Typography>
-              </View>
-            </Button>
-          </View>
-          <Image
-            source={require("../assets/images/icon.png")}
-            style={{ width: 100, height: 129 }}
-          />
+        <View className="w-full max-w-sm gap-4">
+          <Button
+            variant="ghost"
+            className="w-full"
+            style={{ backgroundColor: BUTTON_BG }}
+            onPress={handleCreateWorkspace}
+            disabled={loading}
+          >
+            <View className="flex-row items-center justify-center gap-3">
+              <Icon name="plus" hslColor={BUTTON_FG} size={18} />
+              <Typography style={{ color: BUTTON_FG }}>
+                New Workspace
+              </Typography>
+            </View>
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full"
+            style={{ backgroundColor: BUTTON_BG }}
+            onPress={handleImportWorkspace}
+            disabled={loading}
+          >
+            <View className="flex-row items-center justify-center gap-3">
+              <Icon name="import" hslColor={BUTTON_FG} size={18} />
+              <Typography style={{ color: BUTTON_FG }}>
+                Import Workspace (.zip)
+              </Typography>
+            </View>
+          </Button>
         </View>
       </View>
     </View>
