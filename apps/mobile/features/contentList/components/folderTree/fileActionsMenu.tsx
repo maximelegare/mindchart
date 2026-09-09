@@ -1,10 +1,9 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { Alert, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert, Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
-import { LongPressable } from "@/components/ui/longPressable";
 import { cn } from "@/lib/cn";
 import {
   BottomSheet,
@@ -48,12 +47,15 @@ export function FileActionsMenu({
   const actionsSheet = useBottomSheet();
   const moveSheet = useBottomSheet();
   const [moveActive, setMoveActive] = useState(false);
+  const [sheetsMounted, setSheetsMounted] = useState(false);
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
   const { notesAndThoughts, folders } = useControllers();
   const { mutateAsync: updateNoteFolderId } =
     notesAndThoughts.useUpdateNoteFolderIdMutation();
-  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery({
+    enabled: sheetsMounted,
+  });
 
   const currentFolder = useMemo((): FolderSelection => {
     if (!file.folderId) return null;
@@ -126,89 +128,112 @@ export function FileActionsMenu({
   }, [closeActions, closeModal, deleteNoteAction, file.id, openModal]);
 
   const openActions = useCallback(() => {
+    if (!sheetsMounted) {
+      setSheetsMounted(true);
+      return;
+    }
     actionsSheet.open();
-  }, [actionsSheet]);
+  }, [actionsSheet, sheetsMounted]);
+
+  useEffect(() => {
+    if (sheetsMounted) actionsSheet.open();
+    // open is stable; the sheet object is a new identity each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetsMounted]);
 
   return (
     <>
-      <LongPressable
+      <Pressable
         onPress={() => onNavigate?.()}
         onLongPress={openActions}
+        delayLongPress={400}
         className={cn("shrink-0", className)}
         style={hitSlop ? { margin: -hitSlop, padding: hitSlop } : undefined}
       >
         {children}
-      </LongPressable>
+      </Pressable>
 
-      <BottomSheet>
-        <BottomSheetContent
-          ref={actionsSheet.ref}
-          style={{ zIndex: 200 }}
-          enablePanDownToClose
-          enableContentPanningGesture={false}
-        >
-          <BottomSheetView className="gap-3 pt-4 bg-background">
-            <BottomSheetHeader
-              className="bg-background"
-              onDismiss={closeActions}
-            >
-              <View className="flex-row items-center gap-2">
-                <Icon name="notebook-text" color="foreground" size={18} />
-                <Typography variant="h3" numberOfLines={1}>
-                  {title}
-                </Typography>
-              </View>
-            </BottomSheetHeader>
+      {sheetsMounted ? (
+        <BottomSheet>
+          <BottomSheetContent
+            ref={actionsSheet.ref}
+            style={{ zIndex: 200 }}
+            enablePanDownToClose
+            enableContentPanningGesture={false}
+          >
+            <BottomSheetView className="gap-3 pt-4 bg-background">
+              <BottomSheetHeader
+                className="bg-background"
+                onDismiss={closeActions}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Icon name="notebook-text" color="foreground" size={18} />
+                  <Typography variant="h3" numberOfLines={1}>
+                    {title}
+                  </Typography>
+                </View>
+              </BottomSheetHeader>
 
-            <Button variant="outline" size="default" onPress={() => openNote()}>
-              <View className="flex-row items-center gap-2">
-                <Icon name="eye" color="foreground" size={18} />
-                <Typography variant="h3">View</Typography>
-              </View>
-            </Button>
+              <Button
+                variant="outline"
+                size="default"
+                onPress={() => openNote()}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Icon name="eye" color="foreground" size={18} />
+                  <Typography variant="h3">View</Typography>
+                </View>
+              </Button>
 
-            <Button
-              variant="outline"
-              size="default"
-              onPress={() => openNote("edit")}
-            >
-              <View className="flex-row items-center gap-2">
-                <Icon name="pencil" color="foreground" size={18} />
-                <Typography variant="h3">Edit</Typography>
-              </View>
-            </Button>
+              <Button
+                variant="outline"
+                size="default"
+                onPress={() => openNote("edit")}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Icon name="pencil" color="foreground" size={18} />
+                  <Typography variant="h3">Edit</Typography>
+                </View>
+              </Button>
 
-            <Button variant="outline" size="default" onPress={openMoveSheet}>
-              <View className="flex-row items-center gap-2">
-                <Icon name="arrow-right-left" color="foreground" size={18} />
-                <Typography variant="h3">Move</Typography>
-              </View>
-            </Button>
+              <Button variant="outline" size="default" onPress={openMoveSheet}>
+                <View className="flex-row items-center gap-2">
+                  <Icon name="arrow-right-left" color="foreground" size={18} />
+                  <Typography variant="h3">Move</Typography>
+                </View>
+              </Button>
 
-            <Button
-              variant="destructive"
-              size="default"
-              onPress={openDeleteConfirmation}
-            >
-              <View className="flex-row items-center gap-2">
-                <Icon name="trash-2" color="destructive-foreground" size={18} />
-                <Typography variant="h3">Delete</Typography>
-              </View>
-            </Button>
-          </BottomSheetView>
-        </BottomSheetContent>
-      </BottomSheet>
+              <Button
+                variant="destructive"
+                size="default"
+                onPress={openDeleteConfirmation}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Icon
+                    name="trash-2"
+                    color="destructive-foreground"
+                    size={18}
+                  />
+                  <Typography variant="h3">Delete</Typography>
+                </View>
+              </Button>
+            </BottomSheetView>
+          </BottomSheetContent>
+        </BottomSheet>
+      ) : null}
 
-      <FolderPickerSheet
-        moveTarget={{ name: title, kind: "file" }}
-        sheet={moveSheet}
-        active={moveActive}
-        selectedFolder={currentFolder}
-        allowRoot={false}
-        showLocationPin
-        onSelect={handleMoveSelect}
-        onDismiss={() => setMoveActive(false)}
-      />
+      {sheetsMounted ? (
+        <FolderPickerSheet
+          moveTarget={{ name: title, kind: "file" }}
+          sheet={moveSheet}
+          active={moveActive}
+          selectedFolder={currentFolder}
+          allowRoot={false}
+          showLocationPin
+          onSelect={handleMoveSelect}
+          onDismiss={() => setMoveActive(false)}
+        />
+      ) : null}
     </>
   );
 }

@@ -1,11 +1,10 @@
-import React, { useCallback, useMemo } from "react";
-import { Alert, View } from "react-native";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { Alert, Pressable, View } from "react-native";
 import { canCreateChildFolder, canMoveFolderTo } from "@repo/sqlite";
 import { Folder } from "@repo/zod-schemas/src/schemas";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
-import { LongPressable } from "@/components/ui/longPressable";
 import { cn } from "@/lib/cn";
 import {
   BottomSheet,
@@ -58,6 +57,7 @@ export const FolderActionsMenu = ({
   const actionsSheet = useBottomSheet();
   const moveSheet = useBottomSheet();
   const [moveActive, setMoveActive] = React.useState(false);
+  const [sheetsMounted, setSheetsMounted] = React.useState(false);
   const {
     openCreateFolderModal,
     openRenameFolderModal,
@@ -73,7 +73,9 @@ export const FolderActionsMenu = ({
     target.kind === "root" ? null : target.folder.path
   );
   const { folders } = useControllers();
-  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery();
+  const { data: allFolders = [] } = folders.useFetchAllFoldersQuery({
+    enabled: sheetsMounted,
+  });
   const allPaths = useMemo(
     () => allFolders.map((folder) => folder.path),
     [allFolders]
@@ -89,8 +91,18 @@ export const FolderActionsMenu = ({
   }, [actionsSheet]);
 
   const openActions = useCallback(() => {
+    if (!sheetsMounted) {
+      setSheetsMounted(true);
+      return;
+    }
     actionsSheet.open();
-  }, [actionsSheet]);
+  }, [actionsSheet, sheetsMounted]);
+
+  useEffect(() => {
+    if (sheetsMounted) actionsSheet.open();
+    // open is stable; the sheet object is a new identity each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetsMounted]);
 
   const openMoveSheet = useCallback(() => {
     closeActions();
@@ -138,136 +150,139 @@ export const FolderActionsMenu = ({
 
   return (
     <>
-      <LongPressable
+      <Pressable
         onPress={() => onNavigate?.()}
         onLongPress={openActions}
+        delayLongPress={400}
         className={cn("shrink-0", className)}
         style={hitSlop ? { margin: -hitSlop, padding: hitSlop } : undefined}
       >
         {children}
-      </LongPressable>
+      </Pressable>
 
-      <BottomSheet>
-        <BottomSheetContent
-          ref={actionsSheet.ref}
-          style={{ zIndex: 200 }}
-          enablePanDownToClose
-          enableContentPanningGesture={false}
-        >
-          <BottomSheetView className="gap-3 pt-4 bg-background">
-            <BottomSheetHeader
-              className="bg-background"
-              onDismiss={closeActions}
-            >
-              <View className="flex-row items-center gap-2">
-                <Icon
-                  name={isRoot ? "house" : "folder"}
-                  color="foreground"
-                  size={18}
-                />
-                <Typography variant="h3" numberOfLines={1}>
-                  {title}
-                </Typography>
-              </View>
-            </BottomSheetHeader>
+      {sheetsMounted ? (
+        <BottomSheet>
+          <BottomSheetContent
+            ref={actionsSheet.ref}
+            style={{ zIndex: 200 }}
+            enablePanDownToClose
+            enableContentPanningGesture={false}
+          >
+            <BottomSheetView className="gap-3 pt-4 bg-background">
+              <BottomSheetHeader
+                className="bg-background"
+                onDismiss={closeActions}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Icon
+                    name={isRoot ? "house" : "folder"}
+                    color="foreground"
+                    size={18}
+                  />
+                  <Typography variant="h3" numberOfLines={1}>
+                    {title}
+                  </Typography>
+                </View>
+              </BottomSheetHeader>
 
-            {canCreateHere ? (
+              {canCreateHere ? (
+                <Button
+                  variant="outline"
+                  size="default"
+                  onPress={() => {
+                    closeActions();
+                    setTimeout(() => {
+                      openCreateFolderModal(target);
+                    }, 200);
+                  }}
+                >
+                  <View className="flex-row items-center gap-2">
+                    <Icon name="folder" color="foreground" size={18} />
+                    <Typography variant="h3">
+                      <FolderActionsNewFolderLabel />
+                    </Typography>
+                  </View>
+                </Button>
+              ) : null}
+
               <Button
                 variant="outline"
                 size="default"
                 onPress={() => {
                   closeActions();
-                  setTimeout(() => {
-                    openCreateFolderModal(target);
-                  }, 200);
+                  void createBlankNote(
+                    target.kind === "root" ? null : target.folder.id
+                  );
                 }}
               >
                 <View className="flex-row items-center gap-2">
-                  <Icon name="folder" color="foreground" size={18} />
+                  <Icon name="notebook-text" color="foreground" size={18} />
                   <Typography variant="h3">
-                    <FolderActionsNewFolderLabel />
+                    <FolderActionsNewNoteLabel />
                   </Typography>
                 </View>
               </Button>
-            ) : null}
 
-            <Button
-              variant="outline"
-              size="default"
-              onPress={() => {
-                closeActions();
-                void createBlankNote(
-                  target.kind === "root" ? null : target.folder.id
-                );
-              }}
-            >
-              <View className="flex-row items-center gap-2">
-                <Icon name="notebook-text" color="foreground" size={18} />
-                <Typography variant="h3">
-                  <FolderActionsNewNoteLabel />
-                </Typography>
-              </View>
-            </Button>
+              {!isRoot && target.kind === "folder" ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onPress={() => {
+                      closeActions();
+                      openRenameFolderModal(target.folder);
+                    }}
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <Icon name="pencil" color="foreground" size={18} />
+                      <Typography variant="h3">
+                        <FolderActionsRenameLabel />
+                      </Typography>
+                    </View>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onPress={openMoveSheet}
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <Icon
+                        name="arrow-right-left"
+                        color="foreground"
+                        size={18}
+                      />
+                      <Typography variant="h3">
+                        <FolderActionsMoveLabel />
+                      </Typography>
+                    </View>
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="default"
+                    onPress={() => {
+                      closeActions();
+                      openDeleteFolderModal(target.folder);
+                    }}
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <Icon
+                        name="trash-2"
+                        color="destructive-foreground"
+                        size={18}
+                      />
+                      <Typography variant="h3">
+                        <FolderActionsDeleteLabel />
+                      </Typography>
+                    </View>
+                  </Button>
+                </>
+              ) : null}
+            </BottomSheetView>
+          </BottomSheetContent>
+        </BottomSheet>
+      ) : null}
 
-            {!isRoot && target.kind === "folder" ? (
-              <>
-                <Button
-                  variant="outline"
-                  size="default"
-                  onPress={() => {
-                    closeActions();
-                    openRenameFolderModal(target.folder);
-                  }}
-                >
-                  <View className="flex-row items-center gap-2">
-                    <Icon name="pencil" color="foreground" size={18} />
-                    <Typography variant="h3">
-                      <FolderActionsRenameLabel />
-                    </Typography>
-                  </View>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="default"
-                  onPress={openMoveSheet}
-                >
-                  <View className="flex-row items-center gap-2">
-                    <Icon
-                      name="arrow-right-left"
-                      color="foreground"
-                      size={18}
-                    />
-                    <Typography variant="h3">
-                      <FolderActionsMoveLabel />
-                    </Typography>
-                  </View>
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="default"
-                  onPress={() => {
-                    closeActions();
-                    openDeleteFolderModal(target.folder);
-                  }}
-                >
-                  <View className="flex-row items-center gap-2">
-                    <Icon
-                      name="trash-2"
-                      color="destructive-foreground"
-                      size={18}
-                    />
-                    <Typography variant="h3">
-                      <FolderActionsDeleteLabel />
-                    </Typography>
-                  </View>
-                </Button>
-              </>
-            ) : null}
-          </BottomSheetView>
-        </BottomSheetContent>
-      </BottomSheet>
-
-      {movingFolder ? (
+      {sheetsMounted && movingFolder ? (
         <FolderPickerSheet
           moveTarget={{ name: movingFolderTitle, kind: "folder" }}
           sheet={moveSheet}

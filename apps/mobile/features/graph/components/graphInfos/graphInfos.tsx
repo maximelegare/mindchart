@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Typography } from "@/components/ui/typography";
@@ -14,32 +14,22 @@ interface Props {
   focusedThoughtId?: string;
 }
 
-/** True when `targetId` is `node` or a descendant (does not use findNodePath fallback). */
-function containsNode(node: NodeDatum, targetId: string): boolean {
-  if (node.id === targetId) return true;
-  return (node.children ?? []).some((child) => containsNode(child, targetId));
-}
-
-/**
- * Card root for the infos panel — same for folder and category:
- * stay on the first selected pack (category or folder) and only change
- * which descendant label is highlighted.
- */
-function findLayerRoot(hierarchy: NodeDatum, activeNode: NodeDatum): NodeDatum {
-  if (activeNode.id === hierarchy.id || activeNode.id === "root") {
-    return activeNode;
-  }
-
-  // Pack is already rooted at the first selected folder/category.
-  if (!isSyntheticRoot(hierarchy)) {
-    return hierarchy;
-  }
-
+/** Map every descendant id → first-level pack (O(n) once, O(1) per click). */
+function buildLayerRootIndex(hierarchy: NodeDatum): Map<string, NodeDatum> {
+  const index = new Map<string, NodeDatum>();
   for (const child of hierarchy.children ?? []) {
-    if (containsNode(child, activeNode.id)) return child;
+    const walk = (node: NodeDatum) => {
+      index.set(node.id, child);
+      if (node.thoughtId) index.set(node.thoughtId, child);
+      if (node.noteId) {
+        index.set(node.noteId, child);
+        index.set(`note-${node.noteId}`, child);
+      }
+      node.children?.forEach(walk);
+    };
+    walk(child);
   }
-
-  return activeNode;
+  return index;
 }
 
 const GraphInfos = memo(function GraphInfos({
@@ -68,6 +58,11 @@ const GraphInfos = memo(function GraphInfos({
     return hierarchy.children;
   }, [activeNode, hierarchy]);
 
+  const layerRootIndex = useMemo(
+    () => (hierarchy ? buildLayerRootIndex(hierarchy) : null),
+    [hierarchy]
+  );
+
   const layerRoot = useMemo(() => {
     if (!activeNode) return null;
     if (showRootCards) return null;
@@ -76,8 +71,35 @@ const GraphInfos = memo(function GraphInfos({
       return hierarchy;
     }
     if (isRootLayer) return null;
-    return findLayerRoot(hierarchy ?? activeNode, activeNode);
-  }, [activeNode, hierarchy, isRootLayer, showRootCards]);
+    if (activeNode.id === hierarchy?.id || activeNode.id === "root") {
+      return activeNode;
+    }
+    return layerRootIndex?.get(activeNode.id) ?? activeNode;
+  }, [activeNode, hierarchy, isRootLayer, layerRootIndex, showRootCards]);
+
+  const [cachedLayer, setCachedLayer] = useState<{
+    root: NodeDatum;
+    currentNodeId: string;
+    focusedThoughtId?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!showRootCards && layerRoot && activeNode) {
+      setCachedLayer({
+        root: layerRoot,
+        currentNodeId: activeNode.id,
+        focusedThoughtId,
+      });
+    }
+  }, [activeNode, focusedThoughtId, layerRoot, showRootCards]);
+
+  const mountedLayer = showRootCards ? cachedLayer?.root : layerRoot;
+  const mountedCurrentId = showRootCards
+    ? cachedLayer?.currentNodeId
+    : activeNode?.id;
+  const mountedFocusId = showRootCards
+    ? cachedLayer?.focusedThoughtId
+    : focusedThoughtId;
 
   return (
     <View
@@ -92,25 +114,28 @@ const GraphInfos = memo(function GraphInfos({
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 8 }}
       >
-        {showRootCards ? (
-          rootChildren.length > 0 ? (
+        {rootChildren.length > 0 ? (
+          <View style={{ display: showRootCards ? "flex" : "none" }}>
             <RootLayerCards nodes={rootChildren} />
-          ) : (
-            <Typography className="text-center py-10 opacity-50">
-              Select a node to see details
-            </Typography>
-          )
-        ) : layerRoot && activeNode ? (
-          <SelectedLayerCard
-            layerRoot={layerRoot}
-            currentNodeId={activeNode.id}
-            focusedThoughtId={focusedThoughtId}
-          />
-        ) : (
+          </View>
+        ) : showRootCards ? (
           <Typography className="text-center py-10 opacity-50">
             Select a node to see details
           </Typography>
-        )}
+        ) : null}
+        {mountedLayer && mountedCurrentId ? (
+          <View style={{ display: showRootCards ? "none" : "flex" }}>
+            <SelectedLayerCard
+              layerRoot={mountedLayer}
+              currentNodeId={mountedCurrentId}
+              focusedThoughtId={mountedFocusId}
+            />
+          </View>
+        ) : !showRootCards ? (
+          <Typography className="text-center py-10 opacity-50">
+            Select a node to see details
+          </Typography>
+        ) : null}
       </ScrollView>
     </View>
   );

@@ -1,9 +1,12 @@
 import React, {
   useCallback,
+  useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
@@ -60,8 +63,6 @@ const EST_THOUGHT_TITLE = 30;
 const EST_THOUGHT_TITLE_COMPACT = 26;
 const EST_SUMMARY_LINE = 18;
 const EST_SUMMARY_CHARS_PER_LINE = 42;
-/** Prefetch children under a collapsed folder only when the list is small. */
-const PREFETCH_MAX_CHILDREN = 48;
 
 const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
   const title = capitalize(value || "");
@@ -69,11 +70,10 @@ const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
   return `${title.slice(0, maxLength)}…`;
 };
 
-/** Real title only — ignore empty / "Untitled" fallbacks from graph mappers. */
-const resolveDisplayTitle = (node: NodeDatum): string | null => {
-  const raw = (node.title ?? "").trim();
-  if (!raw || raw.toLowerCase() === "untitled") return null;
-  return raw;
+/** Note/thought title for the infos list — never fall back to summary. */
+const resolveDisplayTitle = (node: NodeDatum): string => {
+  const raw = (node.title ?? node.name ?? "").trim();
+  return raw || "Untitled";
 };
 
 const resolveDisplaySummary = (node: NodeDatum): string | null => {
@@ -84,13 +84,9 @@ const resolveDisplaySummary = (node: NodeDatum): string | null => {
 /** Map a graph leaf to the file-actions sheet payload. */
 const noteFileFromNode = (node: NodeDatum): FolderTreeFile | null => {
   if (!node.noteId) return null;
-  const title =
-    resolveDisplayTitle(node) ??
-    resolveDisplaySummary(node) ??
-    (node.name || "").trim();
   return {
     id: node.noteId,
-    title: title || "Untitled",
+    title: resolveDisplayTitle(node),
     folderId:
       node.folderId && node.folderId !== "unfiled" ? node.folderId : null,
   };
@@ -267,16 +263,6 @@ const nodeMatchesTarget = (node: NodeDatum, targetId: string): boolean =>
   node.id === `note-${targetId}` ||
   !!node.relatedThoughtIds?.includes(targetId);
 
-/** True when `focusId` is a note or thought under `node` (not `node` itself). */
-const containsFocusedContent = (node: NodeDatum, focusId?: string): boolean => {
-  if (!focusId) return false;
-  for (const child of node.children ?? []) {
-    if (nodeMatchesTarget(child, focusId)) return true;
-    if (containsFocusedContent(child, focusId)) return true;
-  }
-  return false;
-};
-
 /** Ancestor ids from `root` down to `targetId` (inclusive). Null if not found. */
 const collectAncestorIds = (
   root: NodeDatum,
@@ -356,12 +342,6 @@ function estimateNodesHeight(
 }
 
 type TreeCtx = {
-  currentNodeId: string;
-  focusedThoughtId?: string;
-  /** Ids on the path to the current/focused node — O(1) highlight checks. */
-  activePathIds: ReadonlySet<string>;
-  /** User + path-driven folder expand state. */
-  expandedIds: ReadonlySet<string>;
   toggleExpanded: (nodeId: string) => void;
   highlightColor: string;
   lineColor: string;
@@ -371,6 +351,102 @@ type TreeCtx = {
   onNavigate: (nodeId: string) => void;
   onOpenNote: (noteId?: string) => void;
 };
+
+type TreeSelectionState = {
+  currentNodeId: string;
+  focusedThoughtId?: string;
+  expandedIds: ReadonlySet<string>;
+  /** Folder ids that have the focused thought/note as a descendant. */
+  idsWithFocusedChild: ReadonlySet<string>;
+  expandEpoch: number;
+};
+
+type TreeSelectionStore = {
+  getState: () => TreeSelectionState;
+  subscribe: (listener: () => void) => () => void;
+  replace: (next: Omit<TreeSelectionState, "expandEpoch">) => void;
+  notify: () => void;
+};
+
+const EMPTY_ID_SET: ReadonlySet<string> = new Set();
+
+const TreeSelectionStoreContext =
+  React.createContext<TreeSelectionStore | null>(null);
+
+function createTreeSelectionStore(
+  initial: Omit<TreeSelectionState, "expandEpoch">
+): TreeSelectionStore {
+  let state: TreeSelectionState = { ...initial, expandEpoch: 0 };
+  const listeners = new Set<() => void>();
+  return {
+    getState: () => state,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    replace: (next) => {
+      const expandedChanged = next.expandedIds !== state.expandedIds;
+      state = {
+        ...next,
+        expandEpoch: expandedChanged
+          ? state.expandEpoch + 1
+          : state.expandEpoch,
+      };
+    },
+    notify: () => {
+      listeners.forEach((listener) => listener());
+    },
+  };
+}
+
+function idsWithFocusedChildOf(
+  root: NodeDatum,
+  focusedThoughtId?: string
+): ReadonlySet<string> {
+  if (!focusedThoughtId) return EMPTY_ID_SET;
+  const path = collectAncestorIds(root, focusedThoughtId);
+  if (!path) return EMPTY_ID_SET;
+  const ids = new Set(path);
+  ids.delete(focusedThoughtId);
+  ids.delete(`note-${focusedThoughtId}`);
+  return ids;
+}
+
+function folderRowSnapshot(state: TreeSelectionState, nodeId: string) {
+  const isCurrent =
+    nodeId === state.currentNodeId && !state.idsWithFocusedChild.has(nodeId);
+  return `${isCurrent ? 1 : 0}:${state.expandedIds.has(nodeId) ? 1 : 0}:${state.expandEpoch}`;
+}
+
+function leafRowSnapshot(
+  state: TreeSelectionState,
+  node: NodeDatum,
+  kind: "note" | "thought"
+) {
+  const isCurrent =
+    kind === "note"
+      ? node.id === state.currentNodeId ||
+        (!!node.noteId &&
+          (state.currentNodeId === node.noteId ||
+            state.currentNodeId === `note-${node.noteId}`))
+      : node.id === state.currentNodeId;
+  const isFocused =
+    kind === "note"
+      ? !!state.focusedThoughtId &&
+        (state.focusedThoughtId === node.noteId ||
+          state.focusedThoughtId === node.id ||
+          state.focusedThoughtId === `note-${node.noteId}`)
+      : state.focusedThoughtId === node.thoughtId;
+  return `${isCurrent ? 1 : 0}:${isFocused ? 1 : 0}`;
+}
+
+function useTreeSelectionStore() {
+  const store = useContext(TreeSelectionStoreContext);
+  if (!store) {
+    throw new Error("TreeSelectionStoreContext is missing");
+  }
+  return store;
+}
 
 type NoteTitleRowProps = {
   node: NodeDatum;
@@ -414,22 +490,19 @@ function NoteTitleRow({
 }: NoteTitleRowProps) {
   const emphasized = isCurrent || isFocused;
   const title = resolveDisplayTitle(node);
-  const summary = resolveDisplaySummary(node);
-  const label = title ?? summary ?? "";
-  const lineHeight = title ? TITLE_LINE_HEIGHT : BODY_LINE_HEIGHT;
-  const showSummary = Boolean(title && summary && summary !== title);
+  const lineHeight = TITLE_LINE_HEIGHT;
 
   const row = (
     <View
       style={{
-        paddingBottom: showSummary ? 4 : 0,
+        paddingBottom: 0,
         borderRadius: 8,
         borderWidth: HAIRLINE,
         borderColor: emphasized ? highlightColor : "transparent",
         backgroundColor: emphasized ? highlightColor : "transparent",
       }}
       accessibilityRole="button"
-      accessibilityLabel={`Open note ${label}`}
+      accessibilityLabel={`Open note ${title}`}
     >
       <View
         style={{
@@ -437,7 +510,7 @@ function NoteTitleRow({
           alignItems: "flex-start",
           gap: ROW_GAP,
           paddingTop: 4,
-          paddingBottom: showSummary ? 0 : 4,
+          paddingBottom: 4,
           paddingRight: 4,
         }}
       >
@@ -451,23 +524,20 @@ function NoteTitleRow({
             size={ICON_SLOT}
           />
         </View>
-        {label ? (
-          <Typography
-            variant={title ? "h5" : "p"}
-            className={cn(
-              "flex-1 pb-0",
-              title ? "leading-tight" : "leading-snug",
-              emphasized && "font-semibold"
-            )}
-            style={{
-              includeFontPadding: false,
-              lineHeight,
-            }}
-            numberOfLines={title ? 2 : 3}
-          >
-            {title ? formatTitle(title) : label}
-          </Typography>
-        ) : null}
+        <Typography
+          variant="h5"
+          className={cn(
+            "flex-1 pb-0 leading-tight",
+            emphasized && "font-semibold"
+          )}
+          style={{
+            includeFontPadding: false,
+            lineHeight,
+          }}
+          numberOfLines={2}
+        >
+          {formatTitle(title)}
+        </Typography>
         {emphasized ? (
           <View
             style={{
@@ -480,7 +550,6 @@ function NoteTitleRow({
           </View>
         ) : null}
       </View>
-      {showSummary && summary ? <ThoughtSummary summary={summary} /> : null}
     </View>
   );
 
@@ -537,24 +606,20 @@ function ThoughtTitleRow({
       }}
     >
       <ThoughtBullet color={bulletColor} lineHeight={TITLE_LINE_HEIGHT} />
-      {title ? (
-        <Typography
-          variant="h5"
-          className={cn(
-            "flex-1 pb-0 leading-tight",
-            emphasized && "font-semibold"
-          )}
-          style={{
-            includeFontPadding: false,
-            lineHeight: TITLE_LINE_HEIGHT,
-          }}
-          numberOfLines={2}
-        >
-          {formatTitle(title)}
-        </Typography>
-      ) : (
-        <View className="flex-1" style={{ height: TITLE_LINE_HEIGHT }} />
-      )}
+      <Typography
+        variant="h5"
+        className={cn(
+          "flex-1 pb-0 leading-tight",
+          emphasized && "font-semibold"
+        )}
+        style={{
+          includeFontPadding: false,
+          lineHeight: TITLE_LINE_HEIGHT,
+        }}
+        numberOfLines={2}
+      >
+        {formatTitle(title)}
+      </Typography>
       <ThoughtRowActions
         lineHeight={TITLE_LINE_HEIGHT}
         emphasized={emphasized}
@@ -699,6 +764,9 @@ const LeafBranch = ({
   </View>
 );
 
+const INITIAL_VISIBLE_ROWS = 8;
+const ROW_CHUNK = 12;
+
 /**
  * Children under a parent row.
  * `prefetchOnly` — mounted under a collapsed parent: render rows, but do not
@@ -715,13 +783,37 @@ function NestedChildren({
   guideWidth: number;
   prefetchOnly?: boolean;
 }) {
+  const [visibleCount, setVisibleCount] = useState(() =>
+    Math.min(nodes.length, INITIAL_VISIBLE_ROWS)
+  );
+  const nodesKey = `${nodes.length}:${nodes[0]?.id ?? ""}:${nodes[nodes.length - 1]?.id ?? ""}`;
+
+  useEffect(() => {
+    setVisibleCount(Math.min(nodes.length, INITIAL_VISIBLE_ROWS));
+    if (nodes.length <= INITIAL_VISIBLE_ROWS) return;
+
+    let count = INITIAL_VISIBLE_ROWS;
+    let frame = 0;
+    const pump = () => {
+      count = Math.min(nodes.length, count + ROW_CHUNK);
+      setVisibleCount(count);
+      if (count < nodes.length) {
+        frame = requestAnimationFrame(pump);
+      }
+    };
+    frame = requestAnimationFrame(pump);
+    return () => cancelAnimationFrame(frame);
+  }, [nodes, nodesKey]);
+
+  const visible = nodes.slice(0, visibleCount);
+
   return (
     <View>
-      {nodes.map((node, index) => (
+      {visible.map((node, index) => (
         <TreeBranch
           key={node.id}
           node={node}
-          isLast={index === nodes.length - 1}
+          isLast={index === visible.length - 1 && visibleCount >= nodes.length}
           ctx={ctx}
           guideWidth={guideWidth}
           prefetchOnly={prefetchOnly}
@@ -744,17 +836,27 @@ const TreeBranch = React.memo(function TreeBranch({
   guideWidth: number;
   prefetchOnly?: boolean;
 }) {
+  const store = useTreeSelectionStore();
+  const rowSnapshot = useSyncExternalStore(
+    store.subscribe,
+    () =>
+      isNoteLeaf(node)
+        ? leafRowSnapshot(store.getState(), node, "note")
+        : isThoughtLeaf(node)
+          ? leafRowSnapshot(store.getState(), node, "thought")
+          : folderRowSnapshot(store.getState(), node.id),
+    () =>
+      isNoteLeaf(node)
+        ? leafRowSnapshot(store.getState(), node, "note")
+        : isThoughtLeaf(node)
+          ? leafRowSnapshot(store.getState(), node, "thought")
+          : folderRowSnapshot(store.getState(), node.id)
+  );
+
   if (isNoteLeaf(node)) {
-    const isCurrent =
-      node.id === ctx.currentNodeId ||
-      (!!node.noteId &&
-        (ctx.currentNodeId === node.noteId ||
-          ctx.currentNodeId === `note-${node.noteId}`));
-    const isFocused =
-      !!ctx.focusedThoughtId &&
-      (ctx.focusedThoughtId === node.noteId ||
-        ctx.focusedThoughtId === node.id ||
-        ctx.focusedThoughtId === `note-${node.noteId}`);
+    const [currentBit, focusedBit] = rowSnapshot.split(":");
+    const isCurrent = currentBit === "1";
+    const isFocused = focusedBit === "1";
 
     return (
       <LeafBranch
@@ -775,79 +877,29 @@ const TreeBranch = React.memo(function TreeBranch({
   }
 
   if (isThoughtLeaf(node)) {
-    const isCurrent = node.id === ctx.currentNodeId;
-    const isFocused = ctx.focusedThoughtId === node.thoughtId;
-    const title = resolveDisplayTitle(node);
-    const summary = resolveDisplaySummary(node);
+    const [currentBit, focusedBit] = rowSnapshot.split(":");
+    const isCurrent = currentBit === "1";
+    const isFocused = focusedBit === "1";
 
-    // No title → content is the primary row (never show "Untitled").
-    if (!title) {
-      return (
-        <LeafBranch
-          isLast={isLast}
-          lineColor={ctx.lineColor}
-          guideWidth={guideWidth}
-          header={
-            summary ? (
-              <ThoughtContentRow
-                node={node}
-                summary={summary}
-                isCurrent={isCurrent}
-                isFocused={isFocused}
-                highlightColor={ctx.highlightColor}
-                onOpenNote={ctx.onOpenNote}
-              />
-            ) : (
-              <ThoughtTitleRow
-                node={node}
-                isCurrent={isCurrent}
-                isFocused={isFocused}
-                highlightColor={ctx.highlightColor}
-                onOpenNote={ctx.onOpenNote}
-              />
-            )
-          }
-        />
-      );
-    }
-
-    // Title + optional summary: one long-press target for the whole thought block.
-    const emphasized = isCurrent || isFocused;
     return (
       <LeafBranch
         isLast={isLast}
         lineColor={ctx.lineColor}
         guideWidth={guideWidth}
         header={
-          <NoteActionsWrap node={node} onOpenNote={ctx.onOpenNote}>
-            <View
-              style={{
-                borderRadius: 8,
-                borderWidth: HAIRLINE,
-                borderColor: emphasized ? ctx.highlightColor : "transparent",
-                backgroundColor: emphasized
-                  ? ctx.highlightColor
-                  : "transparent",
-                paddingBottom: summary ? 4 : 0,
-              }}
-            >
-              <ThoughtTitleRow
-                node={node}
-                isCurrent={isCurrent}
-                isFocused={isFocused}
-                highlightColor={ctx.highlightColor}
-                onOpenNote={ctx.onOpenNote}
-                compactBottom={!!summary}
-                skipNoteActions
-                skipHighlight
-              />
-              {summary ? <ThoughtSummary summary={summary} /> : null}
-            </View>
-          </NoteActionsWrap>
+          <ThoughtTitleRow
+            node={node}
+            isCurrent={isCurrent}
+            isFocused={isFocused}
+            highlightColor={ctx.highlightColor}
+            onOpenNote={ctx.onOpenNote}
+          />
         }
       />
     );
   }
+
+  const [currentBit, expandedBit] = rowSnapshot.split(":");
 
   return (
     <FolderBranch
@@ -856,6 +908,9 @@ const TreeBranch = React.memo(function TreeBranch({
       ctx={ctx}
       guideWidth={guideWidth}
       prefetchOnly={prefetchOnly}
+      isCurrent={currentBit === "1"}
+      expanded={expandedBit === "1"}
+      expandedIds={store.getState().expandedIds}
     />
   );
 });
@@ -866,29 +921,29 @@ const FolderBranch = React.memo(function FolderBranch({
   ctx,
   guideWidth,
   prefetchOnly = false,
+  isCurrent,
+  expanded,
+  expandedIds,
 }: {
   node: NodeDatum;
   isLast: boolean;
   ctx: TreeCtx;
   guideWidth: number;
   prefetchOnly?: boolean;
+  isCurrent: boolean;
+  expanded: boolean;
+  expandedIds: ReadonlySet<string>;
 }) {
   const children = node.children ?? [];
-  const isCurrent =
-    node.id === ctx.currentNodeId &&
-    !containsFocusedContent(node, ctx.focusedThoughtId);
-  const expanded = ctx.expandedIds.has(node.id);
   const canCollapse = children.length > 0;
   // Open parent: render the collapsible shell. Prefetch one closed layer when small.
   // Prefetch-only rows (under a collapsed parent): folder header only — no deeper mount.
   const showCollapsible = canCollapse && !prefetchOnly;
-  const mountChildRows =
-    showCollapsible && (expanded || children.length <= PREFETCH_MAX_CHILDREN);
+  const mountChildRows = showCollapsible && expanded;
 
   const contentHeight = useMemo(
-    () =>
-      showCollapsible ? estimateNodesHeight(children, ctx.expandedIds) : 0,
-    [children, ctx.expandedIds, showCollapsible]
+    () => (showCollapsible ? estimateNodesHeight(children, expandedIds) : 0),
+    [children, expandedIds, showCollapsible]
   );
 
   return (
@@ -1045,6 +1100,7 @@ const FolderBranch = React.memo(function FolderBranch({
             <CollapsibleContainer
               expanded={expanded}
               contentHeight={contentHeight}
+              duration={0}
             >
               {mountChildRows ? (
                 <NestedChildren
@@ -1098,21 +1154,35 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
       )
     : hsl("border", colorScheme);
 
+  const contentFocusId =
+    focusedThoughtId &&
+    focusedThoughtId !== currentNodeId &&
+    focusedThoughtId !== "root" &&
+    !focusedThoughtId.startsWith("folder-") &&
+    !focusedThoughtId.startsWith("category-")
+      ? focusedThoughtId
+      : undefined;
+
   const activePathIds = useMemo(
-    () => buildActivePathIds(layerRoot, currentNodeId, focusedThoughtId),
-    [layerRoot, currentNodeId, focusedThoughtId]
+    () => buildActivePathIds(layerRoot, currentNodeId, contentFocusId),
+    [layerRoot, currentNodeId, contentFocusId]
+  );
+
+  const idsWithFocusedChild = useMemo(
+    () => idsWithFocusedChildOf(layerRoot, contentFocusId),
+    [layerRoot, contentFocusId]
   );
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
     () => new Set(activePathIds)
   );
   const layerIdRef = useRef(layerRoot.id);
-  const selectionKeyRef = useRef(`${currentNodeId}:${focusedThoughtId ?? ""}`);
+  const selectionKeyRef = useRef(`${currentNodeId}:${contentFocusId ?? ""}`);
 
   // Auto-expand the path only when the layer or selection changes — not on every
   // activePathIds rebuild (layerRoot churn), so the user can collapse a selected folder.
   useEffect(() => {
-    const selectionKey = `${currentNodeId}:${focusedThoughtId ?? ""}`;
+    const selectionKey = `${currentNodeId}:${contentFocusId ?? ""}`;
     const layerChanged = layerIdRef.current !== layerRoot.id;
     const selectionChanged = selectionKeyRef.current !== selectionKey;
 
@@ -1131,7 +1201,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
         return next;
       });
     }
-  }, [activePathIds, currentNodeId, focusedThoughtId, layerRoot.id]);
+  }, [activePathIds, contentFocusId, currentNodeId, layerRoot.id]);
 
   const toggleExpanded = useCallback((nodeId: string) => {
     setExpandedIds((prev) => {
@@ -1173,10 +1243,6 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
 
   const treeCtx = useMemo<TreeCtx>(
     () => ({
-      currentNodeId,
-      focusedThoughtId,
-      activePathIds,
-      expandedIds,
       toggleExpanded,
       highlightColor,
       lineColor,
@@ -1187,11 +1253,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
       onOpenNote: navigateToNote,
     }),
     [
-      activePathIds,
       categoryLabels,
-      currentNodeId,
-      expandedIds,
-      focusedThoughtId,
       foldersById,
       graphMode,
       highlightColor,
@@ -1202,264 +1264,248 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
     ]
   );
 
+  const selectionStoreRef = useRef<TreeSelectionStore | null>(null);
+  if (!selectionStoreRef.current) {
+    selectionStoreRef.current = createTreeSelectionStore({
+      currentNodeId,
+      focusedThoughtId: contentFocusId,
+      expandedIds,
+      idsWithFocusedChild,
+    });
+  } else {
+    const prev = selectionStoreRef.current.getState();
+    if (
+      prev.currentNodeId !== currentNodeId ||
+      prev.focusedThoughtId !== contentFocusId ||
+      prev.expandedIds !== expandedIds ||
+      prev.idsWithFocusedChild !== idsWithFocusedChild
+    ) {
+      selectionStoreRef.current.replace({
+        currentNodeId,
+        focusedThoughtId: contentFocusId,
+        expandedIds,
+        idsWithFocusedChild,
+      });
+    }
+  }
+
+  useLayoutEffect(() => {
+    selectionStoreRef.current?.notify();
+  }, [contentFocusId, currentNodeId, expandedIds, idsWithFocusedChild]);
+
   const isLayerCurrent =
-    layerRoot.id === currentNodeId &&
-    !containsFocusedContent(layerRoot, focusedThoughtId);
+    layerRoot.id === currentNodeId && !idsWithFocusedChild.has(layerRoot.id);
   const children = layerRoot.children ?? [];
 
   const cardRadius = 18;
 
   return (
-    <Card
-      className="w-full overflow-hidden rounded-2xl border-0"
-      style={{ borderRadius: cardRadius, overflow: "hidden", borderWidth: 0 }}
-    >
-      <View className="w-full flex-row" style={{ overflow: "hidden" }}>
-        {showMainStripe ? (
-          <View
-            style={{
-              width: 5,
-              backgroundColor: stripeColor,
-            }}
-          />
-        ) : null}
+    <TreeSelectionStoreContext.Provider value={selectionStoreRef.current}>
+      <Card
+        className="w-full overflow-hidden rounded-2xl border-0"
+        style={{ borderRadius: cardRadius, overflow: "hidden", borderWidth: 0 }}
+      >
+        <View className="w-full flex-row" style={{ overflow: "hidden" }}>
+          {showMainStripe ? (
+            <View
+              style={{
+                width: 5,
+                backgroundColor: stripeColor,
+              }}
+            />
+          ) : null}
 
-        <View className="flex-1 min-w-0 p-3.5">
-          <View style={{ alignSelf: "flex-start" }} className="mb-2">
-            <Button
-              onPress={navigateHome}
-              hitSlop={10}
-              accessibilityRole="button"
-              accessibilityLabel="Back to home"
-              variant="ghost"
-              size="sm"
-              className="flex-row items-center gap-2 p-0"
-            >
-              <Icon name="arrow-left" color="muted-foreground" size={16} />
-              <View className="flex-row items-center gap-1">
-                <Icon name="house" color="muted-foreground" size={16} />
-                <Typography variant="p" className="opacity-70 pb-0">
-                  Home
-                </Typography>
-              </View>
-            </Button>
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: ROW_GAP,
-              paddingHorizontal: HEADER_INSET,
-              paddingVertical: 4,
-              borderRadius: cardRadius,
-              // Keep borderWidth stable — toggling it collapses flex text on RN.
-              borderWidth: HAIRLINE,
-              borderColor: isLayerCurrent
-                ? hsl("border", colorScheme)
-                : "transparent",
-              backgroundColor: isLayerCurrent ? highlightColor : "transparent",
-            }}
-          >
-            {(() => {
-              const layerFolder =
-                graphMode === "folder" &&
-                isRealFolderNode(layerRoot) &&
-                layerRoot.folderId
-                  ? (foldersById.get(layerRoot.folderId) ?? null)
-                  : null;
-
-              const layerRow = (
-                <>
-                  <IconColumn>
-                    <NodeKindIcon node={layerRoot} graphMode={graphMode} />
-                  </IconColumn>
-                  <Typography
-                    variant="h4"
-                    numberOfLines={1}
-                    style={{ flex: 1 }}
-                  >
-                    {formatTitle(
-                      layerRoot.folderLabel ||
-                        resolveGraphNodeLabel(layerRoot, categoryLabels) ||
-                        layerRoot.title ||
-                        ""
-                    )}
-                  </Typography>
-                  {children.length ? (
-                    <Typography variant="p">({children.length})</Typography>
-                  ) : null}
-                  {isLayerCurrent ? (
-                    <View style={{ opacity: 0.45 }}>
-                      <Icon name="map-pin-simple" color="text" size={12} />
-                    </View>
-                  ) : null}
-                </>
-              );
-
-              if (layerFolder) {
-                return (
-                  <FolderActionsMenu
-                    target={{ kind: "folder", folder: layerFolder }}
-                    onNavigate={() => navigateToNode(layerRoot.id)}
-                    className="flex-1 min-w-0"
-                    hitSlop={0}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        minWidth: 0,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: ROW_GAP,
-                      }}
-                    >
-                      {layerRow}
-                    </View>
-                  </FolderActionsMenu>
-                );
-              }
-
-              return (
-                <Pressable
-                  onPress={() => navigateToNode(layerRoot.id)}
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: ROW_GAP,
-                  }}
-                >
-                  {layerRow}
-                </Pressable>
-              );
-            })()}
-            {layerRoot.noteId ? (
+          <View className="flex-1 min-w-0 p-3.5">
+            <View style={{ alignSelf: "flex-start" }} className="mb-2">
               <Button
-                className="h-9 w-9 p-0"
+                onPress={navigateHome}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel="Back to home"
                 variant="ghost"
-                size="icon"
-                onPress={() => navigateToNote(layerRoot.noteId)}
+                size="sm"
+                className="flex-row items-center gap-2 p-0"
               >
-                <Icon
-                  size={20}
-                  color="text"
-                  name="notebook-text"
-                  style={{ opacity: 0.8 }}
-                />
+                <Icon name="arrow-left" color="muted-foreground" size={16} />
+                <View className="flex-row items-center gap-1">
+                  <Icon name="house" color="muted-foreground" size={16} />
+                  <Typography variant="p" className="opacity-70 pb-0">
+                    Home
+                  </Typography>
+                </View>
               </Button>
-            ) : null}
-          </View>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: ROW_GAP,
+                paddingHorizontal: HEADER_INSET,
+                paddingVertical: 4,
+                borderRadius: cardRadius,
+                // Keep borderWidth stable — toggling it collapses flex text on RN.
+                borderWidth: HAIRLINE,
+                borderColor: isLayerCurrent
+                  ? hsl("border", colorScheme)
+                  : "transparent",
+                backgroundColor: isLayerCurrent
+                  ? highlightColor
+                  : "transparent",
+              }}
+            >
+              {(() => {
+                const layerFolder =
+                  graphMode === "folder" &&
+                  isRealFolderNode(layerRoot) &&
+                  layerRoot.folderId
+                    ? (foldersById.get(layerRoot.folderId) ?? null)
+                    : null;
 
-          {children.length ? (
-            <View
-              style={{
-                // Match the layer-root icon column (header inset + border).
-                marginLeft: HEADER_INSET + HAIRLINE,
-                marginTop: 4,
-              }}
-            >
-              <NestedChildren
-                nodes={children}
-                guideWidth={ICON_SLOT}
-                ctx={treeCtx}
-              />
-            </View>
-          ) : isNoteLeaf(layerRoot) ? (
-            <View
-              style={{
-                marginLeft: HEADER_INSET + HAIRLINE,
-                marginTop: 8,
-              }}
-            >
-              <NoteTitleRow
-                node={layerRoot}
-                isCurrent={false}
-                isFocused={
-                  focusedThoughtId === layerRoot.noteId ||
-                  focusedThoughtId === layerRoot.id
-                }
-                highlightColor={highlightColor}
-                onOpenNote={navigateToNote}
-              />
-            </View>
-          ) : resolveDisplaySummary(layerRoot) || isThoughtLeaf(layerRoot) ? (
-            <View
-              style={{
-                marginLeft: HEADER_INSET + HAIRLINE,
-                marginTop: 8,
-              }}
-            >
-              {isThoughtLeaf(layerRoot) ? (
-                (() => {
-                  const title = resolveDisplayTitle(layerRoot);
-                  const summary = resolveDisplaySummary(layerRoot);
-                  if (!title && summary) {
-                    return (
-                      <ThoughtContentRow
-                        node={layerRoot}
-                        summary={summary}
-                        isCurrent={false}
-                        isFocused={focusedThoughtId === layerRoot.thoughtId}
-                        highlightColor={highlightColor}
-                        onOpenNote={navigateToNote}
-                      />
-                    );
-                  }
-                  const emphasized = focusedThoughtId === layerRoot.thoughtId;
+                const layerRow = (
+                  <>
+                    <IconColumn>
+                      <NodeKindIcon node={layerRoot} graphMode={graphMode} />
+                    </IconColumn>
+                    <Typography
+                      variant="h4"
+                      numberOfLines={1}
+                      style={{ flex: 1 }}
+                    >
+                      {formatTitle(
+                        layerRoot.folderLabel ||
+                          resolveGraphNodeLabel(layerRoot, categoryLabels) ||
+                          layerRoot.title ||
+                          ""
+                      )}
+                    </Typography>
+                    {children.length ? (
+                      <Typography variant="p">({children.length})</Typography>
+                    ) : null}
+                    {isLayerCurrent ? (
+                      <View style={{ opacity: 0.45 }}>
+                        <Icon name="map-pin-simple" color="text" size={12} />
+                      </View>
+                    ) : null}
+                  </>
+                );
+
+                if (layerFolder) {
                   return (
-                    <NoteActionsWrap
-                      node={layerRoot}
-                      onOpenNote={navigateToNote}
+                    <FolderActionsMenu
+                      target={{ kind: "folder", folder: layerFolder }}
+                      onNavigate={() => navigateToNode(layerRoot.id)}
+                      className="flex-1 min-w-0"
+                      hitSlop={0}
                     >
                       <View
                         style={{
-                          borderRadius: 8,
-                          borderWidth: HAIRLINE,
-                          borderColor: emphasized
-                            ? highlightColor
-                            : "transparent",
-                          backgroundColor: emphasized
-                            ? highlightColor
-                            : "transparent",
-                          paddingBottom: summary ? 4 : 0,
+                          flex: 1,
+                          minWidth: 0,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: ROW_GAP,
                         }}
                       >
-                        <ThoughtTitleRow
-                          node={layerRoot}
-                          isCurrent={false}
-                          isFocused={emphasized}
-                          highlightColor={highlightColor}
-                          onOpenNote={navigateToNote}
-                          compactBottom={!!summary}
-                          skipNoteActions
-                          skipHighlight
-                        />
-                        {summary ? <ThoughtSummary summary={summary} /> : null}
+                        {layerRow}
                       </View>
-                    </NoteActionsWrap>
+                    </FolderActionsMenu>
                   );
-                })()
-              ) : (
-                <Typography variant="p">
-                  {resolveDisplaySummary(layerRoot)}
-                </Typography>
-              )}
+                }
+
+                return (
+                  <Pressable
+                    onPress={() => navigateToNode(layerRoot.id)}
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: ROW_GAP,
+                    }}
+                  >
+                    {layerRow}
+                  </Pressable>
+                );
+              })()}
+              {layerRoot.noteId ? (
+                <Button
+                  className="h-9 w-9 p-0"
+                  variant="ghost"
+                  size="icon"
+                  onPress={() => navigateToNote(layerRoot.noteId)}
+                >
+                  <Icon
+                    size={20}
+                    color="text"
+                    name="notebook-text"
+                    style={{ opacity: 0.8 }}
+                  />
+                </Button>
+              ) : null}
             </View>
-          ) : (
-            <Typography
-              className="opacity-50"
-              variant="p"
-              style={{
-                marginLeft: HEADER_INSET + HAIRLINE,
-                marginTop: 8,
-              }}
-            >
-              No content
-            </Typography>
-          )}
+
+            {children.length ? (
+              <View
+                style={{
+                  // Match the layer-root icon column (header inset + border).
+                  marginLeft: HEADER_INSET + HAIRLINE,
+                  marginTop: 4,
+                }}
+              >
+                <NestedChildren
+                  nodes={children}
+                  guideWidth={ICON_SLOT}
+                  ctx={treeCtx}
+                />
+              </View>
+            ) : isNoteLeaf(layerRoot) ? (
+              <View
+                style={{
+                  marginLeft: HEADER_INSET + HAIRLINE,
+                  marginTop: 8,
+                }}
+              >
+                <NoteTitleRow
+                  node={layerRoot}
+                  isCurrent={false}
+                  isFocused={
+                    contentFocusId === layerRoot.noteId ||
+                    contentFocusId === layerRoot.id
+                  }
+                  highlightColor={highlightColor}
+                  onOpenNote={navigateToNote}
+                />
+              </View>
+            ) : isThoughtLeaf(layerRoot) ? (
+              <View
+                style={{
+                  marginLeft: HEADER_INSET + HAIRLINE,
+                  marginTop: 8,
+                }}
+              >
+                <ThoughtTitleRow
+                  node={layerRoot}
+                  isCurrent={false}
+                  isFocused={contentFocusId === layerRoot.thoughtId}
+                  highlightColor={highlightColor}
+                  onOpenNote={navigateToNote}
+                />
+              </View>
+            ) : (
+              <Typography
+                className="opacity-50"
+                variant="p"
+                style={{
+                  marginLeft: HEADER_INSET + HAIRLINE,
+                  marginTop: 8,
+                }}
+              >
+                No content
+              </Typography>
+            )}
+          </View>
         </View>
-      </View>
-    </Card>
+      </Card>
+    </TreeSelectionStoreContext.Provider>
   );
 };

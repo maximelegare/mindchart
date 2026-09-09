@@ -23,12 +23,10 @@ export function navigateGraphSelection(
 
   if (focus) {
     focus(nodeId);
-    // Keep the URL in sync after the camera has started — Expo Router
-    // setParams was the main source of infos-click delay.
     requestAnimationFrame(() => setParams(params));
   } else {
     setParams(params);
   }
 
-  onGraphBreadcrumbNavigate(nodeId, hierarchy);
+  queueMicrotask(() => onGraphBreadcrumbNavigate(nodeId, hierarchy));
 }

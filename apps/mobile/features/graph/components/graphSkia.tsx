@@ -581,12 +581,7 @@ function CirclePackSkiaRenderer({
       }
     };
 
-    // Going home unmounts the infos tree — yield so the camera starts first.
-    if (node.internalId === rootNode.internalId) {
-      setTimeout(applySelection, 0);
-    } else {
-      applySelection();
-    }
+    applySelection();
   };
   const navigateToNodeRef = useRef(navigateToNode);
   navigateToNodeRef.current = navigateToNode;
