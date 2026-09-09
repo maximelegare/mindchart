@@ -24,7 +24,6 @@ import { FolderActionsMenu } from "@/features/contentList/features/folderContent
 import { FileActionsMenu } from "@/features/contentList/components/folderTree/fileActionsMenu";
 import type { FolderTreeFile } from "@/features/contentList/components/folderTree/folderTreeUtils";
 import { useControllers } from "@/api/controllers/useControllers";
-import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";
 import {
@@ -1151,15 +1150,14 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
   );
 
   const navigateHome = useCallback(() => {
-    useGraphStore.setState({
-      selectedFolderId: null,
-      selectedCategoryId: null,
-    });
-    setParams({
-      id: "root",
-      _t: Date.now().toString(),
-    });
-    onGraphBreadcrumbNavigate("root");
+    const { selectedFolderId, selectedCategoryId } = useGraphStore.getState();
+    if (selectedFolderId || selectedCategoryId) {
+      useGraphStore.setState({
+        selectedFolderId: null,
+        selectedCategoryId: null,
+      });
+    }
+    navigateGraphSelection("root", setParams);
   }, [setParams]);
 
   const navigateToNote = useCallback(

@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useRef, useState } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Pressable } from "react-native";
 import {
   Canvas,
   Circle,
@@ -567,14 +567,25 @@ function CirclePackSkiaRenderer({
     viewY.value = withTiming(node.y, config);
     viewR.value = withTiming(node.r, config);
 
-    if (onNodeSelected) {
-      const parent = node.parentId ? nodeMap.get(node.parentId) : undefined;
-      onNodeSelected(node.rawData, parent?.rawData);
-    }
+    const applySelection = () => {
+      if (onNodeSelected) {
+        const parent = node.parentId ? nodeMap.get(node.parentId) : undefined;
+        onNodeSelected(node.rawData, parent?.rawData);
+      }
 
-    if (syncNotesFolder) {
-      const targetId = isSyntheticRoot(node.rawData) ? "root" : node.rawData.id;
-      onGraphBreadcrumbNavigate(targetId);
+      if (syncNotesFolder) {
+        const targetId = isSyntheticRoot(node.rawData)
+          ? "root"
+          : node.rawData.id;
+        onGraphBreadcrumbNavigate(targetId);
+      }
+    };
+
+    // Going home unmounts the infos tree — yield so the camera starts first.
+    if (node.internalId === rootNode.internalId) {
+      setTimeout(applySelection, 0);
+    } else {
+      applySelection();
     }
   };
   const navigateToNodeRef = useRef(navigateToNode);
@@ -661,8 +672,7 @@ function CirclePackSkiaRenderer({
   });
 
   const handleZoomBack = () => {
-    // Zooming out via button should NOT block the effect,
-    // so we don't set isTransitioningInternal to true here.
+    isTransitioningInternal.current = true;
     const current = nodeMap.get(activeInternalId.value);
     if (current?.parentId) {
       const parent = nodeMap.get(current.parentId);
@@ -673,9 +683,10 @@ function CirclePackSkiaRenderer({
   };
 
   const handleZoomOut = () => {
+    isTransitioningInternal.current = true;
     const current = nodeMap.get(activeInternalId.value);
     if (current?.rawData.name === "Root") return;
-    else navigateToNode(rootNode, false, true);
+    navigateToNode(rootNode, false, true);
   };
 
   const packLayerCounts = useMemo(
@@ -848,7 +859,7 @@ function CirclePackSkiaRenderer({
             className="absolute gap-2 p-2 m-2"
             style={{ bottom: 0, right: 0 }}
           >
-            <TouchableOpacity
+            <Pressable
               onPress={handleZoomBack}
               disabled={isAtRoot}
               style={{
@@ -862,8 +873,8 @@ function CirclePackSkiaRenderer({
                 color="text"
                 opacity={isAtRoot ? 50 : 100}
               />
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               onPress={handleZoomOut}
               disabled={isAtRoot}
               style={{
@@ -873,7 +884,7 @@ function CirclePackSkiaRenderer({
               }}
             >
               <Icon name="house" color="text" opacity={isAtRoot ? 50 : 100} />
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>
