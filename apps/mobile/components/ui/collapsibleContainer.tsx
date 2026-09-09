@@ -17,11 +17,13 @@ export const CollapsibleContainer = ({
    * Prefer this for large trees so expand/collapse doesn’t wait on layout.
    */
   contentHeight: contentHeightProp,
+  duration = COLLAPSE_DURATION_MS,
 }: {
   children: React.ReactNode;
   expanded: boolean;
   className?: string;
   contentHeight?: number;
+  duration?: number;
 }) => {
   const [measuredHeight, setMeasuredHeight] = useState(0);
   const contentHeight = contentHeightProp ?? measuredHeight;
@@ -31,13 +33,13 @@ export const CollapsibleContainer = ({
 
   useEffect(() => {
     const target = expanded ? contentHeight : 0;
-    if (!hasInitialized.current) {
+    if (!hasInitialized.current || duration <= 0) {
       height.value = target;
       hasInitialized.current = true;
       return;
     }
-    height.value = withTiming(target, { duration: COLLAPSE_DURATION_MS });
-  }, [contentHeight, expanded, height]);
+    height.value = withTiming(target, { duration });
+  }, [contentHeight, duration, expanded, height]);
 
   const animatedHeight = useAnimatedStyle(() => ({
     height: height.value,

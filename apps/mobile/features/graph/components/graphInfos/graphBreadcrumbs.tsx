@@ -7,12 +7,10 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { FolderBreadcrumbCrumb } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { folderBreadcrumbRootLabel } from "@/features/notes/shared/ui/folderPickerLabels";
-import {
-  folderIdFromGraphTarget,
-  onGraphBreadcrumbNavigate,
-} from "@/features/navigation/syncLinkedBreadcrumbs";
+import { folderIdFromGraphTarget } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { useGraphStore } from "../../context/graphContext";
 import { findNodePath, formatBreadcrumbLabel } from "../../utils/findNodePath";
+import { navigateGraphSelection } from "../../utils/focusGraphNode";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 
 function BreadcrumbsSurface({ children }: { children: React.ReactNode }) {
@@ -65,11 +63,7 @@ export const GraphBreadcrumbs = () => {
   }, [activeId, categoryLabels, hierarchy, rootLabel]);
 
   const updateGraphParams = (targetId: string) => {
-    setParams({
-      id: targetId,
-      _t: Date.now().toString(),
-    });
-    onGraphBreadcrumbNavigate(targetId, hierarchy);
+    navigateGraphSelection(targetId, setParams, hierarchy);
   };
 
   return (

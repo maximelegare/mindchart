@@ -90,7 +90,11 @@ export const GraphFeature = ({
       <GraphInfos
         hierarchy={hierarchy}
         activeNode={activeNode}
-        focusedThoughtId={focusedThoughtId}
+        focusedThoughtId={
+          focusedThoughtId && focusedThoughtId !== activeNode?.id
+            ? focusedThoughtId
+            : undefined
+        }
       />
       <SpaceFiller
         sizes={{ paddingBottom: ["TAB_BAR_HEIGHT", "HEADER_OVERLAP"] }}

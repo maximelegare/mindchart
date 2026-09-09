@@ -12,7 +12,7 @@ import {
 } from "@/features/categories/hooks/useCategoryColor";
 import capitalize from "@/utils/stringManipulations/capitalize";
 import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
-import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
+import { navigateGraphSelection } from "../../utils/focusGraphNode";
 import { useGraphStore } from "../../context/graphContext";
 import { isRealFolderNode } from "../../utils/buildGraphByFolder";
 import { resolveNodeCategoryKey } from "../../utils/resolveNodeCategoryKey";
@@ -83,11 +83,7 @@ export const RootLayerCards: React.FC<RootLayerCardsProps> = ({ nodes }) => {
               : ("shapes" as const);
 
         const navigate = () => {
-          setParams({
-            id: node.id,
-            _t: Date.now().toString(),
-          });
-          onGraphBreadcrumbNavigate(node.id);
+          navigateGraphSelection(node.id, setParams);
         };
 
         const card = (
