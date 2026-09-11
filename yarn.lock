@@ -4942,7 +4942,9 @@ __metadata:
     buffer: "npm:^6.0.3"
     drizzle-kit: "npm:^0.31.4"
     drizzle-orm: "npm:^0.43.1"
+    eslint: "npm:^9.34.0"
     expo-file-system: "npm:^19.0.17"
+    typescript: "npm:5.9.2"
   languageName: unknown
   linkType: soft
 
