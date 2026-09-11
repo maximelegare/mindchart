@@ -19,6 +19,7 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
         note_created_at: NoteTable.createdAt,
         note_updated_at: NoteTable.updatedAt,
         note_last_viewed_at: NoteTable.lastViewedAt,
+        note_show_titles: NoteTable.showTitles,
         note_feeling: NoteTable.feeling,
         location_id: NoteTable.locationId,
         location_name: LocationTable.name,

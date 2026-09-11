@@ -113,6 +113,7 @@ export const NoteSchema = z.object({
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
   lastViewedAt: z.string().nullable().optional(),
+  showTitles: sqliteBoolean.optional(),
 });
 
 export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);

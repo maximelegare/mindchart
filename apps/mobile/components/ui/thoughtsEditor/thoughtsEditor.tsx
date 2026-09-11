@@ -248,6 +248,8 @@ export type ThoughtsEditorHandle = {
   /** Returns true when thoughts are valid to save. Applies red placeholders when not. */
   validateRequiredContent: () => boolean;
   clearValidationErrors: () => void;
+  /** Whether the Titles toggle is on for this note. */
+  titlesEnabled: () => boolean;
 };
 
 function ThoughtsEditorInner(
@@ -1041,6 +1043,7 @@ function ThoughtsEditorInner(
       clearValidationErrors: () => {
         richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
       },
+      titlesEnabled: () => showTitlesRef.current,
     }),
     [getValues, validationMessages]
   );

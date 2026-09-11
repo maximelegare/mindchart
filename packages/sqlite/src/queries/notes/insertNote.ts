@@ -21,6 +21,7 @@ export const insertNoteQuery = async (db: DB, data: Note) => {
       createdAt: data.createdAt ?? new Date().toISOString(),
       updatedAt: data.updatedAt ?? new Date().toISOString(),
       lastViewedAt: data.lastViewedAt ?? null,
+      showTitles: data.showTitles ?? false,
     });
   } catch (error) {
     console.error(error);

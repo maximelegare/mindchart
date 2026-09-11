@@ -110,6 +110,9 @@ export const GenerateNotePreview = ({
         locationId: location?.id ?? null,
         locationName: location?.name ?? null,
         createdAt: note.createdAt ?? new Date().toISOString(),
+        showTitles:
+          note.showTitles ??
+          data.thoughts.some((thought) => Boolean(thought.title?.trim())),
       };
 
       onAction({ ...noteData }, data.thoughts);

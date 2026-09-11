@@ -11,6 +11,7 @@ import { EditableField } from "@/components/ui/editableField";
 import {
   ThoughtsEditor,
   createEmptyThought,
+  type ThoughtsEditorHandle,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
 import {
@@ -101,6 +102,7 @@ export const ManualNoteForm = ({
     FALLBACK_FOOTER_CONTENT_HEIGHT
   );
   const titleInputRef = React.useRef<TextInput>(null);
+  const thoughtsEditorRef = React.useRef<ThoughtsEditorHandle>(null);
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -183,6 +185,7 @@ export const ManualNoteForm = ({
       rawText: "",
       folderId: data.folder!.id,
       createdAt: new Date().toISOString(),
+      showTitles: thoughtsEditorRef.current?.titlesEnabled() ?? false,
     };
 
     onSubmit(note, thoughts);
@@ -270,6 +273,7 @@ export const ManualNoteForm = ({
             style={{ paddingBottom: editorBottomInset }}
           >
             <ThoughtsEditor
+              ref={thoughtsEditorRef}
               noteId={noteId}
               categories={categories}
               defaultShowTitles={

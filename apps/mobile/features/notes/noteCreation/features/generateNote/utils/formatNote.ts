@@ -22,6 +22,7 @@ export const formatNote = (
     summary,
     rawText,
     createdAt: new Date().toISOString(),
+    showTitles: thoughts.some((thought) => Boolean(thought.title?.trim())),
   };
 
   const formatedToughts = thoughts.map((t: LocalAIResThought) => {

@@ -43,6 +43,7 @@ export const parseNoteAndThoughts = (
     feeling: typeof row.note_feeling === "number" ? row.note_feeling : null,
     locationId: row.location_id ?? null,
     locationName: row.location_name ?? null,
+    showTitles: Boolean(row.note_show_titles),
     persons: (() => {
       const raw = row.persons_json;
       if (typeof raw === "string") {

@@ -120,6 +120,13 @@
       "when": 1788883200000,
       "tag": "0016_six_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1789160000000,
+      "tag": "0017_note_show_titles",
+      "breakpoints": true
     }
   ]
 }

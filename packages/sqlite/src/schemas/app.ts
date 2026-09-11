@@ -80,6 +80,9 @@ export const NoteTable = sqliteTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     lastViewedAt: text("last_viewed_at"),
+    showTitles: integer("show_titles", { mode: "boolean" })
+      .notNull()
+      .default(false),
   },
   (note) => [
     foreignKey({
