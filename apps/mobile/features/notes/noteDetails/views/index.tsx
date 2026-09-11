@@ -231,6 +231,8 @@ function NoteDetailsContent({
     onSavingChange?.(true);
     try {
       // Drop fully empty bullets on save; keep only contentful thoughts.
+      const showTitles =
+        thoughtsEditorRef.current?.titlesEnabled() ?? note.showTitles ?? false;
       const nextThoughts = data.thoughts
         .filter(
           (thought) =>
@@ -273,6 +275,7 @@ function NoteDetailsContent({
         locationId: isNew ? locationId : (note.locationId ?? null),
         locationName: isNew ? locationName : (note.locationName ?? null),
         createdAt: note.createdAt,
+        showTitles,
       };
 
       if (isNew) {
@@ -314,6 +317,7 @@ function NoteDetailsContent({
     note.persons,
     note.feeling,
     note.rawText,
+    note.showTitles,
     note.summary,
     onEditingChange,
     onFolderErrorChange,
@@ -334,9 +338,7 @@ function NoteDetailsContent({
     };
   }, [saveActionRef, saveNote]);
 
-  const showTitles = note.thoughts.some((thought) =>
-    Boolean(stripHtml(thought.title ?? ""))
-  );
+  const showTitles = note.showTitles ?? false;
 
   const [titleInputHeight, setTitleInputHeight] = React.useState(28);
 

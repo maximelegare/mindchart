@@ -36,6 +36,7 @@ export const createBlankDraftNote = (
     locationId: null,
     locationName: null,
     persons: [],
+    showTitles: false,
     thoughts: [thought as DraftNote["thoughts"][number]],
   };
 };
@@ -56,6 +57,9 @@ export const createGeneratedDraftNote = (
     locationId: note.locationId ?? null,
     locationName: note.locationName ?? null,
     persons: note.persons ?? [],
+    showTitles:
+      note.showTitles ??
+      thoughts.some((thought) => Boolean(thought.title?.trim())),
     thoughts: thoughts.map((thought) => ({
       ...thought,
       title: thought.title ?? "",

@@ -1652,6 +1652,12 @@ export const CHECKLIST_SCRIPT = `
       if (li) postCaretType(li);
     });
 
+    content.addEventListener("focusin", function () {
+      var sel = window.getSelection();
+      var li = closestLi(sel && sel.anchorNode);
+      if (li) postCaretType(li);
+    });
+
     if (typeof ResizeObserver !== "undefined") {
       var observer = new ResizeObserver(function () {
         syncAll();

@@ -19,6 +19,7 @@ export const updateNoteQuery = async (db: DB, data: Note) => {
         folderId: data.folderId ?? null,
         feeling: data.feeling ?? null,
         locationId: data.locationId ?? null,
+        showTitles: data.showTitles ?? false,
         updatedAt: new Date().toISOString(),
       })
       .where(eq(NoteTable.id, data.id));

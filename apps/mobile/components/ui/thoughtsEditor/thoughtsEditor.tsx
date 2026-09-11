@@ -1,6 +1,8 @@
 import { Category } from "@repo/zod-schemas";
 import React from "react";
 import { Keyboard, Platform, Pressable, ScrollView, View } from "react-native";
+import { runOnJS } from "react-native-reanimated";
+import { useKeyboardHandler } from "react-native-keyboard-controller";
 import { useFormContext } from "react-hook-form";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RichEditor, actions } from "react-native-pell-rich-editor";
@@ -58,8 +60,8 @@ import { classifyCategory } from "@/features/categories/utils/classifyCategory";
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
 
-/** Extra space below the caret so it stays clear of the format toolbar / keyboard. */
-const CARET_BOTTOM_MARGIN = 72;
+/** Gap between the caret and the keyboard / format bar. */
+const CARET_BOTTOM_MARGIN = 15;
 
 const scrollCaretIntoViewScript = (bottomMargin: number) => `
 (function () {
@@ -76,14 +78,14 @@ const scrollCaretIntoViewScript = (bottomMargin: number) => `
     rect = range.getBoundingClientRect();
   }
 
-  var margin = ${Math.max(24, Math.floor(bottomMargin))};
+  var margin = ${Math.max(0, Math.floor(bottomMargin))};
   var contentRect = content.getBoundingClientRect();
 
   if (!rect || (rect.height === 0 && rect.width === 0)) {
     var node = sel.anchorNode;
     var el = node && (node.nodeType === 3 ? node.parentElement : node);
     if (el && el.scrollIntoView) {
-      el.scrollIntoView({ block: "center", inline: "nearest" });
+      el.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
     return true;
   }
@@ -246,6 +248,8 @@ export type ThoughtsEditorHandle = {
   /** Returns true when thoughts are valid to save. Applies red placeholders when not. */
   validateRequiredContent: () => boolean;
   clearValidationErrors: () => void;
+  /** Whether the Titles toggle is on for this note. */
+  titlesEnabled: () => boolean;
 };
 
 function ThoughtsEditorInner(
@@ -274,6 +278,7 @@ function ThoughtsEditorInner(
   // Keep the user's Titles preference even while simplified view hides them.
   const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
+  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
   const [activeFormats, setActiveFormats] = React.useState({
     bold: false,
     italic: false,
@@ -290,6 +295,8 @@ function ThoughtsEditorInner(
   const editorReadyRef = React.useRef(false);
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
+  const keyboardHeightRef = React.useRef(0);
+  const scrollCaretFrameRef = React.useRef<number | null>(null);
   const pendingFormatRef = React.useRef<"bold" | "italic" | "underline" | null>(
     null
   );
@@ -358,9 +365,17 @@ function ThoughtsEditorInner(
   }, []);
 
   const scrollCaretIntoView = React.useCallback(() => {
-    const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 28;
+    const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 15;
     richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
   }, []);
+
+  const scheduleScrollCaretIntoView = React.useCallback(() => {
+    if (scrollCaretFrameRef.current != null) return;
+    scrollCaretFrameRef.current = requestAnimationFrame(() => {
+      scrollCaretFrameRef.current = null;
+      scrollCaretIntoView();
+    });
+  }, [scrollCaretIntoView]);
 
   const tryApplyPendingFormat = React.useCallback(() => {
     const pending = pendingFormatRef.current;
@@ -368,55 +383,85 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(applyFormatInThoughtFieldScript(pending));
   }, []);
 
+  const applyKeyboardOpen = React.useCallback((height: number) => {
+    const nextHeight = Math.max(0, height);
+    keyboardOpenRef.current = true;
+    keyboardHeightRef.current = nextHeight;
+    setKeyboardOpen(true);
+    setKeyboardHeight(nextHeight);
+  }, []);
+
+  const applyKeyboardClosed = React.useCallback(() => {
+    keyboardOpenRef.current = false;
+    keyboardHeightRef.current = 0;
+    pendingFormatRef.current = null;
+    setKeyboardOpen(false);
+    setKeyboardHeight(0);
+  }, []);
+
+  useKeyboardHandler(
+    {
+      onStart: (event) => {
+        "worklet";
+        if (event.progress === 1) {
+          runOnJS(applyKeyboardOpen)(Math.max(0, event.height));
+        } else {
+          runOnJS(applyKeyboardClosed)();
+        }
+      },
+    },
+    [applyKeyboardOpen, applyKeyboardClosed]
+  );
+
   React.useEffect(() => {
     if (readOnly) return;
-    const showSub = Keyboard.addListener("keyboardDidShow", () => {
-      keyboardOpenRef.current = true;
-      if (!dockToolbarToKeyboard) {
-        setKeyboardOpen(true);
-      }
 
-      const refresh = () => {
-        tryApplyPendingFormat();
-        scrollCaretIntoView();
-      };
+    const refreshCaret = () => {
+      tryApplyPendingFormat();
+      scrollCaretIntoView();
+    };
+
+    const showSub = Keyboard.addListener("keyboardDidShow", (event) => {
+      applyKeyboardOpen(event.endCoordinates.height);
       requestAnimationFrame(() => {
-        requestAnimationFrame(refresh);
+        requestAnimationFrame(refreshCaret);
       });
-      setTimeout(refresh, 100);
-      setTimeout(refresh, 280);
+      setTimeout(refreshCaret, 100);
+      setTimeout(refreshCaret, 280);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      keyboardOpenRef.current = false;
-      pendingFormatRef.current = null;
-      if (!dockToolbarToKeyboard) {
-        setKeyboardOpen(false);
-      }
+      applyKeyboardClosed();
     });
 
     return () => {
       showSub.remove();
       hideSub.remove();
+      if (scrollCaretFrameRef.current != null) {
+        cancelAnimationFrame(scrollCaretFrameRef.current);
+        scrollCaretFrameRef.current = null;
+      }
     };
   }, [
+    applyKeyboardClosed,
+    applyKeyboardOpen,
     readOnly,
-    dockToolbarToKeyboard,
     scrollCaretIntoView,
     tryApplyPendingFormat,
   ]);
 
   React.useEffect(() => {
-    if (readOnly || !dockToolbarToKeyboard) return;
-    const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
-    injectIfReady(`
-(function () {
-  var content =
-    document.querySelector(".pell-content") || document.getElementById("editor");
-  if (content) content.style.paddingBottom = "${pad}px";
-  true;
-})();
-`);
-  }, [readOnly, dockToolbarToKeyboard, injectIfReady]);
+    if (readOnly || keyboardHeight <= 0) return;
+    const frame = requestAnimationFrame(() => {
+      scrollCaretIntoView();
+    });
+    const later = setTimeout(() => {
+      scrollCaretIntoView();
+    }, 160);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(later);
+    };
+  }, [keyboardHeight, readOnly, scrollCaretIntoView]);
 
   React.useEffect(() => {
     if (readOnly || !keyboardOpen || dockToolbarToKeyboard) return;
@@ -772,6 +817,9 @@ function ThoughtsEditorInner(
           (message.data as { completable?: boolean } | undefined)?.completable
         );
         setCaretIsChecklist(completable);
+        if (keyboardOpenRef.current) {
+          scheduleScrollCaretIntoView();
+        }
         return;
       }
       if (message.type === "LIST_TYPE") {
@@ -865,7 +913,15 @@ function ThoughtsEditorInner(
       Keyboard.dismiss();
       setCategoryPickerIndex(index);
     },
-    [categoryLabels, getValues, onToggleCompleted, push, readOnly, setValue]
+    [
+      categoryLabels,
+      getValues,
+      onToggleCompleted,
+      push,
+      readOnly,
+      scheduleScrollCaretIntoView,
+      setValue,
+    ]
   );
 
   const handleSelectCategory = React.useCallback(
@@ -987,6 +1043,7 @@ function ThoughtsEditorInner(
       clearValidationErrors: () => {
         richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
       },
+      titlesEnabled: () => showTitlesRef.current,
     }),
     [getValues, validationMessages]
   );
@@ -1025,7 +1082,7 @@ function ThoughtsEditorInner(
                 ? {
                     paddingBottom:
                       THOUGHTS_EDITOR_TOOLBAR_HEIGHT +
-                      Math.max(insets.bottom, 6),
+                      Math.max(keyboardHeight, insets.bottom, 6),
                   }
                 : undefined
             }
@@ -1062,7 +1119,7 @@ function ThoughtsEditorInner(
                   padding-left: 0;
                   padding-bottom: ${
                     showToolbar && dockToolbarToKeyboard
-                      ? THOUGHTS_EDITOR_TOOLBAR_HEIGHT + 12
+                      ? CARET_BOTTOM_MARGIN
                       : !readOnly && keyboardOpen
                         ? CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT
                         : 12
@@ -1245,6 +1302,9 @@ function ThoughtsEditorInner(
                   .thought-category {
                     position: relative;
                     z-index: 5;
+                    display: inline-block;
+                    max-width: 100%;
+                    width: fit-content;
                     min-height: 18px;
                     margin: 0 0 4px;
                     padding: 2px 0;
@@ -1267,10 +1327,10 @@ function ThoughtsEditorInner(
                   .thought-category::before {
                     content: "";
                     position: absolute;
-                    top: -10px;
-                    right: 0;
-                    bottom: -10px;
-                    left: -36px;
+                    top: -6px;
+                    right: -8px;
+                    bottom: -6px;
+                    left: -8px;
                   }
                   .thought-category-name {
                     display: block;

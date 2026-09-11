@@ -41,6 +41,7 @@ export const seedFormatNote = (
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     lastViewedAt: null,
+    showTitles: thoughts.some((thought) => Boolean(thought.title?.trim())),
   };
 
   const formatedToughts = thoughts.map((t: LocalAIResThought) => {

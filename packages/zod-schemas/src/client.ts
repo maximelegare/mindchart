@@ -58,6 +58,7 @@ export const NotesJoinThoughtsParsedJSONPageSchema = z.object({
   locationId: z.string().nullable().optional(),
   locationName: z.string().nullable().optional(),
   persons: z.array(PersonSchema).optional(),
+  showTitles: z.boolean().optional().default(false),
   thoughts: z.array(ThoughtSchema),
 });
 
