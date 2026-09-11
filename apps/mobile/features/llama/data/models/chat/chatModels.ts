@@ -56,13 +56,17 @@ export const CHAT_MODELS = {
   //   mmproj: 'mmproj-Qwen2.5-VL-3B-Instruct-Q8_0.gguf',
   //   size: '1.93GB (model) + 845MB (mmproj)',
   // },
-  QWEN2_5_OMNI_3B: {
-    name: "Qwen2.5 Omni 3B (Q4_K_M)",
-    repo: "ggml-org/Qwen2.5-Omni-3B-GGUF",
-    filename: "Qwen2.5-Omni-3B-Q4_K_M.gguf",
-    mmproj: "mmproj-Qwen2.5-Omni-3B-Q8_0.gguf",
-    size: "2.1GB (model) + 1.54GB (mmproj)",
-  },
+
+  /////////////////////////////////////////
+  /////// Previously available model //////
+  /////////////////////////////////////////
+  // QWEN2_5_OMNI_3B: {
+  //   name: "Qwen2.5 Omni 3B (Q4_K_M)",
+  //   repo: "ggml-org/Qwen2.5-Omni-3B-GGUF",
+  //   filename: "Qwen2.5-Omni-3B-Q4_K_M.gguf",
+  //   mmproj: "mmproj-Qwen2.5-Omni-3B-Q8_0.gguf",
+  //   size: "2.1GB (model) + 1.54GB (mmproj)",
+  // },
   QWEN3_1_7B: {
     name: "Qwen3 1.7B (Q5_K_M)",
     repo: "bartowski/Qwen_Qwen3-1.7B-GGUF",
