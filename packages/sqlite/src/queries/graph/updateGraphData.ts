@@ -2,7 +2,7 @@ import { AppDataTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
 import { eq } from "drizzle-orm";
 
-export const updateGraphDataQuery = async (db: DB, data: any) => {
+export const updateGraphDataQuery = async (db: DB, data: unknown) => {
   try {
     return await db
       .update(AppDataTable)
