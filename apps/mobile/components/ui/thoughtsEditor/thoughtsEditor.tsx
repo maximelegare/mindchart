@@ -1245,6 +1245,9 @@ function ThoughtsEditorInner(
                   .thought-category {
                     position: relative;
                     z-index: 5;
+                    display: inline-block;
+                    max-width: 100%;
+                    width: fit-content;
                     min-height: 18px;
                     margin: 0 0 4px;
                     padding: 2px 0;
@@ -1267,10 +1270,10 @@ function ThoughtsEditorInner(
                   .thought-category::before {
                     content: "";
                     position: absolute;
-                    top: -10px;
-                    right: 0;
-                    bottom: -10px;
-                    left: -36px;
+                    top: -6px;
+                    right: -8px;
+                    bottom: -6px;
+                    left: -8px;
                   }
                   .thought-category-name {
                     display: block;
