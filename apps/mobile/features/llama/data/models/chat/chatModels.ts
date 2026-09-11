@@ -63,6 +63,13 @@ export const CHAT_MODELS = {
     mmproj: "mmproj-Qwen2.5-Omni-3B-Q8_0.gguf",
     size: "2.1GB (model) + 1.54GB (mmproj)",
   },
+  QWEN3_1_7B: {
+    name: "Qwen3 1.7B (Q5_K_M)",
+    repo: "bartowski/Qwen_Qwen3-1.7B-GGUF",
+    filename: "Qwen_Qwen3-1.7B-Q5_K_M.gguf",
+    mmproj: undefined,
+    size: "1.47GB",
+  },
   // PHI_3_MINI_4K: {
   // name:"Phi3 Mini 4K (Q4_K_M)",
   // repo:"microsoft/Phi-3-mini-4k-instruct-gguf",
