@@ -2,6 +2,9 @@ import { Image, View } from "react-native";
 import { Typography } from "./typography";
 import { hsl } from "@/utils/hsl";
 
+/** Lighter green used for the "chart" half of the wordmark. */
+export const LOGO_CHART_COLOR = hsl("border", "theme", "light", 20);
+
 export const LogoWithText = () => {
   const logoWidth = 24;
   const logoHeight = 24;
@@ -31,7 +34,7 @@ export const LogoWithText = () => {
           variant="h4"
           className="text-3xl"
           style={{
-            color: hsl("border", "theme", "light", 20),
+            color: LOGO_CHART_COLOR,
             fontFamily: "QuicksandRegular",
           }}
         >
