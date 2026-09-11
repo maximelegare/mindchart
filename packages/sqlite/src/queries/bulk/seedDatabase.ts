@@ -3,12 +3,7 @@ import {
   runRawSqliteTransaction,
 } from "../../utils/initialize/getOPDatabase";
 
-import type {
-  Embedding,
-  Folder,
-  Note,
-  Thought,
-} from "../../../../zod-schemas/src/schemas";
+import type { Embedding, Folder, Note, Thought } from "@repo/zod-schemas";
 import { insertNoteQuery } from "../notes/insertNote";
 import { insertThoughtsQuery } from "../thoughts/insertThoughts";
 import { insertEmbeddingsQuery } from "../embeddings/insertEmbeddings";

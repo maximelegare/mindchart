@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import capitalize from "@/utils/stringManipulations/capitalize";
-import type { NotesJoinThoughtsParsedJSONPageSchemaModel } from "@repo/zod-schemas/client";
+import type { NotesJoinThoughtsParsedJSONPageSchemaModel } from "@repo/zod-schemas";
 
 export type CategoryThoughtGroup = {
   id: string;

@@ -6,6 +6,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@repo/zod-schemas": ["../../packages/zod-schemas/server.ts"],
+      "@repo/zod-schemas/client": ["../../packages/zod-schemas/client.ts"],
+      "@repo/zod-schemas/server": ["../../packages/zod-schemas/server.ts"],
+      "@repo/zod-schemas/schemas": ["../../packages/zod-schemas/schemas.ts"],
       "@repo/zod-schemas/*": ["../../packages/zod-schemas/*"],
       "@repo/constants": ["../../packages/constants/index.ts"],
       "@repo/constants/*": ["../../packages/constants/*"],

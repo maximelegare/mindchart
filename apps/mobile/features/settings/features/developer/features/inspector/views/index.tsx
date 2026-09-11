@@ -4,18 +4,17 @@ import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 
 import {
-  ThoughtTable,
-  NoteTable,
-  EmbeddingTable,
   AppDataTable,
   CategoryTable,
-  SettingTable,
-} from "@repo/sqlite";
-import {
-  getOPDatabase,
-  removeDatabaseFile,
   closeOPDatabase,
+  EmbeddingTable,
+  getOPDatabase,
+  NoteTable,
+  removeDatabaseFile,
+  SettingTable,
+  ThoughtTable,
 } from "@repo/sqlite";
+
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { Migrator } from "@/features/settings/features/developer/features/inspector/components/migrator";
 import { useRouter } from "expo-router";

@@ -20,8 +20,8 @@ import {
 } from "@/features/notes/noteDetails/noteDetailsLabels";
 import { noteMoveFailedAlertTitle } from "@/features/notes/noteBottomSheet/noteBottomSheetLabels";
 import type { FolderSelection } from "@/features/notes/shared/ui/folderSelector";
-import { Person } from "@repo/zod-schemas";
-import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
+import { type FeelingValue, type Location, Person } from "@repo/zod-schemas";
+
 import { router, useLocalSearchParams, useSegments } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";

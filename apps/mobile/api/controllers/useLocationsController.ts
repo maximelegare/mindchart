@@ -5,7 +5,7 @@ import {
   getAllLocations,
   insertLocation,
 } from "@/api/endpoints/locations";
-import type { Location } from "@repo/zod-schemas/src/schemas";
+import type { Location } from "@repo/zod-schemas";
 
 export const useLocationsController = () => {
   const useFetchAllLocationsQuery = (options?: ReactQueryOptions) =>

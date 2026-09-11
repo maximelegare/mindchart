@@ -1,4 +1,4 @@
-import type { Location } from "@repo/zod-schemas/src/schemas";
+import type { Location } from "@repo/zod-schemas";
 import { LocationTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
 

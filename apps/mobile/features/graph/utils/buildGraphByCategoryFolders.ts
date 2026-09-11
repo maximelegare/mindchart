@@ -1,5 +1,5 @@
-import { Folder } from "@repo/zod-schemas/src/schemas";
-import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
+import { Folder, ThoughtWithEmbedding } from "@repo/zod-schemas";
+
 import { NodeDatum } from "../types/types";
 import { buildGraphByFolderWithThoughts } from "./buildGraphByFolder";
 import { isNoteLeafId } from "./mapNoteToLeaf";

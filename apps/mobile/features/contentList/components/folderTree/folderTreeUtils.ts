@@ -1,5 +1,5 @@
 import { getParentFolderPath, isFolderPathUnder } from "@repo/sqlite";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 
 export const FOLDER_TREE_ROOT_ID = "root";
 

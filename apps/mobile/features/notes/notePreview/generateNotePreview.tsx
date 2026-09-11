@@ -1,4 +1,12 @@
-import { Category, Note, Person, Thought } from "@repo/zod-schemas";
+import {
+  Category,
+  FeelingValue,
+  Location,
+  Note,
+  Person,
+  Thought,
+} from "@repo/zod-schemas";
+
 import React from "react";
 import { ScrollView, View } from "react-native";
 import { useForm, Controller } from "react-hook-form";
@@ -15,7 +23,6 @@ import {
   loadingModalSavingNoteTitleVariant,
   loadingModalSavingTitle,
 } from "@/components/ui/modal/data/loadingModalLabels";
-import { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
 import { PersonSelector } from "../shared/ui/personSelector";
 import { FeelingSelector } from "../shared/ui/feelingSelector";
 import { LocationSelector } from "../shared/ui/locationSelector";

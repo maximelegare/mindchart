@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./server": "./server.ts",
+    ".": "./client.ts",
     "./client": "./client.ts",
-    "./src/schemas": "./src/schemas.ts"
+    "./server": "./server.ts",
+    "./schemas": "./schemas.ts"
   },
   "sideEffects": false,
   "scripts": {

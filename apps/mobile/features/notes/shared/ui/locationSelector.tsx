@@ -25,7 +25,7 @@ import { Icon } from "@/components/ui/icons/icon";
 import { X } from "@/lib/icons/Times";
 import { generateID } from "@/utils/genrateID";
 import { useModal } from "@/components/ui/modal/modal";
-import type { Location } from "@repo/zod-schemas/src/schemas";
+import type { Location } from "@repo/zod-schemas";
 import {
   LocationSelectorAddRowLabel,
   LocationSelectorSheetTitle,

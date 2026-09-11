@@ -21,8 +21,8 @@ import {
   noteDetailsTitleRequiredPlaceholder,
   NoteDetailsTitlePlaceholder,
 } from "@/features/notes/noteDetails/noteDetailsLabels";
-import { Person } from "@repo/zod-schemas";
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import { type FeelingValue, Person } from "@repo/zod-schemas";
+
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
 
 type NoteDetailsFeatureProps = {

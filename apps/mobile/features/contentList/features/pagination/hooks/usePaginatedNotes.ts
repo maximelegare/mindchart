@@ -1,7 +1,10 @@
 import { useEffect, useMemo } from "react";
 import type { NoteListQueryParams } from "@repo/sqlite";
-import type { Note } from "@repo/zod-schemas";
-import type { NotesJoinThoughtsParsedJSONPageSchemaModel } from "@repo/zod-schemas/client";
+import type {
+  Note,
+  NotesJoinThoughtsParsedJSONPageSchemaModel,
+} from "@repo/zod-schemas";
+
 import { useControllers } from "@/api/controllers/useControllers";
 import { useOptionsBar } from "@/features/contentList/components/optionsBar/context/optionBarContext";
 import {

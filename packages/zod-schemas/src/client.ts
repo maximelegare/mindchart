@@ -155,13 +155,16 @@ export type PendingEmbedding = z.infer<typeof PendingEmbeddingSchema>;
 export {
   NoteSchema,
   ThoughtSchema,
+  ThoughtWithEmbeddingSchema,
   CategorySchema,
   CategoryTranslationSchema,
+  CategoryWithThoughtsInfosSchema,
   FolderSchema,
   PersonSchema,
   FeelingSchema,
   FeelingValueSchema,
   LocationSchema,
+  EmbeddingSchema,
 } from "./schemas";
 
 export type {

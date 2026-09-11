@@ -1,4 +1,4 @@
-import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
+import { ThoughtWithEmbedding } from "@repo/zod-schemas";
 import { NodeDatum } from "../types/types";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 

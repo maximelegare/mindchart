@@ -10,7 +10,7 @@ import {
   moveFolderQuery,
   updateFolderLabelQuery,
 } from "@repo/sqlite";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 
 export const getAllFolders = async () => {
   const db = getOPDatabase();

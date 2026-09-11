@@ -1,6 +1,10 @@
 import { create } from "zustand";
-import { NotesJoinThoughtsParsedJSONPageSchemaModel } from "@repo/zod-schemas/client";
-import { Note, Thought } from "@repo/zod-schemas";
+import {
+  Note,
+  NotesJoinThoughtsParsedJSONPageSchemaModel,
+  Thought,
+} from "@repo/zod-schemas";
+
 import { generateID } from "@/utils/genrateID";
 import { createEmptyThought } from "@/components/ui/thoughtsEditor";
 

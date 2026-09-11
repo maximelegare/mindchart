@@ -17,7 +17,7 @@ import {
   updateFolderLabel,
 } from "../endpoints/folders";
 import { updateSyncGraphData } from "../endpoints/graph";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 import { invalidateNotesAndThoughtsQueries } from "../utils/invalidateNotesAndThoughtsQueries";
 
 const markGraphDirty = async (

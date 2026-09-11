@@ -2,7 +2,7 @@
 
 import { NoteTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { Note } from "@repo/zod-schemas/src/schemas";
+import { Note } from "@repo/zod-schemas";
 
 export const insertNoteQuery = async (db: DB, data: Note) => {
   try {

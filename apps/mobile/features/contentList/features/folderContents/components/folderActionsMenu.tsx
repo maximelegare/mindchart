@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo } from "react";
 import { Alert, Pressable, View } from "react-native";
 import { canCreateChildFolder, canMoveFolderTo } from "@repo/sqlite";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";

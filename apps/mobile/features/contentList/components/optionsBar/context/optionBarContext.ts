@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { FeelingValue } from "@repo/zod-schemas";
 import { OptionsBar } from "../../../types";
 import { DEFAULT_PAGE_SIZE } from "../../../features/pagination/constants";
 import type { PageSize } from "../../../features/pagination/types";
