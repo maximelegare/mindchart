@@ -60,8 +60,8 @@ import { classifyCategory } from "@/features/categories/utils/classifyCategory";
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
 
-/** Extra space below the caret so it stays clear of the format toolbar / keyboard. */
-const CARET_BOTTOM_MARGIN = 72;
+/** Gap between the caret and the keyboard / format bar. */
+const CARET_BOTTOM_MARGIN = 15;
 
 const scrollCaretIntoViewScript = (bottomMargin: number) => `
 (function () {
@@ -78,14 +78,14 @@ const scrollCaretIntoViewScript = (bottomMargin: number) => `
     rect = range.getBoundingClientRect();
   }
 
-  var margin = ${Math.max(24, Math.floor(bottomMargin))};
+  var margin = ${Math.max(0, Math.floor(bottomMargin))};
   var contentRect = content.getBoundingClientRect();
 
   if (!rect || (rect.height === 0 && rect.width === 0)) {
     var node = sel.anchorNode;
     var el = node && (node.nodeType === 3 ? node.parentElement : node);
     if (el && el.scrollIntoView) {
-      el.scrollIntoView({ block: "center", inline: "nearest" });
+      el.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
     return true;
   }
@@ -363,7 +363,7 @@ function ThoughtsEditorInner(
   }, []);
 
   const scrollCaretIntoView = React.useCallback(() => {
-    const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 28;
+    const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 15;
     richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
   }, []);
 
@@ -1116,7 +1116,7 @@ function ThoughtsEditorInner(
                   padding-left: 0;
                   padding-bottom: ${
                     showToolbar && dockToolbarToKeyboard
-                      ? 12
+                      ? CARET_BOTTOM_MARGIN
                       : !readOnly && keyboardOpen
                         ? CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT
                         : 12
