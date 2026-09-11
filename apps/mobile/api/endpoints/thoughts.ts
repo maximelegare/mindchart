@@ -2,11 +2,11 @@ import {
   deleteThoughByIdQuery,
   deleteThoughtsByIdsQuery,
   getAllThoughtsGroupByCategoryQuery,
+  getAllThoughtsWithEmbeddingsQuery,
   getOPDatabase,
-  updateThoughtCompletionQuery,
   updateThoughtCategoryQuery,
+  updateThoughtCompletionQuery,
 } from "@repo/sqlite";
-import { getAllThoughtsWithEmbeddingsQuery } from "@repo/sqlite";
 
 export const fetchAllThoughtsWithEmbeddings = async () => {
   const db = getOPDatabase();

@@ -1,6 +1,5 @@
 import z from "zod";
-import { NoteSchema } from "@repo/zod-schemas";
-import { Note } from "@repo/zod-schemas";
+import { Note, NoteSchema } from "@repo/zod-schemas";
 
 type NoteQueryRow = {
   id: string;

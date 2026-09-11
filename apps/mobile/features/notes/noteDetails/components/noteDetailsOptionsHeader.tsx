@@ -12,8 +12,8 @@ import { FeelingSelector } from "@/features/notes/shared/ui/feelingSelector";
 import { LocationSelector } from "@/features/notes/shared/ui/locationSelector";
 import { TriggerFilterChip } from "@/features/contentList/components/optionsBar/components/triggerFilterChip";
 import { OptionChip } from "@/features/contentList/components/optionsBar/components/options/optionChip";
-import { Person } from "@repo/zod-schemas";
-import type { FeelingValue, Location } from "@repo/zod-schemas/src/schemas";
+import { type FeelingValue, type Location, Person } from "@repo/zod-schemas";
+
 import { NoteDetailsViewModeChipLabel } from "@/features/notes/noteDetails/noteDetailsLabels";
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
 

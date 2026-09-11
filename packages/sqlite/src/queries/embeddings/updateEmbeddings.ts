@@ -1,6 +1,6 @@
 import { EmbeddingTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { Embedding } from "../../../../zod-schemas/src/schemas";
+import { Embedding } from "@repo/zod-schemas";
 import { eq } from "drizzle-orm";
 
 export const updateEmbeddingsQuery = async (db: DB, data: Embedding[]) => {

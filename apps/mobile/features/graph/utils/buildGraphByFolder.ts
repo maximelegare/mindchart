@@ -3,9 +3,8 @@ import {
   getFolderIdsFromPath,
   getParentFolderPath,
 } from "@repo/sqlite";
-import { Folder } from "@repo/zod-schemas/src/schemas";
-import { Note } from "@repo/zod-schemas";
-import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
+import { Folder, Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
+
 import { NodeDatum } from "../types/types";
 import { mapThoughtToLeaf } from "./mapThoughtToLeaf";
 import { isNoteLeafId, mapNoteToLeaf } from "./mapNoteToLeaf";

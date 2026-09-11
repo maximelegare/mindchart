@@ -1,5 +1,5 @@
-import { Note } from "@repo/zod-schemas";
-import { ThoughtWithEmbedding } from "@repo/zod-schemas/client";
+import { Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
+
 import { NodeDatum, GraphDataCache } from "../types/types";
 import { buildGraphByFolder } from "./buildGraphByFolder";
 import { categoryGraphNeedsRebuild } from "./buildGraphByCategoryFolders";

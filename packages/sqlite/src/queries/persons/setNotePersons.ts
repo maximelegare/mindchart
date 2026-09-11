@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { Person } from "@repo/zod-schemas/src/schemas";
+import { Person } from "@repo/zod-schemas";
 import { PersonTable, PersonToNoteTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
 

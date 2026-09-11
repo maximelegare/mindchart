@@ -8,7 +8,7 @@ import {
 } from "@/components/primitives/bottomSheet/bottom-sheet.native";
 import { Button, Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
-import { CategoryWithThoughtsInfos } from "@repo/zod-schemas/src/schemas";
+import { CategoryWithThoughtsInfos } from "@repo/zod-schemas";
 import { useRouter } from "expo-router";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { View } from "react-native";

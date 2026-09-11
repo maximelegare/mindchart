@@ -3,7 +3,6 @@ import {
   getOPDatabase,
   updateMigratingStatusQuery,
 } from "@repo/sqlite";
-import {} from "@repo/sqlite";
 
 export const fetchMigratingStatus = async () => {
   const db = getOPDatabase();

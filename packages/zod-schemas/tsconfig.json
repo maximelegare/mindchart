@@ -4,7 +4,11 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@repo/zod-schemas": ["./client.ts"],
+      "@repo/zod-schemas/*": ["./*"]
+    }
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules"]

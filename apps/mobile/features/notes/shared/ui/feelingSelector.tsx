@@ -13,7 +13,7 @@ import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { Icon } from "@/components/ui/icons/icon";
 import { cn } from "@/lib/cn";
 import { FEELINGS_DEFINITIONS } from "@repo/sqlite";
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { FeelingValue } from "@repo/zod-schemas";
 import { FeelingSelectorSheetTitle } from "./noteAttributeSelectorLabels";
 
 export const FeelingSelector = ({

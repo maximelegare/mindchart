@@ -36,7 +36,7 @@ import {
 import { navigateGraphSelection } from "../../utils/focusGraphNode";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import type { GraphMode, NodeDatum } from "../../types/types";
-import type { Folder } from "@repo/zod-schemas/src/schemas";
+import type { Folder } from "@repo/zod-schemas";
 
 const MAX_TITLE_LENGTH = 40;
 const ICON_SLOT = 14;

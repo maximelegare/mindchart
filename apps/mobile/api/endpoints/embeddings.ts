@@ -2,13 +2,14 @@ import {
   getOPDatabase,
   getPendingEmbeddingsQuery,
   insertEmbeddingsQuery,
+  insertPendingEmbeddingsQuery,
+  updateEmbeddingsQuery,
 } from "@repo/sqlite";
-import { insertPendingEmbeddingsQuery } from "@repo/sqlite";
-import { Thought, PendingEmbeddingSchema } from "@repo/zod-schemas/client";
+
+import { Embedding, PendingEmbeddingSchema, Thought } from "@repo/zod-schemas";
+
 import { ClientOpenAIRoutes } from "@repo/constants";
 import { z } from "zod";
-import { Embedding } from "@repo/zod-schemas/src/schemas";
-import { updateEmbeddingsQuery } from "@repo/sqlite";
 
 export const fetchPendingEmbeddings = async () => {
   const db = getOPDatabase();

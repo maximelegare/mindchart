@@ -1,7 +1,7 @@
 import { generateID } from "../../utils/generareID";
 import { EmbeddingTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { Thought } from "@repo/zod-schemas/src/schemas";
+import { Thought } from "@repo/zod-schemas";
 // import { generateID } from '@/utils/generateId.ts';
 
 export const insertPendingEmbeddingsQuery = async (

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { getFolderIdsFromPath } from "@repo/sqlite";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 import { Typography } from "@/components/ui";
 import { Icon } from "@/components/ui/icons/icon";
 import { useColorScheme } from "@/lib/useColorScheme";

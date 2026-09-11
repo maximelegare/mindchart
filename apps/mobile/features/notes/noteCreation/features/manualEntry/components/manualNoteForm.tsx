@@ -1,5 +1,5 @@
-import { Category, Note, Thought } from "@repo/zod-schemas";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Category, Folder, Note, Thought } from "@repo/zod-schemas";
+
 import React from "react";
 import { Alert, Keyboard, ScrollView, TextInput, View } from "react-native";
 import { useForm, Controller, FormProvider } from "react-hook-form";

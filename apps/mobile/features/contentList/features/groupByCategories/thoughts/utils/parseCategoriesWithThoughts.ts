@@ -2,7 +2,7 @@ import z from "zod";
 import {
   CategoriesJoinThoughtsParsedSchema,
   CategoriesJoinThoughtsParsedSchemaModel,
-} from "@repo/zod-schemas/client";
+} from "@repo/zod-schemas";
 
 const parseThoughtsJson = (thoughtsJson: unknown) => {
   if (typeof thoughtsJson === "string") return JSON.parse(thoughtsJson);

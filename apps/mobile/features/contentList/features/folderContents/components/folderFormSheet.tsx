@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { View } from "react-native";
 import { canCreateChildFolder, getFolderIdsFromPath } from "@repo/sqlite";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 import {
   BottomSheet,
   BottomSheetContent,

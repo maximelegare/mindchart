@@ -1,4 +1,4 @@
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { FeelingValue } from "@repo/zod-schemas";
 
 export type NoteAttributeFilters = {
   personIds: string[];

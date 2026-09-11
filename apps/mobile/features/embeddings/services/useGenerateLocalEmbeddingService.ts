@@ -1,6 +1,6 @@
-import { Embedding } from "@repo/zod-schemas";
+import { Embedding, PendingEmbedding } from "@repo/zod-schemas";
+
 import { generateID } from "@/utils/genrateID";
-import { PendingEmbedding } from "@repo/zod-schemas";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 
 export const useGenerateLocalEmbeddingsService = () => {

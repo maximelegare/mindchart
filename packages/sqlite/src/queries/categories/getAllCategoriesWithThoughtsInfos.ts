@@ -1,6 +1,6 @@
 import { CategoryTable, ThoughtTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { CategoryWithThoughtsInfos } from "../../../../zod-schemas/src/schemas";
+import { CategoryWithThoughtsInfos } from "@repo/zod-schemas";
 import { count, eq } from "drizzle-orm";
 
 export const getAllCategoriesWithThoughtsInfosQuery = async (

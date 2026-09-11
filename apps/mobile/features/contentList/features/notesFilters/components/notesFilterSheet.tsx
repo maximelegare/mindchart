@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, type ReactNode } from "react";
 import { View } from "react-native";
 import { FEELINGS_DEFINITIONS } from "@repo/sqlite";
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { FeelingValue } from "@repo/zod-schemas";
 import {
   BottomSheet,
   BottomSheetContent,

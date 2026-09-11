@@ -2,7 +2,7 @@ import z from "zod";
 import {
   NotesJoinThoughtsParsedJSONPageSchema,
   NotesJoinThoughtsParsedJSONPageSchemaModel,
-} from "@repo/zod-schemas/client";
+} from "@repo/zod-schemas";
 
 /** Unwrap legacy JSON-stringified note summaries from the DB. */
 function normalizeNoteSummary(value: unknown): string {
