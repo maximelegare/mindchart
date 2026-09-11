@@ -21,12 +21,14 @@ export const useLlamaChat = () => {
       const { text } = await context.chatContext.completion(
         {
           prompt: `User: ${prompt}\nAssistant:`,
-          n_predict: 120, // 🔥 biggest speed win
+          // Enough room for title, summary, and several thought objects.
+          // Stopping at "}" previously cut off after the first bullet.
+          n_predict: 1000,
           temperature: 0.2,
           // Fewer threads leaves headroom for Android (e.g. recording FGS) after long runs
           n_threads: 4,
           top_p: 0.9,
-          stop: ["User:", "</s>", "```", "}"],
+          stop: ["User:", "</s>", "<|im_end|>"],
         },
         (data) => {
           if (onToken) onToken(data.token);
