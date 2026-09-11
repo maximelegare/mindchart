@@ -1,4 +1,15 @@
 import { config } from "@repo/eslint-config/base";
 
 /** @type {import("eslint").Linter.Config} */
-export default config;
+export default [
+  ...config,
+  {
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "scripts/**",
+      "src/types/**",
+      "src/migrations/**",
+    ],
+  },
+];

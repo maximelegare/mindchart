@@ -51,7 +51,7 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
        * 1. Force into a fresh Uint8Array to normalize the driver's output.
        * 2. Slice the buffer to ensure 4-byte alignment for Float32.
        */
-      const uint8 = new Uint8Array(raw as any);
+      const uint8 = new Uint8Array(raw);
       const buffer = uint8.buffer.slice(
         uint8.byteOffset,
         uint8.byteOffset + uint8.byteLength

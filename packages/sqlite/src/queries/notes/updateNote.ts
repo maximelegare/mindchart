@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { NoteTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
 import { Note } from "@repo/zod-schemas";
