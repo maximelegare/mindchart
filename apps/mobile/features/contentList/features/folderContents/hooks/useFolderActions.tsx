@@ -8,7 +8,7 @@ import {
 } from "@repo/sqlite";
 import { Alert } from "react-native";
 import { useRouter, useSegments } from "expo-router";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
 import { generateID } from "@/utils/genrateID";

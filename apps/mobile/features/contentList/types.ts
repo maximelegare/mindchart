@@ -1,4 +1,4 @@
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import type { FeelingValue } from "@repo/zod-schemas";
 import type { PageSize } from "./features/pagination/types";
 
 export type DisplayMode = "notes" | "categories";

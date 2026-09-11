@@ -5,7 +5,7 @@ import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLab
 import { useMemo } from "react";
 import z from "zod";
 import { CategoryItem } from "../components/categoriesList";
-import { CategoryWithThoughtsInfosSchema } from "@repo/zod-schemas/src/schemas";
+import { CategoryWithThoughtsInfosSchema } from "@repo/zod-schemas";
 import {
   SortOptions,
   sortContentList,

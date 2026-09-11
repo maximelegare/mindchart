@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { Thought } from "@repo/zod-schemas/src/schemas";
+import { Thought } from "@repo/zod-schemas";
 import { DB } from "../../utils/initialize/getOPDatabase";
 import { ThoughtTable } from "../../schema.root";
 

@@ -4,7 +4,7 @@ import {
   getOPDatabase,
   insertLocationQuery,
 } from "@repo/sqlite";
-import type { Location } from "@repo/zod-schemas/src/schemas";
+import type { Location } from "@repo/zod-schemas";
 
 export const getAllLocations = async () => {
   const db = getOPDatabase();

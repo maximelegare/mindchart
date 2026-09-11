@@ -14,8 +14,7 @@ import {
   updateNoteQuery,
   updateThoughtsQuery,
 } from "@repo/sqlite";
-import { Note, Thought } from "@repo/zod-schemas/client";
-import type { FeelingValue } from "@repo/zod-schemas/src/schemas";
+import { type FeelingValue, Note, Thought } from "@repo/zod-schemas";
 
 export const insertNoteAndThoughts = async ({
   note,

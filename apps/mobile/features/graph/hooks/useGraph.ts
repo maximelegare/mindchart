@@ -6,8 +6,8 @@ import {
   GRAPH_CACHE_VERSION,
   stripEmbeddingsFromCache,
 } from "../utils/parseGraphData";
-import { Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder, Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
+
 import { useEffect, useMemo, useRef } from "react";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";

@@ -4,7 +4,7 @@ import { DB } from "../../../utils/initialize/getOPDatabase";
 import {
   PaginatedSearchResultsSchema,
   type SearchResultItemSchemaModel,
-} from "../../../../../zod-schemas/src/client";
+} from "@repo/zod-schemas";
 import {
   buildNoteListWhere,
   noteListOrderBy,

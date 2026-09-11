@@ -31,7 +31,7 @@ import { Typography } from "@/components/ui";
 import { Button } from "@/components/ui/button";
 import { useBottomSheetModal } from "@gorhom/bottom-sheet";
 import { useColorScheme } from "@/lib/useColorScheme";
-import { Folder } from "@repo/zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 import { hsl } from "@/utils/hsl";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Icon } from "@/components/ui/icons/icon";

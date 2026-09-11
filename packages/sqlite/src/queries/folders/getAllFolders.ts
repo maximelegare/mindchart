@@ -1,4 +1,4 @@
-import { Folder } from "../../../../zod-schemas/src/schemas";
+import { Folder } from "@repo/zod-schemas";
 import { FolderTable } from "../../schema.root";
 import { DB } from "../../utils/initialize/getOPDatabase";
 

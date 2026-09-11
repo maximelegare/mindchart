@@ -1,6 +1,7 @@
-import { getOPDatabase } from "@repo/sqlite";
-import { insertPendingEmbeddingsQuery } from "@repo/sqlite";
-import { Thought } from "@repo/zod-schemas/client";
+import { getOPDatabase, insertPendingEmbeddingsQuery } from "@repo/sqlite";
+
+import { Embedding, Thought } from "@repo/zod-schemas";
+
 import {
   fetchPendingEmbeddings,
   insertEmbeddings,
@@ -8,7 +9,6 @@ import {
 } from "@/api/endpoints/embeddings";
 import { REACT_QUERY_KEYS } from "../endpoints/KEYS";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Embedding } from "@repo/zod-schemas/src/schemas";
 import { useGenerateLocalEmbeddingsService } from "../../features/embeddings/services/useGenerateLocalEmbeddingService";
 import { invalidateNotesAndThoughtsQueries } from "../utils/invalidateNotesAndThoughtsQueries";
 import { updateSyncGraphData } from "../endpoints/graph";

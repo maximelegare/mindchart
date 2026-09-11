@@ -2,7 +2,7 @@ import { memo } from "react";
 import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
-import { CategoryWithThoughtsInfos } from "@repo/zod-schemas/src/schemas";
+import { CategoryWithThoughtsInfos } from "@repo/zod-schemas";
 import { Separator } from "@/components/ui/separator";
 import { CardTitleRow } from "@/features/contentList/components/cards/shared/cardTitleRow";
 import { CategoryBottomSheet } from "../../categoryBottomSheet";
