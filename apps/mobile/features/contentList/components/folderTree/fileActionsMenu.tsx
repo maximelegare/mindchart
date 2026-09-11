@@ -136,9 +136,8 @@ export function FileActionsMenu({
   }, [actionsSheet, sheetsMounted]);
 
   useEffect(() => {
+    // `actionsSheet` is a new object each render; `open` itself is stable.
     if (sheetsMounted) actionsSheet.open();
-    // open is stable; the sheet object is a new identity each render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheetsMounted]);
 
   return (

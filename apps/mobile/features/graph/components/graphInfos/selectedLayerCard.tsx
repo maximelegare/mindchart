@@ -45,7 +45,6 @@ const BULLET_SIZE = 6;
 const ROW_GAP = 6;
 /** First-line box height — bullet + trailing actions align to this, not the full row. */
 const TITLE_LINE_HEIGHT = 20;
-const BODY_LINE_HEIGHT = 22;
 /** Horizontal inset shared by the layer header and its child tree rail. */
 const HEADER_INSET = 6;
 /** Short horizontal run from the rail into the row — keep tight to free content width. */
@@ -633,82 +632,6 @@ function ThoughtTitleRow({
     <NoteActionsWrap node={node} onOpenNote={onOpenNote}>
       {row}
     </NoteActionsWrap>
-  );
-}
-
-/** Title-less thought: content is the primary row (bullet + summary + open). */
-function ThoughtContentRow({
-  node,
-  summary,
-  isCurrent,
-  isFocused,
-  highlightColor,
-  onOpenNote,
-}: {
-  node: NodeDatum;
-  summary: string;
-  isCurrent: boolean;
-  isFocused: boolean;
-  highlightColor: string;
-  onOpenNote: (noteId?: string) => void;
-}) {
-  const { colorScheme } = useColorScheme();
-  const bulletColor = hsl("muted-foreground", colorScheme);
-  const emphasized = isCurrent || isFocused;
-
-  return (
-    <NoteActionsWrap node={node} onOpenNote={onOpenNote}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "flex-start",
-          gap: ROW_GAP,
-          paddingTop: 4,
-          paddingBottom: 4,
-          paddingRight: 4,
-          borderRadius: 8,
-          borderWidth: HAIRLINE,
-          borderColor: emphasized ? highlightColor : "transparent",
-          backgroundColor: emphasized ? highlightColor : "transparent",
-        }}
-      >
-        <ThoughtBullet color={bulletColor} lineHeight={BODY_LINE_HEIGHT} />
-        <Typography
-          variant="p"
-          className={cn(
-            "flex-1 pb-0 leading-snug",
-            emphasized && "font-semibold"
-          )}
-          style={{
-            includeFontPadding: false,
-            lineHeight: BODY_LINE_HEIGHT,
-          }}
-        >
-          {summary}
-        </Typography>
-        <ThoughtRowActions
-          lineHeight={BODY_LINE_HEIGHT}
-          emphasized={emphasized}
-          noteId={node.noteId}
-        />
-      </View>
-    </NoteActionsWrap>
-  );
-}
-
-function ThoughtSummary({ summary }: { summary: string }) {
-  return (
-    <Typography
-      variant="p"
-      className="pb-0 leading-snug pr-1"
-      style={{
-        includeFontPadding: false,
-        marginTop: TITLE_SUMMARY_GAP,
-        paddingLeft: ICON_SLOT + ROW_GAP,
-      }}
-    >
-      {summary}
-    </Typography>
   );
 }
 
