@@ -32,7 +32,7 @@
       {
         "title": "Hiring Three New Growth Marketers",
         "summary": "Allocate funds to bring in specialists for SEO and paid social media acquisition.",
-        "category": "idea",
+        "category": "action",
         "semanticLabel": "Team expansion"
       }
     ]
@@ -45,13 +45,13 @@
       {
         "title": "Passive Cooling System Efficiency",
         "summary": "Natural ventilation designs can reduce building energy consumption by up to 30% without mechanical air conditioning.",
-        "category": "insight",
+        "category": "fact",
         "semanticLabel": "Energy efficiency"
       },
       {
         "title": "Bosco Verticale Case Study",
         "summary": "The Milan apartment towers serve as a primary example of integrating biological systems into high-rise living.",
-        "category": "uncategorized",
+        "category": "observation",
         "semanticLabel": "Architectural landmark"
       }
     ]
@@ -64,7 +64,7 @@
       {
         "title": "Morning Calm Increases Clarity",
         "summary": "The absence of digital notifications in the early hours creates a space for better creative thinking.",
-        "category": "insight",
+        "category": "observation",
         "semanticLabel": "Mental well-being"
       },
       {
@@ -83,13 +83,13 @@
       {
         "title": "Final UI Polish Deadline",
         "summary": "All high-fidelity screens must be handed over to the frontend team by Friday evening.",
-        "category": "uncategorized",
+        "category": "action",
         "semanticLabel": "Milestone deadline"
       },
       {
         "title": "Sarah to Lead Beta Testing",
         "summary": "Sarah will coordinate with the selected 50 users to gather qualitative feedback on the core features.",
-        "category": "uncategorized",
+        "category": "action",
         "semanticLabel": "Resource allocation"
       }
     ]
@@ -102,13 +102,13 @@
       {
         "title": "Rotate Tomato Crop Location",
         "summary": "Move the tomatoes to the north bed to prevent soil-borne diseases from the previous year.",
-        "category": "idea",
+        "category": "action",
         "semanticLabel": "Crop rotation"
       },
       {
         "title": "Need More Nitrogen Rich Fertilizer",
         "summary": "The leafy greens are looking a bit yellow, indicating a deficiency in the current soil mix.",
-        "category": "problem",
+        "category": "hypothesis",
         "semanticLabel": "Soil health"
       }
     ]
@@ -121,13 +121,13 @@
       {
         "title": "Shallow Work vs Deep Work",
         "summary": "Shallow work like emails provides the illusion of productivity while deep work produces real value.",
-        "category": "insight",
+        "category": "observation",
         "semanticLabel": "Work classification"
       },
       {
         "title": "Schedule Internet Blocks",
         "summary": "Avoid the urge to check the web by scheduling specific times for connectivity.",
-        "category": "idea",
+        "category": "action",
         "semanticLabel": "Focus technique"
       }
     ]
@@ -140,7 +140,7 @@
       {
         "title": "Kaaterskill Falls Trailhead",
         "summary": "The best spot to start the morning hike to avoid the heavy afternoon crowds.",
-        "category": "uncategorized",
+        "category": "item",
         "semanticLabel": "Travel destination"
       },
       {
@@ -184,7 +184,7 @@
       {
         "title": "Paint Color Palette",
         "summary": "Preferring sage green or a neutral slate to keep the room feeling calm and professional.",
-        "category": "idea",
+        "category": "item",
         "semanticLabel": "Aesthetic choice"
       }
     ]
@@ -197,13 +197,13 @@
       {
         "title": "Treasury Inflation-Protected Securities",
         "summary": "TIPS provide a hedge as the principal increases with the Consumer Price Index.",
-        "category": "insight",
+        "category": "fact",
         "semanticLabel": "Financial instrument"
       },
       {
         "title": "Real Estate as an Inflation Hedge",
         "summary": "Physical assets and rental income often scale alongside rising cost of living.",
-        "category": "insight",
+        "category": "hypothesis",
         "semanticLabel": "Market analysis"
       }
     ]
@@ -216,13 +216,13 @@
       {
         "title": "The Grand Canyon Vista",
         "summary": "Looking over the rim for the first time was an overwhelming sensory experience.",
-        "category": "memory",
+        "category": "observation",
         "semanticLabel": "Personal history"
       },
       {
         "title": "Car Breakdown in Nevada",
         "summary": "Waiting for three hours in the heat taught us the importance of carrying extra water.",
-        "category": "memory",
+        "category": "uncategorized",
         "semanticLabel": "Past event"
       }
     ]
@@ -235,13 +235,13 @@
       {
         "title": "Induction Heating Speed",
         "summary": "The ability to boil water in half the time is a major selling point for induction.",
-        "category": "insight",
+        "category": "fact",
         "semanticLabel": "Feature comparison"
       },
       {
         "title": "Gas Range Reliability",
         "summary": "Works during power outages and is often preferred by traditional home chefs for flame control.",
-        "category": "uncategorized",
+        "category": "fact",
         "semanticLabel": "Technical trade-off"
       }
     ]
@@ -254,13 +254,13 @@
       {
         "title": "Bulk Cook Quinoa and Chickpeas",
         "summary": "Prepare these on Sunday to quickly assemble salads during the busy work week.",
-        "category": "idea",
+        "category": "action",
         "semanticLabel": "Preparation"
       },
       {
         "title": "Try New Lemon Tahini Dressing",
         "summary": "A variation on the classic recipe using roasted garlic for extra depth.",
-        "category": "idea",
+        "category": "item",
         "semanticLabel": "Recipe experiment"
       }
     ]
@@ -273,7 +273,7 @@
       {
         "title": "Lead the API Migration Project",
         "summary": "Successfully moved the legacy system to a new architecture without any downtime.",
-        "category": "memory",
+        "category": "fact",
         "semanticLabel": "Major achievement"
       },
       {
@@ -292,13 +292,13 @@
       {
         "title": "AI as a First Draft Tool",
         "summary": "Using models to overcome the blank page syndrome rather than generating final copy.",
-        "category": "insight",
+        "category": "observation",
         "semanticLabel": "Workflow shift"
       },
       {
         "title": "The Value of Human Tone",
         "summary": "Brand voice and emotional nuance remain difficult for algorithms to replicate perfectly.",
-        "category": "insight",
+        "category": "hypothesis",
         "semanticLabel": "Competitive advantage"
       }
     ]
@@ -311,7 +311,7 @@
       {
         "title": "Confirm Table Count for Seating",
         "summary": "The final guest list is 120, meaning we need exactly 15 circular tables.",
-        "category": "uncategorized",
+        "category": "fact",
         "semanticLabel": "Logistics detail"
       },
       {
@@ -349,13 +349,13 @@
       {
         "title": "Weightless Sensation",
         "summary": "Recalling the feeling of floating between shelves without any effort.",
-        "category": "memory",
+        "category": "uncategorized",
         "semanticLabel": "Dream imagery"
       },
       {
         "title": "Unreadable Script",
         "summary": "The text on the pages changed every time I looked at it, glowing in different colors.",
-        "category": "memory",
+        "category": "uncategorized",
         "semanticLabel": "Subconscious detail"
       }
     ]

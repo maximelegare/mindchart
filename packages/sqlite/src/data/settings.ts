@@ -13,12 +13,15 @@ export const SETTINGS_DEFINITIONS = [
 ] as const;
 
 export const CATEGORIES_DEFINITIONS = [
-  { id: "problem", name: "Problem", color: "hsl(0, 100%, 89%)" },
-  { id: "insight", name: "Insight", color: "hsl(334, 89.8%, 88.4%)" },
-  { id: "question", name: "Question", color: "hsl(237.5, 90%, 84.3%)" },
-  { id: "memory", name: "Memory", color: "hsl(318.8, 60%, 84.3%)" },
-  { id: "idea", name: "Idea", color: "hsl(35.2, 89.7%, 81%)" },
-  { id: "uncategorized", name: "Uncategorized", color: "hsl(240, 21.5%, 79%)" },
+  { id: "idea", name: "Idea", color: "hsl(28, 92%, 76%)" },
+  { id: "problem", name: "Problem", color: "hsl(4, 88%, 78%)" },
+  { id: "question", name: "Question", color: "hsl(217, 82%, 78%)" },
+  { id: "action", name: "Action", color: "hsl(328, 78%, 84%)" },
+  { id: "fact", name: "Fact", color: "hsl(142, 48%, 74%)" },
+  { id: "observation", name: "Observation", color: "hsl(268, 58%, 82%)" },
+  { id: "hypothesis", name: "Hypothesis", color: "hsl(199, 62%, 84%)" },
+  { id: "item", name: "Item", color: "hsl(48, 88%, 76%)" },
+  { id: "uncategorized", name: "Uncategorized", color: "hsl(220, 8%, 80%)" },
 ] as const;
 
 export const CATEGORIES_TRANSLATIONS: {
@@ -28,22 +31,28 @@ export const CATEGORIES_TRANSLATIONS: {
   {
     lang: "en-US",
     translations: {
-      problem: "Problem",
-      insight: "Insight",
-      question: "Question",
-      memory: "Memory",
       idea: "Idea",
+      problem: "Problem",
+      question: "Question",
+      action: "Action",
+      fact: "Fact",
+      observation: "Observation",
+      hypothesis: "Hypothesis",
+      item: "Item",
       uncategorized: "Uncategorized",
     },
   },
   {
     lang: "fr-CA",
     translations: {
-      problem: "Problème",
-      insight: "Perspective",
-      question: "Question",
-      memory: "Souvenir",
       idea: "Idée",
+      problem: "Problème",
+      question: "Question",
+      action: "Action",
+      fact: "Fait",
+      observation: "Observation",
+      hypothesis: "Hypothèse",
+      item: "Élément",
       uncategorized: "Non classé",
     },
   },
