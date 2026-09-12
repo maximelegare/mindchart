@@ -8,8 +8,10 @@ import { GraphLoadingPlaceholder } from "../components/graphLoadingPlaceholder";
 import GraphInfos from "../components/graphInfos/graphInfos";
 import { NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
+import { usePageScroll } from "@/components/layout/page/pageContainer";
 import { filterGraphHierarchy } from "../utils/filterGraphHierarchy";
 import { findNodeById, findNodePath } from "../utils/findNodePath";
+import { setGraphPageScrollToTop } from "../utils/focusGraphNode";
 
 export const GraphFeature = ({
   focusedThoughtId,
@@ -22,6 +24,12 @@ export const GraphFeature = ({
   const selectedFolderId = useGraphStore((state) => state.selectedFolderId);
   const selectedCategoryId = useGraphStore((state) => state.selectedCategoryId);
   const { hierarchies, isLoading, refetchGraph, refetchSyncFlag } = useGraph();
+  const { scrollToTop } = usePageScroll();
+
+  useEffect(() => {
+    setGraphPageScrollToTop(scrollToTop);
+    return () => setGraphPageScrollToTop(null);
+  }, [scrollToTop]);
 
   const hierarchy = useMemo(() => {
     if (!hierarchies) return null;

@@ -1,20 +1,30 @@
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
+import type { ScrollToTopOptions } from "@/components/layout/page/pageContainer";
 import { useGraphStore } from "../context/graphContext";
 import type { NodeDatum } from "../types/types";
 
 type GraphParams = { id: string; _t: string };
+type GraphScrollToTop = (options?: ScrollToTopOptions) => boolean;
 
-/**
- * Zoom the live graph immediately, then keep the route param in sync.
- * Infos/breadcrumbs used to wait on `setParams` → `useEffect` before moving
- * the camera; that lag grows with graph size. Graph taps already call
- * `navigateToNode` directly — this is the same path.
- */
-export function navigateGraphSelection(
+let scrollGraphPageToTop: GraphScrollToTop | null = null;
+let scrollGraphInfosToTop: GraphScrollToTop | null = null;
+let pendingFocus: ReturnType<typeof setTimeout> | null = null;
+
+/** Page-level scroll (tabs + canvas). Registered by the graph screen. */
+export function setGraphPageScrollToTop(fn: GraphScrollToTop | null) {
+  scrollGraphPageToTop = fn;
+}
+
+/** Infos list under the canvas. Registered by GraphInfos. */
+export function setGraphInfosScrollToTop(fn: GraphScrollToTop | null) {
+  scrollGraphInfosToTop = fn;
+}
+
+const applyGraphFocus = (
   nodeId: string,
   setParams: (params: GraphParams) => void,
   hierarchy?: NodeDatum | null
-) {
+) => {
   const focus = useGraphStore.getState().focusGraphNode;
   const params = {
     id: nodeId,
@@ -29,4 +39,34 @@ export function navigateGraphSelection(
   }
 
   queueMicrotask(() => onGraphBreadcrumbNavigate(nodeId, hierarchy));
+};
+
+/**
+ * Scroll the page to the tabs first, then zoom. Graph motion is fast enough
+ * that zooming while still looking at infos feels like a jump.
+ */
+export function navigateGraphSelection(
+  nodeId: string,
+  setParams: (params: GraphParams) => void,
+  hierarchy?: NodeDatum | null
+) {
+  if (pendingFocus) {
+    clearTimeout(pendingFocus);
+    pendingFocus = null;
+  }
+
+  const pageWasScrolled = scrollGraphPageToTop?.({ animated: true }) ?? false;
+  scrollGraphInfosToTop?.({ animated: true });
+
+  const run = () => {
+    pendingFocus = null;
+    applyGraphFocus(nodeId, setParams, hierarchy);
+  };
+
+  if (pageWasScrolled) {
+    pendingFocus = setTimeout(run, 340);
+    return;
+  }
+
+  run();
 }
