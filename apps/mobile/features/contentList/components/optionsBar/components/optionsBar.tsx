@@ -269,7 +269,7 @@ export const OptionsBar = () => {
               <OptionChip
                 icon="folder"
                 label={<FoldersModeChipLabel mode={localFoldersMode} />}
-                selected={localFoldersMode === "with"}
+                selected
                 onPress={() =>
                   onFoldersModeChange(
                     localFoldersMode === "with" ? "without" : "with"
@@ -285,6 +285,7 @@ export const OptionsBar = () => {
                 }
                 label={<SortDirectionChipLabel value={sortDirection} />}
                 unstyledLabel
+                selected
                 onPress={onSortDirectionToggle}
                 accessibilityLabel={
                   sortDirection === "asc"
@@ -307,6 +308,7 @@ export const OptionsBar = () => {
                 )}
                 renderChipLabel={renderSortFieldChipLabel}
                 onValueChange={onSortFieldChange}
+                selected
               />
               <NotesFilterSheet />
               {localFoldersMode === "with" ? <BreadcrumbLinkToggle /> : null}

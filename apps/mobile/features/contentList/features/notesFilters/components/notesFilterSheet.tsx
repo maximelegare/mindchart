@@ -223,7 +223,7 @@ export const NotesFilterSheet = ({
       <OptionChip
         icon="funnel"
         label={<FiltersChipLabel activeCount={activeCount} />}
-        selected={hasFilters}
+        selected
         onPress={() => sheet.open()}
       />
 

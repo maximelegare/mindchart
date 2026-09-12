@@ -60,6 +60,7 @@ export function NoteDetailsOptionsHeader({
               <OptionChip
                 icon="eye"
                 label={<NoteDetailsViewModeChipLabel simplified={simplified} />}
+                selected
                 onPress={toggleSimplified}
               />
             </View>
