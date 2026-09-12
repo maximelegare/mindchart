@@ -37,6 +37,7 @@ type OptionsPickerProps<T extends string> = {
   renderChipLabel: (value: T) => React.ReactNode;
   onValueChange: (value: T) => void;
   largeChip?: boolean;
+  selected?: boolean;
 };
 
 export function OptionsSheet<T extends string>({
@@ -47,6 +48,7 @@ export function OptionsSheet<T extends string>({
   renderChipLabel,
   onValueChange,
   largeChip = false,
+  selected: chipSelected = false,
 }: OptionsPickerProps<T>) {
   const sheet = useBottomSheet();
   const selected = options.find((option) => option.value === value);
@@ -58,6 +60,7 @@ export function OptionsSheet<T extends string>({
       <Chip
         icon={selectedIcon}
         label={renderChipLabel(value)}
+        selected={chipSelected}
         onPress={() => sheet.open()}
       />
 

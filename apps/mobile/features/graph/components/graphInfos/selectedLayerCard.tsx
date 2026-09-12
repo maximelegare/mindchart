@@ -45,6 +45,8 @@ const BULLET_SIZE = 6;
 const ROW_GAP = 6;
 /** First-line box height — bullet + trailing actions align to this, not the full row. */
 const TITLE_LINE_HEIGHT = 20;
+/** Thought first-line paddingTop + half the bullet box — elbow meets the bullet. */
+const FIRST_LINE_CENTER = 4 + TITLE_LINE_HEIGHT / 2;
 /** Horizontal inset shared by the layer header and its child tree rail. */
 const HEADER_INSET = 6;
 /** Short horizontal run from the rail into the row — keep tight to free content width. */
@@ -74,6 +76,9 @@ const resolveDisplayTitle = (node: NodeDatum): string => {
   const raw = (node.title ?? node.name ?? "").trim();
   return raw || "Untitled";
 };
+
+const hasThoughtTitle = (node: NodeDatum): boolean =>
+  Boolean((node.title ?? "").trim());
 
 const resolveDisplaySummary = (node: NodeDatum): string | null => {
   const summary = (node.summary ?? "").trim();
@@ -216,11 +221,13 @@ const RailSegment = ({
   lineColor,
   top,
   bottom,
+  height,
   guideWidth,
 }: {
   lineColor: string;
   top: number | `${number}%`;
-  bottom: number | `${number}%`;
+  bottom?: number | `${number}%`;
+  height?: number;
   guideWidth: number;
 }) => (
   <View
@@ -228,7 +235,7 @@ const RailSegment = ({
       position: "absolute",
       left: guideWidth / 2 - LINE_WIDTH / 2,
       top,
-      bottom,
+      ...(height != null ? { height } : { bottom: bottom ?? 0 }),
       width: LINE_WIDTH,
       backgroundColor: lineColor,
     }}
@@ -238,15 +245,17 @@ const RailSegment = ({
 const Elbow = ({
   lineColor,
   guideWidth,
+  top = "50%",
 }: {
   lineColor: string;
   guideWidth: number;
+  top?: number | `${number}%`;
 }) => (
   <View
     style={{
       position: "absolute",
       left: guideWidth / 2 - LINE_WIDTH / 2,
-      top: "50%",
+      top,
       marginTop: -LINE_WIDTH / 2,
       width: guideWidth / 2 + ELBOW_WIDTH,
       height: LINE_WIDTH,
@@ -307,14 +316,10 @@ function estimateBranchHeight(
   if (isNoteLeaf(node)) return EST_NOTE_LEAF;
 
   if (isThoughtLeaf(node)) {
-    const hasTitle = !!resolveDisplayTitle(node);
+    const hasTitle = hasThoughtTitle(node);
     const summary = resolveDisplaySummary(node);
     if (!hasTitle && summary) {
-      return (
-        estimateSummaryHeight(summary) +
-        EST_THOUGHT_TITLE_COMPACT +
-        THOUGHT_BLOCK_GAP
-      );
+      return estimateSummaryHeight(summary) + 8 + THOUGHT_BLOCK_GAP;
     }
     let height = summary ? EST_THOUGHT_TITLE_COMPACT : EST_THOUGHT_TITLE;
     if (summary) height += estimateSummaryHeight(summary);
@@ -565,31 +570,25 @@ type ThoughtTitleRowProps = {
   isFocused: boolean;
   highlightColor: string;
   onOpenNote: (noteId?: string) => void;
-  /** When true, drop bottom padding so the summary sits tight under the title. */
-  compactBottom?: boolean;
-  /** Parent already wraps with NoteActionsWrap — avoid nested menus. */
-  skipNoteActions?: boolean;
-  /** Parent owns the highlight chrome (title + description). */
-  skipHighlight?: boolean;
 };
 
-function ThoughtTitleRow({
-  node,
-  isCurrent,
-  isFocused,
-  highlightColor,
-  onOpenNote,
-  compactBottom = false,
-  skipNoteActions = false,
-  skipHighlight = false,
-}: ThoughtTitleRowProps) {
+function ThoughtFirstLine({
+  text,
+  variant,
+  emphasized,
+  noteId,
+  compactBottom,
+}: {
+  text: string;
+  variant: "title" | "summary";
+  emphasized: boolean;
+  noteId?: string;
+  compactBottom: boolean;
+}) {
   const { colorScheme } = useColorScheme();
   const bulletColor = hsl("muted-foreground", colorScheme);
-  const emphasized = isCurrent || isFocused;
-  const title = resolveDisplayTitle(node);
-  const showHighlight = emphasized && !skipHighlight;
 
-  const row = (
+  return (
     <View
       style={{
         flexDirection: "row",
@@ -598,39 +597,95 @@ function ThoughtTitleRow({
         paddingTop: 4,
         paddingBottom: compactBottom ? 0 : 4,
         paddingRight: 4,
-        borderRadius: skipHighlight ? 0 : 8,
-        borderWidth: skipHighlight ? 0 : HAIRLINE,
-        borderColor: showHighlight ? highlightColor : "transparent",
-        backgroundColor: showHighlight ? highlightColor : "transparent",
       }}
     >
       <ThoughtBullet color={bulletColor} lineHeight={TITLE_LINE_HEIGHT} />
       <Typography
-        variant="h5"
+        variant={variant === "title" ? "h5" : "p"}
         className={cn(
           "flex-1 pb-0 leading-tight",
-          emphasized && "font-semibold"
+          variant === "summary" && "opacity-90",
+          emphasized && variant === "title" && "font-semibold"
         )}
         style={{
           includeFontPadding: false,
           lineHeight: TITLE_LINE_HEIGHT,
         }}
-        numberOfLines={2}
+        numberOfLines={variant === "title" ? 2 : undefined}
       >
-        {formatTitle(title)}
+        {variant === "title" ? formatTitle(text) : text}
       </Typography>
       <ThoughtRowActions
         lineHeight={TITLE_LINE_HEIGHT}
         emphasized={emphasized}
-        noteId={node.noteId}
+        noteId={noteId}
       />
     </View>
   );
+}
 
-  if (skipNoteActions) return row;
+function ThoughtTitleRow({
+  node,
+  isCurrent,
+  isFocused,
+  highlightColor,
+  onOpenNote,
+}: ThoughtTitleRowProps) {
+  const emphasized = isCurrent || isFocused;
+  const title = (node.title ?? "").trim();
+  const hasTitle = title.length > 0;
+  const summary = resolveDisplaySummary(node);
+
+  const block = (
+    <View
+      style={{
+        borderRadius: 8,
+        borderWidth: HAIRLINE,
+        borderColor: emphasized ? highlightColor : "transparent",
+        backgroundColor: emphasized ? highlightColor : "transparent",
+      }}
+    >
+      {hasTitle ? (
+        <>
+          <ThoughtFirstLine
+            text={title}
+            variant="title"
+            emphasized={emphasized}
+            noteId={node.noteId}
+            compactBottom={!!summary}
+          />
+          {summary ? (
+            <Typography
+              variant="p"
+              padding={false}
+              className="opacity-80"
+              style={{
+                marginLeft: ICON_SLOT + ROW_GAP,
+                marginRight: 4,
+                paddingBottom: 4,
+                includeFontPadding: false,
+                lineHeight: EST_SUMMARY_LINE,
+              }}
+            >
+              {summary}
+            </Typography>
+          ) : null}
+        </>
+      ) : (
+        <ThoughtFirstLine
+          text={summary ?? "Untitled"}
+          variant={summary ? "summary" : "title"}
+          emphasized={emphasized}
+          noteId={node.noteId}
+          compactBottom={false}
+        />
+      )}
+    </View>
+  );
+
   return (
     <NoteActionsWrap node={node} onOpenNote={onOpenNote}>
-      {row}
+      {block}
     </NoteActionsWrap>
   );
 }
@@ -641,23 +696,43 @@ const LeafBranch = ({
   guideWidth,
   header,
   nested,
+  elbowAlign = "center",
 }: {
   isLast: boolean;
   lineColor: string;
   guideWidth: number;
   header: React.ReactNode;
   nested?: React.ReactNode;
+  elbowAlign?: "center" | "firstLine";
 }) => (
   <View>
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: elbowAlign === "firstLine" ? "flex-start" : "center",
+      }}
+    >
       <View style={{ width: guideWidth, alignSelf: "stretch" }}>
         <RailSegment
           lineColor={lineColor}
           top={0}
-          bottom={isLast ? "50%" : 0}
+          bottom={
+            isLast && elbowAlign !== "firstLine"
+              ? "50%"
+              : isLast
+                ? undefined
+                : 0
+          }
+          height={
+            isLast && elbowAlign === "firstLine" ? FIRST_LINE_CENTER : undefined
+          }
           guideWidth={guideWidth}
         />
-        <Elbow lineColor={lineColor} guideWidth={guideWidth} />
+        <Elbow
+          lineColor={lineColor}
+          guideWidth={guideWidth}
+          top={elbowAlign === "firstLine" ? FIRST_LINE_CENTER : "50%"}
+        />
       </View>
       <View className="flex-1 min-w-0" style={{ marginLeft: ELBOW_WIDTH }}>
         {header}
@@ -809,6 +884,7 @@ const TreeBranch = React.memo(function TreeBranch({
         isLast={isLast}
         lineColor={ctx.lineColor}
         guideWidth={guideWidth}
+        elbowAlign="firstLine"
         header={
           <ThoughtTitleRow
             node={node}

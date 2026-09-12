@@ -1,10 +1,11 @@
-import React, { memo, useEffect, useMemo, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Typography } from "@/components/ui/typography";
 import { NodeDatum } from "@/features/graph/types/types";
 import { GRAPH_CANVAS_SIZE } from "@/features/graph/constants";
 import { isSyntheticRoot } from "@/features/graph/utils/filterGraphHierarchy";
+import { setGraphInfosScrollToTop } from "@/features/graph/utils/focusGraphNode";
 import { RootLayerCards } from "./rootLayerCards";
 import { SelectedLayerCard } from "./selectedLayerCard";
 
@@ -93,6 +94,23 @@ const GraphInfos = memo(function GraphInfos({
     }
   }, [activeNode, focusedThoughtId, layerRoot, showRootCards]);
 
+  const infosScrollRef = useRef<ScrollView>(null);
+  const infosOffsetRef = useRef(0);
+
+  useEffect(() => {
+    const scrollToTop = (options?: { animated?: boolean }) => {
+      const wasScrolled = infosOffsetRef.current > 12;
+      infosOffsetRef.current = 0;
+      infosScrollRef.current?.scrollTo({
+        y: 0,
+        animated: options?.animated ?? false,
+      });
+      return wasScrolled;
+    };
+    setGraphInfosScrollToTop(scrollToTop);
+    return () => setGraphInfosScrollToTop(null);
+  }, []);
+
   const mountedLayer = showRootCards ? cachedLayer?.root : layerRoot;
   const mountedCurrentId = showRootCards
     ? cachedLayer?.currentNodeId
@@ -110,8 +128,13 @@ const GraphInfos = memo(function GraphInfos({
       }}
     >
       <ScrollView
+        ref={infosScrollRef}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+        onScroll={(event) => {
+          infosOffsetRef.current = event.nativeEvent.contentOffset.y;
+        }}
         contentContainerStyle={{ paddingBottom: 8 }}
       >
         {rootChildren.length > 0 ? (

@@ -1,8 +1,9 @@
-import { Folder, ThoughtWithEmbedding } from "@repo/zod-schemas";
+import { Folder } from "@repo/zod-schemas";
 
 import { NodeDatum } from "../types/types";
 import { buildGraphByFolderWithThoughts } from "./buildGraphByFolder";
 import { isNoteLeafId } from "./mapNoteToLeaf";
+import type { ThoughtGraphRow } from "./mapThoughtToLeaf";
 
 const stampCategoryId = (node: NodeDatum, categoryId: string): NodeDatum => ({
   ...node,
@@ -16,9 +17,9 @@ const stampCategoryId = (node: NodeDatum, categoryId: string): NodeDatum => ({
  */
 export function buildGraphByCategoryFolders(
   folders: Folder[],
-  thoughts: ThoughtWithEmbedding[]
+  thoughts: ThoughtGraphRow[]
 ): NodeDatum {
-  const byCategory = new Map<string, ThoughtWithEmbedding[]>();
+  const byCategory = new Map<string, ThoughtGraphRow[]>();
 
   thoughts.forEach((t) => {
     const categoryId = t.categoryId || "uncategorized";

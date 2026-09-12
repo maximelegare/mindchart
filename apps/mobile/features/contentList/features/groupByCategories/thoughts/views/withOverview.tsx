@@ -1,7 +1,4 @@
 import { View } from "react-native";
-import { Separator } from "@/components/ui/separator";
-import { Typography } from "@/components/ui/typography";
-import { useState } from "react";
 import { PaginationControls } from "@/features/contentList/features/pagination/components/paginationControls";
 import { CategorySection } from "../components/categorySection";
 import { ExpandableThoughtWithOverview } from "../components/expandableThoughtWithOverview";
@@ -17,12 +14,6 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
   const categoryLabels = useCategoryLabelsMap();
   const { page, pageCount, setPage, isFetching } =
     useGroupByCategoriesPagination();
-  const [expandedCardId, setExpandedCardId] = useState<string | null>();
-
-  const handleExpandableCardPress = (id: string) => {
-    if (expandedCardId === id) setExpandedCardId(null);
-    else setExpandedCardId(id);
-  };
 
   if (!parsedData) return null;
 
@@ -42,19 +33,11 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
               id={thought.id}
               noteId={thought.noteId ?? ""}
               title={stripHtml(thought.title)}
+              summary={stripHtml(thought.summary)}
               date={thought.createdAt ?? ""}
-              expanded={expandedCardId === thought.id}
-              onPress={handleExpandableCardPress}
               isChecklist={thought.isCompletable ?? false}
               isCompleted={thought.isCompleted ?? false}
-            >
-              <View className="gap-3 mt-2">
-                <Separator />
-                <Typography variant="p">
-                  {stripHtml(thought.summary)}
-                </Typography>
-              </View>
-            </ExpandableThoughtWithOverview>
+            />
           ))}
         </CategorySection>
       ))}

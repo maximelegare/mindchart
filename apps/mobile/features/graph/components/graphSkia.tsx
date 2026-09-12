@@ -294,7 +294,10 @@ const computeSignature = (root: NodeDatum): string => {
       String(n.children?.length ?? 0),
       n.folderId ?? "",
       n.categoryId ?? "",
-      n.folderPath ?? ""
+      n.folderPath ?? "",
+      n.name ?? "",
+      n.title ?? "",
+      n.summary ?? ""
     );
     n.children?.forEach(walk);
   };

@@ -135,6 +135,56 @@ function setCategoryColorCssScript(css: string): string {
     (document.head || document.documentElement).appendChild(style);
   }
   style.textContent = ${JSON.stringify(css)};
+  (document.head || document.documentElement).appendChild(style);
+  true;
+})();
+`;
+}
+
+function buildEditorThemeCss(colors: {
+  mutedFg: string;
+  surface: string;
+  card: string;
+  graphButtonColor: string;
+  graphButtonFill: string;
+}): string {
+  return `
+    .thought-check-box {
+      border-color: ${colors.mutedFg};
+      background: ${colors.surface};
+    }
+    .thought-check-box svg {
+      color: ${colors.card};
+    }
+    li.thought-item.is-completed[data-category-id="uncategorized"] .thought-check-box,
+    li.thought-item.is-completed:not([data-category-id]) .thought-check-box {
+      background: ${colors.mutedFg};
+      border-color: ${colors.mutedFg};
+    }
+    .thought-dot {
+      background-color: ${colors.mutedFg};
+    }
+    .thought-graph {
+      color: ${colors.graphButtonColor};
+      background: ${colors.graphButtonFill};
+    }
+    .thought-category {
+      color: ${colors.mutedFg};
+    }
+  `;
+}
+
+function setEditorThemeCssScript(css: string): string {
+  return `
+(function () {
+  var id = "mindchart-editor-theme";
+  var style = document.getElementById(id);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    (document.head || document.documentElement).appendChild(style);
+  }
+  style.textContent = ${JSON.stringify(css)};
   true;
 })();
 `;
@@ -305,14 +355,33 @@ function ThoughtsEditorInner(
   showTitlesRef.current = effectiveShowTitles;
   const simplifiedRef = React.useRef(effectiveSimplified);
   simplifiedRef.current = effectiveSimplified;
-  const markerColorRef = React.useRef(hsl("muted-foreground", colorScheme));
-  markerColorRef.current = hsl("muted-foreground", colorScheme);
-  const surfaceColorRef = React.useRef(
-    plain ? hsl("background", colorScheme) : hsl("card", colorScheme)
-  );
-  surfaceColorRef.current = plain
+  const mutedFg = hsl("muted-foreground", colorScheme);
+  const cardColor = hsl("card", colorScheme);
+  const surfaceColor = plain
     ? hsl("background", colorScheme)
     : hsl("card", colorScheme);
+  const graphButtonColor = mutedFg;
+  const graphButtonFill = hsl("primary", colorScheme).replace(
+    /^hsl\((.*)\)$/,
+    "hsla($1, 0.16)"
+  );
+  const markerColorRef = React.useRef(mutedFg);
+  markerColorRef.current = mutedFg;
+  const surfaceColorRef = React.useRef(surfaceColor);
+  surfaceColorRef.current = surfaceColor;
+  const editorThemeCss = React.useMemo(
+    () =>
+      buildEditorThemeCss({
+        mutedFg,
+        surface: surfaceColor,
+        card: cardColor,
+        graphButtonColor,
+        graphButtonFill,
+      }),
+    [cardColor, graphButtonColor, graphButtonFill, mutedFg, surfaceColor]
+  );
+  const editorThemeCssRef = React.useRef(editorThemeCss);
+  editorThemeCssRef.current = editorThemeCss;
   const thoughtPlaceholders = React.useMemo(
     () => getThoughtFieldPlaceholders(),
     []
@@ -509,6 +578,11 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(setCategoryColorCssScript(css));
   }, []);
 
+  const applyEditorTheme = React.useCallback((css: string) => {
+    if (!css || !editorReadyRef.current) return;
+    richRef.current?.injectJavascript(setEditorThemeCssScript(css));
+  }, []);
+
   React.useEffect(() => {
     applyCategoryColors(categoryColorsCss);
   }, [applyCategoryColors, categoryColorsCss]);
@@ -523,6 +597,18 @@ function ThoughtsEditorInner(
       )
     );
   }, []);
+
+  React.useEffect(() => {
+    applyEditorTheme(editorThemeCss);
+    applySimplifiedMode(simplifiedRef.current);
+    applyCategoryColors(categoryColorsCss);
+  }, [
+    applyCategoryColors,
+    applyEditorTheme,
+    applySimplifiedMode,
+    categoryColorsCss,
+    editorThemeCss,
+  ]);
 
   const applyPendingFormat = React.useCallback(
     (items: Array<string | { type?: string }>) => {
@@ -562,6 +648,7 @@ function ThoughtsEditorInner(
     applyEditorFlags(showTitlesRef.current);
     applySimplifiedMode(simplifiedRef.current);
     applyCategoryColors(categoryColorsCssRef.current);
+    applyEditorTheme(editorThemeCssRef.current);
     richRef.current?.registerToolbar((items) => {
       applyPendingFormat(items);
     });
@@ -591,6 +678,7 @@ function ThoughtsEditorInner(
     applyEditorFlags,
     applySimplifiedMode,
     applyCategoryColors,
+    applyEditorTheme,
     applyPendingFormat,
     categoryLabelsRecord,
     readOnly,
@@ -964,17 +1052,11 @@ function ThoughtsEditorInner(
     ]
   );
 
-  const backgroundColor = plain ? "transparent" : hsl("card", colorScheme);
+  const backgroundColor = plain ? "transparent" : cardColor;
   const textColor = hsl("text", colorScheme);
-  const placeholderColor = hsl("muted-foreground", colorScheme);
+  const placeholderColor = mutedFg;
   const errorPlaceholderColor = hsl("foreground-errors", colorScheme);
   const caretColor = hsl("primary", colorScheme);
-  const mutedFg = hsl("muted-foreground", colorScheme);
-  const graphButtonColor = mutedFg;
-  const graphButtonFill = hsl("primary", colorScheme).replace(
-    /^hsl\((.*)\)$/,
-    "hsla($1, 0.16)"
-  );
   const showToolbar = !readOnly;
 
   React.useImperativeHandle(
@@ -1201,13 +1283,13 @@ function ThoughtsEditorInner(
                     border-radius: 3px;
                     position: relative;
                     z-index: 1;
-                    background: ${plain ? hsl("background", colorScheme) : backgroundColor};
+                    background: ${surfaceColor};
                   }
                   .thought-check-box svg {
                     display: none;
                     width: 16px;
                     height: 16px;
-                    color: ${hsl("card", colorScheme)};
+                    color: ${cardColor};
                   }
                   li.thought-item.is-completed .thought-check-box {
                     background: ${mutedFg};

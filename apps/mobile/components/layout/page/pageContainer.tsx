@@ -34,12 +34,17 @@ const { HEADER_HEIGHT, HEADER_OVERLAP, OPTIONS_HEADER_HEIGHT } = LAYOUT_SIZES;
 const SIDE_GUTTER = 4;
 const PAGE_TOP_RADIUS = 24;
 
+export type ScrollToTopOptions = {
+  animated?: boolean;
+};
+
 type PageScrollApi = {
-  scrollToTop: () => void;
+  /** Returns true when the page was scrolled away from the top. */
+  scrollToTop: (options?: ScrollToTopOptions) => boolean;
 };
 
 const PageScrollContext = React.createContext<PageScrollApi>({
-  scrollToTop: () => {},
+  scrollToTop: () => false,
 });
 
 export const usePageScroll = () => React.useContext(PageScrollContext);
@@ -104,6 +109,7 @@ export const PageContainer = ({
   const navigation = useNavigation();
   const animatedScrollRef = React.useRef<Animated.ScrollView>(null);
   const staticScrollRef = React.useRef<ScrollView>(null);
+  const staticScrollOffsetRef = React.useRef(0);
   const { width: windowWidth } = useWindowDimensions();
 
   useScrollToTop(collapsingHeader ? animatedScrollRef : staticScrollRef);
@@ -164,13 +170,21 @@ export const PageContainer = ({
   const previousScrollY = useSharedValue(0);
   const filteredScroll = useSharedValue(0);
 
-  const scrollToTop = React.useCallback(() => {
-    scrollY.value = 0;
-    previousScrollY.value = 0;
-    filteredScroll.value = 0;
-    animatedScrollRef.current?.scrollTo({ y: 0, animated: false });
-    staticScrollRef.current?.scrollTo({ y: 0, animated: false });
-  }, [filteredScroll, previousScrollY, scrollY]);
+  const scrollToTop = React.useCallback(
+    (options?: ScrollToTopOptions) => {
+      const animated = options?.animated ?? false;
+      const offset = Math.max(scrollY.value, staticScrollOffsetRef.current);
+      const wasScrolled = offset > 12;
+      scrollY.value = 0;
+      previousScrollY.value = 0;
+      filteredScroll.value = 0;
+      staticScrollOffsetRef.current = 0;
+      animatedScrollRef.current?.scrollTo({ y: 0, animated });
+      staticScrollRef.current?.scrollTo({ y: 0, animated });
+      return wasScrolled;
+    },
+    [filteredScroll, previousScrollY, scrollY]
+  );
 
   const pageScrollApi = React.useMemo(() => ({ scrollToTop }), [scrollToTop]);
 
@@ -327,6 +341,11 @@ export const PageContainer = ({
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
+                scrollEventThrottle={16}
+                onScroll={(event) => {
+                  staticScrollOffsetRef.current =
+                    event.nativeEvent.contentOffset.y;
+                }}
                 contentContainerStyle={[
                   styles.scrollContent,
                   !optionsHeader && { paddingTop: 24 },

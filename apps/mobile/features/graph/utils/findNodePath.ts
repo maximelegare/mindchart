@@ -2,6 +2,18 @@ import { NodeDatum } from "../types/types";
 
 const isCategoryNodeId = (id: string) => id.startsWith("category-");
 
+export const findNodeById = (
+  root: NodeDatum,
+  targetId: string
+): NodeDatum | null => {
+  if (root.id === targetId) return root;
+  for (const child of root.children ?? []) {
+    const found = findNodeById(child, targetId);
+    if (found) return found;
+  }
+  return null;
+};
+
 export const findNodePath = (
   root: NodeDatum,
   targetId: string

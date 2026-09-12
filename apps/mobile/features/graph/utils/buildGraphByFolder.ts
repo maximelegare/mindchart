@@ -3,10 +3,10 @@ import {
   getFolderIdsFromPath,
   getParentFolderPath,
 } from "@repo/sqlite";
-import { Folder, Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
+import { Folder, Note } from "@repo/zod-schemas";
 
 import { NodeDatum } from "../types/types";
-import { mapThoughtToLeaf } from "./mapThoughtToLeaf";
+import { mapThoughtToLeaf, type ThoughtGraphRow } from "./mapThoughtToLeaf";
 import { isNoteLeafId, mapNoteToLeaf } from "./mapNoteToLeaf";
 
 /** Folder pack ids stay `folder-…` so UI helpers can detect them. */
@@ -188,7 +188,7 @@ export function buildGraphByFolder(
 /** Category mode helper: folder tree → thought leaves. */
 export function buildGraphByFolderWithThoughts(
   folders: Folder[],
-  thoughts: ThoughtWithEmbedding[],
+  thoughts: ThoughtGraphRow[],
   options?: BuildGraphByFolderOptions
 ): NodeDatum {
   return buildFolderHierarchy(folders, thoughts.map(mapThoughtToLeaf), options);
