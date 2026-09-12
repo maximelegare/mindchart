@@ -6,7 +6,7 @@ import {
   GRAPH_CACHE_VERSION,
   stripEmbeddingsFromCache,
 } from "../utils/parseGraphData";
-import { Folder, Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
+import { Folder, Note } from "@repo/zod-schemas";
 import {
   noteShowsThoughtTitles,
   type ThoughtGraphRow,
@@ -21,13 +21,13 @@ import { stripHtml } from "@/components/ui/thoughtsEditor";
 export type { NodeDatum };
 
 /** Fallback when the notes query fails to parse — one note per distinct noteId. */
-const deriveNotesFromThoughts = (thoughts: ThoughtWithEmbedding[]): Note[] => {
+const deriveNotesFromThoughts = (thoughts: ThoughtGraphRow[]): Note[] => {
   const byNote = new Map<string, Note>();
   for (const thought of thoughts) {
     if (!thought.noteId || byNote.has(thought.noteId)) continue;
     byNote.set(thought.noteId, {
       id: thought.noteId,
-      title: stripHtml(thought.title) || "Untitled",
+      title: stripHtml(thought.title ?? "") || "Untitled",
       summary: stripHtml(thought.summary || ""),
       rawText: "",
       folderId: thought.folderId ?? undefined,
@@ -38,7 +38,7 @@ const deriveNotesFromThoughts = (thoughts: ThoughtWithEmbedding[]): Note[] => {
   return Array.from(byNote.values());
 };
 
-const thoughtIdsByNoteIdFrom = (thoughts: ThoughtWithEmbedding[]) => {
+const thoughtIdsByNoteIdFrom = (thoughts: ThoughtGraphRow[]) => {
   const map = new Map<string, string[]>();
   for (const thought of thoughts) {
     if (!thought.noteId) continue;
@@ -100,7 +100,7 @@ export const useGraph = () => {
   const persistedKeyRef = useRef<string | null>(null);
 
   const typedThoughts = useMemo(
-    () => (thoughts ?? []) as ThoughtWithEmbedding[],
+    () => (thoughts ?? []) as ThoughtGraphRow[],
     [thoughts]
   );
   const notes = useMemo(() => {
@@ -161,9 +161,7 @@ export const useGraph = () => {
         .join(","),
       typedThoughts
         .map((t) => {
-          const showTitles = noteShowsThoughtTitles(
-            (t as ThoughtGraphRow).showTitles
-          );
+          const showTitles = noteShowsThoughtTitles(t.showTitles);
           return `${t.thoughtId}:${t.folderId ?? ""}:${t.categoryId ?? ""}:${t.folderPath ?? ""}:${t.title}:${showTitles}`;
         })
         .sort()
