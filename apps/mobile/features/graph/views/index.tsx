@@ -9,6 +9,7 @@ import GraphInfos from "../components/graphInfos/graphInfos";
 import { NodeDatum } from "../types/types";
 import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { filterGraphHierarchy } from "../utils/filterGraphHierarchy";
+import { findNodeById, findNodePath } from "../utils/findNodePath";
 
 export const GraphFeature = ({
   focusedThoughtId,
@@ -57,6 +58,21 @@ export const GraphFeature = ({
   useEffect(() => {
     setSelection({ active: null, parent: null });
   }, [renderMode, selectedFolderId, selectedCategoryId]);
+
+  // Clicks pass layout-cache snapshots; replace them with the live tree node
+  // so title/summary edits (and the Titles toggle) show up immediately.
+  useEffect(() => {
+    if (!hierarchy || !selection.active) return;
+    const fresh = findNodeById(hierarchy, selection.active.id);
+    if (!fresh) {
+      setSelection({ active: null, parent: null });
+      return;
+    }
+    if (fresh === selection.active) return;
+    const path = findNodePath(hierarchy, fresh.id);
+    const parent = path.length > 1 ? path[path.length - 2] : null;
+    setSelection({ active: fresh, parent });
+  }, [hierarchy, selection.active]);
 
   const activeNode = selection.active ?? hierarchy;
 

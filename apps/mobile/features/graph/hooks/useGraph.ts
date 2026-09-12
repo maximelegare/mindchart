@@ -7,6 +7,10 @@ import {
   stripEmbeddingsFromCache,
 } from "../utils/parseGraphData";
 import { Folder, Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
+import {
+  noteShowsThoughtTitles,
+  type ThoughtGraphRow,
+} from "../utils/mapThoughtToLeaf";
 
 import { useEffect, useMemo, useRef } from "react";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
@@ -156,10 +160,12 @@ export const useGraph = () => {
         .sort()
         .join(","),
       typedThoughts
-        .map(
-          (t) =>
-            `${t.thoughtId}:${t.folderId ?? ""}:${t.categoryId ?? ""}:${t.folderPath ?? ""}`
-        )
+        .map((t) => {
+          const showTitles = noteShowsThoughtTitles(
+            (t as ThoughtGraphRow).showTitles
+          );
+          return `${t.thoughtId}:${t.folderId ?? ""}:${t.categoryId ?? ""}:${t.folderPath ?? ""}:${t.title}:${showTitles}`;
+        })
         .sort()
         .join(","),
       folderList
