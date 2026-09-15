@@ -3,8 +3,7 @@ import { seedFormatNote } from "./utils/seedFormatNote";
 import { useGenerateLocalEmbeddingsService } from "../features/embeddings/services/useGenerateLocalEmbeddingService";
 import { getOPDatabase, seedDatabaseQuery } from "@repo/sqlite";
 import { ServiceResponse } from "@/api/utils/responseObject";
-import seedNotes from "./data/mock.json" with { type: "json" };
-import seedFolders from "./data/mock_folders.json" with { type: "json" };
+import { seedFolders, seedNotes } from "./parsedSeedData";
 
 const useSeedDatabaseService = () => {
   const { generateEmbeddings } = useGenerateLocalEmbeddingsService();
@@ -18,8 +17,8 @@ const useSeedDatabaseService = () => {
 
     const db = getOPDatabase();
     const formatedNotes = seedNotes
-      .map((note) => seedFormatNote(note))
-      .splice(0, numberOfNotes);
+      .slice(0, numberOfNotes)
+      .map((note) => seedFormatNote(note));
     const formatedStructuredData = formatedNotes.reduce(
       (acc, { note, thoughts }) => {
         acc.notes.push(note);

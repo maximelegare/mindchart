@@ -1,0 +1,2416 @@
+{
+  "folders": [
+    {
+      "id": "folder_work",
+      "path": "/work",
+      "label": "Work"
+    },
+    {
+      "id": "folder_work_projects",
+      "path": "/work/projects",
+      "label": "Projects"
+    },
+    {
+      "id": "folder_work_projects_mindchart",
+      "path": "/work/projects/mindchart",
+      "label": "MindChart"
+    },
+    {
+      "id": "folder_work_projects_web_projects",
+      "path": "/work/projects/web_projects",
+      "label": "Web Projects"
+    },
+    {
+      "id": "folder_work_projects_side_projects",
+      "path": "/work/projects/side_projects",
+      "label": "Side Projects"
+    },
+    {
+      "id": "folder_work_career",
+      "path": "/work/career",
+      "label": "Career"
+    },
+    {
+      "id": "folder_work_career_job_search",
+      "path": "/work/career/job_search",
+      "label": "Job Search"
+    },
+    {
+      "id": "folder_work_career_skills",
+      "path": "/work/career/skills",
+      "label": "Skills"
+    },
+    {
+      "id": "folder_work_career_networking",
+      "path": "/work/career/networking",
+      "label": "Networking"
+    },
+    {
+      "id": "folder_work_meetings",
+      "path": "/work/meetings",
+      "label": "Meetings"
+    },
+    {
+      "id": "folder_work_meetings_planning",
+      "path": "/work/meetings/planning",
+      "label": "Planning"
+    },
+    {
+      "id": "folder_work_meetings_one-on-ones",
+      "path": "/work/meetings/one-on-ones",
+      "label": "One-on-Ones"
+    },
+    {
+      "id": "folder_work_meetings_reviews",
+      "path": "/work/meetings/reviews",
+      "label": "Reviews"
+    },
+    {
+      "id": "folder_work_admin",
+      "path": "/work/admin",
+      "label": "Work Admin"
+    },
+    {
+      "id": "folder_work_admin_email",
+      "path": "/work/admin/email",
+      "label": "Email"
+    },
+    {
+      "id": "folder_work_admin_documentation",
+      "path": "/work/admin/documentation",
+      "label": "Documentation"
+    },
+    {
+      "id": "folder_work_admin_scheduling",
+      "path": "/work/admin/scheduling",
+      "label": "Scheduling"
+    },
+    {
+      "id": "folder_personal",
+      "path": "/personal",
+      "label": "Personal"
+    },
+    {
+      "id": "folder_personal_learning",
+      "path": "/personal/learning",
+      "label": "Learning"
+    },
+    {
+      "id": "folder_personal_learning_programming",
+      "path": "/personal/learning/programming",
+      "label": "Programming"
+    },
+    {
+      "id": "folder_personal_learning_reading",
+      "path": "/personal/learning/reading",
+      "label": "Reading"
+    },
+    {
+      "id": "folder_personal_learning_courses",
+      "path": "/personal/learning/courses",
+      "label": "Courses"
+    },
+    {
+      "id": "folder_personal_hobbies",
+      "path": "/personal/hobbies",
+      "label": "Hobbies"
+    },
+    {
+      "id": "folder_personal_hobbies_photography",
+      "path": "/personal/hobbies/photography",
+      "label": "Photography"
+    },
+    {
+      "id": "folder_personal_hobbies_music",
+      "path": "/personal/hobbies/music",
+      "label": "Music"
+    },
+    {
+      "id": "folder_personal_hobbies_gaming",
+      "path": "/personal/hobbies/gaming",
+      "label": "Gaming"
+    },
+    {
+      "id": "folder_personal_creativity",
+      "path": "/personal/creativity",
+      "label": "Creativity"
+    },
+    {
+      "id": "folder_personal_creativity_writing",
+      "path": "/personal/creativity/writing",
+      "label": "Writing"
+    },
+    {
+      "id": "folder_personal_creativity_design",
+      "path": "/personal/creativity/design",
+      "label": "Design"
+    },
+    {
+      "id": "folder_personal_creativity_ideas",
+      "path": "/personal/creativity/ideas",
+      "label": "Ideas"
+    },
+    {
+      "id": "folder_personal_routines",
+      "path": "/personal/routines",
+      "label": "Routines"
+    },
+    {
+      "id": "folder_personal_routines_morning",
+      "path": "/personal/routines/morning",
+      "label": "Morning"
+    },
+    {
+      "id": "folder_personal_routines_evening",
+      "path": "/personal/routines/evening",
+      "label": "Evening"
+    },
+    {
+      "id": "folder_personal_routines_weekly_planning",
+      "path": "/personal/routines/weekly_planning",
+      "label": "Weekly Planning"
+    },
+    {
+      "id": "folder_finances",
+      "path": "/finances",
+      "label": "Finances"
+    },
+    {
+      "id": "folder_finances_budget",
+      "path": "/finances/budget",
+      "label": "Budget"
+    },
+    {
+      "id": "folder_finances_budget_monthly_budget",
+      "path": "/finances/budget/monthly_budget",
+      "label": "Monthly Budget"
+    },
+    {
+      "id": "folder_finances_budget_subscriptions",
+      "path": "/finances/budget/subscriptions",
+      "label": "Subscriptions"
+    },
+    {
+      "id": "folder_finances_budget_groceries",
+      "path": "/finances/budget/groceries",
+      "label": "Groceries"
+    },
+    {
+      "id": "folder_finances_saving",
+      "path": "/finances/saving",
+      "label": "Saving"
+    },
+    {
+      "id": "folder_finances_saving_emergency_fund",
+      "path": "/finances/saving/emergency_fund",
+      "label": "Emergency Fund"
+    },
+    {
+      "id": "folder_finances_saving_short_term",
+      "path": "/finances/saving/short_term",
+      "label": "Short Term"
+    },
+    {
+      "id": "folder_finances_saving_long_term",
+      "path": "/finances/saving/long_term",
+      "label": "Long Term"
+    },
+    {
+      "id": "folder_finances_investing",
+      "path": "/finances/investing",
+      "label": "Investing"
+    },
+    {
+      "id": "folder_finances_investing_retirement",
+      "path": "/finances/investing/retirement",
+      "label": "Retirement"
+    },
+    {
+      "id": "folder_finances_investing_index_funds",
+      "path": "/finances/investing/index_funds",
+      "label": "Index Funds"
+    },
+    {
+      "id": "folder_finances_investing_research",
+      "path": "/finances/investing/research",
+      "label": "Research"
+    },
+    {
+      "id": "folder_finances_admin",
+      "path": "/finances/admin",
+      "label": "Financial Admin"
+    },
+    {
+      "id": "folder_finances_admin_bills",
+      "path": "/finances/admin/bills",
+      "label": "Bills"
+    },
+    {
+      "id": "folder_finances_admin_taxes",
+      "path": "/finances/admin/taxes",
+      "label": "Taxes"
+    },
+    {
+      "id": "folder_finances_admin_documents",
+      "path": "/finances/admin/documents",
+      "label": "Documents"
+    },
+    {
+      "id": "folder_home",
+      "path": "/home",
+      "label": "Home"
+    },
+    {
+      "id": "folder_home_maintenance",
+      "path": "/home/maintenance",
+      "label": "Maintenance"
+    },
+    {
+      "id": "folder_home_maintenance_repairs",
+      "path": "/home/maintenance/repairs",
+      "label": "Repairs"
+    },
+    {
+      "id": "folder_home_maintenance_cleaning",
+      "path": "/home/maintenance/cleaning",
+      "label": "Cleaning"
+    },
+    {
+      "id": "folder_home_maintenance_appliances",
+      "path": "/home/maintenance/appliances",
+      "label": "Appliances"
+    },
+    {
+      "id": "folder_home_garden",
+      "path": "/home/garden",
+      "label": "Garden"
+    },
+    {
+      "id": "folder_home_garden_plants",
+      "path": "/home/garden/plants",
+      "label": "Plants"
+    },
+    {
+      "id": "folder_home_garden_seasonal_work",
+      "path": "/home/garden/seasonal_work",
+      "label": "Seasonal Work"
+    },
+    {
+      "id": "folder_home_garden_tools",
+      "path": "/home/garden/tools",
+      "label": "Tools"
+    },
+    {
+      "id": "folder_home_organization",
+      "path": "/home/organization",
+      "label": "Organization"
+    },
+    {
+      "id": "folder_home_organization_storage",
+      "path": "/home/organization/storage",
+      "label": "Storage"
+    },
+    {
+      "id": "folder_home_organization_decluttering",
+      "path": "/home/organization/decluttering",
+      "label": "Decluttering"
+    },
+    {
+      "id": "folder_home_organization_furniture",
+      "path": "/home/organization/furniture",
+      "label": "Furniture"
+    },
+    {
+      "id": "folder_home_improvements",
+      "path": "/home/improvements",
+      "label": "Improvements"
+    },
+    {
+      "id": "folder_home_improvements_kitchen",
+      "path": "/home/improvements/kitchen",
+      "label": "Kitchen"
+    },
+    {
+      "id": "folder_home_improvements_bedroom",
+      "path": "/home/improvements/bedroom",
+      "label": "Bedroom"
+    },
+    {
+      "id": "folder_home_improvements_workspace",
+      "path": "/home/improvements/workspace",
+      "label": "Workspace"
+    },
+    {
+      "id": "folder_health",
+      "path": "/health",
+      "label": "Health"
+    },
+    {
+      "id": "folder_health_fitness",
+      "path": "/health/fitness",
+      "label": "Fitness"
+    },
+    {
+      "id": "folder_health_fitness_strength",
+      "path": "/health/fitness/strength",
+      "label": "Strength"
+    },
+    {
+      "id": "folder_health_fitness_cardio",
+      "path": "/health/fitness/cardio",
+      "label": "Cardio"
+    },
+    {
+      "id": "folder_health_fitness_mobility",
+      "path": "/health/fitness/mobility",
+      "label": "Mobility"
+    },
+    {
+      "id": "folder_health_nutrition",
+      "path": "/health/nutrition",
+      "label": "Nutrition"
+    },
+    {
+      "id": "folder_health_nutrition_meal_planning",
+      "path": "/health/nutrition/meal_planning",
+      "label": "Meal Planning"
+    },
+    {
+      "id": "folder_health_nutrition_recipes",
+      "path": "/health/nutrition/recipes",
+      "label": "Recipes"
+    },
+    {
+      "id": "folder_health_nutrition_groceries",
+      "path": "/health/nutrition/groceries",
+      "label": "Groceries"
+    },
+    {
+      "id": "folder_health_wellness",
+      "path": "/health/wellness",
+      "label": "Wellness"
+    },
+    {
+      "id": "folder_health_wellness_sleep",
+      "path": "/health/wellness/sleep",
+      "label": "Sleep"
+    },
+    {
+      "id": "folder_health_wellness_stress",
+      "path": "/health/wellness/stress",
+      "label": "Stress"
+    },
+    {
+      "id": "folder_health_wellness_recovery",
+      "path": "/health/wellness/recovery",
+      "label": "Recovery"
+    },
+    {
+      "id": "folder_health_habits",
+      "path": "/health/habits",
+      "label": "Habits"
+    },
+    {
+      "id": "folder_health_habits_tracking",
+      "path": "/health/habits/tracking",
+      "label": "Tracking"
+    },
+    {
+      "id": "folder_health_habits_routine",
+      "path": "/health/habits/routine",
+      "label": "Routine"
+    },
+    {
+      "id": "folder_health_habits_goals",
+      "path": "/health/habits/goals",
+      "label": "Goals"
+    },
+    {
+      "id": "folder_family",
+      "path": "/family",
+      "label": "Family"
+    },
+    {
+      "id": "folder_family_relationships",
+      "path": "/family/relationships",
+      "label": "Relationships"
+    },
+    {
+      "id": "folder_family_relationships_partner",
+      "path": "/family/relationships/partner",
+      "label": "Partner"
+    },
+    {
+      "id": "folder_family_relationships_parents",
+      "path": "/family/relationships/parents",
+      "label": "Parents"
+    },
+    {
+      "id": "folder_family_relationships_siblings",
+      "path": "/family/relationships/siblings",
+      "label": "Siblings"
+    },
+    {
+      "id": "folder_family_events",
+      "path": "/family/events",
+      "label": "Events"
+    },
+    {
+      "id": "folder_family_events_birthdays",
+      "path": "/family/events/birthdays",
+      "label": "Birthdays"
+    },
+    {
+      "id": "folder_family_events_holidays",
+      "path": "/family/events/holidays",
+      "label": "Holidays"
+    },
+    {
+      "id": "folder_family_events_gatherings",
+      "path": "/family/events/gatherings",
+      "label": "Gatherings"
+    },
+    {
+      "id": "folder_family_planning",
+      "path": "/family/planning",
+      "label": "Family Planning"
+    },
+    {
+      "id": "folder_family_planning_trips",
+      "path": "/family/planning/trips",
+      "label": "Trips"
+    },
+    {
+      "id": "folder_family_planning_household",
+      "path": "/family/planning/household",
+      "label": "Household"
+    },
+    {
+      "id": "folder_family_planning_shared_plans",
+      "path": "/family/planning/shared_plans",
+      "label": "Shared Plans"
+    },
+    {
+      "id": "folder_family_memories",
+      "path": "/family/memories",
+      "label": "Memories"
+    },
+    {
+      "id": "folder_family_memories_photos",
+      "path": "/family/memories/photos",
+      "label": "Photos"
+    },
+    {
+      "id": "folder_family_memories_stories",
+      "path": "/family/memories/stories",
+      "label": "Stories"
+    },
+    {
+      "id": "folder_family_memories_milestones",
+      "path": "/family/memories/milestones",
+      "label": "Milestones"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Design Feedback Session",
+      "summary": "Collecting feedback on the current interface and deciding which usability issues deserve attention first.",
+      "folderId": "folder_work",
+      "thoughts": [
+        {
+          "title": "Main Source of Friction",
+          "summary": "The current process introduces an unnecessary step that makes the task slower or harder to complete.",
+          "category": "problem",
+          "semanticLabel": "Process friction"
+        },
+        {
+          "title": "Create a Short Checklist",
+          "summary": "Write down the next few concrete steps so the task can be completed without repeatedly planning it.",
+          "category": "action",
+          "semanticLabel": "Next action"
+        }
+      ]
+    },
+    {
+      "title": "Organizing Work Inbox",
+      "summary": "Sorting messages and loose requests into actionable items, references, and items that can be archived.",
+      "folderId": "folder_work_projects",
+      "thoughts": [
+        {
+          "title": "Create a Short Checklist",
+          "summary": "Write down the next few concrete steps so the task can be completed without repeatedly planning it.",
+          "category": "action",
+          "semanticLabel": "Next action"
+        },
+        {
+          "title": "Recurring Issue",
+          "summary": "This keeps appearing because the underlying workflow does not address the source of the problem.",
+          "category": "problem",
+          "semanticLabel": "Recurring problem"
+        }
+      ]
+    },
+    {
+      "title": "Organizing Work Inbox — Notes",
+      "summary": "Sorting messages and loose requests into actionable items, references, and items that can be archived.",
+      "folderId": "folder_work_projects_mindchart",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Behavioral Signal",
+          "summary": "The way this situation unfolds suggests that the surrounding process influences the outcome.",
+          "category": "observation",
+          "semanticLabel": "Behavior"
+        }
+      ]
+    },
+    {
+      "title": "Organizing Work Inbox — Notes",
+      "summary": "Sorting messages and loose requests into actionable items, references, and items that can be archived.",
+      "folderId": "folder_work_projects_web_projects",
+      "thoughts": [
+        {
+          "title": "Potential Bottleneck",
+          "summary": "This step could become a bottleneck as the amount of work increases.",
+          "category": "problem",
+          "semanticLabel": "Bottleneck"
+        },
+        {
+          "title": "Likely Explanation",
+          "summary": "One possible explanation is that the surrounding conditions are influencing the result more than expected.",
+          "category": "hypothesis",
+          "semanticLabel": "Working hypothesis"
+        }
+      ]
+    },
+    {
+      "title": "Improving the Project Workflow",
+      "summary": "Identifying places where handoffs and repeated manual steps are slowing the team down.",
+      "folderId": "folder_work_projects_side_projects",
+      "thoughts": [
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        },
+        {
+          "title": "Current State",
+          "summary": "The available information confirms that this is the current situation and can be used as a baseline.",
+          "category": "fact",
+          "semanticLabel": "Known fact"
+        }
+      ]
+    },
+    {
+      "title": "Preparing a Portfolio Update",
+      "summary": "Collecting recent projects and identifying which work best demonstrates current skills.",
+      "folderId": "folder_work_career",
+      "thoughts": [
+        {
+          "title": "Possible Long-Term Effect",
+          "summary": "If the current pattern continues, it may create a larger effect over time.",
+          "category": "hypothesis",
+          "semanticLabel": "Long-term hypothesis"
+        },
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        }
+      ]
+    },
+    {
+      "title": "Career Development Plan",
+      "summary": "Mapping current skills to longer-term career goals and identifying practical areas for improvement.",
+      "folderId": "folder_work_career_job_search",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Behavioral Signal",
+          "summary": "The way this situation unfolds suggests that the surrounding process influences the outcome.",
+          "category": "observation",
+          "semanticLabel": "Behavior"
+        }
+      ]
+    },
+    {
+      "title": "Design Feedback Session — Notes",
+      "summary": "Collecting feedback on the current interface and deciding which usability issues deserve attention first.",
+      "folderId": "folder_work_career_skills",
+      "thoughts": [
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        },
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        }
+      ]
+    },
+    {
+      "title": "Quarterly Goals Review",
+      "summary": "Checking progress against professional goals and adjusting priorities based on recent results.",
+      "folderId": "folder_work_career_networking",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Is This Sustainable?",
+          "summary": "The current approach works for now, but it is unclear whether it will remain practical over time.",
+          "category": "question",
+          "semanticLabel": "Sustainability"
+        }
+      ]
+    },
+    {
+      "title": "Preparing for a Team Meeting",
+      "summary": "Gathering decisions, questions, and follow-ups that should be discussed during the next meeting.",
+      "folderId": "folder_work_meetings",
+      "thoughts": [
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        },
+        {
+          "title": "Possible Long-Term Effect",
+          "summary": "If the current pattern continues, it may create a larger effect over time.",
+          "category": "hypothesis",
+          "semanticLabel": "Long-term hypothesis"
+        }
+      ]
+    },
+    {
+      "title": "Weekly Work Review",
+      "summary": "Looking back at completed tasks, unresolved issues, and the priorities that should carry into next week.",
+      "folderId": "folder_work_meetings_planning",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        }
+      ]
+    },
+    {
+      "title": "Learning a New Development Tool",
+      "summary": "Taking notes while experimenting with a tool that could improve the development workflow.",
+      "folderId": "folder_work_meetings_one-on-ones",
+      "thoughts": [
+        {
+          "title": "Reference Detail",
+          "summary": "This detail is useful as a reference when comparing future changes.",
+          "category": "fact",
+          "semanticLabel": "Reference"
+        },
+        {
+          "title": "Cause to Test",
+          "summary": "This factor may be contributing to the issue and could be tested separately.",
+          "category": "hypothesis",
+          "semanticLabel": "Causal hypothesis"
+        }
+      ]
+    },
+    {
+      "title": "Tracking Release Risks",
+      "summary": "Reviewing potential blockers and dependencies that could affect the next milestone.",
+      "folderId": "folder_work_meetings_reviews",
+      "thoughts": [
+        {
+          "title": "Small Improvement",
+          "summary": "A minor change appears to make the experience smoother than before.",
+          "category": "observation",
+          "semanticLabel": "Improvement"
+        },
+        {
+          "title": "Reusable System",
+          "summary": "Turning this into a reusable pattern could reduce repeated work in the future.",
+          "category": "idea",
+          "semanticLabel": "System design"
+        }
+      ]
+    },
+    {
+      "title": "Quarterly Goals Review — Notes",
+      "summary": "Checking progress against professional goals and adjusting priorities based on recent results.",
+      "folderId": "folder_work_admin",
+      "thoughts": [
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        },
+        {
+          "title": "Create a Short Checklist",
+          "summary": "Write down the next few concrete steps so the task can be completed without repeatedly planning it.",
+          "category": "action",
+          "semanticLabel": "Next action"
+        }
+      ]
+    },
+    {
+      "title": "Preparing a Technical Proposal",
+      "summary": "Organizing the requirements, trade-offs, and implementation options before presenting a recommendation.",
+      "folderId": "folder_work_admin_email",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Reference Detail",
+          "summary": "This detail is useful as a reference when comparing future changes.",
+          "category": "fact",
+          "semanticLabel": "Reference"
+        }
+      ]
+    },
+    {
+      "title": "Project Retrospective",
+      "summary": "Reflecting on what worked well, what created friction, and what should change in the next cycle.",
+      "folderId": "folder_work_admin_documentation",
+      "thoughts": [
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        },
+        {
+          "title": "Likely Explanation",
+          "summary": "One possible explanation is that the surrounding conditions are influencing the result more than expected.",
+          "category": "hypothesis",
+          "semanticLabel": "Working hypothesis"
+        }
+      ]
+    },
+    {
+      "title": "Tracking Release Risks — Notes",
+      "summary": "Reviewing potential blockers and dependencies that could affect the next milestone.",
+      "folderId": "folder_work_admin_scheduling",
+      "thoughts": [
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        },
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        }
+      ]
+    },
+    {
+      "title": "Planning a Focused Reading Session",
+      "summary": "Finding a practical way to read consistently without turning it into another obligation.",
+      "folderId": "folder_personal",
+      "thoughts": [
+        {
+          "title": "Useful Perspective",
+          "summary": "Looking at the situation from a different perspective changes which option seems most practical.",
+          "category": "insight",
+          "semanticLabel": "New perspective"
+        },
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        }
+      ]
+    },
+    {
+      "title": "Improving My Morning Routine",
+      "summary": "Reflecting on which parts of the morning help create a calm and productive start.",
+      "folderId": "folder_personal_learning",
+      "thoughts": [
+        {
+          "title": "Key Insight",
+          "summary": "The most useful takeaway is that a simpler structure makes the important decision easier to see.",
+          "category": "insight",
+          "semanticLabel": "Key insight"
+        },
+        {
+          "title": "Potential Bottleneck",
+          "summary": "This step could become a bottleneck as the amount of work increases.",
+          "category": "problem",
+          "semanticLabel": "Bottleneck"
+        }
+      ]
+    },
+    {
+      "title": "Organizing Inspiration",
+      "summary": "Collecting useful references and deciding how to organize them so they remain easy to revisit.",
+      "folderId": "folder_personal_learning_programming",
+      "thoughts": [
+        {
+          "title": "Potential Purchase",
+          "summary": "This could be useful, but the need and value should be checked before buying it.",
+          "category": "item",
+          "semanticLabel": "Purchase item"
+        },
+        {
+          "title": "Something to Prepare",
+          "summary": "This belongs on the list of things to have ready before the next step.",
+          "category": "item",
+          "semanticLabel": "Preparation item"
+        }
+      ]
+    },
+    {
+      "title": "Reading List Review",
+      "summary": "Sorting books and articles by what is most relevant to current interests and goals.",
+      "folderId": "folder_personal_learning_reading",
+      "thoughts": [
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        },
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        }
+      ]
+    },
+    {
+      "title": "Improving My Morning Routine — Notes",
+      "summary": "Reflecting on which parts of the morning help create a calm and productive start.",
+      "folderId": "folder_personal_learning_courses",
+      "thoughts": [
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        },
+        {
+          "title": "Behavioral Signal",
+          "summary": "The way this situation unfolds suggests that the surrounding process influences the outcome.",
+          "category": "observation",
+          "semanticLabel": "Behavior"
+        }
+      ]
+    },
+    {
+      "title": "Decluttering Digital Files",
+      "summary": "Planning a cleanup of old downloads, screenshots, and project files that are no longer useful.",
+      "folderId": "folder_personal_hobbies",
+      "thoughts": [
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        },
+        {
+          "title": "Familiar Feeling",
+          "summary": "The situation brings back a familiar feeling that helps explain why it remains memorable.",
+          "category": "memory",
+          "semanticLabel": "Emotional memory"
+        }
+      ]
+    },
+    {
+      "title": "Creative Ideas Notebook",
+      "summary": "Capturing ideas for visual, written, and experimental projects that could be developed later.",
+      "folderId": "folder_personal_hobbies_photography",
+      "thoughts": [
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        },
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        }
+      ]
+    },
+    {
+      "title": "Weekend Project Ideas",
+      "summary": "Collecting small projects that would be enjoyable to work on without creating a large ongoing commitment.",
+      "folderId": "folder_personal_hobbies_music",
+      "thoughts": [
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        },
+        {
+          "title": "Useful Reference",
+          "summary": "This is something worth keeping available because it may be useful again later.",
+          "category": "item",
+          "semanticLabel": "Reference item"
+        }
+      ]
+    },
+    {
+      "title": "Building a Sustainable Routine",
+      "summary": "Considering which habits are realistic enough to maintain during busy periods.",
+      "folderId": "folder_personal_hobbies_gaming",
+      "thoughts": [
+        {
+          "title": "Meaningful Moment",
+          "summary": "The moment is worth preserving because it connects to a larger personal story.",
+          "category": "memory",
+          "semanticLabel": "Personal memory"
+        },
+        {
+          "title": "Small Improvement",
+          "summary": "A minor change appears to make the experience smoother than before.",
+          "category": "observation",
+          "semanticLabel": "Improvement"
+        }
+      ]
+    },
+    {
+      "title": "New Hobby Exploration",
+      "summary": "Comparing a few hobbies that could provide a balance between learning and relaxation.",
+      "folderId": "folder_personal_creativity",
+      "thoughts": [
+        {
+          "title": "Small Improvement",
+          "summary": "A minor change appears to make the experience smoother than before.",
+          "category": "observation",
+          "semanticLabel": "Improvement"
+        },
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        }
+      ]
+    },
+    {
+      "title": "Trying a New Creative Medium",
+      "summary": "Exploring whether a different medium could make creative experimentation feel more engaging.",
+      "folderId": "folder_personal_creativity_writing",
+      "thoughts": [
+        {
+          "title": "Main Source of Friction",
+          "summary": "The current process introduces an unnecessary step that makes the task slower or harder to complete.",
+          "category": "problem",
+          "semanticLabel": "Process friction"
+        },
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        }
+      ]
+    },
+    {
+      "title": "Planning a Low-Key Weekend",
+      "summary": "Listing relaxing activities that do not require extensive preparation or scheduling.",
+      "folderId": "folder_personal_creativity_design",
+      "thoughts": [
+        {
+          "title": "Small Improvement",
+          "summary": "A minor change appears to make the experience smoother than before.",
+          "category": "observation",
+          "semanticLabel": "Improvement"
+        },
+        {
+          "title": "Behavioral Signal",
+          "summary": "The way this situation unfolds suggests that the surrounding process influences the outcome.",
+          "category": "observation",
+          "semanticLabel": "Behavior"
+        }
+      ]
+    },
+    {
+      "title": "Trying a New Creative Medium — Notes",
+      "summary": "Exploring whether a different medium could make creative experimentation feel more engaging.",
+      "folderId": "folder_personal_creativity_ideas",
+      "thoughts": [
+        {
+          "title": "Create a Short Checklist",
+          "summary": "Write down the next few concrete steps so the task can be completed without repeatedly planning it.",
+          "category": "action",
+          "semanticLabel": "Next action"
+        },
+        {
+          "title": "Missing Information",
+          "summary": "The decision is harder because an important piece of information is not currently visible.",
+          "category": "problem",
+          "semanticLabel": "Information gap"
+        }
+      ]
+    },
+    {
+      "title": "Creative Ideas Notebook — Notes",
+      "summary": "Capturing ideas for visual, written, and experimental projects that could be developed later.",
+      "folderId": "folder_personal_routines",
+      "thoughts": [
+        {
+          "title": "Recurring Issue",
+          "summary": "This keeps appearing because the underlying workflow does not address the source of the problem.",
+          "category": "problem",
+          "semanticLabel": "Recurring problem"
+        },
+        {
+          "title": "Something to Prepare",
+          "summary": "This belongs on the list of things to have ready before the next step.",
+          "category": "item",
+          "semanticLabel": "Preparation item"
+        }
+      ]
+    },
+    {
+      "title": "Trying a New Creative Medium — Notes",
+      "summary": "Exploring whether a different medium could make creative experimentation feel more engaging.",
+      "folderId": "folder_personal_routines_morning",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Review This Next Week",
+          "summary": "Set aside time to check whether the change produced the expected result.",
+          "category": "action",
+          "semanticLabel": "Follow-up"
+        }
+      ]
+    },
+    {
+      "title": "Planning a Low-Key Weekend — Notes",
+      "summary": "Listing relaxing activities that do not require extensive preparation or scheduling.",
+      "folderId": "folder_personal_routines_evening",
+      "thoughts": [
+        {
+          "title": "What Is the Trade-Off?",
+          "summary": "The best choice depends on whether simplicity, flexibility, or speed matters most.",
+          "category": "question",
+          "semanticLabel": "Decision trade-off"
+        },
+        {
+          "title": "Potential Bottleneck",
+          "summary": "This step could become a bottleneck as the amount of work increases.",
+          "category": "problem",
+          "semanticLabel": "Bottleneck"
+        }
+      ]
+    },
+    {
+      "title": "Trying a New Creative Medium — Notes",
+      "summary": "Exploring whether a different medium could make creative experimentation feel more engaging.",
+      "folderId": "folder_personal_routines_weekly_planning",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        }
+      ]
+    },
+    {
+      "title": "Comparing Savings Options",
+      "summary": "Evaluating different places to keep short-term savings based on accessibility and expected return.",
+      "folderId": "folder_finances",
+      "thoughts": [
+        {
+          "title": "Is This Sustainable?",
+          "summary": "The current approach works for now, but it is unclear whether it will remain practical over time.",
+          "category": "question",
+          "semanticLabel": "Sustainability"
+        },
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        }
+      ]
+    },
+    {
+      "title": "Understanding Investment Fees",
+      "summary": "Comparing how different fee structures can affect long-term investment outcomes.",
+      "folderId": "folder_finances_budget",
+      "thoughts": [
+        {
+          "title": "Review This Next Week",
+          "summary": "Set aside time to check whether the change produced the expected result.",
+          "category": "action",
+          "semanticLabel": "Follow-up"
+        },
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        }
+      ]
+    },
+    {
+      "title": "Long-Term Saving Strategy",
+      "summary": "Thinking about how regular contributions could support larger future purchases and financial flexibility.",
+      "folderId": "folder_finances_budget_monthly_budget",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        }
+      ]
+    },
+    {
+      "title": "Understanding Investment Fees — Notes",
+      "summary": "Comparing how different fee structures can affect long-term investment outcomes.",
+      "folderId": "folder_finances_budget_subscriptions",
+      "thoughts": [
+        {
+          "title": "Recurring Issue",
+          "summary": "This keeps appearing because the underlying workflow does not address the source of the problem.",
+          "category": "problem",
+          "semanticLabel": "Recurring problem"
+        },
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        }
+      ]
+    },
+    {
+      "title": "Preparing for Tax Season",
+      "summary": "Gathering documents and identifying missing information before tax filing becomes time-sensitive.",
+      "folderId": "folder_finances_budget_groceries",
+      "thoughts": [
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        },
+        {
+          "title": "Likely Explanation",
+          "summary": "One possible explanation is that the surrounding conditions are influencing the result more than expected.",
+          "category": "hypothesis",
+          "semanticLabel": "Working hypothesis"
+        }
+      ]
+    },
+    {
+      "title": "Reviewing Financial Priorities",
+      "summary": "Separating immediate needs from long-term goals to make decisions with clearer trade-offs.",
+      "folderId": "folder_finances_saving",
+      "thoughts": [
+        {
+          "title": "Cause to Test",
+          "summary": "This factor may be contributing to the issue and could be tested separately.",
+          "category": "hypothesis",
+          "semanticLabel": "Causal hypothesis"
+        },
+        {
+          "title": "Gather the Needed Information",
+          "summary": "Collect the missing details before making the final decision.",
+          "category": "action",
+          "semanticLabel": "Preparation"
+        }
+      ]
+    },
+    {
+      "title": "Investment Research Notes",
+      "summary": "Collecting information about investment options and recording questions that need further research.",
+      "folderId": "folder_finances_saving_emergency_fund",
+      "thoughts": [
+        {
+          "title": "Cause to Test",
+          "summary": "This factor may be contributing to the issue and could be tested separately.",
+          "category": "hypothesis",
+          "semanticLabel": "Causal hypothesis"
+        },
+        {
+          "title": "Reference Detail",
+          "summary": "This detail is useful as a reference when comparing future changes.",
+          "category": "fact",
+          "semanticLabel": "Reference"
+        }
+      ]
+    },
+    {
+      "title": "Planning for Annual Expenses",
+      "summary": "Estimating large yearly costs and spreading preparation for them across the months.",
+      "folderId": "folder_finances_saving_short_term",
+      "thoughts": [
+        {
+          "title": "Gather the Needed Information",
+          "summary": "Collect the missing details before making the final decision.",
+          "category": "action",
+          "semanticLabel": "Preparation"
+        },
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        }
+      ]
+    },
+    {
+      "title": "Investment Research Notes — Notes",
+      "summary": "Collecting information about investment options and recording questions that need further research.",
+      "folderId": "folder_finances_saving_long_term",
+      "thoughts": [
+        {
+          "title": "Cause to Test",
+          "summary": "This factor may be contributing to the issue and could be tested separately.",
+          "category": "hypothesis",
+          "semanticLabel": "Causal hypothesis"
+        },
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        }
+      ]
+    },
+    {
+      "title": "Planning for Annual Expenses — Notes",
+      "summary": "Estimating large yearly costs and spreading preparation for them across the months.",
+      "folderId": "folder_finances_investing",
+      "thoughts": [
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        },
+        {
+          "title": "Missing Information",
+          "summary": "The decision is harder because an important piece of information is not currently visible.",
+          "category": "problem",
+          "semanticLabel": "Information gap"
+        }
+      ]
+    },
+    {
+      "title": "Organizing Financial Documents",
+      "summary": "Creating a simple system for keeping statements, receipts, and important records easy to find.",
+      "folderId": "folder_finances_investing_retirement",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        }
+      ]
+    },
+    {
+      "title": "Comparing Savings Options — Notes",
+      "summary": "Evaluating different places to keep short-term savings based on accessibility and expected return.",
+      "folderId": "folder_finances_investing_index_funds",
+      "thoughts": [
+        {
+          "title": "Missing Information",
+          "summary": "The decision is harder because an important piece of information is not currently visible.",
+          "category": "problem",
+          "semanticLabel": "Information gap"
+        },
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        }
+      ]
+    },
+    {
+      "title": "Long-Term Saving Strategy — Notes",
+      "summary": "Thinking about how regular contributions could support larger future purchases and financial flexibility.",
+      "folderId": "folder_finances_investing_research",
+      "thoughts": [
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        },
+        {
+          "title": "Small Improvement",
+          "summary": "A minor change appears to make the experience smoother than before.",
+          "category": "observation",
+          "semanticLabel": "Improvement"
+        }
+      ]
+    },
+    {
+      "title": "Investment Research Notes — Notes",
+      "summary": "Collecting information about investment options and recording questions that need further research.",
+      "folderId": "folder_finances_admin",
+      "thoughts": [
+        {
+          "title": "Current State",
+          "summary": "The available information confirms that this is the current situation and can be used as a baseline.",
+          "category": "fact",
+          "semanticLabel": "Known fact"
+        },
+        {
+          "title": "Possible Long-Term Effect",
+          "summary": "If the current pattern continues, it may create a larger effect over time.",
+          "category": "hypothesis",
+          "semanticLabel": "Long-term hypothesis"
+        }
+      ]
+    },
+    {
+      "title": "Reducing Unnecessary Spending",
+      "summary": "Looking for recurring small expenses that could be reduced without affecting important priorities.",
+      "folderId": "folder_finances_admin_bills",
+      "thoughts": [
+        {
+          "title": "What Is the Trade-Off?",
+          "summary": "The best choice depends on whether simplicity, flexibility, or speed matters most.",
+          "category": "question",
+          "semanticLabel": "Decision trade-off"
+        },
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        }
+      ]
+    },
+    {
+      "title": "Financial Goals Review",
+      "summary": "Checking progress toward savings and investment goals and adjusting expectations when necessary.",
+      "folderId": "folder_finances_admin_taxes",
+      "thoughts": [
+        {
+          "title": "Possible Long-Term Effect",
+          "summary": "If the current pattern continues, it may create a larger effect over time.",
+          "category": "hypothesis",
+          "semanticLabel": "Long-term hypothesis"
+        },
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        }
+      ]
+    },
+    {
+      "title": "Financial Goals Review — Notes",
+      "summary": "Checking progress toward savings and investment goals and adjusting expectations when necessary.",
+      "folderId": "folder_finances_admin_documents",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        }
+      ]
+    },
+    {
+      "title": "Decluttering the Storage Area",
+      "summary": "Sorting stored items into things to keep, donate, recycle, or discard.",
+      "folderId": "folder_home",
+      "thoughts": [
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        },
+        {
+          "title": "Recurring Issue",
+          "summary": "This keeps appearing because the underlying workflow does not address the source of the problem.",
+          "category": "problem",
+          "semanticLabel": "Recurring problem"
+        }
+      ]
+    },
+    {
+      "title": "Weekend Home Maintenance",
+      "summary": "Listing small repairs and maintenance tasks that can be completed before they become larger problems.",
+      "folderId": "folder_home_maintenance",
+      "thoughts": [
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        },
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        }
+      ]
+    },
+    {
+      "title": "Home Improvement Priorities",
+      "summary": "Ranking potential improvements by usefulness, cost, and effort.",
+      "folderId": "folder_home_maintenance_repairs",
+      "thoughts": [
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        },
+        {
+          "title": "Useful Reference",
+          "summary": "This is something worth keeping available because it may be useful again later.",
+          "category": "item",
+          "semanticLabel": "Reference item"
+        }
+      ]
+    },
+    {
+      "title": "Garden Planning",
+      "summary": "Planning seasonal planting, maintenance, and watering tasks for the coming weeks.",
+      "folderId": "folder_home_maintenance_cleaning",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Useful Reference",
+          "summary": "This is something worth keeping available because it may be useful again later.",
+          "category": "item",
+          "semanticLabel": "Reference item"
+        }
+      ]
+    },
+    {
+      "title": "Furniture Rearrangement Ideas",
+      "summary": "Testing different layouts that could improve movement and make better use of available space.",
+      "folderId": "folder_home_maintenance_appliances",
+      "thoughts": [
+        {
+          "title": "Current State",
+          "summary": "The available information confirms that this is the current situation and can be used as a baseline.",
+          "category": "fact",
+          "semanticLabel": "Known fact"
+        },
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        }
+      ]
+    },
+    {
+      "title": "Appliance Maintenance Checklist",
+      "summary": "Recording maintenance tasks and useful reminders for household appliances.",
+      "folderId": "folder_home_garden",
+      "thoughts": [
+        {
+          "title": "Is This Sustainable?",
+          "summary": "The current approach works for now, but it is unclear whether it will remain practical over time.",
+          "category": "question",
+          "semanticLabel": "Sustainability"
+        },
+        {
+          "title": "Gather the Needed Information",
+          "summary": "Collect the missing details before making the final decision.",
+          "category": "action",
+          "semanticLabel": "Preparation"
+        }
+      ]
+    },
+    {
+      "title": "Furniture Rearrangement Ideas — Notes",
+      "summary": "Testing different layouts that could improve movement and make better use of available space.",
+      "folderId": "folder_home_garden_plants",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Could This Be Automated?",
+          "summary": "A lightweight automation might remove repetitive work without adding much maintenance.",
+          "category": "question",
+          "semanticLabel": "Automation question"
+        }
+      ]
+    },
+    {
+      "title": "Making the Home More Comfortable",
+      "summary": "Collecting small changes that could improve comfort without requiring major spending.",
+      "folderId": "folder_home_garden_seasonal_work",
+      "thoughts": [
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        },
+        {
+          "title": "Is This Sustainable?",
+          "summary": "The current approach works for now, but it is unclear whether it will remain practical over time.",
+          "category": "question",
+          "semanticLabel": "Sustainability"
+        }
+      ]
+    },
+    {
+      "title": "Furniture Rearrangement Ideas — Notes",
+      "summary": "Testing different layouts that could improve movement and make better use of available space.",
+      "folderId": "folder_home_garden_tools",
+      "thoughts": [
+        {
+          "title": "Could This Be Automated?",
+          "summary": "A lightweight automation might remove repetitive work without adding much maintenance.",
+          "category": "question",
+          "semanticLabel": "Automation question"
+        },
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        }
+      ]
+    },
+    {
+      "title": "Weekend Home Maintenance — Notes",
+      "summary": "Listing small repairs and maintenance tasks that can be completed before they become larger problems.",
+      "folderId": "folder_home_organization",
+      "thoughts": [
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        },
+        {
+          "title": "Missing Information",
+          "summary": "The decision is harder because an important piece of information is not currently visible.",
+          "category": "problem",
+          "semanticLabel": "Information gap"
+        }
+      ]
+    },
+    {
+      "title": "Repair Log",
+      "summary": "Keeping track of household issues, repairs completed, and anything that still needs attention.",
+      "folderId": "folder_home_organization_storage",
+      "thoughts": [
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        },
+        {
+          "title": "Main Source of Friction",
+          "summary": "The current process introduces an unnecessary step that makes the task slower or harder to complete.",
+          "category": "problem",
+          "semanticLabel": "Process friction"
+        }
+      ]
+    },
+    {
+      "title": "Improving Kitchen Storage",
+      "summary": "Exploring ways to make frequently used items easier to access while reducing visual clutter.",
+      "folderId": "folder_home_organization_decluttering",
+      "thoughts": [
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        },
+        {
+          "title": "Potential Bottleneck",
+          "summary": "This step could become a bottleneck as the amount of work increases.",
+          "category": "problem",
+          "semanticLabel": "Bottleneck"
+        }
+      ]
+    },
+    {
+      "title": "Decluttering the Storage Area — Notes",
+      "summary": "Sorting stored items into things to keep, donate, recycle, or discard.",
+      "folderId": "folder_home_organization_furniture",
+      "thoughts": [
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        },
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        }
+      ]
+    },
+    {
+      "title": "Repair Log — Notes",
+      "summary": "Keeping track of household issues, repairs completed, and anything that still needs attention.",
+      "folderId": "folder_home_improvements",
+      "thoughts": [
+        {
+          "title": "Small Improvement",
+          "summary": "A minor change appears to make the experience smoother than before.",
+          "category": "observation",
+          "semanticLabel": "Improvement"
+        },
+        {
+          "title": "What Is the Trade-Off?",
+          "summary": "The best choice depends on whether simplicity, flexibility, or speed matters most.",
+          "category": "question",
+          "semanticLabel": "Decision trade-off"
+        }
+      ]
+    },
+    {
+      "title": "Decluttering the Storage Area — Notes",
+      "summary": "Sorting stored items into things to keep, donate, recycle, or discard.",
+      "folderId": "folder_home_improvements_kitchen",
+      "thoughts": [
+        {
+          "title": "Useful Reference",
+          "summary": "This is something worth keeping available because it may be useful again later.",
+          "category": "item",
+          "semanticLabel": "Reference item"
+        },
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        }
+      ]
+    },
+    {
+      "title": "Decluttering the Storage Area — Notes",
+      "summary": "Sorting stored items into things to keep, donate, recycle, or discard.",
+      "folderId": "folder_home_improvements_bedroom",
+      "thoughts": [
+        {
+          "title": "Current State",
+          "summary": "The available information confirms that this is the current situation and can be used as a baseline.",
+          "category": "fact",
+          "semanticLabel": "Known fact"
+        },
+        {
+          "title": "Reference Detail",
+          "summary": "This detail is useful as a reference when comparing future changes.",
+          "category": "fact",
+          "semanticLabel": "Reference"
+        }
+      ]
+    },
+    {
+      "title": "Cleaning Routine Review",
+      "summary": "Finding a simple cleaning schedule that keeps recurring chores manageable.",
+      "folderId": "folder_home_improvements_workspace",
+      "thoughts": [
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        },
+        {
+          "title": "What Is the Trade-Off?",
+          "summary": "The best choice depends on whether simplicity, flexibility, or speed matters most.",
+          "category": "question",
+          "semanticLabel": "Decision trade-off"
+        }
+      ]
+    },
+    {
+      "title": "Preparing Quick Healthy Meals",
+      "summary": "Identifying meals that can be made with minimal preparation when time is limited.",
+      "folderId": "folder_health",
+      "thoughts": [
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        },
+        {
+          "title": "Missing Information",
+          "summary": "The decision is harder because an important piece of information is not currently visible.",
+          "category": "problem",
+          "semanticLabel": "Information gap"
+        }
+      ]
+    },
+    {
+      "title": "Recovery Day Planning",
+      "summary": "Considering how rest and lighter activity can fit into a weekly fitness schedule.",
+      "folderId": "folder_health_fitness",
+      "thoughts": [
+        {
+          "title": "Gather the Needed Information",
+          "summary": "Collect the missing details before making the final decision.",
+          "category": "action",
+          "semanticLabel": "Preparation"
+        },
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        }
+      ]
+    },
+    {
+      "title": "Improving Hydration Habits",
+      "summary": "Finding simple cues that make drinking enough water easier throughout the day.",
+      "folderId": "folder_health_fitness_strength",
+      "thoughts": [
+        {
+          "title": "Review This Next Week",
+          "summary": "Set aside time to check whether the change produced the expected result.",
+          "category": "action",
+          "semanticLabel": "Follow-up"
+        },
+        {
+          "title": "Behavioral Signal",
+          "summary": "The way this situation unfolds suggests that the surrounding process influences the outcome.",
+          "category": "observation",
+          "semanticLabel": "Behavior"
+        }
+      ]
+    },
+    {
+      "title": "Improving Sleep Routine",
+      "summary": "Looking at evening habits that may help create a more consistent sleep schedule.",
+      "folderId": "folder_health_fitness_cardio",
+      "thoughts": [
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        },
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        }
+      ]
+    },
+    {
+      "title": "Stress Management Ideas",
+      "summary": "Collecting short activities that can help create a transition between demanding periods and rest.",
+      "folderId": "folder_health_fitness_mobility",
+      "thoughts": [
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        },
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        }
+      ]
+    },
+    {
+      "title": "Weekly Fitness Review",
+      "summary": "Reviewing recent activity and deciding what kind of movement would be useful during the next week.",
+      "folderId": "folder_health_nutrition",
+      "thoughts": [
+        {
+          "title": "Missing Information",
+          "summary": "The decision is harder because an important piece of information is not currently visible.",
+          "category": "problem",
+          "semanticLabel": "Information gap"
+        },
+        {
+          "title": "Recurring Issue",
+          "summary": "This keeps appearing because the underlying workflow does not address the source of the problem.",
+          "category": "problem",
+          "semanticLabel": "Recurring problem"
+        }
+      ]
+    },
+    {
+      "title": "Tracking Recovery",
+      "summary": "Noting how rest days, sleep, and workout intensity affect how recovered the body feels.",
+      "folderId": "folder_health_nutrition_meal_planning",
+      "thoughts": [
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        },
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        }
+      ]
+    },
+    {
+      "title": "Tracking Energy Levels",
+      "summary": "Observing how sleep, meals, activity, and workload seem to affect energy throughout the day.",
+      "folderId": "folder_health_nutrition_recipes",
+      "thoughts": [
+        {
+          "title": "Important Detail",
+          "summary": "Keep this detail with the related information so it is easy to find later.",
+          "category": "item",
+          "semanticLabel": "Reference detail"
+        },
+        {
+          "title": "Current State",
+          "summary": "The available information confirms that this is the current situation and can be used as a baseline.",
+          "category": "fact",
+          "semanticLabel": "Known fact"
+        }
+      ]
+    },
+    {
+      "title": "Improving Sleep Routine — Notes",
+      "summary": "Looking at evening habits that may help create a more consistent sleep schedule.",
+      "folderId": "folder_health_nutrition_groceries",
+      "thoughts": [
+        {
+          "title": "Create a Short Checklist",
+          "summary": "Write down the next few concrete steps so the task can be completed without repeatedly planning it.",
+          "category": "action",
+          "semanticLabel": "Next action"
+        },
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        }
+      ]
+    },
+    {
+      "title": "Fitness Goal Review",
+      "summary": "Checking progress toward current fitness goals and deciding whether targets remain realistic.",
+      "folderId": "folder_health_wellness",
+      "thoughts": [
+        {
+          "title": "Reference Detail",
+          "summary": "This detail is useful as a reference when comparing future changes.",
+          "category": "fact",
+          "semanticLabel": "Reference"
+        },
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        }
+      ]
+    },
+    {
+      "title": "Stress Management Ideas — Notes",
+      "summary": "Collecting short activities that can help create a transition between demanding periods and rest.",
+      "folderId": "folder_health_wellness_sleep",
+      "thoughts": [
+        {
+          "title": "Current State",
+          "summary": "The available information confirms that this is the current situation and can be used as a baseline.",
+          "category": "fact",
+          "semanticLabel": "Known fact"
+        },
+        {
+          "title": "Potential Bottleneck",
+          "summary": "This step could become a bottleneck as the amount of work increases.",
+          "category": "problem",
+          "semanticLabel": "Bottleneck"
+        }
+      ]
+    },
+    {
+      "title": "Recovery Day Planning — Notes",
+      "summary": "Considering how rest and lighter activity can fit into a weekly fitness schedule.",
+      "folderId": "folder_health_wellness_stress",
+      "thoughts": [
+        {
+          "title": "Main Source of Friction",
+          "summary": "The current process introduces an unnecessary step that makes the task slower or harder to complete.",
+          "category": "problem",
+          "semanticLabel": "Process friction"
+        },
+        {
+          "title": "Is This Sustainable?",
+          "summary": "The current approach works for now, but it is unclear whether it will remain practical over time.",
+          "category": "question",
+          "semanticLabel": "Sustainability"
+        }
+      ]
+    },
+    {
+      "title": "Building a Sustainable Exercise Habit",
+      "summary": "Focusing on consistency and manageable sessions rather than an overly ambitious routine.",
+      "folderId": "folder_health_wellness_recovery",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Review This Next Week",
+          "summary": "Set aside time to check whether the change produced the expected result.",
+          "category": "action",
+          "semanticLabel": "Follow-up"
+        }
+      ]
+    },
+    {
+      "title": "Preparing Quick Healthy Meals — Notes",
+      "summary": "Identifying meals that can be made with minimal preparation when time is limited.",
+      "folderId": "folder_health_habits",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Is This Sustainable?",
+          "summary": "The current approach works for now, but it is unclear whether it will remain practical over time.",
+          "category": "question",
+          "semanticLabel": "Sustainability"
+        }
+      ]
+    },
+    {
+      "title": "Wellness Check-In",
+      "summary": "Reflecting on stress, sleep, movement, and other factors that influence overall well-being.",
+      "folderId": "folder_health_habits_tracking",
+      "thoughts": [
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        },
+        {
+          "title": "Reusable System",
+          "summary": "Turning this into a reusable pattern could reduce repeated work in the future.",
+          "category": "idea",
+          "semanticLabel": "System design"
+        }
+      ]
+    },
+    {
+      "title": "Building a Sustainable Exercise Habit — Notes",
+      "summary": "Focusing on consistency and manageable sessions rather than an overly ambitious routine.",
+      "folderId": "folder_health_habits_routine",
+      "thoughts": [
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        },
+        {
+          "title": "Could This Be Automated?",
+          "summary": "A lightweight automation might remove repetitive work without adding much maintenance.",
+          "category": "question",
+          "semanticLabel": "Automation question"
+        }
+      ]
+    },
+    {
+      "title": "Mobility Session Ideas",
+      "summary": "Collecting simple mobility exercises that can be used during breaks or before workouts.",
+      "folderId": "folder_health_habits_goals",
+      "thoughts": [
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        },
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        }
+      ]
+    },
+    {
+      "title": "Upcoming Family Events",
+      "summary": "Reviewing the next few events and identifying anything that needs preparation.",
+      "folderId": "folder_family",
+      "thoughts": [
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        },
+        {
+          "title": "A Simpler Approach",
+          "summary": "A smaller and more focused version may solve the main problem without adding unnecessary complexity.",
+          "category": "idea",
+          "semanticLabel": "Simplification"
+        }
+      ]
+    },
+    {
+      "title": "Organizing Family Documents",
+      "summary": "Making important shared documents easier to locate when they are needed.",
+      "folderId": "folder_family_relationships",
+      "thoughts": [
+        {
+          "title": "Could This Be Automated?",
+          "summary": "A lightweight automation might remove repetitive work without adding much maintenance.",
+          "category": "question",
+          "semanticLabel": "Automation question"
+        },
+        {
+          "title": "Reference Detail",
+          "summary": "This detail is useful as a reference when comparing future changes.",
+          "category": "fact",
+          "semanticLabel": "Reference"
+        }
+      ]
+    },
+    {
+      "title": "Planning Time Together",
+      "summary": "Looking for recurring opportunities to spend quality time together despite busy schedules.",
+      "folderId": "folder_family_relationships_partner",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Potential Bottleneck",
+          "summary": "This step could become a bottleneck as the amount of work increases.",
+          "category": "problem",
+          "semanticLabel": "Bottleneck"
+        }
+      ]
+    },
+    {
+      "title": "Planning Time Together — Notes",
+      "summary": "Looking for recurring opportunities to spend quality time together despite busy schedules.",
+      "folderId": "folder_family_relationships_parents",
+      "thoughts": [
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        },
+        {
+          "title": "What Should Happen First?",
+          "summary": "It is worth deciding whether preparation or execution should be prioritized in this situation.",
+          "category": "question",
+          "semanticLabel": "Priority question"
+        }
+      ]
+    },
+    {
+      "title": "Family Communication Review",
+      "summary": "Thinking about how shared plans and changes can be communicated more clearly.",
+      "folderId": "folder_family_relationships_siblings",
+      "thoughts": [
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        },
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        }
+      ]
+    },
+    {
+      "title": "Shared Calendar Ideas",
+      "summary": "Considering how family schedules could be made easier to see without creating unnecessary complexity.",
+      "folderId": "folder_family_events",
+      "thoughts": [
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        },
+        {
+          "title": "Current State",
+          "summary": "The available information confirms that this is the current situation and can be used as a baseline.",
+          "category": "fact",
+          "semanticLabel": "Known fact"
+        }
+      ]
+    },
+    {
+      "title": "Checking In With Family",
+      "summary": "Keeping track of people to contact and conversations that should not be postponed.",
+      "folderId": "folder_family_events_birthdays",
+      "thoughts": [
+        {
+          "title": "Reference Detail",
+          "summary": "This detail is useful as a reference when comparing future changes.",
+          "category": "fact",
+          "semanticLabel": "Reference"
+        },
+        {
+          "title": "Small Improvement",
+          "summary": "A minor change appears to make the experience smoother than before.",
+          "category": "observation",
+          "semanticLabel": "Improvement"
+        }
+      ]
+    },
+    {
+      "title": "Planning Time Together — Notes",
+      "summary": "Looking for recurring opportunities to spend quality time together despite busy schedules.",
+      "folderId": "folder_family_events_holidays",
+      "thoughts": [
+        {
+          "title": "Potential Improvement",
+          "summary": "A small structural change could make the process easier to understand and maintain.",
+          "category": "idea",
+          "semanticLabel": "Improvement opportunity"
+        },
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        }
+      ]
+    },
+    {
+      "title": "Gift Ideas List",
+      "summary": "Collecting possible gifts throughout the year instead of waiting until the last minute.",
+      "folderId": "folder_family_events_gatherings",
+      "thoughts": [
+        {
+          "title": "Observed Result",
+          "summary": "The recent result provides evidence that can guide the next decision.",
+          "category": "fact",
+          "semanticLabel": "Observed result"
+        },
+        {
+          "title": "Experiment Worth Trying",
+          "summary": "Testing this approach on a limited scale would provide useful feedback before committing to it.",
+          "category": "idea",
+          "semanticLabel": "Experiment"
+        }
+      ]
+    },
+    {
+      "title": "Planning Time Together — Notes",
+      "summary": "Looking for recurring opportunities to spend quality time together despite busy schedules.",
+      "folderId": "folder_family_planning",
+      "thoughts": [
+        {
+          "title": "Behavioral Signal",
+          "summary": "The way this situation unfolds suggests that the surrounding process influences the outcome.",
+          "category": "observation",
+          "semanticLabel": "Behavior"
+        },
+        {
+          "title": "Gather the Needed Information",
+          "summary": "Collect the missing details before making the final decision.",
+          "category": "action",
+          "semanticLabel": "Preparation"
+        }
+      ]
+    },
+    {
+      "title": "Planning a Shared Trip",
+      "summary": "Gathering destination ideas, transportation options, and tasks that need to be handled together.",
+      "folderId": "folder_family_planning_trips",
+      "thoughts": [
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        },
+        {
+          "title": "Potential Bottleneck",
+          "summary": "This step could become a bottleneck as the amount of work increases.",
+          "category": "problem",
+          "semanticLabel": "Bottleneck"
+        }
+      ]
+    },
+    {
+      "title": "Planning a Shared Trip — Notes",
+      "summary": "Gathering destination ideas, transportation options, and tasks that need to be handled together.",
+      "folderId": "folder_family_planning_household",
+      "thoughts": [
+        {
+          "title": "Pattern Noticed",
+          "summary": "A repeated pattern is becoming visible and may be useful when deciding what to change.",
+          "category": "observation",
+          "semanticLabel": "Pattern"
+        },
+        {
+          "title": "Behavioral Signal",
+          "summary": "The way this situation unfolds suggests that the surrounding process influences the outcome.",
+          "category": "observation",
+          "semanticLabel": "Behavior"
+        }
+      ]
+    },
+    {
+      "title": "Shared Calendar Ideas — Notes",
+      "summary": "Considering how family schedules could be made easier to see without creating unnecessary complexity.",
+      "folderId": "folder_family_planning_shared_plans",
+      "thoughts": [
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        },
+        {
+          "title": "What Is the Trade-Off?",
+          "summary": "The best choice depends on whether simplicity, flexibility, or speed matters most.",
+          "category": "question",
+          "semanticLabel": "Decision trade-off"
+        }
+      ]
+    },
+    {
+      "title": "Planning a Shared Trip — Notes",
+      "summary": "Gathering destination ideas, transportation options, and tasks that need to be handled together.",
+      "folderId": "folder_family_memories",
+      "thoughts": [
+        {
+          "title": "Unexpected Result",
+          "summary": "The result differs from what was initially expected and deserves another look.",
+          "category": "observation",
+          "semanticLabel": "Unexpected result"
+        },
+        {
+          "title": "Useful Constraint",
+          "summary": "This constraint should be considered when evaluating the available options.",
+          "category": "fact",
+          "semanticLabel": "Constraint"
+        }
+      ]
+    },
+    {
+      "title": "Birthday Planning Notes",
+      "summary": "Collecting gift ideas, scheduling details, and preparations for an upcoming birthday.",
+      "folderId": "folder_family_memories_photos",
+      "thoughts": [
+        {
+          "title": "Test the Smallest Version",
+          "summary": "Try the simplest useful implementation before expanding the scope.",
+          "category": "action",
+          "semanticLabel": "Small experiment"
+        },
+        {
+          "title": "Create a Short Checklist",
+          "summary": "Write down the next few concrete steps so the task can be completed without repeatedly planning it.",
+          "category": "action",
+          "semanticLabel": "Next action"
+        }
+      ]
+    }
+  ]
+}

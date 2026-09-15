@@ -6,7 +6,7 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useState } from "react";
 import { Alert, StyleProp, View, ViewStyle } from "react-native";
 
-import fakeData from "@/seed/data/mock.json" with { type: "json" };
+import { seedNotes } from "@/seed/parsedSeedData";
 import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 import { cn } from "@/lib/cn";
@@ -29,7 +29,7 @@ export const SeedDatabaseFeature = ({
   style?: StyleProp<ViewStyle>;
 }) => {
   const [numberOfNotes, setNumberOfNotes] = useState(
-    fakeData.length.toString()
+    seedNotes.length.toString()
   );
   const { openModal, closeModal } = useModal();
   const { useSeedDatabaseMutation } = useNotesAndThoughtsController();
@@ -66,7 +66,7 @@ export const SeedDatabaseFeature = ({
           <SettingsSeedDatabaseTitle />
         </Typography>
         <Typography variant="p" padding className="mb-2">
-          <SettingsSeedDatabaseDescription maxNotes={fakeData.length} />
+          <SettingsSeedDatabaseDescription maxNotes={seedNotes.length} />
         </Typography>
         <View className="flex-row gap-2">
           <Button
