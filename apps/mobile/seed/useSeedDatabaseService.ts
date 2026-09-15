@@ -1,7 +1,11 @@
 import { Folder, Note, Thought } from "@repo/zod-schemas";
 import { seedFormatNote } from "./utils/seedFormatNote";
 import { useGenerateLocalEmbeddingsService } from "../features/embeddings/services/useGenerateLocalEmbeddingService";
-import { getOPDatabase, seedDatabaseQuery } from "@repo/sqlite";
+import {
+  getOPDatabase,
+  seedDatabaseQuery,
+  clearSeedDataQuery,
+} from "@repo/sqlite";
 import { ServiceResponse } from "@/api/utils/responseObject";
 import { seedFolders, seedNotes } from "./parsedSeedData";
 
@@ -58,7 +62,21 @@ const useSeedDatabaseService = () => {
         : new Error("Failed to seed database");
     }
   };
-  return { seedDatabaseService };
+
+  const clearSeedDataService = async () => {
+    const db = getOPDatabase();
+    try {
+      await clearSeedDataQuery(db);
+      return ServiceResponse.success("Seed data cleared", null);
+    } catch (error) {
+      console.error(error);
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to clear seed data");
+    }
+  };
+
+  return { seedDatabaseService, clearSeedDataService };
 };
 
 export { useSeedDatabaseService };

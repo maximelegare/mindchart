@@ -12,14 +12,21 @@ import { Gutter } from "@/components/ui/gutter";
 import { cn } from "@/lib/cn";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 import {
+  SettingsClearSeedDataDescription,
+  SettingsClearSeedDataTitle,
   SettingsSeedDatabaseDescription,
   SettingsSeedDatabaseTitle,
+  settingsClearSeedDataFailedAlertTitle,
+  settingsClearSeedDataLoadingTitle,
   settingsSeedDatabaseEnterNumberAlert,
   settingsSeedDatabaseFailedAlertTitle,
   settingsSeedDatabaseLoadingTitle,
   settingsSeedDatabaseNotesPlaceholder,
 } from "@/features/settings/features/developer/labels/settingsDeveloperLabels";
-import { settingsActionSeed } from "@/features/settings/settingsLabels";
+import {
+  settingsActionClearSeed,
+  settingsActionSeed,
+} from "@/features/settings/settingsLabels";
 
 export const SeedDatabaseFeature = ({
   className,
@@ -32,8 +39,10 @@ export const SeedDatabaseFeature = ({
     seedNotes.length.toString()
   );
   const { openModal, closeModal } = useModal();
-  const { useSeedDatabaseMutation } = useNotesAndThoughtsController();
+  const { useSeedDatabaseMutation, useClearSeedDataMutation } =
+    useNotesAndThoughtsController();
   const { mutateAsync: seedDatabaseAsync } = useSeedDatabaseMutation();
+  const { mutateAsync: clearSeedDataAsync } = useClearSeedDataMutation();
 
   const { isReady: isLlamaReady } = useLlamaEmbeddings();
   const seedDatabase = async () => {
@@ -57,6 +66,37 @@ export const SeedDatabaseFeature = ({
     } finally {
       closeModal();
     }
+  };
+
+  const clearSeedData = async () => {
+    openModal({
+      dismissOnBackgroundPress: false,
+      customContent: () => (
+        <LoadingState
+          title={settingsClearSeedDataLoadingTitle()}
+          size="large"
+        />
+      ),
+    });
+    try {
+      await clearSeedDataAsync();
+    } catch (error) {
+      console.error(error);
+      const message =
+        error instanceof Error ? error.message : String(error ?? "");
+      Alert.alert(settingsClearSeedDataFailedAlertTitle(), message);
+    } finally {
+      closeModal();
+    }
+  };
+
+  const confirmClearSeedData = () => {
+    openModal({
+      modalName: "CLEAR_SEED_DATA",
+      onConfirm: () => {
+        void clearSeedData();
+      },
+    });
   };
 
   return (
@@ -84,6 +124,20 @@ export const SeedDatabaseFeature = ({
             onChangeText={setNumberOfNotes}
           />
         </View>
+        <Typography variant="h3" padding className="mt-4">
+          <SettingsClearSeedDataTitle />
+        </Typography>
+        <Typography variant="p" padding className="mb-2">
+          <SettingsClearSeedDataDescription />
+        </Typography>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="self-start"
+          onPress={confirmClearSeedData}
+        >
+          <Typography>{settingsActionClearSeed()}</Typography>
+        </Button>
       </Gutter>
     </Card>
   );

@@ -119,6 +119,10 @@ export function settingsActionSeed() {
   return fbs("Seed", "Developer settings: seed database button");
 }
 
+export function settingsActionClearSeed() {
+  return fbs("Clear seed", "Developer settings: clear seed data button");
+}
+
 export function settingsActionDelete() {
   return fbs("Delete", "Settings action: delete");
 }

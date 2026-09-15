@@ -29,6 +29,7 @@ export const REACT_QUERY_KEYS = {
   updateEmbeddings: "update_embeddings",
   updateNoteAndThoughts: "update_note_and_thoughts",
   seedDatabase: "seed_database",
+  clearSeedData: "clear_seed_data",
   generateLocalEmbeddings: "generate_local_embeddings",
   insertEmbeddings: "insert_embeddings",
   exportDatabase: "export_database",

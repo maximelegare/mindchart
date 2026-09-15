@@ -246,6 +246,24 @@ export function getBiometricsUnavailableModal(): ModalPreset {
   };
 }
 
+export function getClearSeedDataModal(): ModalPreset {
+  return {
+    title: fbs("Clear seed data?", "Clear seed data confirmation modal title"),
+    description: fbs(
+      "This deletes all notes, thoughts, and nested folders. Root folders will be kept.",
+      "Clear seed data confirmation modal description"
+    ),
+    confirmButton: {
+      text: fbs("Clear seed", "Clear seed data confirmation confirm button"),
+      variant: "destructive",
+    },
+    cancelButton: {
+      text: fbs("Cancel", "Clear seed data confirmation cancel button"),
+      variant: "default",
+    },
+  };
+}
+
 export function getDeleteLocationConfirmationModal(): ModalPreset {
   return {
     title: fbs("Remove Location?", "Delete location confirmation modal title"),
@@ -297,6 +315,7 @@ const TRANSLATED_MODALS: Partial<Record<ModalContent, () => ModalPreset>> = {
   BIOMETRICS_UNAVAILABLE: getBiometricsUnavailableModal,
   DELETE_DATABASE_FILE: getDeleteDatabaseFileModal,
   DELETE_LOCATION_CONFIRMATION: getDeleteLocationConfirmationModal,
+  CLEAR_SEED_DATA: getClearSeedDataModal,
 };
 
 export function getTranslatedModalPreset(
