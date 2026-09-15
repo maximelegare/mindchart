@@ -709,9 +709,6 @@ const LeafBranch = ({
   </View>
 );
 
-const INITIAL_VISIBLE_ROWS = 8;
-const ROW_CHUNK = 12;
-
 /**
  * Children under a parent row.
  * `prefetchOnly` — mounted under a collapsed parent: render rows, but do not
@@ -728,37 +725,13 @@ function NestedChildren({
   guideWidth: number;
   prefetchOnly?: boolean;
 }) {
-  const [visibleCount, setVisibleCount] = useState(() =>
-    Math.min(nodes.length, INITIAL_VISIBLE_ROWS)
-  );
-  const nodesKey = `${nodes.length}:${nodes[0]?.id ?? ""}:${nodes[nodes.length - 1]?.id ?? ""}`;
-
-  useEffect(() => {
-    setVisibleCount(Math.min(nodes.length, INITIAL_VISIBLE_ROWS));
-    if (nodes.length <= INITIAL_VISIBLE_ROWS) return;
-
-    let count = INITIAL_VISIBLE_ROWS;
-    let frame = 0;
-    const pump = () => {
-      count = Math.min(nodes.length, count + ROW_CHUNK);
-      setVisibleCount(count);
-      if (count < nodes.length) {
-        frame = requestAnimationFrame(pump);
-      }
-    };
-    frame = requestAnimationFrame(pump);
-    return () => cancelAnimationFrame(frame);
-  }, [nodes, nodesKey]);
-
-  const visible = nodes.slice(0, visibleCount);
-
   return (
     <View>
-      {visible.map((node, index) => (
+      {nodes.map((node, index) => (
         <TreeBranch
           key={node.id}
           node={node}
-          isLast={index === visible.length - 1 && visibleCount >= nodes.length}
+          isLast={index === nodes.length - 1}
           ctx={ctx}
           guideWidth={guideWidth}
           prefetchOnly={prefetchOnly}
