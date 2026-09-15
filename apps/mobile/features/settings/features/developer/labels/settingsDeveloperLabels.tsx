@@ -41,6 +41,31 @@ export function settingsSeedDatabaseFailedAlertTitle() {
   return fbs("Seed failed", "Developer seed database: failure alert title");
 }
 
+export function SettingsClearSeedDataTitle() {
+  return (
+    <fbt desc="Developer settings: clear seed data title">Clear Seed Data</fbt>
+  );
+}
+
+export function SettingsClearSeedDataDescription() {
+  return (
+    <fbt desc="Developer settings: clear seed data description">
+      Delete all notes, thoughts, and nested folders. Root folders are kept.
+    </fbt>
+  );
+}
+
+export function settingsClearSeedDataLoadingTitle() {
+  return fbs("Clearing seed data", "Developer clear seed data loading title");
+}
+
+export function settingsClearSeedDataFailedAlertTitle() {
+  return fbs(
+    "Clear seed failed",
+    "Developer clear seed data: failure alert title"
+  );
+}
+
 export function settingsDbInspectorClearTableAlertTitle() {
   return fbs("Clear table?", "DB inspector: clear table alert title");
 }

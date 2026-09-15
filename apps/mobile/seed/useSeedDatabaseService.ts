@@ -1,10 +1,13 @@
 import { Folder, Note, Thought } from "@repo/zod-schemas";
 import { seedFormatNote } from "./utils/seedFormatNote";
 import { useGenerateLocalEmbeddingsService } from "../features/embeddings/services/useGenerateLocalEmbeddingService";
-import { getOPDatabase, seedDatabaseQuery } from "@repo/sqlite";
+import {
+  getOPDatabase,
+  seedDatabaseQuery,
+  clearSeedDataQuery,
+} from "@repo/sqlite";
 import { ServiceResponse } from "@/api/utils/responseObject";
-import seedNotes from "./data/mock.json" with { type: "json" };
-import seedFolders from "./data/mock_folders.json" with { type: "json" };
+import { seedFolders, seedNotes } from "./parsedSeedData";
 
 const useSeedDatabaseService = () => {
   const { generateEmbeddings } = useGenerateLocalEmbeddingsService();
@@ -18,8 +21,8 @@ const useSeedDatabaseService = () => {
 
     const db = getOPDatabase();
     const formatedNotes = seedNotes
-      .map((note) => seedFormatNote(note))
-      .splice(0, numberOfNotes);
+      .slice(0, numberOfNotes)
+      .map((note) => seedFormatNote(note));
     const formatedStructuredData = formatedNotes.reduce(
       (acc, { note, thoughts }) => {
         acc.notes.push(note);
@@ -59,7 +62,21 @@ const useSeedDatabaseService = () => {
         : new Error("Failed to seed database");
     }
   };
-  return { seedDatabaseService };
+
+  const clearSeedDataService = async () => {
+    const db = getOPDatabase();
+    try {
+      await clearSeedDataQuery(db);
+      return ServiceResponse.success("Seed data cleared", null);
+    } catch (error) {
+      console.error(error);
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to clear seed data");
+    }
+  };
+
+  return { seedDatabaseService, clearSeedDataService };
 };
 
 export { useSeedDatabaseService };

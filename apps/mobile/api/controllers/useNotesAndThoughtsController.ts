@@ -67,6 +67,29 @@ export const useNotesAndThoughtsController = () => {
     });
   };
 
+  const useClearSeedDataMutation = () => {
+    const queryClient = useQueryClient();
+    const { clearSeedDataService } = useSeedDatabaseService();
+    const { useUpdateSyncGraphDataMutation } = useGraphController();
+    const { mutateAsync: mutateAsyncGraphData } =
+      useUpdateSyncGraphDataMutation();
+    return useMutation<
+      Awaited<ReturnType<typeof clearSeedDataService>>,
+      Error,
+      void
+    >({
+      mutationKey: [REACT_QUERY_KEYS.clearSeedData],
+      mutationFn: () => clearSeedDataService(),
+      onSuccess: async () => {
+        try {
+          await mutateAsyncGraphData(true);
+        } finally {
+          await invalidateNotesAndThoughtsQueries(queryClient);
+        }
+      },
+    });
+  };
+
   const useGenerateNoteMutation = () => {
     const { generateNoteService } = useGenerateNoteService();
 
@@ -383,6 +406,7 @@ export const useNotesAndThoughtsController = () => {
     useFetchPaginatedNotesAndThoughtsQuery,
     useFetchNoteDetails,
     useSeedDatabaseMutation,
+    useClearSeedDataMutation,
     useUpdateNoteAndThoughtsMutation,
     useUpdateThoughtCompletionMutation,
     useUpdateThoughtCategoryMutation,

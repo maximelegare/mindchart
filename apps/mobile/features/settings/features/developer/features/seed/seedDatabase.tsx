@@ -6,20 +6,27 @@ import { useModal } from "@/components/ui/modal/modal";
 import { useState } from "react";
 import { Alert, StyleProp, View, ViewStyle } from "react-native";
 
-import fakeData from "@/seed/data/mock.json" with { type: "json" };
+import { seedNotes } from "@/seed/parsedSeedData";
 import { Card } from "@/components/ui/card";
 import { Gutter } from "@/components/ui/gutter";
 import { cn } from "@/lib/cn";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 import {
+  SettingsClearSeedDataDescription,
+  SettingsClearSeedDataTitle,
   SettingsSeedDatabaseDescription,
   SettingsSeedDatabaseTitle,
+  settingsClearSeedDataFailedAlertTitle,
+  settingsClearSeedDataLoadingTitle,
   settingsSeedDatabaseEnterNumberAlert,
   settingsSeedDatabaseFailedAlertTitle,
   settingsSeedDatabaseLoadingTitle,
   settingsSeedDatabaseNotesPlaceholder,
 } from "@/features/settings/features/developer/labels/settingsDeveloperLabels";
-import { settingsActionSeed } from "@/features/settings/settingsLabels";
+import {
+  settingsActionClearSeed,
+  settingsActionSeed,
+} from "@/features/settings/settingsLabels";
 
 export const SeedDatabaseFeature = ({
   className,
@@ -29,11 +36,13 @@ export const SeedDatabaseFeature = ({
   style?: StyleProp<ViewStyle>;
 }) => {
   const [numberOfNotes, setNumberOfNotes] = useState(
-    fakeData.length.toString()
+    seedNotes.length.toString()
   );
   const { openModal, closeModal } = useModal();
-  const { useSeedDatabaseMutation } = useNotesAndThoughtsController();
+  const { useSeedDatabaseMutation, useClearSeedDataMutation } =
+    useNotesAndThoughtsController();
   const { mutateAsync: seedDatabaseAsync } = useSeedDatabaseMutation();
+  const { mutateAsync: clearSeedDataAsync } = useClearSeedDataMutation();
 
   const { isReady: isLlamaReady } = useLlamaEmbeddings();
   const seedDatabase = async () => {
@@ -59,6 +68,37 @@ export const SeedDatabaseFeature = ({
     }
   };
 
+  const clearSeedData = async () => {
+    openModal({
+      dismissOnBackgroundPress: false,
+      customContent: () => (
+        <LoadingState
+          title={settingsClearSeedDataLoadingTitle()}
+          size="large"
+        />
+      ),
+    });
+    try {
+      await clearSeedDataAsync();
+    } catch (error) {
+      console.error(error);
+      const message =
+        error instanceof Error ? error.message : String(error ?? "");
+      Alert.alert(settingsClearSeedDataFailedAlertTitle(), message);
+    } finally {
+      closeModal();
+    }
+  };
+
+  const confirmClearSeedData = () => {
+    openModal({
+      modalName: "CLEAR_SEED_DATA",
+      onConfirm: () => {
+        void clearSeedData();
+      },
+    });
+  };
+
   return (
     <Card className={cn(className)} style={style}>
       <Gutter size="md" className="py-2">
@@ -66,7 +106,7 @@ export const SeedDatabaseFeature = ({
           <SettingsSeedDatabaseTitle />
         </Typography>
         <Typography variant="p" padding className="mb-2">
-          <SettingsSeedDatabaseDescription maxNotes={fakeData.length} />
+          <SettingsSeedDatabaseDescription maxNotes={seedNotes.length} />
         </Typography>
         <View className="flex-row gap-2">
           <Button
@@ -84,6 +124,20 @@ export const SeedDatabaseFeature = ({
             onChangeText={setNumberOfNotes}
           />
         </View>
+        <Typography variant="h3" padding className="mt-4">
+          <SettingsClearSeedDataTitle />
+        </Typography>
+        <Typography variant="p" padding className="mb-2">
+          <SettingsClearSeedDataDescription />
+        </Typography>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="self-start"
+          onPress={confirmClearSeedData}
+        >
+          <Typography>{settingsActionClearSeed()}</Typography>
+        </Button>
       </Gutter>
     </Card>
   );

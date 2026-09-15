@@ -26,9 +26,17 @@ export const MODALS_CONTENT: Record<
   | "DISABLE_RECOVERY_PASSWORD"
   | "BIOMETRICS_UNAVAILABLE"
   | "DELETE_FOLDER_CONFIRMATION"
-  | "DELETE_LOCATION_CONFIRMATION",
+  | "DELETE_LOCATION_CONFIRMATION"
+  | "CLEAR_SEED_DATA",
   ModalPreset
 > = {
+  CLEAR_SEED_DATA: {
+    title: "Clear seed data?",
+    description:
+      "This deletes all notes, thoughts, and nested folders. Root folders will be kept.",
+    confirmButton: { text: "Clear seed", variant: "destructive" },
+    cancelButton: { text: "Cancel", variant: "default" },
+  },
   DELETE_LOCATION_CONFIRMATION: {
     title: "Remove Location?",
     description: "This will remove this location from all notes that use it.",
