@@ -13,8 +13,9 @@ export const CollapsibleContainer = ({
   expanded,
   className,
   /**
-   * When provided, animate to this height instead of measuring children.
-   * Prefer this for large trees so expand/collapse doesn’t wait on layout.
+   * Optional estimated height for the first paint.
+   * Layout is still measured; if the real content is taller, the container grows
+   * so long titles/summaries are not clipped.
    */
   contentHeight: contentHeightProp,
   duration = COLLAPSE_DURATION_MS,
@@ -26,10 +27,12 @@ export const CollapsibleContainer = ({
   duration?: number;
 }) => {
   const [measuredHeight, setMeasuredHeight] = useState(0);
-  const contentHeight = contentHeightProp ?? measuredHeight;
+  // Prefer the laid-out height so overestimated tree metrics don't leave a
+  // gap under the last row. Fall back to the estimate until layout runs.
+  const contentHeight =
+    measuredHeight > 0 ? measuredHeight : (contentHeightProp ?? 0);
   const height = useSharedValue(expanded ? contentHeight : 0);
   const hasInitialized = useRef(false);
-  const measureLayout = contentHeightProp == null;
 
   useEffect(() => {
     const target = expanded ? contentHeight : 0;
@@ -46,7 +49,6 @@ export const CollapsibleContainer = ({
   }));
 
   const onLayout = (event: LayoutChangeEvent) => {
-    if (!measureLayout) return;
     const layoutHeight = event.nativeEvent.layout.height;
     if (layoutHeight > 0) {
       setMeasuredHeight((prev) =>
@@ -60,10 +62,7 @@ export const CollapsibleContainer = ({
       style={[animatedHeight, { overflow: "hidden" }]}
       className={className}
     >
-      <View
-        style={{ position: "absolute", width: "100%" }}
-        onLayout={measureLayout ? onLayout : undefined}
-      >
+      <View style={{ position: "absolute", width: "100%" }} onLayout={onLayout}>
         {children}
       </View>
     </Animated.View>

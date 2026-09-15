@@ -1087,15 +1087,13 @@ export function setSimplifiedModeScript(
           var(--category-stack, 0px) + var(--check-nudge, 2px)
         ) !important;
       }
-      li.thought-item:not(.is-completed) .thought-check-box {
+      li.thought-item .thought-check-box,
+      li.thought-item[data-category-id] .thought-check-box {
+        border-color: ${markerColor} !important;
         background: ${surfaceColor} !important;
       }
-      li.thought-item:not(.is-completed)[data-category-id="uncategorized"] .thought-check-box,
-      li.thought-item:not(.is-completed):not([data-category-id]) .thought-check-box {
-        border-color: ${markerColor} !important;
-      }
-      li.thought-item.is-completed[data-category-id="uncategorized"] .thought-check-box,
-      li.thought-item.is-completed:not([data-category-id]) .thought-check-box {
+      li.thought-item.is-completed .thought-check-box,
+      li.thought-item[data-category-id].is-completed .thought-check-box {
         background-color: ${markerColor} !important;
         border-color: ${markerColor} !important;
       }

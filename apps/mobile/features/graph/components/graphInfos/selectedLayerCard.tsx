@@ -60,10 +60,10 @@ const TITLE_SUMMARY_GAP = 0;
 /** Fixed row metrics for precomputing collapsible heights (avoid onLayout thrash). */
 const EST_FOLDER_ROW = 36;
 const EST_NOTE_LEAF = 46;
-const EST_THOUGHT_TITLE = 30;
-const EST_THOUGHT_TITLE_COMPACT = 26;
+const EST_THOUGHT_PAD = 8;
 const EST_SUMMARY_LINE = 18;
-const EST_SUMMARY_CHARS_PER_LINE = 42;
+const EST_SUMMARY_CHARS_PER_LINE = 28;
+const EST_TITLE_CHARS_PER_LINE = 28;
 
 const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
   const title = capitalize(value || "");
@@ -76,9 +76,6 @@ const resolveDisplayTitle = (node: NodeDatum): string => {
   const raw = (node.title ?? node.name ?? "").trim();
   return raw || "Untitled";
 };
-
-const hasThoughtTitle = (node: NodeDatum): boolean =>
-  Boolean((node.title ?? "").trim());
 
 const resolveDisplaySummary = (node: NodeDatum): string | null => {
   const summary = (node.summary ?? "").trim();
@@ -300,12 +297,21 @@ const buildActivePathIds = (
   return ids;
 };
 
+function estimateWrappedLines(
+  text: string,
+  charsPerLine: number,
+  maxLines?: number
+) {
+  const lines = Math.max(1, Math.ceil(text.length / charsPerLine));
+  return maxLines ? Math.min(lines, maxLines) : lines;
+}
+
 function estimateSummaryHeight(summary: string) {
-  const lines = Math.max(
-    1,
-    Math.ceil(summary.length / EST_SUMMARY_CHARS_PER_LINE)
+  return (
+    estimateWrappedLines(summary, EST_SUMMARY_CHARS_PER_LINE) *
+      EST_SUMMARY_LINE +
+    TITLE_SUMMARY_GAP
   );
-  return lines * EST_SUMMARY_LINE + TITLE_SUMMARY_GAP;
 }
 
 /** Full on-screen height of a branch, respecting which folders are expanded. */
@@ -316,14 +322,22 @@ function estimateBranchHeight(
   if (isNoteLeaf(node)) return EST_NOTE_LEAF;
 
   if (isThoughtLeaf(node)) {
-    const hasTitle = hasThoughtTitle(node);
+    const title = (node.title ?? "").trim();
     const summary = resolveDisplaySummary(node);
-    if (!hasTitle && summary) {
-      return estimateSummaryHeight(summary) + 8 + THOUGHT_BLOCK_GAP;
+    const titleHeight = title
+      ? EST_THOUGHT_PAD +
+        estimateWrappedLines(title, EST_TITLE_CHARS_PER_LINE, 2) *
+          TITLE_LINE_HEIGHT
+      : 0;
+    const summaryHeight = summary ? estimateSummaryHeight(summary) : 0;
+    if (!title) {
+      return (
+        EST_THOUGHT_PAD +
+        (summaryHeight || TITLE_LINE_HEIGHT) +
+        THOUGHT_BLOCK_GAP
+      );
     }
-    let height = summary ? EST_THOUGHT_TITLE_COMPACT : EST_THOUGHT_TITLE;
-    if (summary) height += estimateSummaryHeight(summary);
-    return height + THOUGHT_BLOCK_GAP;
+    return titleHeight + summaryHeight + THOUGHT_BLOCK_GAP;
   }
 
   let height = EST_FOLDER_ROW;
@@ -738,27 +752,29 @@ const LeafBranch = ({
         {header}
       </View>
     </View>
-    <View style={{ flexDirection: "row" }}>
-      <View style={{ width: guideWidth, alignSelf: "stretch" }}>
-        {!isLast ? (
-          <RailSegment
-            lineColor={lineColor}
-            top={0}
-            bottom={0}
-            guideWidth={guideWidth}
-          />
-        ) : null}
+    {!isLast || nested ? (
+      <View style={{ flexDirection: "row" }}>
+        <View style={{ width: guideWidth, alignSelf: "stretch" }}>
+          {!isLast ? (
+            <RailSegment
+              lineColor={lineColor}
+              top={0}
+              bottom={0}
+              guideWidth={guideWidth}
+            />
+          ) : null}
+        </View>
+        <View
+          className="flex-1 min-w-0"
+          style={{
+            marginLeft: ELBOW_WIDTH,
+            paddingBottom: isLast ? 0 : THOUGHT_BLOCK_GAP,
+          }}
+        >
+          {nested}
+        </View>
       </View>
-      <View
-        className="flex-1 min-w-0"
-        style={{
-          marginLeft: ELBOW_WIDTH,
-          paddingBottom: THOUGHT_BLOCK_GAP,
-        }}
-      >
-        {nested}
-      </View>
-    </View>
+    ) : null}
   </View>
 );
 
