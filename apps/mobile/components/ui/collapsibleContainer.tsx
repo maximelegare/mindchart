@@ -13,9 +13,8 @@ export const CollapsibleContainer = ({
   expanded,
   className,
   /**
-   * Optional estimated height for the first paint.
-   * Layout is still measured; if the real content is taller, the container grows
-   * so long titles/summaries are not clipped.
+   * Optional estimated height for the first animated paint.
+   * Layout is still measured and follows the real content as it changes.
    */
   contentHeight: contentHeightProp,
   duration = COLLAPSE_DURATION_MS,
@@ -27,16 +26,15 @@ export const CollapsibleContainer = ({
   duration?: number;
 }) => {
   const [measuredHeight, setMeasuredHeight] = useState(0);
-  // Prefer the laid-out height so overestimated tree metrics don't leave a
-  // gap under the last row. Fall back to the estimate until layout runs.
   const contentHeight =
     measuredHeight > 0 ? measuredHeight : (contentHeightProp ?? 0);
   const height = useSharedValue(expanded ? contentHeight : 0);
   const hasInitialized = useRef(false);
 
   useEffect(() => {
+    if (duration <= 0) return;
     const target = expanded ? contentHeight : 0;
-    if (!hasInitialized.current || duration <= 0) {
+    if (!hasInitialized.current) {
       height.value = target;
       hasInitialized.current = true;
       return;
@@ -57,12 +55,30 @@ export const CollapsibleContainer = ({
     }
   };
 
+  // Instant expand/collapse must not lock a measured height — nested rows and
+  // wrapping text keep growing after the first layout.
+  if (duration <= 0) {
+    return (
+      <View
+        className={className}
+        style={expanded ? undefined : { height: 0, overflow: "hidden" }}
+        pointerEvents={expanded ? "auto" : "none"}
+      >
+        {children}
+      </View>
+    );
+  }
+
   return (
     <Animated.View
       style={[animatedHeight, { overflow: "hidden" }]}
       className={className}
     >
-      <View style={{ position: "absolute", width: "100%" }} onLayout={onLayout}>
+      <View
+        collapsable={false}
+        style={{ position: "absolute", left: 0, width: "100%" }}
+        onLayout={onLayout}
+      >
         {children}
       </View>
     </Animated.View>

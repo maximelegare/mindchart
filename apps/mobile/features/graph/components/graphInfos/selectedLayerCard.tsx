@@ -47,6 +47,8 @@ const ROW_GAP = 6;
 const TITLE_LINE_HEIGHT = 20;
 /** Thought first-line paddingTop + half the bullet box — elbow meets the bullet. */
 const FIRST_LINE_CENTER = 4 + TITLE_LINE_HEIGHT / 2;
+/** Summary body line height under a thought title. */
+const EST_SUMMARY_LINE = 18;
 /** Horizontal inset shared by the layer header and its child tree rail. */
 const HEADER_INSET = 6;
 /** Short horizontal run from the rail into the row — keep tight to free content width. */
@@ -55,15 +57,6 @@ const LINE_WIDTH = Math.max(StyleSheet.hairlineWidth * 2, 1);
 const HAIRLINE = StyleSheet.hairlineWidth;
 /** Space between separate thoughts (not between a title and its summary). */
 const THOUGHT_BLOCK_GAP = 14;
-const TITLE_SUMMARY_GAP = 0;
-
-/** Fixed row metrics for precomputing collapsible heights (avoid onLayout thrash). */
-const EST_FOLDER_ROW = 36;
-const EST_NOTE_LEAF = 46;
-const EST_THOUGHT_PAD = 8;
-const EST_SUMMARY_LINE = 18;
-const EST_SUMMARY_CHARS_PER_LINE = 28;
-const EST_TITLE_CHARS_PER_LINE = 28;
 
 const formatTitle = (value: string, maxLength = MAX_TITLE_LENGTH) => {
   const title = capitalize(value || "");
@@ -296,68 +289,6 @@ const buildActivePathIds = (
   }
   return ids;
 };
-
-function estimateWrappedLines(
-  text: string,
-  charsPerLine: number,
-  maxLines?: number
-) {
-  const lines = Math.max(1, Math.ceil(text.length / charsPerLine));
-  return maxLines ? Math.min(lines, maxLines) : lines;
-}
-
-function estimateSummaryHeight(summary: string) {
-  return (
-    estimateWrappedLines(summary, EST_SUMMARY_CHARS_PER_LINE) *
-      EST_SUMMARY_LINE +
-    TITLE_SUMMARY_GAP
-  );
-}
-
-/** Full on-screen height of a branch, respecting which folders are expanded. */
-function estimateBranchHeight(
-  node: NodeDatum,
-  expandedIds: ReadonlySet<string>
-): number {
-  if (isNoteLeaf(node)) return EST_NOTE_LEAF;
-
-  if (isThoughtLeaf(node)) {
-    const title = (node.title ?? "").trim();
-    const summary = resolveDisplaySummary(node);
-    const titleHeight = title
-      ? EST_THOUGHT_PAD +
-        estimateWrappedLines(title, EST_TITLE_CHARS_PER_LINE, 2) *
-          TITLE_LINE_HEIGHT
-      : 0;
-    const summaryHeight = summary ? estimateSummaryHeight(summary) : 0;
-    if (!title) {
-      return (
-        EST_THOUGHT_PAD +
-        (summaryHeight || TITLE_LINE_HEIGHT) +
-        THOUGHT_BLOCK_GAP
-      );
-    }
-    return titleHeight + summaryHeight + THOUGHT_BLOCK_GAP;
-  }
-
-  let height = EST_FOLDER_ROW;
-  if (expandedIds.has(node.id) && node.children?.length) {
-    height += estimateNodesHeight(node.children, expandedIds);
-  }
-  return height;
-}
-
-/** Height of a NestedChildren list (collapsible content). */
-function estimateNodesHeight(
-  nodes: NodeDatum[],
-  expandedIds: ReadonlySet<string>
-): number {
-  let height = 0;
-  for (const node of nodes) {
-    height += estimateBranchHeight(node, expandedIds);
-  }
-  return height;
-}
 
 type TreeCtx = {
   toggleExpanded: (nodeId: string) => void;
@@ -925,7 +856,6 @@ const TreeBranch = React.memo(function TreeBranch({
       prefetchOnly={prefetchOnly}
       isCurrent={currentBit === "1"}
       expanded={expandedBit === "1"}
-      expandedIds={store.getState().expandedIds}
     />
   );
 });
@@ -938,7 +868,6 @@ const FolderBranch = React.memo(function FolderBranch({
   prefetchOnly = false,
   isCurrent,
   expanded,
-  expandedIds,
 }: {
   node: NodeDatum;
   isLast: boolean;
@@ -947,7 +876,6 @@ const FolderBranch = React.memo(function FolderBranch({
   prefetchOnly?: boolean;
   isCurrent: boolean;
   expanded: boolean;
-  expandedIds: ReadonlySet<string>;
 }) {
   const children = node.children ?? [];
   const canCollapse = children.length > 0;
@@ -955,11 +883,6 @@ const FolderBranch = React.memo(function FolderBranch({
   // Prefetch-only rows (under a collapsed parent): folder header only — no deeper mount.
   const showCollapsible = canCollapse && !prefetchOnly;
   const mountChildRows = showCollapsible && expanded;
-
-  const contentHeight = useMemo(
-    () => (showCollapsible ? estimateNodesHeight(children, expandedIds) : 0),
-    [children, expandedIds, showCollapsible]
-  );
 
   return (
     <View>
@@ -1112,11 +1035,7 @@ const FolderBranch = React.memo(function FolderBranch({
               marginLeft: ELBOW_WIDTH + HAIRLINE,
             }}
           >
-            <CollapsibleContainer
-              expanded={expanded}
-              contentHeight={contentHeight}
-              duration={0}
-            >
+            <CollapsibleContainer expanded={expanded} duration={0}>
               {mountChildRows ? (
                 <NestedChildren
                   nodes={children}
