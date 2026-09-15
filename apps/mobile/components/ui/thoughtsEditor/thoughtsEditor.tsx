@@ -210,6 +210,9 @@ function applyFormatInThoughtFieldScript(command: string): string {
     node = node.parentNode;
   }
   if (!inField) return true;
+  if (command === "bold" && node.classList.contains("thought-title")) {
+    return true;
+  }
   if (!document.queryCommandState(command)) {
     document.execCommand(command);
   }
@@ -1175,7 +1178,7 @@ function ThoughtsEditorInner(
               }
             }}
           >
-            {/* Don't load Quicksand via file:// @font-face — Android SIGBUS in FreeType. */}
+            {/* Don't load Quicksand via @font-face — Android SIGBUS in FreeType. */}
             <RichEditor
               ref={richRef}
               style={{ flex: 1 }}
@@ -1460,22 +1463,22 @@ function ThoughtsEditorInner(
                     word-break: break-word;
                   }
                   .thought-title {
-                    font-family: 'QuicksandBold', sans-serif;
-                    font-weight: normal;
+                    font-weight: 700;
                     margin-bottom: 2px;
                     opacity: 0.75;
                   }
+                  .thought-title * {
+                    font-weight: 700;
+                  }
                   .thought-summary {
-                    font-family: 'QuicksandRegular', sans-serif;
-                    font-weight: normal;
+                    font-weight: 400;
                     opacity: 0.92;
                   }
                   .thought-title b,
                   .thought-title strong,
                   .thought-summary b,
                   .thought-summary strong {
-                    font-family: 'QuicksandBold', sans-serif;
-                    font-weight: bold;
+                    font-weight: 700;
                   }
                   .thought-title i,
                   .thought-title em,
