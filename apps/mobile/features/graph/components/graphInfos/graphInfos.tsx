@@ -137,14 +137,14 @@ const GraphInfos = memo(function GraphInfos({
         }}
         contentContainerStyle={{ paddingBottom: 8 }}
       >
-        {rootChildren.length > 0 ? (
-          <View style={{ display: showRootCards ? "flex" : "none" }}>
+        {showRootCards ? (
+          rootChildren.length > 0 ? (
             <RootLayerCards nodes={rootChildren} />
-          </View>
-        ) : showRootCards ? (
-          <Typography className="text-center py-10 opacity-50">
-            Select a node to see details
-          </Typography>
+          ) : (
+            <Typography className="text-center py-10 opacity-50">
+              Select a node to see details
+            </Typography>
+          )
         ) : null}
         {mountedLayer && mountedCurrentId ? (
           <View style={{ display: showRootCards ? "none" : "flex" }}>

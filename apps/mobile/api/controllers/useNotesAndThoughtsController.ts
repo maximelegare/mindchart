@@ -23,6 +23,7 @@ import {
 import {
   fetchNoteDetails,
   fetchNotesAndThoughts,
+  fetchNotesByIdsWithThoughts,
   fetchPaginatedNotesAndThoughts,
   type PaginatedNotesAndThoughtsRequest,
 } from "@/api/endpoints/thoughtsAndNotes";
@@ -192,6 +193,21 @@ export const useNotesAndThoughtsController = () => {
       structuralSharing: false,
       ...options,
     });
+
+  const useFetchNotesByIdsWithThoughtsQuery = (
+    ids: string[],
+    options?: ReactQueryOptions
+  ) => {
+    const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+    return useQuery<Awaited<ReturnType<typeof fetchNotesByIdsWithThoughts>>>({
+      queryKey: [REACT_QUERY_KEYS.fetchNotesByIdsWithThoughts, uniqueIds],
+      queryFn: () => fetchNotesByIdsWithThoughts(uniqueIds),
+      refetchOnMount: "always",
+      structuralSharing: false,
+      ...options,
+      enabled: uniqueIds.length > 0 && (options?.enabled ?? true),
+    });
+  };
 
   const useFetchPaginatedNotesQuery = (
     params: PaginatedNotesAndThoughtsRequest,
@@ -402,6 +418,7 @@ export const useNotesAndThoughtsController = () => {
     useInsertNoteAndThoughtsMutation,
     useFetchAllThoughtsWithEmbeddingsQuery,
     useFetchNotesAndThoughtsQuery,
+    useFetchNotesByIdsWithThoughtsQuery,
     useFetchPaginatedNotesQuery,
     useFetchPaginatedNotesAndThoughtsQuery,
     useFetchNoteDetails,

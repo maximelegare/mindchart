@@ -41,6 +41,7 @@ export const REACT_QUERY_KEYS = {
   fetchNotes: "fetch_notes",
   fetchThoughts: "fetch_thoughts",
   fetchNotesAndThoughts: "fetch_notes_and_thoughts",
+  fetchNotesByIdsWithThoughts: "fetch_notes_by_ids_with_thoughts",
   fetchAllThoughtsWithEmbeddings: "fetch_all_thoughts_with_embeddings",
   fetchGraphData: "fetch_graph_data",
   updateGraphData: "update_graph_data",

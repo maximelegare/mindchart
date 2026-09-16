@@ -42,14 +42,17 @@ type ListItemProps = {
   date?: string | null;
   category?: string | null;
   overviewItems: NoteOverviewItem[];
+  /** When true, render every thought instead of the truncated overview. */
+  showAllContent?: boolean;
 };
 
 export const NoteWithThoughts: React.FC<ListItemProps> = memo(
-  ({ title, id, date, overviewItems }) => {
+  ({ title, id, date, overviewItems, showAllContent = false }) => {
     const { push } = useRouter();
     const { colorScheme } = useColorScheme();
     const markerColor = hsl("muted-foreground", colorScheme);
-    const hasMore = overviewItems.length > MAX_VISIBLE_BULLETS;
+    const hasMore =
+      !showAllContent && overviewItems.length > MAX_VISIBLE_BULLETS;
     const visibleItems = hasMore
       ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
       : overviewItems;
@@ -142,5 +145,6 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
   (prevProps, nextProps) =>
     prevProps.title === nextProps.title &&
     prevProps.id === nextProps.id &&
-    prevProps.overviewItems === nextProps.overviewItems
+    prevProps.overviewItems === nextProps.overviewItems &&
+    prevProps.showAllContent === nextProps.showAllContent
 );
