@@ -33,6 +33,7 @@ import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { GraphModeTabs } from "./graphModeTabs";
+import { CategoryFolderDepthMenu } from "./categoryFolderDepthChip";
 import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { isEmptyFolderNode } from "@/features/graph/utils/buildGraphByFolder";
@@ -852,6 +853,16 @@ function CirclePackSkiaRenderer({
               ))}
             </Canvas>
           </GestureDetector>
+
+          {graphMode === "category" ? (
+            <View
+              pointerEvents="box-none"
+              className="absolute p-2 m-2"
+              style={{ top: 0, left: 0, zIndex: 2 }}
+            >
+              <CategoryFolderDepthMenu />
+            </View>
+          ) : null}
 
           <View
             className="absolute gap-2 p-2 m-2"

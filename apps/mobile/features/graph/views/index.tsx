@@ -23,6 +23,9 @@ export const GraphFeature = ({
   const renderMode = useGraphStore((state) => state.renderMode);
   const selectedFolderId = useGraphStore((state) => state.selectedFolderId);
   const selectedCategoryId = useGraphStore((state) => state.selectedCategoryId);
+  const categoryFolderMergeDepth = useGraphStore(
+    (state) => state.categoryFolderMergeDepth
+  );
   const { hierarchies, isLoading, refetchGraph, refetchSyncFlag } = useGraph();
   const { scrollToTop } = usePageScroll();
 
@@ -65,7 +68,12 @@ export const GraphFeature = ({
 
   useEffect(() => {
     setSelection({ active: null, parent: null });
-  }, [renderMode, selectedFolderId, selectedCategoryId]);
+  }, [
+    renderMode,
+    selectedFolderId,
+    selectedCategoryId,
+    categoryFolderMergeDepth,
+  ]);
 
   // Clicks pass layout-cache snapshots; replace them with the live tree node
   // so title/summary edits (and the Titles toggle) show up immediately.

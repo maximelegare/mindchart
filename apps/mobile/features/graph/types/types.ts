@@ -1,5 +1,18 @@
 export type GraphMode = "category" | "folder";
 
+/** How many folder levels the category graph keeps before merging deeper thoughts. */
+export type CategoryFolderMergeDepth = 1 | 2 | 3;
+
+export const DEFAULT_CATEGORY_FOLDER_MERGE_DEPTH: CategoryFolderMergeDepth = 2;
+
+export const parseCategoryFolderMergeDepth = (
+  value: unknown
+): CategoryFolderMergeDepth => {
+  if (value === 1 || value === "1") return 1;
+  if (value === 3 || value === "3") return 3;
+  return 2;
+};
+
 export type NodeDatum = {
   name: string;
   id: string;

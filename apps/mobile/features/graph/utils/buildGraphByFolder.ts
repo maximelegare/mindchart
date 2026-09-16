@@ -16,7 +16,10 @@ export const folderNodeId = (folderId: string, scope?: string) =>
 type MutableFolderNode = NodeDatum & { children: NodeDatum[] };
 
 export type BuildGraphByFolderOptions = {
-  /** When 1, only root folders appear; nested leaves attach to their root ancestor. */
+  /**
+   * Folders deeper than this collapse into the ancestor at this depth.
+   * Thoughts in those nested folders attach to that ancestor.
+   */
   maxFolderDepth?: number;
   /**
    * Scopes folder node ids (e.g. category id) so the same folder can appear under
@@ -53,16 +56,18 @@ function buildFolderHierarchy(
   options?: BuildGraphByFolderOptions
 ): NodeDatum {
   const maxFolderDepth = options?.maxFolderDepth;
-  const flattenToRootFolders = maxFolderDepth === 1;
   const folderIdScope = options?.folderIdScope;
   const keepEmptyFolders = options?.keepEmptyFolders !== false;
 
   const foldersById = new Map(folders.map((folder) => [folder.id, folder]));
   const folderNodes = new Map<string, MutableFolderNode>();
 
-  const foldersToShow = flattenToRootFolders
-    ? folders.filter((folder) => getFolderDepth(folder.path) === 1)
-    : folders;
+  const foldersToShow =
+    maxFolderDepth != null
+      ? folders.filter(
+          (folder) => getFolderDepth(folder.path) <= maxFolderDepth
+        )
+      : folders;
 
   for (const folder of foldersToShow) {
     folderNodes.set(folder.id, {
@@ -77,36 +82,34 @@ function buildFolderHierarchy(
 
   const rootChildren: NodeDatum[] = [];
 
-  if (flattenToRootFolders) {
-    for (const node of folderNodes.values()) {
+  for (const folder of foldersToShow) {
+    const node = folderNodes.get(folder.id)!;
+    const parentPath = getParentFolderPath(folder.path);
+    if (!parentPath) {
       rootChildren.push(node);
+      continue;
     }
-  } else {
-    for (const folder of folders) {
-      const node = folderNodes.get(folder.id)!;
-      const parentPath = getParentFolderPath(folder.path);
-      if (!parentPath) {
-        rootChildren.push(node);
-        continue;
-      }
-      const parentId = parentPath.split("/").filter(Boolean).pop();
-      const parent = parentId ? folderNodes.get(parentId) : undefined;
-      if (parent) {
-        parent.children.push(node);
-      } else {
-        rootChildren.push(node);
-      }
+    const parentId = parentPath.split("/").filter(Boolean).pop();
+    const parent = parentId ? folderNodes.get(parentId) : undefined;
+    if (parent) {
+      parent.children.push(node);
+    } else {
+      rootChildren.push(node);
     }
   }
 
   const resolveAttachFolderId = (folderId: string): string | undefined => {
     if (folderNodes.has(folderId)) return folderId;
-    if (!flattenToRootFolders) return undefined;
+    if (maxFolderDepth == null) return undefined;
 
     const folder = foldersById.get(folderId);
     if (!folder) return undefined;
-    const rootId = getFolderIdsFromPath(folder.path)[0];
-    return rootId && folderNodes.has(rootId) ? rootId : undefined;
+    const ids = getFolderIdsFromPath(folder.path);
+    const deepestShown = Math.min(ids.length, maxFolderDepth) - 1;
+    for (let i = deepestShown; i >= 0; i--) {
+      if (folderNodes.has(ids[i])) return ids[i];
+    }
+    return undefined;
   };
 
   const unfiled: NodeDatum[] = [];
