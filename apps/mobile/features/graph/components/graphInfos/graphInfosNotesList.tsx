@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { Separator } from "@/components/ui/separator";
-import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { useControllers } from "@/api/controllers/useControllers";
 import {
   NoteWithThoughts,
@@ -10,6 +9,7 @@ import {
 } from "@/features/contentList/components/cards/noteWithOverview";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
 import { GraphInfosNotesEmptyLabel } from "./graphInfosLabels";
+import { GraphInfosNotesSkeleton } from "./graphInfosSkeletons";
 
 export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
   const { useFetchNotesByIdsWithThoughtsQuery } =
@@ -27,18 +27,11 @@ export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
       .filter((note): note is NonNullable<typeof note> => note != null);
   }, [data, noteIds]);
 
-  if (noteIds.length === 0) {
-    return (
-      <View className="items-center justify-center px-4 py-8">
-        <Typography variant="p" className="text-center text-muted-foreground">
-          <GraphInfosNotesEmptyLabel />
-        </Typography>
-      </View>
-    );
-  }
+  const isLoading =
+    noteIds.length > 0 && notes.length === 0 && (isPending || isFetching);
 
-  if ((isPending || isFetching) && notes.length === 0) {
-    return <LoadingState size="small" />;
+  if (isLoading) {
+    return <GraphInfosNotesSkeleton />;
   }
 
   if (notes.length === 0) {
