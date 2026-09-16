@@ -1,5 +1,6 @@
 import {
   getNoteByIdWithAssociatedThoughtsQuery,
+  getNotesByIdsWithAssociatedThoughtsQuery,
   getNotesWithAssociatedThoughtsQuery,
   getPaginatedNotesWithThoughtsAndCountQuery,
   getOPDatabase,
@@ -59,6 +60,12 @@ export const fetchPaginatedNotesAndThoughts = async (
   );
   const withPersons = await attachPersonsToNoteRows(rows);
   return { rows: withPersons ?? [], totalCount };
+};
+
+export const fetchNotesByIdsWithThoughts = async (ids: string[]) => {
+  const db = getOPDatabase();
+  const rows = await getNotesByIdsWithAssociatedThoughtsQuery(db, ids);
+  return attachPersonsToNoteRows(rows);
 };
 
 export const fetchNoteDetails = async (id: string) => {

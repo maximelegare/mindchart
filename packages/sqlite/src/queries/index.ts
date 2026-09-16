@@ -56,5 +56,6 @@ export * from "./thoughts/getAllThoughtsWithEmbeddings";
 export * from "./thoughts/insertThoughts";
 export * from "./thoughts/updateThouhts";
 export * from "./thoughtsAndNotes/getNoteByIdWithAssociatedThoughts";
+export * from "./thoughtsAndNotes/getNotesByIdsWithAssociatedThoughts";
 export * from "./thoughtsAndNotes/getNotesWithAssociatedThoughts";
 export * from "./thoughtsAndNotes/getPaginatedNotesWithAssociatedThoughts";

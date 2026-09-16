@@ -34,9 +34,16 @@ import {
   resolveNodeCategoryKey,
 } from "../../utils/resolveNodeCategoryKey";
 import { navigateGraphSelection } from "../../utils/focusGraphNode";
+import {
+  collectNoteIdsFromNode,
+  resolveDirectoryNode,
+} from "../../utils/collectNoteIdsFromNode";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import type { GraphMode, NodeDatum } from "../../types/types";
 import type { Folder } from "@repo/zod-schemas";
+import { GraphInfosViewToggle } from "./graphInfosViewToggle";
+import type { GraphInfosContentView } from "./graphInfosViewToggle";
+import { GraphInfosNotesList } from "./graphInfosNotesList";
 
 const MAX_TITLE_LENGTH = 40;
 const ICON_SLOT = 14;
@@ -1203,6 +1210,17 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
   const isLayerCurrent =
     layerRoot.id === currentNodeId && !idsWithFocusedChild.has(layerRoot.id);
   const children = layerRoot.children ?? [];
+  const [contentView, setContentView] = useState<GraphInfosContentView>("tree");
+
+  const directoryNode = useMemo(
+    () => resolveDirectoryNode(layerRoot, currentNodeId),
+    [currentNodeId, layerRoot]
+  );
+
+  const directoryNoteIds = useMemo(
+    () => collectNoteIdsFromNode(directoryNode),
+    [directoryNode]
+  );
 
   const cardRadius = 18;
 
@@ -1223,7 +1241,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
           ) : null}
 
           <View className="flex-1 min-w-0 p-3.5">
-            <View style={{ alignSelf: "flex-start" }} className="mb-2">
+            <View className="flex-row items-center justify-between mb-2">
               <Button
                 onPress={navigateHome}
                 hitSlop={10}
@@ -1241,6 +1259,10 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
                   </Typography>
                 </View>
               </Button>
+              <GraphInfosViewToggle
+                view={contentView}
+                onChange={setContentView}
+              />
             </View>
             <View
               style={{
@@ -1351,7 +1373,9 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               ) : null}
             </View>
 
-            {children.length ? (
+            {contentView === "notes" ? (
+              <GraphInfosNotesList noteIds={directoryNoteIds} />
+            ) : children.length ? (
               <View
                 style={{
                   // Match the layer-root icon column (header inset + border).
