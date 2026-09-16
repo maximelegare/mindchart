@@ -9,6 +9,8 @@ import React, {
   useSyncExternalStore,
 } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui";
@@ -1212,6 +1214,28 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
   const children = layerRoot.children ?? [];
   const [contentView, setContentView] = useState<GraphInfosContentView>("tree");
 
+  const swipeToView = useCallback((next: GraphInfosContentView) => {
+    setContentView(next);
+  }, []);
+
+  const swipeBetweenViews = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetX([-28, 28])
+        .failOffsetY([-24, 24])
+        .onEnd((event) => {
+          "use worklet";
+          const { translationX, velocityX } = event;
+          if (Math.abs(translationX) < 48 && Math.abs(velocityX) < 500) {
+            return;
+          }
+          const goingLeft =
+            Math.abs(translationX) >= 48 ? translationX < 0 : velocityX < 0;
+          runOnJS(swipeToView)(goingLeft ? "notes" : "tree");
+        }),
+    [swipeToView]
+  );
+
   const directoryNode = useMemo(
     () => resolveDirectoryNode(layerRoot, currentNodeId),
     [currentNodeId, layerRoot]
@@ -1226,217 +1250,223 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
 
   return (
     <TreeSelectionStoreContext.Provider value={selectionStoreRef.current}>
-      <Card
-        className="w-full overflow-hidden rounded-2xl border-0"
-        style={{ borderRadius: cardRadius, overflow: "hidden", borderWidth: 0 }}
-      >
-        <View className="w-full flex-row" style={{ overflow: "hidden" }}>
-          {showMainStripe ? (
-            <View
-              style={{
-                width: 5,
-                backgroundColor: stripeColor,
-              }}
-            />
-          ) : null}
-
-          <View className="flex-1 min-w-0 p-3.5">
-            <View className="flex-row items-center justify-between mb-2">
-              <Button
-                onPress={navigateHome}
-                hitSlop={10}
-                accessibilityRole="button"
-                accessibilityLabel="Back to home"
-                variant="ghost"
-                size="sm"
-                className="flex-row items-center gap-2 p-0"
-              >
-                <Icon name="arrow-left" color="muted-foreground" size={16} />
-                <View className="flex-row items-center gap-1">
-                  <Icon name="house" color="muted-foreground" size={16} />
-                  <Typography variant="p" className="opacity-70 pb-0">
-                    Home
-                  </Typography>
-                </View>
-              </Button>
-              <GraphInfosViewToggle
-                view={contentView}
-                onChange={setContentView}
+      <GestureDetector gesture={swipeBetweenViews}>
+        <Card
+          className="w-full overflow-hidden rounded-2xl border-0"
+          style={{
+            borderRadius: cardRadius,
+            overflow: "hidden",
+            borderWidth: 0,
+          }}
+        >
+          <View className="w-full flex-row" style={{ overflow: "hidden" }}>
+            {showMainStripe ? (
+              <View
+                style={{
+                  width: 5,
+                  backgroundColor: stripeColor,
+                }}
               />
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: ROW_GAP,
-                paddingHorizontal: HEADER_INSET,
-                paddingVertical: 4,
-                borderRadius: cardRadius,
-                // Keep borderWidth stable — toggling it collapses flex text on RN.
-                borderWidth: HAIRLINE,
-                borderColor: isLayerCurrent
-                  ? hsl("border", colorScheme)
-                  : "transparent",
-                backgroundColor: isLayerCurrent
-                  ? highlightColor
-                  : "transparent",
-              }}
-            >
-              {(() => {
-                const layerFolder =
-                  graphMode === "folder" &&
-                  isRealFolderNode(layerRoot) &&
-                  layerRoot.folderId
-                    ? (foldersById.get(layerRoot.folderId) ?? null)
-                    : null;
+            ) : null}
 
-                const layerRow = (
-                  <>
-                    <IconColumn>
-                      <NodeKindIcon node={layerRoot} graphMode={graphMode} />
-                    </IconColumn>
-                    <Typography
-                      variant="h4"
-                      numberOfLines={1}
-                      style={{ flex: 1 }}
-                    >
-                      {formatTitle(
-                        layerRoot.folderLabel ||
-                          resolveGraphNodeLabel(layerRoot, categoryLabels) ||
-                          layerRoot.title ||
-                          ""
-                      )}
-                    </Typography>
-                    {children.length ? (
-                      <Typography variant="p">({children.length})</Typography>
-                    ) : null}
-                    {isLayerCurrent ? (
-                      <View style={{ opacity: 0.45 }}>
-                        <Icon name="map-pin-simple" color="text" size={12} />
-                      </View>
-                    ) : null}
-                  </>
-                );
-
-                if (layerFolder) {
-                  return (
-                    <FolderActionsMenu
-                      target={{ kind: "folder", folder: layerFolder }}
-                      onNavigate={() => navigateToNode(layerRoot.id)}
-                      className="flex-1 min-w-0"
-                      hitSlop={0}
-                    >
-                      <View
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: ROW_GAP,
-                        }}
-                      >
-                        {layerRow}
-                      </View>
-                    </FolderActionsMenu>
-                  );
-                }
-
-                return (
-                  <Pressable
-                    onPress={() => navigateToNode(layerRoot.id)}
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: ROW_GAP,
-                    }}
-                  >
-                    {layerRow}
-                  </Pressable>
-                );
-              })()}
-              {layerRoot.noteId ? (
+            <View className="flex-1 min-w-0 p-3.5">
+              <View className="flex-row items-center justify-between mb-2">
                 <Button
-                  className="h-9 w-9 p-0"
+                  onPress={navigateHome}
+                  hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityLabel="Back to home"
                   variant="ghost"
-                  size="icon"
-                  onPress={() => navigateToNote(layerRoot.noteId)}
+                  size="sm"
+                  className="flex-row items-center gap-2 p-0"
                 >
-                  <Icon
-                    size={20}
-                    color="text"
-                    name="notebook-text"
-                    style={{ opacity: 0.8 }}
-                  />
+                  <Icon name="arrow-left" color="muted-foreground" size={16} />
+                  <View className="flex-row items-center gap-1">
+                    <Icon name="house" color="muted-foreground" size={16} />
+                    <Typography variant="p" className="opacity-70 pb-0">
+                      Home
+                    </Typography>
+                  </View>
                 </Button>
-              ) : null}
-            </View>
+                <GraphInfosViewToggle
+                  view={contentView}
+                  onChange={setContentView}
+                />
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: ROW_GAP,
+                  paddingHorizontal: HEADER_INSET,
+                  paddingVertical: 4,
+                  borderRadius: cardRadius,
+                  // Keep borderWidth stable — toggling it collapses flex text on RN.
+                  borderWidth: HAIRLINE,
+                  borderColor: isLayerCurrent
+                    ? hsl("border", colorScheme)
+                    : "transparent",
+                  backgroundColor: isLayerCurrent
+                    ? highlightColor
+                    : "transparent",
+                }}
+              >
+                {(() => {
+                  const layerFolder =
+                    graphMode === "folder" &&
+                    isRealFolderNode(layerRoot) &&
+                    layerRoot.folderId
+                      ? (foldersById.get(layerRoot.folderId) ?? null)
+                      : null;
 
-            {contentView === "notes" ? (
-              <GraphInfosNotesList noteIds={directoryNoteIds} />
-            ) : children.length ? (
-              <View
-                style={{
-                  // Match the layer-root icon column (header inset + border).
-                  marginLeft: HEADER_INSET + HAIRLINE,
-                  marginTop: 4,
-                }}
-              >
-                <NestedChildren
-                  nodes={children}
-                  guideWidth={ICON_SLOT}
-                  ctx={treeCtx}
-                />
-              </View>
-            ) : isNoteLeaf(layerRoot) ? (
-              <View
-                style={{
-                  marginLeft: HEADER_INSET + HAIRLINE,
-                  marginTop: 8,
-                }}
-              >
-                <NoteTitleRow
-                  node={layerRoot}
-                  isCurrent={false}
-                  isFocused={
-                    contentFocusId === layerRoot.noteId ||
-                    contentFocusId === layerRoot.id
+                  const layerRow = (
+                    <>
+                      <IconColumn>
+                        <NodeKindIcon node={layerRoot} graphMode={graphMode} />
+                      </IconColumn>
+                      <Typography
+                        variant="h4"
+                        numberOfLines={1}
+                        style={{ flex: 1 }}
+                      >
+                        {formatTitle(
+                          layerRoot.folderLabel ||
+                            resolveGraphNodeLabel(layerRoot, categoryLabels) ||
+                            layerRoot.title ||
+                            ""
+                        )}
+                      </Typography>
+                      {children.length ? (
+                        <Typography variant="p">({children.length})</Typography>
+                      ) : null}
+                      {isLayerCurrent ? (
+                        <View style={{ opacity: 0.45 }}>
+                          <Icon name="map-pin-simple" color="text" size={12} />
+                        </View>
+                      ) : null}
+                    </>
+                  );
+
+                  if (layerFolder) {
+                    return (
+                      <FolderActionsMenu
+                        target={{ kind: "folder", folder: layerFolder }}
+                        onNavigate={() => navigateToNode(layerRoot.id)}
+                        className="flex-1 min-w-0"
+                        hitSlop={0}
+                      >
+                        <View
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: ROW_GAP,
+                          }}
+                        >
+                          {layerRow}
+                        </View>
+                      </FolderActionsMenu>
+                    );
                   }
-                  highlightColor={highlightColor}
-                  onOpenNote={navigateToNote}
-                />
+
+                  return (
+                    <Pressable
+                      onPress={() => navigateToNode(layerRoot.id)}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: ROW_GAP,
+                      }}
+                    >
+                      {layerRow}
+                    </Pressable>
+                  );
+                })()}
+                {layerRoot.noteId ? (
+                  <Button
+                    className="h-9 w-9 p-0"
+                    variant="ghost"
+                    size="icon"
+                    onPress={() => navigateToNote(layerRoot.noteId)}
+                  >
+                    <Icon
+                      size={20}
+                      color="text"
+                      name="notebook-text"
+                      style={{ opacity: 0.8 }}
+                    />
+                  </Button>
+                ) : null}
               </View>
-            ) : isThoughtLeaf(layerRoot) ? (
-              <View
-                style={{
-                  marginLeft: HEADER_INSET + HAIRLINE,
-                  marginTop: 8,
-                }}
-              >
-                <ThoughtTitleRow
-                  node={layerRoot}
-                  isCurrent={false}
-                  isFocused={contentFocusId === layerRoot.thoughtId}
-                  highlightColor={highlightColor}
-                  onOpenNote={navigateToNote}
-                />
-              </View>
-            ) : (
-              <Typography
-                className="opacity-50"
-                variant="p"
-                style={{
-                  marginLeft: HEADER_INSET + HAIRLINE,
-                  marginTop: 8,
-                }}
-              >
-                No content
-              </Typography>
-            )}
+
+              {contentView === "notes" ? (
+                <GraphInfosNotesList noteIds={directoryNoteIds} />
+              ) : children.length ? (
+                <View
+                  style={{
+                    // Match the layer-root icon column (header inset + border).
+                    marginLeft: HEADER_INSET + HAIRLINE,
+                    marginTop: 4,
+                  }}
+                >
+                  <NestedChildren
+                    nodes={children}
+                    guideWidth={ICON_SLOT}
+                    ctx={treeCtx}
+                  />
+                </View>
+              ) : isNoteLeaf(layerRoot) ? (
+                <View
+                  style={{
+                    marginLeft: HEADER_INSET + HAIRLINE,
+                    marginTop: 8,
+                  }}
+                >
+                  <NoteTitleRow
+                    node={layerRoot}
+                    isCurrent={false}
+                    isFocused={
+                      contentFocusId === layerRoot.noteId ||
+                      contentFocusId === layerRoot.id
+                    }
+                    highlightColor={highlightColor}
+                    onOpenNote={navigateToNote}
+                  />
+                </View>
+              ) : isThoughtLeaf(layerRoot) ? (
+                <View
+                  style={{
+                    marginLeft: HEADER_INSET + HAIRLINE,
+                    marginTop: 8,
+                  }}
+                >
+                  <ThoughtTitleRow
+                    node={layerRoot}
+                    isCurrent={false}
+                    isFocused={contentFocusId === layerRoot.thoughtId}
+                    highlightColor={highlightColor}
+                    onOpenNote={navigateToNote}
+                  />
+                </View>
+              ) : (
+                <Typography
+                  className="opacity-50"
+                  variant="p"
+                  style={{
+                    marginLeft: HEADER_INSET + HAIRLINE,
+                    marginTop: 8,
+                  }}
+                >
+                  No content
+                </Typography>
+              )}
+            </View>
           </View>
-        </View>
-      </Card>
+        </Card>
+      </GestureDetector>
     </TreeSelectionStoreContext.Provider>
   );
 };
