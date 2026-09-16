@@ -1,4 +1,5 @@
 import * as React from "react";
+import { View, type ViewProps } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,11 +17,11 @@ const easing = Easing.inOut(Easing.quad);
 const MIN_OPACITY = 0.32;
 const MAX_OPACITY = 0.46;
 
-function Skeleton({
-  className,
+/** One shared pulse for a group of bones — avoids N independent Reanimated loops. */
+function SkeletonPulse({
+  children,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<typeof Animated.View>, "style">) {
-  const { colorScheme } = useColorScheme();
+}: ViewProps & { children: React.ReactNode }) {
   const sv = useSharedValue(MAX_OPACITY);
 
   React.useEffect(() => {
@@ -38,12 +39,25 @@ function Skeleton({
   }));
 
   return (
-    <Animated.View
-      style={[{ backgroundColor: hsl("muted-foreground", colorScheme) }, style]}
+    <Animated.View {...props} style={style}>
+      {children}
+    </Animated.View>
+  );
+}
+
+function Skeleton({
+  className,
+  ...props
+}: Omit<React.ComponentPropsWithoutRef<typeof View>, "style">) {
+  const { colorScheme } = useColorScheme();
+
+  return (
+    <View
+      style={{ backgroundColor: hsl("muted-foreground", colorScheme) }}
       className={cn("rounded-md", className)}
       {...props}
     />
   );
 }
 
-export { Skeleton };
+export { Skeleton, SkeletonPulse };

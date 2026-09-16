@@ -326,6 +326,7 @@ type TreeSelectionStore = {
 };
 
 const EMPTY_ID_SET: ReadonlySet<string> = new Set();
+const EMPTY_NODES: NodeDatum[] = [];
 
 const TreeSelectionStoreContext =
   React.createContext<TreeSelectionStore | null>(null);
@@ -1039,11 +1040,11 @@ type SelectedLayerCardProps = {
   focusedThoughtId?: string;
 };
 
-export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
+export const SelectedLayerCard = React.memo(function SelectedLayerCard({
   layerRoot,
   currentNodeId,
   focusedThoughtId,
-}) => {
+}: SelectedLayerCardProps) {
   const { colorScheme } = useColorScheme();
   const categoryColorMap = useCategoryColorMap();
   const categoryLabels = useCategoryLabelsMap();
@@ -1210,7 +1211,7 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
 
   const isLayerCurrent =
     layerRoot.id === currentNodeId && !idsWithFocusedChild.has(layerRoot.id);
-  const children = layerRoot.children ?? [];
+  const children = layerRoot.children ?? EMPTY_NODES;
   const [contentView, setContentView] = useState<GraphInfosContentView>("tree");
 
   const directoryNode = useMemo(
@@ -1225,59 +1226,87 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
 
   const cardRadius = 18;
 
-  const treeBody = children.length ? (
-    <View
-      style={{
-        // Match the layer-root icon column (header inset + border).
-        marginLeft: HEADER_INSET + HAIRLINE,
-        marginTop: 4,
-      }}
-    >
-      <NestedChildren nodes={children} guideWidth={ICON_SLOT} ctx={treeCtx} />
-    </View>
-  ) : isNoteLeaf(layerRoot) ? (
-    <View
-      style={{
-        marginLeft: HEADER_INSET + HAIRLINE,
-        marginTop: 8,
-      }}
-    >
-      <NoteTitleRow
-        node={layerRoot}
-        isCurrent={false}
-        isFocused={
-          contentFocusId === layerRoot.noteId || contentFocusId === layerRoot.id
-        }
-        highlightColor={highlightColor}
-        onOpenNote={navigateToNote}
-      />
-    </View>
-  ) : isThoughtLeaf(layerRoot) ? (
-    <View
-      style={{
-        marginLeft: HEADER_INSET + HAIRLINE,
-        marginTop: 8,
-      }}
-    >
-      <ThoughtTitleRow
-        node={layerRoot}
-        isCurrent={false}
-        isFocused={contentFocusId === layerRoot.thoughtId}
-        highlightColor={highlightColor}
-        onOpenNote={navigateToNote}
-      />
-    </View>
-  ) : (
-    <Typography
-      className="opacity-50"
-      variant="p"
-      style={{
-        marginLeft: HEADER_INSET + HAIRLINE,
-        marginTop: 8,
-      }}
-    >
-      No content
-    </Typography>
+  const treeBody = useMemo(() => {
+    if (children.length) {
+      return (
+        <View
+          style={{
+            // Match the layer-root icon column (header inset + border).
+            marginLeft: HEADER_INSET + HAIRLINE,
+            marginTop: 4,
+          }}
+        >
+          <NestedChildren
+            nodes={children}
+            guideWidth={ICON_SLOT}
+            ctx={treeCtx}
+          />
+        </View>
+      );
+    }
+    if (isNoteLeaf(layerRoot)) {
+      return (
+        <View
+          style={{
+            marginLeft: HEADER_INSET + HAIRLINE,
+            marginTop: 8,
+          }}
+        >
+          <NoteTitleRow
+            node={layerRoot}
+            isCurrent={false}
+            isFocused={
+              contentFocusId === layerRoot.noteId ||
+              contentFocusId === layerRoot.id
+            }
+            highlightColor={highlightColor}
+            onOpenNote={navigateToNote}
+          />
+        </View>
+      );
+    }
+    if (isThoughtLeaf(layerRoot)) {
+      return (
+        <View
+          style={{
+            marginLeft: HEADER_INSET + HAIRLINE,
+            marginTop: 8,
+          }}
+        >
+          <ThoughtTitleRow
+            node={layerRoot}
+            isCurrent={false}
+            isFocused={contentFocusId === layerRoot.thoughtId}
+            highlightColor={highlightColor}
+            onOpenNote={navigateToNote}
+          />
+        </View>
+      );
+    }
+    return (
+      <Typography
+        className="opacity-50"
+        variant="p"
+        style={{
+          marginLeft: HEADER_INSET + HAIRLINE,
+          marginTop: 8,
+        }}
+      >
+        No content
+      </Typography>
+    );
+  }, [
+    children,
+    contentFocusId,
+    highlightColor,
+    layerRoot,
+    navigateToNote,
+    treeCtx,
+  ]);
+
+  const notesPage = useMemo(
+    () => <GraphInfosNotesList noteIds={directoryNoteIds} />,
+    [directoryNoteIds]
   );
 
   return (
@@ -1437,11 +1466,11 @@ export const SelectedLayerCard: React.FC<SelectedLayerCardProps> = ({
               view={contentView}
               onChange={setContentView}
               tree={treeBody}
-              notes={<GraphInfosNotesList noteIds={directoryNoteIds} />}
+              notes={notesPage}
             />
           </View>
         </View>
       </Card>
     </TreeSelectionStoreContext.Provider>
   );
-};
+});

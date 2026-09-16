@@ -46,10 +46,12 @@ export const GraphInfosViewPager = ({
 
   const releaseInactive = useCallback(
     (active: GraphInfosContentView) => {
+      // Tree is expensive to rebuild — keep it mounted after the first paint.
+      // Notes stay lazy and unmount when you snap back to the tree.
       notesMountedSV.value = active === "notes";
-      treeMountedSV.value = active === "tree";
+      treeMountedSV.value = true;
       setMounted({
-        tree: active === "tree",
+        tree: true,
         notes: active === "notes",
       });
     },

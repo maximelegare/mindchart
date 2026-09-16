@@ -1,5 +1,5 @@
 import { View, StyleSheet } from "react-native";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton, SkeletonPulse } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
@@ -173,7 +173,7 @@ const TreeSkeletonRows = ({
 );
 
 export const GraphInfosNotesSkeleton = () => (
-  <View
+  <SkeletonPulse
     className="mt-3"
     accessibilityRole="progressbar"
     accessibilityLabel="Loading notes"
@@ -184,7 +184,7 @@ export const GraphInfosNotesSkeleton = () => (
         <NoteSkeletonCard title={layout.title} bullets={layout.bullets} />
       </View>
     ))}
-  </View>
+  </SkeletonPulse>
 );
 
 export const GraphInfosTreeSkeleton = () => {
@@ -192,12 +192,12 @@ export const GraphInfosTreeSkeleton = () => {
   const lineColor = hsl("border", colorScheme);
 
   return (
-    <View
+    <SkeletonPulse
       className="mt-1"
       accessibilityRole="progressbar"
       accessibilityLabel="Loading folder tree"
     >
       <TreeSkeletonRows nodes={TREE_LAYOUT} lineColor={lineColor} />
-    </View>
+    </SkeletonPulse>
   );
 };
