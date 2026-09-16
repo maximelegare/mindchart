@@ -1,4 +1,4 @@
-import type { NodeDatum } from "../../types/types";
+import type { NodeDatum } from "../types/types";
 import { isNoteLeafId } from "./mapNoteToLeaf";
 
 const isFolderPack = (node: NodeDatum) =>
