@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useWorkspacesStore } from "@/features/workspaces/context/workspacesContext";
 import { normalizeNotesFromQuery } from "@/features/contentList/utils/normalizeNotesFromQuery";
 import { GraphDataCache, NodeDatum } from "../types/types";
+import { useGraphStore } from "../context/graphContext";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 export type { NodeDatum };
@@ -112,6 +113,9 @@ export const useGraph = () => {
     () => (allFolders ?? []) as Folder[],
     [allFolders]
   );
+  const categoryFolderMergeDepth = useGraphStore(
+    (state) => state.categoryFolderMergeDepth
+  );
   const thoughtIdsByNoteId = useMemo(
     () => thoughtIdsByNoteIdFrom(typedThoughts),
     [typedThoughts]
@@ -130,10 +134,9 @@ export const useGraph = () => {
 
     return {
       version: GRAPH_CACHE_VERSION,
-      category: buildGraphByCategoryFolders(
-        folderList,
-        typedThoughts
-      ) as NodeDatum,
+      category: buildGraphByCategoryFolders(folderList, typedThoughts, {
+        maxFolderDepth: categoryFolderMergeDepth,
+      }) as NodeDatum,
       folder: buildGraphByFolder(folderList, notes, {
         thoughtIdsByNoteId,
       }) as NodeDatum,
@@ -146,6 +149,7 @@ export const useGraph = () => {
     notes,
     typedThoughts,
     thoughtIdsByNoteId,
+    categoryFolderMergeDepth,
   ]);
 
   // Persist + warm layouts when the live hierarchies change.
@@ -170,6 +174,7 @@ export const useGraph = () => {
         .map((f) => `${f.id}:${f.path}`)
         .sort()
         .join(","),
+      String(categoryFolderMergeDepth),
     ].join("::");
 
     if (persistedKeyRef.current === key) return;
@@ -188,6 +193,7 @@ export const useGraph = () => {
     typedThoughts,
     folderList,
     mutateGraph,
+    categoryFolderMergeDepth,
   ]);
 
   useEffect(() => {

@@ -1,6 +1,10 @@
 import { Folder } from "@repo/zod-schemas";
 
-import { NodeDatum } from "../types/types";
+import {
+  DEFAULT_CATEGORY_FOLDER_MERGE_DEPTH,
+  type CategoryFolderMergeDepth,
+  type NodeDatum,
+} from "../types/types";
 import { buildGraphByFolderWithThoughts } from "./buildGraphByFolder";
 import { isNoteLeafId } from "./mapNoteToLeaf";
 import type { ThoughtGraphRow } from "./mapThoughtToLeaf";
@@ -12,13 +16,17 @@ const stampCategoryId = (node: NodeDatum, categoryId: string): NodeDatum => ({
 });
 
 /**
- * Category → root folders (with content) → thoughts.
- * Empty folders are omitted; nested folders collapse into their root.
+ * Category → folders (up to `maxFolderDepth`) → thoughts.
+ * Empty folders are omitted; folders deeper than the cap collapse into the
+ * ancestor at that depth (e.g. Work/Projects/App → Work/Projects when depth is 2).
  */
 export function buildGraphByCategoryFolders(
   folders: Folder[],
-  thoughts: ThoughtGraphRow[]
+  thoughts: ThoughtGraphRow[],
+  options?: { maxFolderDepth?: CategoryFolderMergeDepth }
 ): NodeDatum {
+  const maxFolderDepth =
+    options?.maxFolderDepth ?? DEFAULT_CATEGORY_FOLDER_MERGE_DEPTH;
   const byCategory = new Map<string, ThoughtGraphRow[]>();
 
   thoughts.forEach((t) => {
@@ -38,7 +46,7 @@ export function buildGraphByCategoryFolders(
           folders,
           categoryThoughts,
           {
-            maxFolderDepth: 1,
+            maxFolderDepth,
             // Same folder under two categories must not share a graph node id,
             // or zoom/focus lands on the first match (often wrong after moves).
             folderIdScope: categoryId,
@@ -59,8 +67,8 @@ export function buildGraphByCategoryFolders(
 }
 
 /**
- * True when category packs still nest empty/nested folders, use unscoped
- * folder ids, or flatten thoughts directly under the category.
+ * True when category packs still flatten thoughts under the category, keep
+ * empty folders, or use unscoped folder ids.
  */
 export const categoryGraphNeedsRebuild = (root: NodeDatum): boolean => {
   for (const category of root.children ?? []) {
@@ -82,14 +90,6 @@ export const categoryGraphNeedsRebuild = (root: NodeDatum): boolean => {
       if (!child.id.startsWith(`folder-${categoryId}-`)) {
         return true;
       }
-
-      const hasNestedFolder = (child.children ?? []).some(
-        (nested) =>
-          !nested.thoughtId &&
-          !isNoteLeafId(nested.id) &&
-          (nested.folderId != null || nested.id.startsWith("folder-"))
-      );
-      if (hasNestedFolder) return true;
     }
   }
   return false;

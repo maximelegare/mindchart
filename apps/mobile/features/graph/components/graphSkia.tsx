@@ -33,6 +33,7 @@ import { GraphMode, NodeDatum } from "@/features/graph/types/types";
 import { resolveNodeCategoryKey } from "@/features/graph/utils/resolveNodeCategoryKey";
 import { GraphLoadingPlaceholder } from "./graphLoadingPlaceholder";
 import { GraphModeTabs } from "./graphModeTabs";
+import { CategoryFolderDepthMenu } from "./categoryFolderDepthChip";
 import { folderLayerColor, GRAPH_CANVAS_SIZE } from "../constants";
 import { onGraphBreadcrumbNavigate } from "@/features/navigation/syncLinkedBreadcrumbs";
 import { isEmptyFolderNode } from "@/features/graph/utils/buildGraphByFolder";
@@ -535,7 +536,7 @@ function CirclePackSkiaRenderer({
   const { colorScheme } = useColorScheme();
   const categoryColorMap = useCategoryColorMap();
   const categoryLabels = useCategoryLabelsMap();
-  const isTransitioningInternal = useRef(false);
+  const isTransitioningInternal = useSharedValue(false);
   const { rootNode, allNodes, nodeMap } = layout;
   const focusIndex = useMemo(() => buildFocusIndex(allNodes), [allNodes]);
 
@@ -590,7 +591,7 @@ function CirclePackSkiaRenderer({
   navigateToNodeRef.current = navigateToNode;
 
   const focusNodeById = (nodeId: string) => {
-    isTransitioningInternal.current = true;
+    isTransitioningInternal.value = true;
     const target = resolveFocusTarget(nodeId, rootNode, nodeMap, focusIndex);
     navigateToNodeRef.current(target, false);
   };
@@ -606,8 +607,8 @@ function CirclePackSkiaRenderer({
   useEffect(() => {
     // If we are already moving because the user tapped a circle,
     // don't restart the animation from the effect.
-    if (isTransitioningInternal.current) {
-      isTransitioningInternal.current = false;
+    if (isTransitioningInternal.value) {
+      isTransitioningInternal.value = false;
       return;
     }
 
@@ -634,7 +635,7 @@ function CirclePackSkiaRenderer({
       const dy = gy - n.y;
 
       if (Math.sqrt(dx * dx + dy * dy) <= n.r) {
-        isTransitioningInternal.current = true; // Block the next useEffect
+        isTransitioningInternal.value = true; // Block the next useEffect
         let targetToProcess = n;
 
         // Use the flag directly — worklets can't call imported JS helpers.
@@ -670,7 +671,7 @@ function CirclePackSkiaRenderer({
   });
 
   const handleZoomBack = () => {
-    isTransitioningInternal.current = true;
+    isTransitioningInternal.value = true;
     const current = nodeMap.get(activeInternalId.value);
     if (current?.parentId) {
       const parent = nodeMap.get(current.parentId);
@@ -681,7 +682,7 @@ function CirclePackSkiaRenderer({
   };
 
   const handleZoomOut = () => {
-    isTransitioningInternal.current = true;
+    isTransitioningInternal.value = true;
     const current = nodeMap.get(activeInternalId.value);
     if (current?.rawData.name === "Root") return;
     navigateToNode(rootNode, false, true);
@@ -852,6 +853,16 @@ function CirclePackSkiaRenderer({
               ))}
             </Canvas>
           </GestureDetector>
+
+          {graphMode === "category" ? (
+            <View
+              pointerEvents="box-none"
+              className="absolute p-2 m-2"
+              style={{ top: 0, left: 0, zIndex: 2 }}
+            >
+              <CategoryFolderDepthMenu />
+            </View>
+          ) : null}
 
           <View
             className="absolute gap-2 p-2 m-2"
