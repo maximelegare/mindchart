@@ -28,6 +28,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   runtimeVersion: {
     policy: "appVersion",
   },
+  updates: {
+    url: "https://u.expo.dev/c093ea99-2e9d-4ba7-b127-097a209f3928",
+  },
   splash: {
     image: "./assets/images/splash.png",
     resizeMode: "contain",
@@ -66,6 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     "expo-router",
     "expo-font",
     "expo-web-browser",
+    "expo-updates",
     [
       "expo-contacts",
       {
