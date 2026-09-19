@@ -45,10 +45,11 @@ type ListItemProps = {
   overviewItems: NoteOverviewItem[];
   /** When true, render every thought instead of the truncated overview. */
   showAllContent?: boolean;
+  onPress?: (id: string) => void;
 };
 
 export const NoteWithThoughts: React.FC<ListItemProps> = memo(
-  ({ title, id, date, overviewItems, showAllContent = false }) => {
+  ({ title, id, date, overviewItems, showAllContent = false, onPress }) => {
     const { push } = useRouter();
     const { colorScheme } = useColorScheme();
     const markerColor = hsl("muted-foreground", colorScheme);
@@ -58,7 +59,13 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
       ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
       : overviewItems;
 
-    const openDetails = () => pushNoteDetails(push, id);
+    const openDetails = () => {
+      if (onPress) {
+        onPress(id);
+        return;
+      }
+      pushNoteDetails(push, id);
+    };
 
     return (
       <View
@@ -150,5 +157,6 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
     prevProps.title === nextProps.title &&
     prevProps.id === nextProps.id &&
     prevProps.overviewItems === nextProps.overviewItems &&
-    prevProps.showAllContent === nextProps.showAllContent
+    prevProps.showAllContent === nextProps.showAllContent &&
+    prevProps.onPress === nextProps.onPress
 );

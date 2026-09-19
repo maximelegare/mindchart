@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { Separator } from "@/components/ui/separator";
@@ -15,6 +15,7 @@ import {
 import { hslColor } from "@/utils/hsl";
 import { GraphInfosNotesEmptyLabel } from "./graphInfosLabels";
 import { GraphInfosNotesSkeleton } from "./graphInfosSkeletons";
+import { useRouter } from "expo-router";
 
 export const GraphInfosNotesList = ({
   noteIds,
@@ -25,6 +26,16 @@ export const GraphInfosNotesList = ({
 }) => {
   const { useFetchNotesByIdsWithThoughtsQuery } =
     useControllers().notesAndThoughts;
+  const { push } = useRouter();
+  const openNote = useCallback(
+    (id: string) => {
+      push({
+        pathname: "/graph/note/[id]",
+        params: { id },
+      });
+    },
+    [push]
+  );
   const { data, isFetching, isPending } = useFetchNotesByIdsWithThoughtsQuery(
     noteIds,
     { enabled: active && noteIds.length > 0 }
@@ -73,6 +84,7 @@ export const GraphInfosNotesList = ({
               ),
             }))}
             showAllContent
+            onPress={openNote}
           />
         </View>
       ))}
