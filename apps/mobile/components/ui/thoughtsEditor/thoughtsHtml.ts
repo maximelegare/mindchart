@@ -129,6 +129,10 @@ function stripChrome(liHtml: string): string {
       ""
     )
     .replace(
+      /<button\b[^>]*class=["'][^"']*\bthought-expand\b[^"']*["'][^>]*>[\s\S]*?<\/button>/i,
+      ""
+    )
+    .replace(
       new RegExp(
         `<div\\b[^>]*class=["'][^"']*\\b${CATEGORY_CLASS}\\b[^"']*["'][^>]*>[\\s\\S]*?<\\/div>`,
         "i"
@@ -317,6 +321,19 @@ function graphButtonHtml(thoughtId: string): string {
   );
 }
 
+const EXPAND_ICON_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true">` +
+  `<path d="M6 9l6 6 6-6"/>` +
+  `</svg>`;
+
+function expandButtonHtml(): string {
+  return (
+    `<button type="button" class="thought-expand" contenteditable="false" aria-label="Expand thought" aria-expanded="false">` +
+    EXPAND_ICON_SVG +
+    `</button>`
+  );
+}
+
 const CHECK_ICON_SVG =
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">` +
   `<path d="M20 6L9 17l-5-5"/>` +
@@ -372,6 +389,7 @@ function thoughtItemHtml(
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
     graph +
+    expandButtonHtml() +
     `</li>`
   );
 }
@@ -409,7 +427,7 @@ function liToHtml(
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
-    startCollapsed: showGraphButton,
+    startCollapsed: showGraphButton || !viewMode,
     isCompletable: thought.isCompletable,
     isCompleted: thought.isCompleted,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
@@ -462,7 +480,12 @@ export function thoughtsToHtml(
       ? titledFieldHtml(TITLE_CLASS, placeholders.title, "") +
         titledFieldHtml(SUMMARY_CLASS, placeholders.summary, "")
       : titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, "");
-    return `<ul>${thoughtItemHtml("uncategorized", body, {}, labels)}</ul>`;
+    return `<ul>${thoughtItemHtml(
+      "uncategorized",
+      body,
+      { startCollapsed: !viewMode || showGraphButtons },
+      labels
+    )}</ul>`;
   }
 
   return `<ul>${thoughts
@@ -598,8 +621,10 @@ export function setThoughtCategoryScript(
     var name = chip.querySelector(".thought-category-name");
     if (name) name.textContent = label;
   }
-  if (typeof window.__mcExpandThoughtCategory === "function") {
+  if (!window.__mcEditing && typeof window.__mcExpandThoughtCategory === "function") {
     window.__mcExpandThoughtCategory(li);
+  } else if (typeof window.__mcAnimateTitle === "function") {
+    window.__mcAnimateTitle(li);
   }
   try {
     content.dispatchEvent(new Event("input", { bubbles: true }));
@@ -636,6 +661,9 @@ export function setThoughtSemanticTitleScript(
   titleEl.classList.remove("is-error-placeholder");
   titleEl.textContent = text;
   li.classList.add("has-entered-title");
+  if (typeof window.__mcAnimateTitle === "function") {
+    window.__mcAnimateTitle(li);
+  }
   if (typeof window.__mcSyncChecklistLayouts === "function") {
     window.__mcSyncChecklistLayouts();
   }

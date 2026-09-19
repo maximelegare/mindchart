@@ -169,6 +169,9 @@ function buildEditorThemeCss(colors: {
       color: ${colors.graphButtonColor};
       background: ${colors.graphButtonFill};
     }
+    .thought-expand {
+      color: ${colors.mutedFg};
+    }
     .thought-category {
       color: ${colors.mutedFg};
     }
@@ -1391,6 +1394,47 @@ function ThoughtsEditorInner(
                   li.thought-item.has-graph .thought-body,
                   li.thought-item:has(> .thought-graph) .thought-body {
                     padding-right: 44px;
+                  }
+                  html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
+                    padding-right: 32px;
+                  }
+                  .thought-expand {
+                    display: none;
+                    position: absolute;
+                    top: calc(
+                      var(--category-stack, 0px) + var(--check-nudge, 2px) - 3px
+                    );
+                    right: 0;
+                    width: 28px;
+                    height: 28px;
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    background: transparent;
+                    color: ${mutedFg};
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0.5;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    z-index: 3;
+                  }
+                  .thought-expand.is-anchored {
+                    transition:
+                      top 0.38s ease,
+                      transform 0.28s ease;
+                  }
+                  html.mc-editing .thought-expand {
+                    display: flex;
+                  }
+                  .thought-expand svg {
+                    display: block;
+                    pointer-events: none;
+                    transition: transform 0.28s ease;
+                  }
+                  li.thought-item:not(.is-collapsed) .thought-expand svg {
+                    transform: rotate(180deg);
                   }
                   .thought-graph {
                     position: absolute;
