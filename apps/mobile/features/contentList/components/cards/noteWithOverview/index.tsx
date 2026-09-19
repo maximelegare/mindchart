@@ -21,6 +21,7 @@ export type NoteOverviewItem = {
   text: string;
   isChecklist?: boolean;
   isCompleted?: boolean;
+  markerColor?: string;
 };
 
 export function thoughtToOverviewItem(thought: {
@@ -98,14 +99,17 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
                       }}
                     >
                       {item.isChecklist ? (
-                        <StaticCheckboxMark completed={completed} />
+                        <StaticCheckboxMark
+                          completed={completed}
+                          color={item.markerColor ?? markerColor}
+                        />
                       ) : (
                         <View
                           className="rounded-full"
                           style={{
                             width: BULLET_SIZE,
                             height: BULLET_SIZE,
-                            backgroundColor: markerColor,
+                            backgroundColor: item.markerColor ?? markerColor,
                           }}
                         />
                       )}

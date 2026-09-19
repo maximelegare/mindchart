@@ -14,6 +14,8 @@ export type ThoughtGraphRow = {
   createdAt?: string | null;
   embedding: Float32Array | null;
   showTitles?: boolean | number | null;
+  isCompletable?: boolean | number | null;
+  isCompleted?: boolean | number | null;
 };
 
 /** Note-level Titles toggle; 0/false hides stored titles without deleting them. */
@@ -39,5 +41,7 @@ export const mapThoughtToLeaf = (t: ThoughtGraphRow): NodeDatum => {
     folderPath: t.folderPath ?? undefined,
     createdAt: t.createdAt,
     embedding: t.embedding,
+    isCompletable: Boolean(t.isCompletable),
+    isCompleted: Boolean(t.isCompleted),
   };
 };

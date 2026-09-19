@@ -8,6 +8,11 @@ import {
   thoughtToOverviewItem,
 } from "@/features/contentList/components/cards/noteWithOverview";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
+import {
+  DEFAULT_CATEGORY_COLOR,
+  useCategoryColorMap,
+} from "@/features/categories/hooks/useCategoryColor";
+import { hslColor } from "@/utils/hsl";
 import { GraphInfosNotesEmptyLabel } from "./graphInfosLabels";
 import { GraphInfosNotesSkeleton } from "./graphInfosSkeletons";
 
@@ -18,6 +23,7 @@ export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
     noteIds,
     { enabled: noteIds.length > 0 }
   );
+  const categoryColorMap = useCategoryColorMap();
 
   const notes = useMemo(() => {
     const parsed = parseNoteAndThoughts(data) ?? [];
@@ -53,7 +59,13 @@ export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
             id={note.id}
             title={note.title}
             date={note.createdAt ?? ""}
-            overviewItems={note.thoughts.map(thoughtToOverviewItem)}
+            overviewItems={note.thoughts.map((thought) => ({
+              ...thoughtToOverviewItem(thought),
+              markerColor: hslColor(
+                categoryColorMap.get(thought.categoryId) ??
+                  DEFAULT_CATEGORY_COLOR
+              ),
+            }))}
             showAllContent
           />
         </View>

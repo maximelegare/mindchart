@@ -37,6 +37,8 @@ export type NodeDatum = {
   categoryId?: string;
   createdAt?: string | null;
   embedding?: Float32Array | null;
+  isCompletable?: boolean;
+  isCompleted?: boolean;
 };
 
 export type GraphDataCache = Record<GraphMode, NodeDatum> & {
