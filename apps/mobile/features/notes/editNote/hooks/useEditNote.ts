@@ -1,7 +1,10 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useControllers } from "@/api/controllers/useControllers";
 import { Note, Thought } from "@repo/zod-schemas";
+import { runThoughtNlpInBackground } from "@/features/nlp/runThoughtNlpInBackground";
 
 export const useEditNote = () => {
+  const queryClient = useQueryClient();
   const { embeddings, notesAndThoughts } = useControllers();
 
   const {
@@ -43,6 +46,7 @@ export const useEditNote = () => {
     );
 
     await updateNoteAndThoughtsMutateAsync({ note, thoughts });
+    runThoughtNlpInBackground(thoughts, queryClient);
 
     if (embeddingsToInsert.length > 0) {
       await insertEmbeddingsMutateAsync({ data: embeddingsToInsert });

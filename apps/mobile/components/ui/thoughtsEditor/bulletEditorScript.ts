@@ -539,6 +539,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       e.preventDefault();
       e.stopPropagation();
 
+      requestClassifyBullet(li);
+
       if (window.__mcShowTitles) {
         var inTitle = closestClass(anchor, "thought-title");
         if (inTitle) {
@@ -547,8 +549,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           return;
         }
       }
-
-      requestClassifyBullet(li);
 
       var newLi = document.createElement("li");
       var completable = li.getAttribute("data-completable") === "true";
@@ -759,7 +759,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     content.addEventListener(
       "keydown",
       function (e) {
-        var isEnter = e.key === "Enter";
+        var isEnter = e.key === "Enter" || e.keyCode === 13 || e.which === 13;
         var isBackspace = e.key === "Backspace" || e.keyCode === 8;
         if (!isEnter && !isBackspace) return;
 

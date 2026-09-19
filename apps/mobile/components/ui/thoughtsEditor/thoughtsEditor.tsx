@@ -55,7 +55,7 @@ import {
   THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
 } from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
-import { classifyCategory } from "@/features/categories/utils/classifyCategory";
+import { analyzeThought } from "@/lib/nlp";
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
@@ -429,7 +429,9 @@ function ThoughtsEditorInner(
     categoryPickerIndex != null
       ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
       : null;
-  const pendingCategoryByIndexRef = React.useRef(new Map<number, string>());
+  const pendingNlpByIndexRef = React.useRef(
+    new Map<number, { categoryId?: string; semanticLabel?: string }>()
+  );
 
   const injectIfReady = React.useCallback((script: string) => {
     if (!editorReadyRef.current) return;
@@ -702,10 +704,14 @@ function ThoughtsEditorInner(
         previous,
         showTitlesRef.current
       ).map((thought, index) => {
-        const classified = pendingCategoryByIndexRef.current.get(index);
-        if (!classified) return thought;
-        pendingCategoryByIndexRef.current.delete(index);
-        return { ...thought, categoryId: classified };
+        const pending = pendingNlpByIndexRef.current.get(index);
+        if (!pending) return thought;
+        pendingNlpByIndexRef.current.delete(index);
+        return {
+          ...thought,
+          categoryId: pending.categoryId ?? thought.categoryId,
+          semanticLabel: pending.semanticLabel ?? thought.semanticLabel,
+        };
       });
       setValue("thoughts", next, { shouldDirty: true });
     },
@@ -975,26 +981,49 @@ function ThoughtsEditorInner(
           | undefined;
         const index = Number(payload?.index);
         if (!Number.isFinite(index) || index < 0) return;
-        const categoryId = classifyCategory(String(payload?.text ?? ""));
-        pendingCategoryByIndexRef.current.set(index, categoryId);
+        const text = String(payload?.text ?? "");
+        const result = analyzeThought(text);
         const previous = getValues("thoughts");
         const current = previous[index];
-        if (current && current.categoryId !== categoryId) {
+        const currentCategory = current?.categoryId || "uncategorized";
+        const nextCategory =
+          result.category &&
+          result.categoryConfidence >= 0.35 &&
+          currentCategory === "uncategorized"
+            ? result.category
+            : undefined;
+        const nextLabel = result.semanticLabel || undefined;
+        if (!nextCategory && !nextLabel) return;
+
+        pendingNlpByIndexRef.current.set(index, {
+          categoryId: nextCategory,
+          semanticLabel: nextLabel,
+        });
+
+        if (current) {
           setValue(
             "thoughts",
             previous.map((thought, thoughtIndex) =>
-              thoughtIndex === index ? { ...thought, categoryId } : thought
+              thoughtIndex === index
+                ? {
+                    ...thought,
+                    categoryId: nextCategory ?? thought.categoryId,
+                    semanticLabel: nextLabel ?? thought.semanticLabel,
+                  }
+                : thought
             ),
             { shouldDirty: true }
           );
         }
-        richRef.current?.injectJavascript(
-          setThoughtCategoryScript(
-            index,
-            categoryId,
-            categoryLabels.get(categoryId)
-          )
-        );
+        if (nextCategory) {
+          richRef.current?.injectJavascript(
+            setThoughtCategoryScript(
+              index,
+              nextCategory,
+              categoryLabels.get(nextCategory)
+            )
+          );
+        }
         return;
       }
       if (message.type !== "SELECT_CATEGORY") return;
@@ -1067,7 +1096,6 @@ function ThoughtsEditorInner(
     () => ({
       validateRequiredContent: () => {
         const thoughts = getValues("thoughts") ?? [];
-        const showTitles = showTitlesRef.current;
 
         const isEmptyThought = (thought: {
           title: string;
@@ -1094,34 +1122,7 @@ function ThoughtsEditorInner(
           return false;
         }
 
-        if (showTitles) {
-          // Partial bullets (title XOR summary) must be completed.
-          const incomplete = thoughts.flatMap((thought, index) => {
-            if (isEmptyThought(thought)) return [];
-            const hasTitle = Boolean(stripHtml(thought.title));
-            const hasSummary = Boolean(stripHtml(thought.summary));
-            if (hasTitle && hasSummary) return [];
-            return [
-              {
-                index,
-                missingTitle: !hasTitle,
-                missingSummary: !hasSummary,
-              },
-            ];
-          });
-
-          if (incomplete.length > 0) {
-            richRef.current?.injectJavascript(
-              setThoughtValidationErrorsScript({
-                emptyContent: false,
-                incomplete,
-                messages: validationMessages,
-              })
-            );
-            return false;
-          }
-        }
-
+        // Titles are optional even when the title fields are visible.
         richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
         return true;
       },

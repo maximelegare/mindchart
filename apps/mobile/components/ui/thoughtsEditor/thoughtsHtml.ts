@@ -41,6 +41,36 @@ export function stripHtml(html: string): string {
     .trim();
 }
 
+const isFallbackSemanticLabel = (
+  label: string,
+  title: string,
+  summary: string
+) => {
+  const value = stripHtml(label).toLowerCase();
+  if (!value) return true;
+  const previousTitle = stripHtml(title).toLowerCase();
+  const previousSummary = stripHtml(summary).toLowerCase();
+  return value === previousTitle || value === previousSummary;
+};
+
+const preservedSemanticLabel = (
+  previous: ThoughtsFormValue,
+  nextTitle: string,
+  nextSummary: string
+) => {
+  if (!stripHtml(nextTitle) && !stripHtml(nextSummary)) return "";
+  if (
+    isFallbackSemanticLabel(
+      previous.semanticLabel,
+      previous.title,
+      previous.summary
+    )
+  ) {
+    return nextTitle || nextSummary;
+  }
+  return previous.semanticLabel;
+};
+
 /** Keep only inline bold/italic/underline markup for editor round-trips. */
 export function sanitizeInlineHtml(html: string): string {
   if (!html) return "";
@@ -420,7 +450,11 @@ export function htmlToThoughts(
         ...base,
         summary: showTitles ? base.summary : plain,
         title: showTitles ? plain : base.title,
-        semanticLabel: base.semanticLabel || plain,
+        semanticLabel: preservedSemanticLabel(
+          base,
+          showTitles ? plain : base.title,
+          showTitles ? base.summary : plain
+        ),
       },
     ];
   }
@@ -438,8 +472,6 @@ export function htmlToThoughts(
       // validation can re-run after the user dismisses error placeholders.
       const nextTitle = hasTitleField ? title : title || base.title;
       const nextSummary = hasSummaryField ? summary : summary || base.summary;
-      const fieldsPresent = hasTitleField || hasSummaryField;
-      const label = nextTitle || nextSummary;
       const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
       const isCompleted = isCompletable
         ? (item.isCompleted ?? base.isCompleted ?? false)
@@ -449,7 +481,7 @@ export function htmlToThoughts(
         title: nextTitle,
         summary: nextSummary,
         categoryId,
-        semanticLabel: fieldsPresent ? label : label || base.semanticLabel,
+        semanticLabel: preservedSemanticLabel(base, nextTitle, nextSummary),
         isCompletable,
         isCompleted,
       };
@@ -470,10 +502,7 @@ export function htmlToThoughts(
       ...base,
       summary: nextSummary,
       categoryId,
-      semanticLabel:
-        summaryField != null
-          ? nextSummary
-          : base.semanticLabel || nextSummary || base.title,
+      semanticLabel: preservedSemanticLabel(base, base.title, nextSummary),
       isCompletable,
       isCompleted,
     };

@@ -599,7 +599,7 @@ function ThoughtTitleRow({
   const isChecklist = Boolean(node.isCompletable);
   const isCompleted = Boolean(node.isCompleted);
   const emphasized = isCurrent || isFocused;
-  const title = (node.title ?? "").trim();
+  const title = (node.semanticLabel ?? node.title ?? "").trim();
   const hasTitle = title.length > 0;
   const summary = resolveDisplaySummary(node);
 

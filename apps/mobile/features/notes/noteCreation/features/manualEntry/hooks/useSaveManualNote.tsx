@@ -1,11 +1,14 @@
 import { useCallback } from "react";
 import { Note, Thought } from "@repo/zod-schemas";
+import { useQueryClient } from "@tanstack/react-query";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
 import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
 import { loadingModalSavingNoteTitle } from "@/components/ui/modal/data/loadingModalLabels";
+import { runThoughtNlpInBackground } from "@/features/nlp/runThoughtNlpInBackground";
 
 export const useSaveManualNote = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
   const { openModal, closeModal } = useModal();
   const { notesAndThoughts, embeddings } = useControllers();
 
@@ -38,18 +41,25 @@ export const useSaveManualNote = (onSuccess?: () => void) => {
             thought.summary.trim(),
         }));
 
-        const embeddings = await generateLocalEmbeddingsMutateAsync({
-          thoughts: thoughtsWithLabels,
-        });
-
         await insertNoteAndThoughtsMutateAsync({
           note,
           thoughts: thoughtsWithLabels,
         });
-        await insertEmbeddingsMutateAsync({ data: embeddings });
 
         onSuccess?.();
         closeModal();
+
+        runThoughtNlpInBackground(thoughtsWithLabels, queryClient);
+        void (async () => {
+          try {
+            const embeddings = await generateLocalEmbeddingsMutateAsync({
+              thoughts: thoughtsWithLabels,
+            });
+            await insertEmbeddingsMutateAsync({ data: embeddings });
+          } catch (error) {
+            console.warn("Background embeddings failed:", error);
+          }
+        })();
       } catch (error) {
         console.error("Error saving manual note:", error);
         closeModal();
@@ -62,6 +72,7 @@ export const useSaveManualNote = (onSuccess?: () => void) => {
       insertNoteAndThoughtsMutateAsync,
       onSuccess,
       openModal,
+      queryClient,
     ]
   );
 

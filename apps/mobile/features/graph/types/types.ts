@@ -32,6 +32,8 @@ export type NodeDatum = {
   /** On note leaves: thought ids under this note (focus / deep-link resolution). */
   relatedThoughtIds?: string[];
   title?: string | null;
+  /** Compact local NLP label shown as the thought heading in graph infos. */
+  semanticLabel?: string | null;
   summary?: string | null;
   noteId?: string;
   categoryId?: string;

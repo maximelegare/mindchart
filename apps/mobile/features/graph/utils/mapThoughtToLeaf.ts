@@ -6,6 +6,7 @@ export type ThoughtGraphRow = {
   thoughtId: string;
   title: string | null;
   summary: string | null;
+  semanticLabel?: string | null;
   noteId: string;
   categoryId: string;
   folderId?: string | null;
@@ -22,17 +23,26 @@ export type ThoughtGraphRow = {
 export const noteShowsThoughtTitles = (value: ThoughtGraphRow["showTitles"]) =>
   value !== false && value !== 0;
 
+const isCompactSemanticLabel = (label: string, summary: string) => {
+  if (!label) return false;
+  const words = label.split(/\s+/).filter(Boolean);
+  if (words.length === 0 || words.length > 7) return false;
+  return label.toLowerCase() !== summary.toLowerCase();
+};
+
 export const mapThoughtToLeaf = (t: ThoughtGraphRow): NodeDatum => {
-  const title = noteShowsThoughtTitles(t.showTitles)
-    ? stripHtml(t.title ?? "")
-    : "";
   const summary = stripHtml(t.summary ?? "");
+  const semanticLabel = stripHtml(t.semanticLabel ?? "");
+  const compactLabel = isCompactSemanticLabel(semanticLabel, summary)
+    ? semanticLabel
+    : "";
   return {
     id: t.thoughtId,
-    name: title || summary || "Untitled",
+    name: compactLabel || summary || "Untitled",
     value: 1,
     thoughtId: t.thoughtId,
-    title: title || null,
+    title: compactLabel || null,
+    semanticLabel: compactLabel || null,
     summary,
     noteId: t.noteId,
     categoryId: t.categoryId,

@@ -241,16 +241,14 @@ function NoteDetailsContent({
             thought.semanticLabel.trim()
         )
         .map((thought) => {
-          const thoughtTitle = thought.title.trim();
-          const summary = thought.summary.trim();
+          const thoughtTitle = stripHtml(thought.title);
+          const summary = stripHtml(thought.summary) || thoughtTitle;
           const semanticLabel =
-            stripHtml(thought.semanticLabel) ||
-            stripHtml(thoughtTitle) ||
-            stripHtml(summary);
+            stripHtml(thought.semanticLabel) || thoughtTitle || summary;
           return {
             ...thought,
-            title: thoughtTitle,
-            summary,
+            title: thought.title.trim(),
+            summary: thought.summary.trim() || thought.title.trim(),
             semanticLabel,
             status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
               | "new"
