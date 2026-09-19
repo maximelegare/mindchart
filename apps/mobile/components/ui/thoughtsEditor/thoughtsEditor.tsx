@@ -147,7 +147,6 @@ function buildEditorThemeCss(colors: {
   surface: string;
   card: string;
   graphButtonColor: string;
-  graphButtonFill: string;
 }): string {
   return `
     .thought-check-box {
@@ -167,7 +166,7 @@ function buildEditorThemeCss(colors: {
     }
     .thought-graph {
       color: ${colors.graphButtonColor};
-      background: ${colors.graphButtonFill};
+      background: transparent;
     }
     .thought-expand {
       color: ${colors.mutedFg};
@@ -368,10 +367,6 @@ function ThoughtsEditorInner(
     ? hsl("background", colorScheme)
     : hsl("card", colorScheme);
   const graphButtonColor = mutedFg;
-  const graphButtonFill = hsl("primary", colorScheme).replace(
-    /^hsl\((.*)\)$/,
-    "hsla($1, 0.16)"
-  );
   const markerColorRef = React.useRef(mutedFg);
   markerColorRef.current = mutedFg;
   const surfaceColorRef = React.useRef(surfaceColor);
@@ -383,9 +378,8 @@ function ThoughtsEditorInner(
         surface: surfaceColor,
         card: cardColor,
         graphButtonColor,
-        graphButtonFill,
       }),
-    [cardColor, graphButtonColor, graphButtonFill, mutedFg, surfaceColor]
+    [cardColor, graphButtonColor, mutedFg, surfaceColor]
   );
   const editorThemeCssRef = React.useRef(editorThemeCss);
   editorThemeCssRef.current = editorThemeCss;
@@ -1453,8 +1447,7 @@ function ThoughtsEditorInner(
                     align-items: center;
                     justify-content: center;
                     color: ${graphButtonColor};
-                    background: ${graphButtonFill};
-                    border-radius: 999px;
+                    background: transparent;
                     opacity: 0.85;
                     cursor: pointer;
                     user-select: none;
