@@ -16,12 +16,18 @@ import { hslColor } from "@/utils/hsl";
 import { GraphInfosNotesEmptyLabel } from "./graphInfosLabels";
 import { GraphInfosNotesSkeleton } from "./graphInfosSkeletons";
 
-export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
+export const GraphInfosNotesList = ({
+  noteIds,
+  active,
+}: {
+  noteIds: string[];
+  active: boolean;
+}) => {
   const { useFetchNotesByIdsWithThoughtsQuery } =
     useControllers().notesAndThoughts;
   const { data, isFetching, isPending } = useFetchNotesByIdsWithThoughtsQuery(
     noteIds,
-    { enabled: noteIds.length > 0 }
+    { enabled: active && noteIds.length > 0 }
   );
   const categoryColorMap = useCategoryColorMap();
 
@@ -33,10 +39,10 @@ export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
       .filter((note): note is NonNullable<typeof note> => note != null);
   }, [data, noteIds]);
 
-  const isLoading =
-    noteIds.length > 0 && notes.length === 0 && (isPending || isFetching);
+  const showSkeleton =
+    noteIds.length > 0 && (!active || isPending || isFetching);
 
-  if (isLoading) {
+  if (showSkeleton) {
     return <GraphInfosNotesSkeleton />;
   }
 

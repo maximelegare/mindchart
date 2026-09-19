@@ -1330,8 +1330,13 @@ export const SelectedLayerCard = React.memo(function SelectedLayerCard({
   ]);
 
   const notesPage = useMemo(
-    () => <GraphInfosNotesList noteIds={directoryNoteIds} />,
-    [directoryNoteIds]
+    () => (
+      <GraphInfosNotesList
+        noteIds={directoryNoteIds}
+        active={contentView === "notes"}
+      />
+    ),
+    [contentView, directoryNoteIds]
   );
 
   return (
