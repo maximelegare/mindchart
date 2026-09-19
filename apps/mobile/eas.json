@@ -9,15 +9,17 @@
         "buildType": "apk",
         "credentialsSource": "local"
       },
-      "releaseChannel": "production",
+      "channel": "production",
       "distribution": "internal"
     },
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "development"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "preview"
     }
   },
   "submit": {
