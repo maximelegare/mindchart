@@ -1259,7 +1259,9 @@ export function setSimplifiedModeScript(
         clearTimeout(li.__mcBounceTimer);
         li.__mcBounceTimer = null;
       }
-      li.classList.remove("is-collapsed");
+      if (window.__mcSimplified) {
+        li.classList.remove("is-collapsed");
+      }
       var stripe = li.querySelector(".thought-stripe");
       if (stripe) stripe.classList.remove("is-bouncing");
     }

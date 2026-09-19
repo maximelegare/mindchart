@@ -427,7 +427,7 @@ function liToHtml(
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
-    startCollapsed: showGraphButton || !viewMode,
+    startCollapsed: true,
     isCompletable: thought.isCompletable,
     isCompleted: thought.isCompleted,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
@@ -483,7 +483,7 @@ export function thoughtsToHtml(
     return `<ul>${thoughtItemHtml(
       "uncategorized",
       body,
-      { startCollapsed: !viewMode || showGraphButtons },
+      { startCollapsed: true },
       labels
     )}</ul>`;
   }

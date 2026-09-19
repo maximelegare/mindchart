@@ -1247,7 +1247,7 @@ function ThoughtsEditorInner(
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
                   line-height: 1.45;
-                  padding: ${plain ? (!readOnly ? "8px 0" : "8px 2px") : "12px"};
+                  padding: ${plain ? "8px 0" : "12px"};
                   padding-left: 0;
                   padding-bottom: ${
                     showToolbar && dockToolbarToKeyboard
