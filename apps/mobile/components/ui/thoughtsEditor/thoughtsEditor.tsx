@@ -931,6 +931,11 @@ function ThoughtsEditorInner(
 
   const handleEditorMessage = React.useCallback(
     (message: { type: string; data?: unknown }) => {
+      if (message.type === "DISMISS_KEYBOARD") {
+        richRef.current?.dismissKeyboard();
+        Keyboard.dismiss();
+        return;
+      }
       if (message.type === "OPEN_GRAPH") {
         const thoughtId = String(message.data ?? "");
         if (!thoughtId) return;

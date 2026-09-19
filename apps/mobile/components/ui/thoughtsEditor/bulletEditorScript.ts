@@ -70,7 +70,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function expandButtonHtml() {
       return (
-        '<button type="button" class="thought-expand" contenteditable="false" aria-label="Expand thought" aria-expanded="false">' +
+        '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false">' +
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true">' +
         '<path d="M6 9l6 6 6-6"/></svg></button>'
       );
@@ -796,12 +796,38 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       expandThoughtCategory(li, true);
     }
 
+    function blurEditor() {
+      var active = document.activeElement;
+      if (active && active !== document.body && typeof active.blur === "function") {
+        try {
+          active.blur();
+        } catch (err) {}
+      }
+      try {
+        content.blur();
+      } catch (err) {}
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "DISMISS_KEYBOARD" })
+        );
+      }
+    }
+
+    function onExpandPointerDown(e) {
+      if (!closestClass(e.target, "thought-expand")) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     function onExpandPointer(e) {
       if (!window.__mcEditing || window.__mcSimplified) return;
       var btn = closestClass(e.target, "thought-expand");
       if (!btn) return;
       e.preventDefault();
       e.stopPropagation();
+      var now = Date.now();
+      if (window.__mcExpandAt && now - window.__mcExpandAt < 400) return;
+      window.__mcExpandAt = now;
       var li = closestLi(btn);
       if (!li) return;
       if (li.classList.contains("is-collapsed")) {
@@ -809,6 +835,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } else {
         collapseThoughtCategory(li);
       }
+      blurEditor();
     }
 
     function onCategoryChromePointer(e) {
@@ -874,6 +901,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     content.addEventListener("click", onViewThoughtPointer, true);
     content.addEventListener("touchend", onViewThoughtPointer, true);
+    content.addEventListener("touchstart", onExpandPointerDown, true);
+    content.addEventListener("mousedown", onExpandPointerDown, true);
     content.addEventListener("click", onExpandPointer, true);
     content.addEventListener("touchend", onExpandPointer, true);
     content.addEventListener("click", onCategoryChromePointer, true);
@@ -931,7 +960,7 @@ export function setEditingModeScript(editing: boolean): string {
       if (!li.querySelector(".thought-expand")) {
         li.insertAdjacentHTML(
           "beforeend",
-          '<button type="button" class="thought-expand" contenteditable="false" aria-label="Expand thought" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'
+          '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'
         );
       }
       var title = li.querySelector(".thought-title");

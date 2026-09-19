@@ -328,7 +328,7 @@ const EXPAND_ICON_SVG =
 
 function expandButtonHtml(): string {
   return (
-    `<button type="button" class="thought-expand" contenteditable="false" aria-label="Expand thought" aria-expanded="false">` +
+    `<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false">` +
     EXPAND_ICON_SVG +
     `</button>`
   );
