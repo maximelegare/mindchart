@@ -241,16 +241,14 @@ function NoteDetailsContent({
             thought.semanticLabel.trim()
         )
         .map((thought) => {
-          const thoughtTitle = thought.title.trim();
-          const summary = thought.summary.trim();
+          const thoughtTitle = stripHtml(thought.title);
+          const summary = stripHtml(thought.summary) || thoughtTitle;
           const semanticLabel =
-            stripHtml(thought.semanticLabel) ||
-            stripHtml(thoughtTitle) ||
-            stripHtml(summary);
+            stripHtml(thought.semanticLabel) || thoughtTitle || summary;
           return {
             ...thought,
-            title: thoughtTitle,
-            summary,
+            title: thought.title.trim(),
+            summary: thought.summary.trim() || thought.title.trim(),
             semanticLabel,
             status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
               | "new"
@@ -352,15 +350,9 @@ function NoteDetailsContent({
     <FormProvider {...form}>
       <View
         style={{ marginTop: 10 }}
-        className={
-          isEditing
-            ? "flex-col flex-1 min-h-0 w-full gap-4"
-            : "flex-col flex-1 min-h-0 w-full gap-4 px-1"
-        }
+        className="flex-col flex-1 min-h-0 w-full gap-4"
       >
-        <View
-          className={isEditing ? "w-full shrink-0 px-1" : "w-full shrink-0"}
-        >
+        <View className="w-full shrink-0 px-1">
           {isEditing ? (
             <Controller
               control={control}

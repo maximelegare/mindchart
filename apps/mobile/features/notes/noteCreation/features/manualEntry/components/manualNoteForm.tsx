@@ -162,16 +162,17 @@ export const ManualNoteForm = ({
           thought.summary.trim() ||
           thought.semanticLabel.trim()
       )
-      .map((thought) => ({
-        ...thought,
-        title: thought.title.trim(),
-        summary: thought.summary.trim(),
-        semanticLabel:
-          thought.semanticLabel.trim() ||
-          thought.title.trim() ||
-          thought.summary.trim(),
-        createdAt: thought.createdAt,
-      }));
+      .map((thought) => {
+        const title = thought.title.trim();
+        const summary = thought.summary.trim() || title;
+        return {
+          ...thought,
+          title,
+          summary,
+          semanticLabel: thought.semanticLabel.trim() || title || summary,
+          createdAt: thought.createdAt,
+        };
+      });
 
     if (thoughts.length === 0) {
       Alert.alert("Can't save yet", "Add at least one thought before saving.");

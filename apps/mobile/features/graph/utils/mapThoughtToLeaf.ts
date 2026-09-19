@@ -1,11 +1,13 @@
 import { NodeDatum } from "../types/types";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
+import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
 
 /** Live thought row used to build the graph (matches the embeddings query). */
 export type ThoughtGraphRow = {
   thoughtId: string;
   title: string | null;
   summary: string | null;
+  semanticLabel?: string | null;
   noteId: string;
   categoryId: string;
   folderId?: string | null;
@@ -23,16 +25,24 @@ export const noteShowsThoughtTitles = (value: ThoughtGraphRow["showTitles"]) =>
   value !== false && value !== 0;
 
 export const mapThoughtToLeaf = (t: ThoughtGraphRow): NodeDatum => {
-  const title = noteShowsThoughtTitles(t.showTitles)
-    ? stripHtml(t.title ?? "")
-    : "";
   const summary = stripHtml(t.summary ?? "");
+  const userTitle = stripHtml(t.title ?? "");
+  const semanticLabel = stripHtml(t.semanticLabel ?? "");
+  const enteredTitle =
+    userTitle && userTitle.toLowerCase() !== summary.toLowerCase()
+      ? userTitle
+      : "";
+  const compactLabel = isDisplayableSemanticLabel(semanticLabel, summary)
+    ? semanticLabel
+    : "";
+  const heading = enteredTitle || compactLabel;
   return {
     id: t.thoughtId,
-    name: title || summary || "Untitled",
+    name: heading || summary || "Untitled",
     value: 1,
     thoughtId: t.thoughtId,
-    title: title || null,
+    title: heading || null,
+    semanticLabel: compactLabel || null,
     summary,
     noteId: t.noteId,
     categoryId: t.categoryId,

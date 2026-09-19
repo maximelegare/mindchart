@@ -12,7 +12,9 @@ export const useGenerateLocalEmbeddingsService = () => {
     const embeddings: Embedding[] = [];
 
     for (const thought of thoughts) {
-      const textToEmbed = thought.semanticLabel;
+      // Embed the original thought text, never the generated semantic label.
+      const textToEmbed =
+        (thought.summary ?? "").trim() || thought.semanticLabel;
       const vector = await embed(textToEmbed, "document");
 
       const floatArray =

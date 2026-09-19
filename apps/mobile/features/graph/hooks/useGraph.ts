@@ -166,7 +166,7 @@ export const useGraph = () => {
       typedThoughts
         .map((t) => {
           const showTitles = noteShowsThoughtTitles(t.showTitles);
-          return `${t.thoughtId}:${t.folderId ?? ""}:${t.categoryId ?? ""}:${t.folderPath ?? ""}:${t.title}:${showTitles}`;
+          return `${t.thoughtId}:${t.folderId ?? ""}:${t.categoryId ?? ""}:${t.folderPath ?? ""}:${t.title}:${t.semanticLabel ?? ""}:${showTitles}`;
         })
         .sort()
         .join(","),

@@ -4,6 +4,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
+  if (document.documentElement) {
+    document.documentElement.classList.toggle(
+      "mc-editing",
+      !!window.__mcEditing
+    );
+  }
+  content.classList.toggle("mc-editing", !!window.__mcEditing);
 
   function mcPh(key, fallback) {
     var p = window.__mcPlaceholders;
@@ -61,6 +68,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
+    function expandButtonHtml() {
+      return (
+        '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true">' +
+        '<path d="M6 9l6 6 6-6"/></svg></button>'
+      );
+    }
+
     function thoughtItemInnerHtml(categoryId, fieldsHtml) {
       return (
         '<div class="thought-rail" contenteditable="false">' +
@@ -71,7 +86,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         categoryLabelHtml(categoryId) +
         '<div class="thought-fields">' +
         fieldsHtml +
-        "</div></div>"
+        "</div></div>" +
+        expandButtonHtml()
       );
     }
 
@@ -272,12 +288,31 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }, 1800);
     }
 
+    function syncExpandButton(li) {
+      if (!li) return;
+      var btn = li.querySelector(".thought-expand");
+      if (btn) {
+        btn.setAttribute(
+          "aria-expanded",
+          li.classList.contains("is-collapsed") ? "false" : "true"
+        );
+      }
+    }
+
     function collapseThoughtCategory(li) {
-      if (!li || window.__mcSimplified || window.__mcEditing) return;
+      if (!li || window.__mcSimplified) return;
+      var title = li.querySelector(".thought-title");
+      if (title) title.__mcTitleH = title.scrollHeight;
       li.classList.add("is-collapsed");
-      li.__mcBounceTimer = setTimeout(function () {
-        bounceStripe(li);
-      }, COLLAPSE_TRANSITION_MS);
+      syncExpandButton(li);
+      if (typeof window.__mcAnimateTitle === "function") {
+        window.__mcAnimateTitle(li);
+      }
+      if (!window.__mcEditing) {
+        li.__mcBounceTimer = setTimeout(function () {
+          bounceStripe(li);
+        }, COLLAPSE_TRANSITION_MS);
+      }
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
       }
@@ -289,7 +324,11 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var stripe = li.querySelector(".thought-stripe");
       if (stripe) stripe.classList.remove("is-bouncing");
       li.classList.remove("is-collapsed");
-      if (reschedule !== false) {
+      syncExpandButton(li);
+      if (typeof window.__mcAnimateTitle === "function") {
+        window.__mcAnimateTitle(li);
+      }
+      if (reschedule !== false && !window.__mcEditing) {
         scheduleCollapse(li);
       }
       if (typeof window.__mcSyncChecklistLayouts === "function") {
@@ -310,7 +349,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     window.__mcExpandThoughtCategory = function (li) {
-      expandThoughtCategory(li, true);
+      expandThoughtCategory(li, !window.__mcEditing);
+    };
+    window.__mcCollapseThoughtCategory = function (li) {
+      collapseThoughtCategory(li);
     };
 
     window.__mcRefreshCategoryTimers = function () {
@@ -319,7 +361,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       for (var i = 0; i < lis.length; i++) {
         ensureCategoryChrome(lis[i]);
         if (window.__mcEditing) {
-          expandThoughtCategory(lis[i], false);
+          if (!lis[i].querySelector(".thought-expand")) {
+            lis[i].insertAdjacentHTML("beforeend", expandButtonHtml());
+          }
+          syncExpandButton(lis[i]);
         } else if (!lis[i].classList.contains("is-collapsed")) {
           scheduleCollapse(lis[i]);
         }
@@ -339,9 +384,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
       if (rail && body && fields && chip) {
         chip.setAttribute("data-category-id", categoryId);
+        if (!li.querySelector(".thought-expand")) {
+          li.insertAdjacentHTML("beforeend", expandButtonHtml());
+        }
         if (!li.__mcCollapseTimer && !li.classList.contains("is-collapsed")) {
           scheduleCollapse(li);
         }
+        syncExpandButton(li);
         return;
       }
 
@@ -355,7 +404,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } else {
         var clone = li.cloneNode(true);
         var stripSel = clone.querySelectorAll(
-          ".thought-rail, .thought-check, .thought-graph, .thought-category, .thought-body, .thought-fields"
+          ".thought-rail, .thought-check, .thought-graph, .thought-expand, .thought-category, .thought-body, .thought-fields"
         );
         for (var s = 0; s < stripSel.length; s++) {
           var node = stripSel[s];
@@ -371,8 +420,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
       var wasCollapsed = li.classList.contains("is-collapsed");
       li.innerHTML = thoughtItemInnerHtml(categoryId, fieldsHtml);
-      if (wasCollapsed) {
+      if (wasCollapsed || (window.__mcEditing && !window.__mcSimplified)) {
         li.classList.add("is-collapsed");
+        syncExpandButton(li);
       } else {
         scheduleCollapse(li);
       }
@@ -384,7 +434,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function ensureUl() {
       if (content.querySelector("ul")) return;
       content.innerHTML =
-        '<ul><li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
+        '<ul><li class="thought-item' +
+        (window.__mcEditing && !window.__mcSimplified ? " is-collapsed" : "") +
+        '" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
         emptyLiHtml("uncategorized") +
         "</li></ul>";
     }
@@ -437,12 +489,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       for (var s = 0; s < summaries.length; s++) {
         var summary = summaries[s];
         var li = closestLi(summary);
-        var placeholder = window.__mcShowTitles
-          ? "Summary"
-          : "Enter a bullet point";
-        if (!window.__mcShowTitles && li && li.querySelector(".thought-title")) {
-          continue;
-        }
+        var placeholder =
+          window.__mcShowTitles || (li && li.querySelector(".thought-title"))
+            ? "Summary"
+            : "Enter a bullet point";
         repairEmptyField(summary, placeholder);
       }
     }
@@ -459,7 +509,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         ensureCategoryChrome(li);
 
         var title = li.querySelector(".thought-title");
-        if (title && title.parentNode) title.parentNode.removeChild(title);
+        if (title && !(title.textContent || "").replace(/\u00a0/g, " ").trim()) {
+          if (title.parentNode) title.parentNode.removeChild(title);
+        }
 
         var summary = li.querySelector(".thought-summary");
         if (summary) {
@@ -539,16 +591,18 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       e.preventDefault();
       e.stopPropagation();
 
-      if (window.__mcShowTitles) {
-        var inTitle = closestClass(anchor, "thought-title");
-        if (inTitle) {
-          var summary = li.querySelector(".thought-summary");
-          if (summary) placeCaretAtStartSoon(summary);
-          return;
-        }
+      requestClassifyBullet(li);
+
+      var inTitle = closestClass(anchor, "thought-title");
+      if (inTitle) {
+        var summary = li.querySelector(".thought-summary");
+        if (summary) placeCaretAtStartSoon(summary);
+        return;
       }
 
-      requestClassifyBullet(li);
+      if (window.__mcEditing && !window.__mcSimplified) {
+        collapseThoughtCategory(li);
+      }
 
       var newLi = document.createElement("li");
       var completable = li.getAttribute("data-completable") === "true";
@@ -557,6 +611,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       newLi.setAttribute("data-completable", completable ? "true" : "false");
       newLi.setAttribute("data-completed", "false");
       newLi.innerHTML = emptyLiHtml("uncategorized");
+      if (window.__mcEditing && !window.__mcSimplified) {
+        newLi.classList.add("is-collapsed");
+      }
       if (li.nextSibling) {
         li.parentNode.insertBefore(newLi, li.nextSibling);
       } else {
@@ -566,9 +623,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
       }
-      var focusField = window.__mcShowTitles
-        ? newLi.querySelector(".thought-title")
-        : newLi.querySelector(".thought-summary");
+      var focusField =
+        window.__mcShowTitles && !newLi.classList.contains("is-collapsed")
+          ? newLi.querySelector(".thought-title")
+          : newLi.querySelector(".thought-summary");
       if (focusField) placeCaretAtStartSoon(focusField);
       notifyChange();
     }
@@ -632,7 +690,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function handleBackspace(e, li, anchor) {
-      if (!window.__mcShowTitles) {
+      if (!window.__mcShowTitles && !li.querySelector(".thought-title")) {
         handleBackspaceUntitled(e, li, anchor);
         return;
       }
@@ -721,6 +779,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (window.__mcEditing || window.__mcSimplified) return;
       if (closestClass(e.target, "thought-check")) return;
       if (closestClass(e.target, "thought-graph")) return;
+      if (closestClass(e.target, "thought-expand")) return;
       var li = closestLi(e.target);
       if (!li) return;
       e.preventDefault();
@@ -737,10 +796,53 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       expandThoughtCategory(li, true);
     }
 
+    function blurEditor() {
+      var active = document.activeElement;
+      if (active && active !== document.body && typeof active.blur === "function") {
+        try {
+          active.blur();
+        } catch (err) {}
+      }
+      try {
+        content.blur();
+      } catch (err) {}
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "DISMISS_KEYBOARD" })
+        );
+      }
+    }
+
+    function onExpandPointerDown(e) {
+      if (!closestClass(e.target, "thought-expand")) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function onExpandPointer(e) {
+      if (!window.__mcEditing || window.__mcSimplified) return;
+      var btn = closestClass(e.target, "thought-expand");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var now = Date.now();
+      if (window.__mcExpandAt && now - window.__mcExpandAt < 400) return;
+      window.__mcExpandAt = now;
+      var li = closestLi(btn);
+      if (!li) return;
+      if (li.classList.contains("is-collapsed")) {
+        expandThoughtCategory(li, false);
+      } else {
+        collapseThoughtCategory(li);
+      }
+      blurEditor();
+    }
+
     function onCategoryChromePointer(e) {
       if (window.__mcSimplified) return;
       if (!window.__mcEditing) return;
       if (closestClass(e.target, "thought-check")) return;
+      if (closestClass(e.target, "thought-expand")) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
       var chip = closestClass(e.target, "thought-category");
@@ -752,14 +854,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var li = closestLi(e.target);
       if (!li) return;
 
-      // Edit mode keeps categories open; chrome opens the picker.
+      // Expanded edit chrome opens the picker; collapsed thoughts use the arrow.
       openCategoryPicker(li);
     }
 
     content.addEventListener(
       "keydown",
       function (e) {
-        var isEnter = e.key === "Enter";
+        var isEnter = e.key === "Enter" || e.keyCode === 13 || e.which === 13;
         var isBackspace = e.key === "Backspace" || e.keyCode === 8;
         if (!isEnter && !isBackspace) return;
 
@@ -799,6 +901,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     content.addEventListener("click", onViewThoughtPointer, true);
     content.addEventListener("touchend", onViewThoughtPointer, true);
+    content.addEventListener("touchstart", onExpandPointerDown, true);
+    content.addEventListener("mousedown", onExpandPointerDown, true);
+    content.addEventListener("click", onExpandPointer, true);
+    content.addEventListener("touchend", onExpandPointer, true);
     content.addEventListener("click", onCategoryChromePointer, true);
     // Android WebView often delivers contenteditable=false taps more reliably here.
     content.addEventListener(
@@ -838,6 +944,10 @@ export function setEditingModeScript(editing: boolean): string {
   window.__mcEditing = ${editing ? "true" : "false"};
   var root =
     document.querySelector(".pell-content") || document.getElementById("editor");
+  if (document.documentElement) {
+    document.documentElement.classList.toggle("mc-editing", !!window.__mcEditing);
+  }
+  if (root) root.classList.toggle("mc-editing", !!window.__mcEditing);
   if (!root) return true;
   var lis = root.querySelectorAll("ul > li");
   if (window.__mcEditing) {
@@ -847,9 +957,22 @@ export function setEditingModeScript(editing: boolean): string {
         clearTimeout(li.__mcCollapseTimer);
         li.__mcCollapseTimer = null;
       }
-      li.classList.remove("is-collapsed");
+      if (!li.querySelector(".thought-expand")) {
+        li.insertAdjacentHTML(
+          "beforeend",
+          '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'
+        );
+      }
+      var title = li.querySelector(".thought-title");
+      if (title) title.__mcTitleH = title.scrollHeight;
+      li.classList.add("is-collapsed");
+      var expand = li.querySelector(".thought-expand");
+      if (expand) expand.setAttribute("aria-expanded", "false");
       var stripe = li.querySelector(".thought-stripe");
       if (stripe) stripe.classList.remove("is-bouncing");
+      if (typeof window.__mcAnimateTitle === "function") {
+        window.__mcAnimateTitle(li);
+      }
     }
     if (typeof window.__mcSyncChecklistLayouts === "function") {
       window.__mcSyncChecklistLayouts();
@@ -1019,6 +1142,9 @@ const GRAPH_BODY_PAD = `
       li.thought-item:has(> .thought-graph) .thought-body {
         padding-right: 44px !important;
       }
+      html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
+        padding-right: 32px !important;
+      }
     `;
 
 /** Toggle simplified (plain bullets) chrome inside the editor WebView. */
@@ -1100,7 +1226,8 @@ export function setSimplifiedModeScript(
       li.thought-item.is-completed .thought-check-box svg {
         color: ${surfaceColor} !important;
       }
-      .thought-graph {
+      .thought-graph,
+      .thought-expand {
         display: none !important;
       }
     `
@@ -1132,7 +1259,9 @@ export function setSimplifiedModeScript(
         clearTimeout(li.__mcBounceTimer);
         li.__mcBounceTimer = null;
       }
-      li.classList.remove("is-collapsed");
+      if (window.__mcSimplified) {
+        li.classList.remove("is-collapsed");
+      }
       var stripe = li.querySelector(".thought-stripe");
       if (stripe) stripe.classList.remove("is-bouncing");
     }
@@ -1215,11 +1344,20 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   }
 
   function collapseThoughtCategory(li) {
-    if (!li || window.__mcSimplified || window.__mcEditing) return;
+    if (!li || window.__mcSimplified) return;
+    var title = li.querySelector(".thought-title");
+    if (title) title.__mcTitleH = title.scrollHeight;
     li.classList.add("is-collapsed");
-    li.__mcBounceTimer = setTimeout(function () {
-      bounceStripe(li);
-    }, COLLAPSE_TRANSITION_MS);
+    var expand = li.querySelector(".thought-expand");
+    if (expand) expand.setAttribute("aria-expanded", "false");
+    if (typeof window.__mcAnimateTitle === "function") {
+      window.__mcAnimateTitle(li);
+    }
+    if (!window.__mcEditing) {
+      li.__mcBounceTimer = setTimeout(function () {
+        bounceStripe(li);
+      }, COLLAPSE_TRANSITION_MS);
+    }
     if (typeof window.__mcSyncChecklistLayouts === "function") {
       window.__mcSyncChecklistLayouts();
     }
@@ -1231,7 +1369,12 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     var stripe = li.querySelector(".thought-stripe");
     if (stripe) stripe.classList.remove("is-bouncing");
     li.classList.remove("is-collapsed");
-    if (reschedule !== false) {
+    var expand = li.querySelector(".thought-expand");
+    if (expand) expand.setAttribute("aria-expanded", "true");
+    if (typeof window.__mcAnimateTitle === "function") {
+      window.__mcAnimateTitle(li);
+    }
+    if (reschedule !== false && !window.__mcEditing) {
       scheduleCollapse(li);
     }
     if (typeof window.__mcSyncChecklistLayouts === "function") {
@@ -1252,7 +1395,10 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
   }
 
   window.__mcExpandThoughtCategory = function (li) {
-    expandThoughtCategory(li, true);
+    expandThoughtCategory(li, !window.__mcEditing);
+  };
+  window.__mcCollapseThoughtCategory = function (li) {
+    collapseThoughtCategory(li);
   };
 
   window.__mcRefreshCategoryTimers = function () {
@@ -1260,7 +1406,13 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     var lis = content.querySelectorAll("ul > li.thought-item");
     for (var i = 0; i < lis.length; i++) {
       if (window.__mcEditing) {
-        expandThoughtCategory(lis[i], false);
+        var expand = lis[i].querySelector(".thought-expand");
+        if (expand) {
+          expand.setAttribute(
+            "aria-expanded",
+            lis[i].classList.contains("is-collapsed") ? "false" : "true"
+          );
+        }
       } else if (!lis[i].classList.contains("is-collapsed")) {
         scheduleCollapse(lis[i]);
       }
@@ -1286,6 +1438,7 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     if (window.__mcEditing || window.__mcSimplified) return;
     if (closestClass(e.target, "thought-check")) return;
     if (closestClass(e.target, "thought-graph")) return;
+    if (closestClass(e.target, "thought-expand")) return;
     var li = closestLi(e.target);
     if (!li) return;
     e.preventDefault();
@@ -1396,6 +1549,64 @@ export const CHECKLIST_SCRIPT = `
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
 
+  function titlePlainText(el) {
+    if (!el) return "";
+    return (el.textContent || "")
+      .replace(/\\u00a0/g, " ")
+      .replace(/\\s+/g, " ")
+      .trim();
+  }
+
+  window.__mcAnimateTitle = function (li) {
+    if (!li) return;
+    var title = li.querySelector(".thought-title");
+    var hasText = titlePlainText(title).length > 0;
+    li.classList.toggle("has-entered-title", hasText);
+    if (!title) return;
+
+    var collapsed = li.classList.contains("is-collapsed");
+
+    if (!hasText && !window.__mcEditing) {
+      title.style.maxHeight = "0px";
+      title.style.opacity = "0";
+      title.style.marginBottom = "0px";
+      title.style.minHeight = "0px";
+      title.style.overflow = "hidden";
+      title.style.padding = "0px";
+      return;
+    }
+
+    title.style.overflow = "hidden";
+    if (collapsed) {
+      var current = title.style.maxHeight;
+      if (!current || current === "none") {
+        title.style.maxHeight = (title.__mcTitleH || title.scrollHeight || 24) + "px";
+        void title.offsetHeight;
+      }
+      title.style.maxHeight = "0px";
+      title.style.opacity = "0";
+      title.style.marginBottom = "0px";
+      title.style.minHeight = "0px";
+      title.style.padding = "0px";
+      return;
+    }
+
+    var height = title.__mcTitleH || title.scrollHeight || 24;
+    title.style.minHeight = "";
+    title.style.marginBottom = "";
+    title.style.padding = "";
+    title.style.opacity = "";
+    title.style.maxHeight = height + "px";
+  };
+
+  if (document.documentElement) {
+    document.documentElement.classList.toggle(
+      "mc-editing",
+      !!window.__mcEditing
+    );
+  }
+  content.classList.toggle("mc-editing", !!window.__mcEditing);
+
   function closest(node, predicate) {
     while (node && node !== document.body) {
       if (predicate(node)) return node;
@@ -1478,31 +1689,35 @@ export const CHECKLIST_SCRIPT = `
     var title = li.querySelector(".thought-title");
     var summary = li.querySelector(".thought-summary");
     var graph = li.querySelector(".thought-graph");
-    var hasTitle = !!window.__mcShowTitles && !!title;
+    var expand = li.querySelector(".thought-expand");
+    var collapsed = li.classList.contains("is-collapsed");
+    var hasText = titlePlainText(title).length > 0;
+    li.classList.toggle("has-entered-title", hasText);
+    var hasTitle = hasText && !collapsed;
     li.classList.toggle("has-title", hasTitle);
 
-    var field = summary || title;
+    var field = (hasTitle ? title : null) || summary || title;
     var lineH = fieldLineHeight(field);
     var fieldH = field ? field.offsetHeight : 0;
     var singleLine = !hasTitle && fieldH <= lineH * 1.6;
     li.classList.toggle("is-single-line", singleLine);
     li.classList.toggle("has-graph", !!graph);
+    li.classList.toggle("has-expand", !!expand && !!window.__mcEditing);
 
-    var fieldsBox = li.querySelector(".thought-fields");
-    if (graph && fieldsBox) {
-      var graphNudge = Math.round((fieldsBox.offsetHeight - 32) / 2);
-      li.style.setProperty("--graph-nudge", graphNudge + "px");
-      if (!graph.classList.contains("is-anchored")) {
-        requestAnimationFrame(function () {
-          graph.classList.add("is-anchored");
-        });
-      }
-    } else {
-      li.style.removeProperty("--graph-nudge");
+    if (graph && !graph.classList.contains("is-anchored")) {
+      requestAnimationFrame(function () {
+        graph.classList.add("is-anchored");
+      });
+    }
+    if (expand && !expand.classList.contains("is-anchored")) {
+      requestAnimationFrame(function () {
+        expand.classList.add("is-anchored");
+      });
     }
 
     // Keep top in CSS so it eases with the category line (0.38s).
-    // Only measure the first-line nudge; do not write offsetTop.
+    // Graph button uses the same --category-stack offset — do not recenter
+    // on fields height or it will jump twice while the title animates.
     var target =
       hasTitle && title && !window.__mcSimplified ? title : summary || title;
     if (target) {
@@ -1615,7 +1830,8 @@ export const CHECKLIST_SCRIPT = `
         closestClass(node, "thought-rail") ||
         closestClass(node, "thought-stripe") ||
         closestClass(node, "thought-category") ||
-        closestClass(node, "thought-graph")
+        closestClass(node, "thought-graph") ||
+        closestClass(node, "thought-expand")
       );
     }
 
@@ -1638,7 +1854,8 @@ export const CHECKLIST_SCRIPT = `
         if (
           !e.target ||
           !e.target.classList ||
-          !e.target.classList.contains("thought-category")
+          (!e.target.classList.contains("thought-category") &&
+            !e.target.classList.contains("thought-title"))
         ) {
           return;
         }

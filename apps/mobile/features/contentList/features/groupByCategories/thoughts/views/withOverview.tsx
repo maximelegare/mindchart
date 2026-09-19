@@ -32,7 +32,9 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
               key={thought.id}
               id={thought.id}
               noteId={thought.noteId ?? ""}
-              title={stripHtml(thought.title)}
+              title={
+                stripHtml(thought.title) || stripHtml(thought.semanticLabel)
+              }
               summary={stripHtml(thought.summary)}
               date={thought.createdAt ?? ""}
               isChecklist={thought.isCompletable ?? false}

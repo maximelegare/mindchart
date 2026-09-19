@@ -89,6 +89,7 @@ export type CategoriesJoinThoughtsParsedSchemaModel = z.infer<
 export const PendingEmbeddingSchema = z.object({
   id: z.string(),
   semanticLabel: z.string(),
+  summary: z.string().optional(),
   thoughtId: z.string(),
 });
 

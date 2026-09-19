@@ -116,3 +116,25 @@ export const updateThoughtCategoryQuery = async (
     .set({ categoryId: data.categoryId || "uncategorized" })
     .where(eq(ThoughtTable.id, data.id));
 };
+
+export const updateThoughtNlpQuery = async (
+  db: DB,
+  data: Array<{ id: string; semanticLabel?: string; categoryId?: string }>
+) => {
+  for (const row of data) {
+    const patch: { semanticLabel?: string; categoryId?: string } = {};
+    if (row.semanticLabel != null) patch.semanticLabel = row.semanticLabel;
+    if (row.categoryId != null) patch.categoryId = row.categoryId;
+    if (Object.keys(patch).length === 0) continue;
+
+    await db.update(ThoughtTable).set(patch).where(eq(ThoughtTable.id, row.id));
+
+    if (row.semanticLabel != null) {
+      await db.run(sql`
+        UPDATE thought_fts
+        SET semantic_label = ${row.semanticLabel}
+        WHERE id = ${row.id}
+      `);
+    }
+  }
+};

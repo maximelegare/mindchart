@@ -1,8 +1,10 @@
 import React from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import {
   AndroidSoftInputModes,
@@ -29,6 +31,7 @@ import {
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
+const APPEAR_OPACITY_MS = 180;
 
 type FormatCommand = "bold" | "italic" | "underline";
 
@@ -156,6 +159,8 @@ export function ThoughtsEditorToolbar({
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const keyboardHeight = useSharedValue(0);
+  const isOpening = useSharedValue(false);
+  const opacity = useSharedValue(1);
   const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
   const bottomInset = insets.bottom;
@@ -173,19 +178,45 @@ export function ThoughtsEditorToolbar({
     };
   }, [dockToKeyboard]);
 
-  // Snap on movement start. `onStart` carries the destination height, so the
-  // bar is already in place while the IME is still animating.
+  // Appear only after the IME has settled. Follow the keyboard down on close.
   useGenericKeyboardHandler(
     {
       onStart: (event) => {
         "worklet";
-        keyboardHeight.value =
-          event.progress === 1 ? Math.max(0, event.height) : 0;
+        const willOpen = event.progress === 1;
+        if (willOpen && keyboardHeight.value <= 0) {
+          isOpening.value = true;
+          opacity.value = 0;
+        } else if (!willOpen) {
+          isOpening.value = false;
+          if (keyboardHeight.value > 0) {
+            opacity.value = 1;
+          }
+        }
+      },
+      onMove: (event) => {
+        "worklet";
+        if (!isOpening.value) {
+          keyboardHeight.value = Math.max(0, event.height);
+        }
+      },
+      onInteractive: (event) => {
+        "worklet";
+        isOpening.value = false;
+        keyboardHeight.value = Math.max(0, event.height);
       },
       onEnd: (event) => {
         "worklet";
-        if (event.progress !== 1) {
+        isOpening.value = false;
+        if (event.progress === 1) {
+          keyboardHeight.value = Math.max(0, event.height);
+          opacity.value = withTiming(1, {
+            duration: APPEAR_OPACITY_MS,
+            easing: Easing.out(Easing.quad),
+          });
+        } else {
           keyboardHeight.value = 0;
+          opacity.value = 1;
         }
       },
     },
@@ -195,8 +226,11 @@ export function ThoughtsEditorToolbar({
   const dockedStyle = useAnimatedStyle(() => {
     const keyboard = Math.max(0, keyboardHeight.value);
     const fill = Math.max(bottomInset, keyboard);
+    const hidden = isOpening.value || opacity.value <= 0;
     return {
       height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT + fill,
+      opacity: opacity.value,
+      pointerEvents: hidden ? "none" : "box-none",
     };
   }, [bottomInset]);
 

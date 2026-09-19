@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import { Note, Thought } from "@repo/zod-schemas";
+import { useQueryClient } from "@tanstack/react-query";
 import { useControllers } from "@/api/controllers/useControllers";
+import { runThoughtNlpInBackground } from "@/features/nlp/runThoughtNlpInBackground";
 
 function asText(value: unknown): string {
   if (typeof value === "string") return value.trim();
@@ -10,6 +12,7 @@ function asText(value: unknown): string {
 }
 
 export const useSaveNewNote = () => {
+  const queryClient = useQueryClient();
   const { notesAndThoughts, embeddings } = useControllers();
 
   const { mutateAsync: insertNoteAndThoughtsMutateAsync } =
@@ -43,20 +46,28 @@ export const useSaveNewNote = () => {
         };
       });
 
-      const generatedEmbeddings = await generateLocalEmbeddingsMutateAsync({
-        thoughts: thoughtsToInsert,
-      });
-
       await insertNoteAndThoughtsMutateAsync({
         note: noteToInsert,
         thoughts: thoughtsToInsert,
       });
-      await insertEmbeddingsMutateAsync({ data: generatedEmbeddings });
+
+      runThoughtNlpInBackground(thoughtsToInsert, queryClient);
+      void (async () => {
+        try {
+          const generatedEmbeddings = await generateLocalEmbeddingsMutateAsync({
+            thoughts: thoughtsToInsert,
+          });
+          await insertEmbeddingsMutateAsync({ data: generatedEmbeddings });
+        } catch (error) {
+          console.warn("Background embeddings failed:", error);
+        }
+      })();
     },
     [
       generateLocalEmbeddingsMutateAsync,
       insertEmbeddingsMutateAsync,
       insertNoteAndThoughtsMutateAsync,
+      queryClient,
     ]
   );
 

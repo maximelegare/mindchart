@@ -7,7 +7,7 @@ import { isNoteLeafId } from "./mapNoteToLeaf";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 
 /** Bump when folder/category graph shape changes (forces DB cache rebuild). */
-export const GRAPH_CACHE_VERSION = 7;
+export const GRAPH_CACHE_VERSION = 9;
 
 const isRootNode = (data: unknown): data is NodeDatum =>
   typeof data === "object" &&

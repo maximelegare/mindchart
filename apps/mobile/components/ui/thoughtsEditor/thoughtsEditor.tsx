@@ -27,6 +27,7 @@ import { type ThoughtsEditorFormValues } from "./types";
 import {
   htmlToThoughts,
   setThoughtCategoryScript,
+  setThoughtSemanticTitleScript,
   stripHtml,
   thoughtsToHtml,
   buildCategoryLabelsScript,
@@ -55,7 +56,7 @@ import {
   THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
 } from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
-import { classifyCategory } from "@/features/categories/utils/classifyCategory";
+import { analyzeThought } from "@/lib/nlp";
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought } from "./types";
@@ -146,7 +147,6 @@ function buildEditorThemeCss(colors: {
   surface: string;
   card: string;
   graphButtonColor: string;
-  graphButtonFill: string;
 }): string {
   return `
     .thought-check-box {
@@ -166,7 +166,10 @@ function buildEditorThemeCss(colors: {
     }
     .thought-graph {
       color: ${colors.graphButtonColor};
-      background: ${colors.graphButtonFill};
+      background: transparent;
+    }
+    .thought-expand {
+      color: ${colors.mutedFg};
     }
     .thought-category {
       color: ${colors.mutedFg};
@@ -364,10 +367,6 @@ function ThoughtsEditorInner(
     ? hsl("background", colorScheme)
     : hsl("card", colorScheme);
   const graphButtonColor = mutedFg;
-  const graphButtonFill = hsl("primary", colorScheme).replace(
-    /^hsl\((.*)\)$/,
-    "hsla($1, 0.16)"
-  );
   const markerColorRef = React.useRef(mutedFg);
   markerColorRef.current = mutedFg;
   const surfaceColorRef = React.useRef(surfaceColor);
@@ -379,9 +378,8 @@ function ThoughtsEditorInner(
         surface: surfaceColor,
         card: cardColor,
         graphButtonColor,
-        graphButtonFill,
       }),
-    [cardColor, graphButtonColor, graphButtonFill, mutedFg, surfaceColor]
+    [cardColor, graphButtonColor, mutedFg, surfaceColor]
   );
   const editorThemeCssRef = React.useRef(editorThemeCss);
   editorThemeCssRef.current = editorThemeCss;
@@ -396,6 +394,7 @@ function ThoughtsEditorInner(
   const htmlOptions = React.useMemo(
     () => ({
       showGraphButtons,
+      preferSemanticTitle: readOnly,
       placeholders: {
         title: thoughtPlaceholders.title,
         summary: thoughtPlaceholders.summary,
@@ -403,7 +402,7 @@ function ThoughtsEditorInner(
       },
       categoryLabels: categoryLabelsRecord,
     }),
-    [showGraphButtons, thoughtPlaceholders, categoryLabelsRecord]
+    [showGraphButtons, thoughtPlaceholders, categoryLabelsRecord, readOnly]
   );
   const validationMessages = React.useMemo(
     () => ({
@@ -429,7 +428,9 @@ function ThoughtsEditorInner(
     categoryPickerIndex != null
       ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
       : null;
-  const pendingCategoryByIndexRef = React.useRef(new Map<number, string>());
+  const pendingNlpByIndexRef = React.useRef(
+    new Map<number, { categoryId?: string; semanticLabel?: string }>()
+  );
 
   const injectIfReady = React.useCallback((script: string) => {
     if (!editorReadyRef.current) return;
@@ -702,10 +703,14 @@ function ThoughtsEditorInner(
         previous,
         showTitlesRef.current
       ).map((thought, index) => {
-        const classified = pendingCategoryByIndexRef.current.get(index);
-        if (!classified) return thought;
-        pendingCategoryByIndexRef.current.delete(index);
-        return { ...thought, categoryId: classified };
+        const pending = pendingNlpByIndexRef.current.get(index);
+        if (!pending) return thought;
+        pendingNlpByIndexRef.current.delete(index);
+        return {
+          ...thought,
+          categoryId: pending.categoryId ?? thought.categoryId,
+          semanticLabel: pending.semanticLabel ?? thought.semanticLabel,
+        };
       });
       setValue("thoughts", next, { shouldDirty: true });
     },
@@ -782,6 +787,37 @@ function ThoughtsEditorInner(
     showTitles,
     thoughtPlaceholders,
   ]);
+
+  const viewSignature = React.useMemo(
+    () =>
+      readOnly
+        ? (thoughts ?? [])
+            .map(
+              (thought) =>
+                `${thought.id}:${thought.semanticLabel}:${thought.categoryId}:${thought.title}:${thought.summary}`
+            )
+            .join("|")
+        : "",
+    [readOnly, thoughts]
+  );
+  const lastViewSignatureRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (!readOnly) {
+      lastViewSignatureRef.current = null;
+      return;
+    }
+    if (!editorReadyRef.current) return;
+    if (lastViewSignatureRef.current === viewSignature) return;
+    const skipRebuild = lastViewSignatureRef.current == null;
+    lastViewSignatureRef.current = viewSignature;
+    if (skipRebuild) return;
+    const titles = simplifiedRef.current ? false : showTitlesRef.current;
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(getValues("thoughts"), titles, htmlOptions)
+    );
+    refreshCategoryTimers();
+  }, [getValues, htmlOptions, readOnly, refreshCategoryTimers, viewSignature]);
 
   const handleFormat = React.useCallback(
     (command: "bold" | "italic" | "underline") => {
@@ -889,6 +925,11 @@ function ThoughtsEditorInner(
 
   const handleEditorMessage = React.useCallback(
     (message: { type: string; data?: unknown }) => {
+      if (message.type === "DISMISS_KEYBOARD") {
+        richRef.current?.dismissKeyboard();
+        Keyboard.dismiss();
+        return;
+      }
       if (message.type === "OPEN_GRAPH") {
         const thoughtId = String(message.data ?? "");
         if (!thoughtId) return;
@@ -975,26 +1016,54 @@ function ThoughtsEditorInner(
           | undefined;
         const index = Number(payload?.index);
         if (!Number.isFinite(index) || index < 0) return;
-        const categoryId = classifyCategory(String(payload?.text ?? ""));
-        pendingCategoryByIndexRef.current.set(index, categoryId);
+        const text = String(payload?.text ?? "");
+        const result = analyzeThought(text);
         const previous = getValues("thoughts");
         const current = previous[index];
-        if (current && current.categoryId !== categoryId) {
+        const currentCategory = current?.categoryId || "uncategorized";
+        const nextCategory =
+          result.category &&
+          result.categoryConfidence >= 0.35 &&
+          currentCategory === "uncategorized"
+            ? result.category
+            : undefined;
+        const nextLabel = result.semanticLabel || undefined;
+        if (!nextCategory && !nextLabel) return;
+
+        pendingNlpByIndexRef.current.set(index, {
+          categoryId: nextCategory,
+          semanticLabel: nextLabel,
+        });
+
+        if (current) {
           setValue(
             "thoughts",
             previous.map((thought, thoughtIndex) =>
-              thoughtIndex === index ? { ...thought, categoryId } : thought
+              thoughtIndex === index
+                ? {
+                    ...thought,
+                    categoryId: nextCategory ?? thought.categoryId,
+                    semanticLabel: nextLabel ?? thought.semanticLabel,
+                  }
+                : thought
             ),
             { shouldDirty: true }
           );
         }
-        richRef.current?.injectJavascript(
-          setThoughtCategoryScript(
-            index,
-            categoryId,
-            categoryLabels.get(categoryId)
-          )
-        );
+        if (nextLabel) {
+          richRef.current?.injectJavascript(
+            setThoughtSemanticTitleScript(index, nextLabel)
+          );
+        }
+        if (nextCategory) {
+          richRef.current?.injectJavascript(
+            setThoughtCategoryScript(
+              index,
+              nextCategory,
+              categoryLabels.get(nextCategory)
+            )
+          );
+        }
         return;
       }
       if (message.type !== "SELECT_CATEGORY") return;
@@ -1067,7 +1136,6 @@ function ThoughtsEditorInner(
     () => ({
       validateRequiredContent: () => {
         const thoughts = getValues("thoughts") ?? [];
-        const showTitles = showTitlesRef.current;
 
         const isEmptyThought = (thought: {
           title: string;
@@ -1094,34 +1162,7 @@ function ThoughtsEditorInner(
           return false;
         }
 
-        if (showTitles) {
-          // Partial bullets (title XOR summary) must be completed.
-          const incomplete = thoughts.flatMap((thought, index) => {
-            if (isEmptyThought(thought)) return [];
-            const hasTitle = Boolean(stripHtml(thought.title));
-            const hasSummary = Boolean(stripHtml(thought.summary));
-            if (hasTitle && hasSummary) return [];
-            return [
-              {
-                index,
-                missingTitle: !hasTitle,
-                missingSummary: !hasSummary,
-              },
-            ];
-          });
-
-          if (incomplete.length > 0) {
-            richRef.current?.injectJavascript(
-              setThoughtValidationErrorsScript({
-                emptyContent: false,
-                incomplete,
-                messages: validationMessages,
-              })
-            );
-            return false;
-          }
-        }
-
+        // Titles are optional even when the title fields are visible.
         richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
         return true;
       },
@@ -1200,7 +1241,7 @@ function ThoughtsEditorInner(
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
                   line-height: 1.45;
-                  padding: ${plain ? (!readOnly ? "8px 0" : "8px 2px") : "12px"};
+                  padding: ${plain ? "8px 0" : "12px"};
                   padding-left: 0;
                   padding-bottom: ${
                     showToolbar && dockToolbarToKeyboard
@@ -1353,9 +1394,52 @@ function ThoughtsEditorInner(
                   li.thought-item:has(> .thought-graph) .thought-body {
                     padding-right: 44px;
                   }
+                  html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
+                    padding-right: 32px;
+                  }
+                  .thought-expand {
+                    display: none;
+                    position: absolute;
+                    top: calc(
+                      var(--category-stack, 0px) + var(--check-nudge, 2px) - 3px
+                    );
+                    right: 0;
+                    width: 28px;
+                    height: 28px;
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    background: transparent;
+                    color: ${mutedFg};
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0.5;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    z-index: 3;
+                  }
+                  .thought-expand.is-anchored {
+                    transition:
+                      top 0.38s ease,
+                      transform 0.28s ease;
+                  }
+                  html.mc-editing .thought-expand {
+                    display: flex;
+                  }
+                  .thought-expand svg {
+                    display: block;
+                    pointer-events: none;
+                    transition: transform 0.28s ease;
+                  }
+                  li.thought-item:not(.is-collapsed) .thought-expand svg {
+                    transform: rotate(180deg);
+                  }
                   .thought-graph {
                     position: absolute;
-                    top: calc(var(--category-stack, 0px) + var(--graph-nudge, 0px));
+                    top: calc(
+                      var(--category-stack, 0px) + var(--check-nudge, 2px) - 5px
+                    );
                     right: 0;
                     width: 32px;
                     height: 32px;
@@ -1363,8 +1447,7 @@ function ThoughtsEditorInner(
                     align-items: center;
                     justify-content: center;
                     color: ${graphButtonColor};
-                    background: ${graphButtonFill};
-                    border-radius: 999px;
+                    background: transparent;
                     opacity: 0.85;
                     cursor: pointer;
                     user-select: none;
@@ -1437,6 +1520,19 @@ function ThoughtsEditorInner(
                     padding: 0;
                     pointer-events: none;
                   }
+                  li.thought-item.is-collapsed .thought-title {
+                    opacity: 0;
+                    max-height: 0;
+                    min-height: 0;
+                    margin: 0;
+                    padding: 0;
+                    overflow: hidden;
+                    pointer-events: none;
+                  }
+                  li.thought-item.is-collapsed .thought-title.is-placeholder::before,
+                  li.thought-item.is-collapsed .thought-title.is-error-placeholder::before {
+                    content: none;
+                  }
                   li.thought-item.is-collapsed .thought-stripe {
                     opacity: 0;
                     pointer-events: none;
@@ -1466,6 +1562,26 @@ function ThoughtsEditorInner(
                     font-weight: 700;
                     margin-bottom: 2px;
                     opacity: 0.75;
+                    overflow: hidden;
+                    transition:
+                      max-height 0.38s ease,
+                      opacity 0.28s ease,
+                      min-height 0.38s ease,
+                      margin 0.38s ease,
+                      padding 0.38s ease;
+                  }
+                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title {
+                    max-height: 0 !important;
+                    min-height: 0 !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    opacity: 0 !important;
+                    overflow: hidden !important;
+                    pointer-events: none !important;
+                    transition: none !important;
+                  }
+                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title::before {
+                    content: none !important;
                   }
                   .thought-title * {
                     font-weight: 700;
