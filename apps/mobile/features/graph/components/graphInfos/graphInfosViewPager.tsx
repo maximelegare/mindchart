@@ -12,8 +12,7 @@ import type { GraphInfosContentView } from "./graphInfosViewToggle";
 
 const SNAP_DURATION_MS = 240;
 const SNAP_EASING = Easing.out(Easing.cubic);
-
-type MountedPages = Record<GraphInfosContentView, boolean>;
+const SNAP = { duration: SNAP_DURATION_MS, easing: SNAP_EASING };
 
 type GraphInfosViewPagerProps = {
   view: GraphInfosContentView;
@@ -29,70 +28,55 @@ export const GraphInfosViewPager = ({
   notes,
 }: GraphInfosViewPagerProps) => {
   const [width, setWidth] = useState(0);
-  const [mounted, setMounted] = useState<MountedPages>({
-    tree: view === "tree",
-    notes: view === "notes",
-  });
   const widthSV = useSharedValue(0);
   const translateX = useSharedValue(0);
   const startX = useSharedValue(0);
   const isDragging = useSharedValue(false);
-  const notesMountedSV = useSharedValue(view === "notes");
-  const treeMountedSV = useSharedValue(view === "tree");
+  const treeHeightSV = useSharedValue(0);
+  const notesHeightSV = useSharedValue(0);
+  const viewportHeightSV = useSharedValue(0);
 
-  const mountPage = useCallback((page: GraphInfosContentView) => {
-    setMounted((prev) => (prev[page] ? prev : { ...prev, [page]: true }));
-  }, []);
-
-  const releaseInactive = useCallback(
+  const heightFor = useCallback(
     (active: GraphInfosContentView) => {
-      // Tree is expensive to rebuild — keep it mounted after the first paint.
-      // Notes stay lazy and unmount when you snap back to the tree.
-      notesMountedSV.value = active === "notes";
-      treeMountedSV.value = true;
-      setMounted({
-        tree: true,
-        notes: active === "notes",
-      });
+      const treeH = treeHeightSV.value;
+      const notesH = notesHeightSV.value;
+      if (active === "notes") return notesH > 0 ? notesH : treeH;
+      return treeH > 0 ? treeH : notesH;
     },
-    [notesMountedSV, treeMountedSV]
+    [notesHeightSV, treeHeightSV]
+  );
+
+  const animateHeight = useCallback(
+    (active: GraphInfosContentView) => {
+      const next = heightFor(active);
+      if (next <= 0) return;
+      if (viewportHeightSV.value <= 0) {
+        viewportHeightSV.value = next;
+        return;
+      }
+      if (Math.abs(viewportHeightSV.value - next) < 1) return;
+      viewportHeightSV.value = withTiming(next, SNAP);
+    },
+    [heightFor, viewportHeightSV]
   );
 
   const settle = useCallback(
     (next: GraphInfosContentView) => {
-      releaseInactive(next);
+      animateHeight(next);
       onChange(next);
     },
-    [onChange, releaseInactive]
+    [animateHeight, onChange]
   );
 
   useEffect(() => {
     if (width <= 0) return;
     widthSV.value = width;
-    mountPage(view);
     if (isDragging.value) return;
+    animateHeight(view);
     const target = view === "notes" ? -width : 0;
-    if (Math.abs(translateX.value - target) < 0.5) {
-      releaseInactive(view);
-      return;
-    }
-    translateX.value = withTiming(
-      target,
-      { duration: SNAP_DURATION_MS, easing: SNAP_EASING },
-      (finished) => {
-        if (!finished) return;
-        runOnJS(releaseInactive)(view);
-      }
-    );
-  }, [
-    isDragging,
-    mountPage,
-    releaseInactive,
-    translateX,
-    view,
-    width,
-    widthSV,
-  ]);
+    if (Math.abs(translateX.value - target) < 0.5) return;
+    translateX.value = withTiming(target, SNAP);
+  }, [animateHeight, isDragging, translateX, view, width, widthSV]);
 
   const pan = useMemo(
     () =>
@@ -106,15 +90,17 @@ export const GraphInfosViewPager = ({
         .onUpdate((event) => {
           const pageWidth = widthSV.value;
           if (pageWidth <= 0) return;
-          if (event.translationX < -8 && !notesMountedSV.value) {
-            notesMountedSV.value = true;
-            runOnJS(mountPage)("notes");
-          } else if (event.translationX > 8 && !treeMountedSV.value) {
-            treeMountedSV.value = true;
-            runOnJS(mountPage)("tree");
-          }
           const next = startX.value + event.translationX;
           translateX.value = Math.min(0, Math.max(-pageWidth, next));
+          const treeH = treeHeightSV.value;
+          const notesH = notesHeightSV.value;
+          if (treeH > 0 && notesH > 0) {
+            const progress = Math.min(
+              1,
+              Math.max(0, -translateX.value / pageWidth)
+            );
+            viewportHeightSV.value = treeH + (notesH - treeH) * progress;
+          }
         })
         .onEnd((event) => {
           isDragging.value = false;
@@ -123,26 +109,34 @@ export const GraphInfosViewPager = ({
           const projected = translateX.value + event.velocityX * 0.2;
           const goingNotes = projected < -pageWidth / 2;
           const target = goingNotes ? -pageWidth : 0;
-          translateX.value = withTiming(
-            target,
-            { duration: SNAP_DURATION_MS, easing: SNAP_EASING },
-            (finished) => {
-              if (!finished) return;
-              runOnJS(settle)(goingNotes ? "notes" : "tree");
-            }
-          );
+          const treeH = treeHeightSV.value;
+          const notesH = notesHeightSV.value;
+          const targetH = goingNotes
+            ? notesH > 0
+              ? notesH
+              : treeH
+            : treeH > 0
+              ? treeH
+              : notesH;
+          if (targetH > 0) {
+            viewportHeightSV.value = withTiming(targetH, SNAP);
+          }
+          translateX.value = withTiming(target, SNAP, (finished) => {
+            if (!finished) return;
+            runOnJS(settle)(goingNotes ? "notes" : "tree");
+          });
         })
         .onFinalize(() => {
           isDragging.value = false;
         }),
     [
       isDragging,
-      mountPage,
-      notesMountedSV,
+      notesHeightSV,
       settle,
       startX,
       translateX,
-      treeMountedSV,
+      treeHeightSV,
+      viewportHeightSV,
       widthSV,
     ]
   );
@@ -151,23 +145,49 @@ export const GraphInfosViewPager = ({
     transform: [{ translateX: translateX.value }],
   }));
 
-  const onLayout = (event: LayoutChangeEvent) => {
+  const viewportStyle = useAnimatedStyle(() => ({
+    height: viewportHeightSV.value > 0 ? viewportHeightSV.value : undefined,
+  }));
+
+  const onWidthLayout = (event: LayoutChangeEvent) => {
     const nextWidth = event.nativeEvent.layout.width;
     if (nextWidth <= 0 || nextWidth === width) return;
     setWidth(nextWidth);
   };
 
+  const onPageLayout =
+    (page: GraphInfosContentView) => (event: LayoutChangeEvent) => {
+      const height = event.nativeEvent.layout.height;
+      if (height <= 0) return;
+      if (page === "tree") {
+        if (Math.abs(treeHeightSV.value - height) < 0.5) return;
+        treeHeightSV.value = height;
+      } else {
+        if (Math.abs(notesHeightSV.value - height) < 0.5) return;
+        notesHeightSV.value = height;
+      }
+      if (isDragging.value || page !== view) return;
+      if (viewportHeightSV.value <= 0 || page === "tree") {
+        viewportHeightSV.value = height;
+        return;
+      }
+      viewportHeightSV.value = withTiming(height, SNAP);
+    };
+
   return (
     <GestureDetector gesture={pan}>
-      <View
+      <Animated.View
         collapsable={false}
-        onLayout={onLayout}
-        style={{ overflow: "hidden", width: "100%" }}
+        onLayout={onWidthLayout}
+        style={[{ overflow: "hidden", width: "100%" }, viewportStyle]}
       >
         <Animated.View
           collapsable={false}
           style={[
             {
+              position: "absolute",
+              top: 0,
+              left: 0,
               flexDirection: "row",
               alignItems: "flex-start",
               width: width > 0 ? width * 2 : "200%",
@@ -175,14 +195,22 @@ export const GraphInfosViewPager = ({
             trackStyle,
           ]}
         >
-          <View style={{ width: width > 0 ? width : "50%" }}>
-            {mounted.tree ? tree : null}
+          <View
+            collapsable={false}
+            onLayout={onPageLayout("tree")}
+            style={{ width: width > 0 ? width : "50%" }}
+          >
+            {tree}
           </View>
-          <View style={{ width: width > 0 ? width : "50%" }}>
-            {mounted.notes ? notes : null}
+          <View
+            collapsable={false}
+            onLayout={onPageLayout("notes")}
+            style={{ width: width > 0 ? width : "50%" }}
+          >
+            {notes}
           </View>
         </Animated.View>
-      </View>
+      </Animated.View>
     </GestureDetector>
   );
 };

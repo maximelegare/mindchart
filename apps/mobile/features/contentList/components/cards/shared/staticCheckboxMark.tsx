@@ -6,18 +6,27 @@ import { hsl } from "@/utils/hsl";
 export const CHECKBOX_MARK_SIZE = 16;
 
 /** Decorative checklist mark — not pressable. */
-export function StaticCheckboxMark({ completed }: { completed: boolean }) {
+export function StaticCheckboxMark({
+  completed,
+  color,
+  size = CHECKBOX_MARK_SIZE,
+}: {
+  completed: boolean;
+  color?: string;
+  size?: number;
+}) {
   const { colorScheme } = useColorScheme();
-  const stroke = hsl("muted-foreground", colorScheme);
+  const stroke = color ?? hsl("muted-foreground", colorScheme);
   const fill = hsl("card", colorScheme);
+  const checkSize = Math.max(8, Math.round(size * 0.7));
 
   return (
     <View
       accessibilityElementsHidden
       importantForAccessibility="no"
       style={{
-        width: CHECKBOX_MARK_SIZE,
-        height: CHECKBOX_MARK_SIZE,
+        width: size,
+        height: size,
         borderWidth: 2,
         borderRadius: 3,
         borderColor: stroke,
@@ -26,7 +35,7 @@ export function StaticCheckboxMark({ completed }: { completed: boolean }) {
         justifyContent: "center",
       }}
     >
-      {completed ? <Icon name="check" size={11} color="card" /> : null}
+      {completed ? <Icon name="check" size={checkSize} color="card" /> : null}
     </View>
   );
 }

@@ -23,6 +23,7 @@ import {
   useCategoryColorMap,
 } from "@/features/categories/hooks/useCategoryColor";
 import capitalize from "@/utils/stringManipulations/capitalize";
+import { StaticCheckboxMark } from "@/features/contentList/components/cards/shared/staticCheckboxMark";
 import { FolderActionsMenu } from "@/features/contentList/features/folderContents/components/folderActionsMenu";
 import { FileActionsMenu } from "@/features/contentList/components/folderTree/fileActionsMenu";
 import type { FolderTreeFile } from "@/features/contentList/components/folderTree/folderTreeUtils";
@@ -142,29 +143,6 @@ const IconColumn = ({ children }: { children: React.ReactNode }) => (
     style={{ width: ICON_SLOT }}
   >
     {children}
-  </View>
-);
-
-/** Bullet centered on the first text line (not the taller open-note button). */
-const ThoughtBullet = ({
-  color,
-  lineHeight,
-}: {
-  color: string;
-  lineHeight: number;
-}) => (
-  <View
-    className="items-center justify-center shrink-0"
-    style={{ width: ICON_SLOT, height: lineHeight }}
-  >
-    <View
-      className="rounded-full"
-      style={{
-        width: BULLET_SIZE,
-        height: BULLET_SIZE,
-        backgroundColor: color,
-      }}
-    />
   </View>
 );
 
@@ -532,15 +510,20 @@ function ThoughtFirstLine({
   emphasized,
   noteId,
   compactBottom,
+  markerColor,
+  isChecklist,
+  isCompleted,
 }: {
   text: string;
   variant: "title" | "summary";
   emphasized: boolean;
   noteId?: string;
   compactBottom: boolean;
+  markerColor: string;
+  isChecklist: boolean;
+  isCompleted: boolean;
 }) {
-  const { colorScheme } = useColorScheme();
-  const bulletColor = hsl("muted-foreground", colorScheme);
+  const completed = isChecklist && isCompleted;
 
   return (
     <View
@@ -553,7 +536,27 @@ function ThoughtFirstLine({
         paddingRight: 4,
       }}
     >
-      <ThoughtBullet color={bulletColor} lineHeight={TITLE_LINE_HEIGHT} />
+      <View
+        className="items-center justify-center shrink-0"
+        style={{ width: ICON_SLOT, height: TITLE_LINE_HEIGHT }}
+      >
+        {isChecklist ? (
+          <StaticCheckboxMark
+            completed={completed}
+            color={markerColor}
+            size={ICON_SLOT}
+          />
+        ) : (
+          <View
+            className="rounded-full"
+            style={{
+              width: BULLET_SIZE,
+              height: BULLET_SIZE,
+              backgroundColor: markerColor,
+            }}
+          />
+        )}
+      </View>
       <Typography
         variant={variant === "title" ? "h5" : "p"}
         className={cn(
@@ -564,6 +567,9 @@ function ThoughtFirstLine({
         style={{
           includeFontPadding: false,
           lineHeight: TITLE_LINE_HEIGHT,
+          ...(completed
+            ? { textDecorationLine: "line-through" as const, opacity: 0.55 }
+            : null),
         }}
         numberOfLines={variant === "title" ? 2 : undefined}
       >
@@ -585,10 +591,25 @@ function ThoughtTitleRow({
   highlightColor,
   onOpenNote,
 }: ThoughtTitleRowProps) {
+  const categoryColorMap = useCategoryColorMap();
+  const categoryKey = resolveNodeCategoryKey(node);
+  const markerColor = hslColor(
+    (categoryKey && categoryColorMap.get(categoryKey)) || DEFAULT_CATEGORY_COLOR
+  );
+  const isChecklist = Boolean(node.isCompletable);
+  const isCompleted = Boolean(node.isCompleted);
   const emphasized = isCurrent || isFocused;
   const title = (node.title ?? "").trim();
   const hasTitle = title.length > 0;
   const summary = resolveDisplaySummary(node);
+
+  const lineProps = {
+    emphasized,
+    noteId: node.noteId,
+    markerColor,
+    isChecklist,
+    isCompleted,
+  };
 
   const block = (
     <View
@@ -604,9 +625,8 @@ function ThoughtTitleRow({
           <ThoughtFirstLine
             text={title}
             variant="title"
-            emphasized={emphasized}
-            noteId={node.noteId}
             compactBottom={!!summary}
+            {...lineProps}
           />
           {summary ? (
             <Typography
@@ -619,6 +639,12 @@ function ThoughtTitleRow({
                 paddingBottom: 4,
                 includeFontPadding: false,
                 lineHeight: EST_SUMMARY_LINE,
+                ...(isChecklist && isCompleted
+                  ? {
+                      textDecorationLine: "line-through" as const,
+                      opacity: 0.55,
+                    }
+                  : null),
               }}
             >
               {summary}
@@ -629,9 +655,8 @@ function ThoughtTitleRow({
         <ThoughtFirstLine
           text={summary ?? "Untitled"}
           variant={summary ? "summary" : "title"}
-          emphasized={emphasized}
-          noteId={node.noteId}
           compactBottom={false}
+          {...lineProps}
         />
       )}
     </View>
@@ -1305,8 +1330,13 @@ export const SelectedLayerCard = React.memo(function SelectedLayerCard({
   ]);
 
   const notesPage = useMemo(
-    () => <GraphInfosNotesList noteIds={directoryNoteIds} />,
-    [directoryNoteIds]
+    () => (
+      <GraphInfosNotesList
+        noteIds={directoryNoteIds}
+        active={contentView === "notes"}
+      />
+    ),
+    [contentView, directoryNoteIds]
   );
 
   return (

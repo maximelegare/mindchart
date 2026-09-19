@@ -30,7 +30,6 @@ const TREE_LAYOUT: TreeSkeletonNode[] = [
 const NOTE_LAYOUTS: { title: `${number}%`; bullets: `${number}%`[] }[] = [
   { title: "72%", bullets: ["92%", "78%", "64%"] },
   { title: "54%", bullets: ["88%", "70%", "82%", "52%"] },
-  { title: "80%", bullets: ["76%", "90%"] },
 ];
 
 const NoteSkeletonCard = ({

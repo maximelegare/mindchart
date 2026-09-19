@@ -25,6 +25,8 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
         folderLabel: FolderTable.label,
         folderPath: FolderTable.path,
         showTitles: NoteTable.showTitles,
+        isCompletable: ThoughtTable.isCompletable,
+        isCompleted: ThoughtTable.isCompleted,
         // Using raw SQL selection to ensure we get the clean binary blob
         embedding: sql<Uint8Array | null>`${EmbeddingTable.embedding}`,
         createdAt: ThoughtTable.createdAt,

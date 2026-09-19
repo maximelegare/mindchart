@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { View } from "react-native";
 import { Typography } from "@/components/ui/typography";
 import { Separator } from "@/components/ui/separator";
@@ -8,16 +8,39 @@ import {
   thoughtToOverviewItem,
 } from "@/features/contentList/components/cards/noteWithOverview";
 import { parseNoteAndThoughts } from "@/features/notes/shared/utils/parseNoteAndThoughts";
+import {
+  DEFAULT_CATEGORY_COLOR,
+  useCategoryColorMap,
+} from "@/features/categories/hooks/useCategoryColor";
+import { hslColor } from "@/utils/hsl";
 import { GraphInfosNotesEmptyLabel } from "./graphInfosLabels";
 import { GraphInfosNotesSkeleton } from "./graphInfosSkeletons";
+import { useRouter } from "expo-router";
 
-export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
+export const GraphInfosNotesList = ({
+  noteIds,
+  active,
+}: {
+  noteIds: string[];
+  active: boolean;
+}) => {
   const { useFetchNotesByIdsWithThoughtsQuery } =
     useControllers().notesAndThoughts;
+  const { push } = useRouter();
+  const openNote = useCallback(
+    (id: string) => {
+      push({
+        pathname: "/graph/note/[id]",
+        params: { id },
+      });
+    },
+    [push]
+  );
   const { data, isFetching, isPending } = useFetchNotesByIdsWithThoughtsQuery(
     noteIds,
-    { enabled: noteIds.length > 0 }
+    { enabled: active && noteIds.length > 0 }
   );
+  const categoryColorMap = useCategoryColorMap();
 
   const notes = useMemo(() => {
     const parsed = parseNoteAndThoughts(data) ?? [];
@@ -27,10 +50,10 @@ export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
       .filter((note): note is NonNullable<typeof note> => note != null);
   }, [data, noteIds]);
 
-  const isLoading =
-    noteIds.length > 0 && notes.length === 0 && (isPending || isFetching);
+  const showSkeleton =
+    noteIds.length > 0 && (!active || isPending || isFetching);
 
-  if (isLoading) {
+  if (showSkeleton) {
     return <GraphInfosNotesSkeleton />;
   }
 
@@ -53,8 +76,15 @@ export const GraphInfosNotesList = ({ noteIds }: { noteIds: string[] }) => {
             id={note.id}
             title={note.title}
             date={note.createdAt ?? ""}
-            overviewItems={note.thoughts.map(thoughtToOverviewItem)}
+            overviewItems={note.thoughts.map((thought) => ({
+              ...thoughtToOverviewItem(thought),
+              markerColor: hslColor(
+                categoryColorMap.get(thought.categoryId) ??
+                  DEFAULT_CATEGORY_COLOR
+              ),
+            }))}
             showAllContent
+            onPress={openNote}
           />
         </View>
       ))}
