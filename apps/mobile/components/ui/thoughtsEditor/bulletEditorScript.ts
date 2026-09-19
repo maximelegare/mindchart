@@ -452,12 +452,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       for (var s = 0; s < summaries.length; s++) {
         var summary = summaries[s];
         var li = closestLi(summary);
-        var placeholder = window.__mcShowTitles
-          ? "Summary"
-          : "Enter a bullet point";
-        if (!window.__mcShowTitles && li && li.querySelector(".thought-title")) {
-          continue;
-        }
+        var placeholder =
+          window.__mcShowTitles || (li && li.querySelector(".thought-title"))
+            ? "Summary"
+            : "Enter a bullet point";
         repairEmptyField(summary, placeholder);
       }
     }
@@ -474,7 +472,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         ensureCategoryChrome(li);
 
         var title = li.querySelector(".thought-title");
-        if (title && title.parentNode) title.parentNode.removeChild(title);
+        if (title && !(title.textContent || "").replace(/\u00a0/g, " ").trim()) {
+          if (title.parentNode) title.parentNode.removeChild(title);
+        }
 
         var summary = li.querySelector(".thought-summary");
         if (summary) {
@@ -556,13 +556,11 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
       requestClassifyBullet(li);
 
-      if (window.__mcShowTitles) {
-        var inTitle = closestClass(anchor, "thought-title");
-        if (inTitle) {
-          var summary = li.querySelector(".thought-summary");
-          if (summary) placeCaretAtStartSoon(summary);
-          return;
-        }
+      var inTitle = closestClass(anchor, "thought-title");
+      if (inTitle) {
+        var summary = li.querySelector(".thought-summary");
+        if (summary) placeCaretAtStartSoon(summary);
+        return;
       }
 
       var newLi = document.createElement("li");
@@ -647,7 +645,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function handleBackspace(e, li, anchor) {
-      if (!window.__mcShowTitles) {
+      if (!window.__mcShowTitles && !li.querySelector(".thought-title")) {
         handleBackspaceUntitled(e, li, anchor);
         return;
       }
@@ -1580,10 +1578,7 @@ export const CHECKLIST_SCRIPT = `
     var collapsed = li.classList.contains("is-collapsed");
     var hasText = titlePlainText(title).length > 0;
     li.classList.toggle("has-entered-title", hasText);
-    var hasTitle =
-      hasText &&
-      !collapsed &&
-      (!window.__mcEditing || !!window.__mcShowTitles);
+    var hasTitle = hasText && !collapsed;
     li.classList.toggle("has-title", hasTitle);
 
     var field = (hasTitle ? title : null) || summary || title;

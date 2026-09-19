@@ -209,6 +209,23 @@ function extractByClass(html: string, className: string): string | null {
   return null;
 }
 
+/** Keep an unchanged generated heading out of `title` so a typed title still wins later. */
+function resolveEditableTitle(
+  previous: ThoughtsFormValue,
+  parsedTitle: string
+): { title: string; clearSemantic: boolean } {
+  const parsed = stripHtml(parsedTitle);
+  const generated = compactSemanticLabel(previous);
+  if (stripHtml(previous.title) || !generated) {
+    return { title: parsedTitle, clearSemantic: false };
+  }
+  if (!parsed) return { title: "", clearSemantic: true };
+  if (parsed.toLowerCase() === stripHtml(generated).toLowerCase()) {
+    return { title: previous.title, clearSemantic: false };
+  }
+  return { title: parsedTitle, clearSemantic: false };
+}
+
 function parseTitledLi(liHtml: string): {
   title: string;
   summary: string;
@@ -386,14 +403,16 @@ function liToHtml(
     : semanticTitle
       ? thought.semanticLabel
       : "";
-  const showTitleField = viewMode ? Boolean(stripHtml(titleValue)) : showTitles;
+  const showTitleField = viewMode
+    ? Boolean(stripHtml(titleValue))
+    : showTitles || Boolean(stripHtml(titleValue));
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
     startCollapsed: showGraphButton,
     isCompletable: thought.isCompletable,
     isCompleted: thought.isCompleted,
-    hasEnteredTitle: showTitleField && Boolean(stripHtml(titleValue)),
+    hasEnteredTitle: Boolean(stripHtml(titleValue)),
   };
 
   if (showTitleField) {
@@ -419,7 +438,7 @@ export type ThoughtsToHtmlOptions = {
   showGraphButtons?: boolean;
   placeholders?: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">;
   categoryLabels?: Record<string, string>;
-  /** View mode: show a heading when a title or semantic label exists. */
+  /** View mode: hide empty title placeholders; generated headings still show. */
   preferSemanticTitle?: boolean;
 };
 
@@ -498,40 +517,40 @@ export function htmlToThoughts(
     const contentHtml = stripChrome(item.innerHtml);
     const categoryId = item.categoryId || base.categoryId || "uncategorized";
 
-    if (showTitles) {
-      const { title, summary, hasTitleField, hasSummaryField } =
-        parseTitledLi(contentHtml);
+    const { title, summary, hasTitleField, hasSummaryField } =
+      parseTitledLi(contentHtml);
+    const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
+    const isCompleted = isCompletable
+      ? (item.isCompleted ?? base.isCompleted ?? false)
+      : false;
+
+    if (hasTitleField || showTitles) {
       // Only fall back to previous values when the field node is missing from
       // the HTML (e.g. mid-init). Present-but-empty fields must clear so
       // validation can re-run after the user dismisses error placeholders.
       const nextTitle = hasTitleField ? title : title || base.title;
       const nextSummary = hasSummaryField ? summary : summary || base.summary;
-      const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
-      const isCompleted = isCompletable
-        ? (item.isCompleted ?? base.isCompleted ?? false)
-        : false;
+      const resolvedTitle = resolveEditableTitle(base, nextTitle);
       return {
         ...base,
-        title: nextTitle,
+        title: resolvedTitle.title,
         summary: nextSummary,
         categoryId,
-        semanticLabel: preservedSemanticLabel(base, nextTitle, nextSummary),
+        semanticLabel: resolvedTitle.clearSemantic
+          ? ""
+          : preservedSemanticLabel(base, resolvedTitle.title, nextSummary),
         isCompletable,
         isCompleted,
       };
     }
 
     const summaryField = extractByClass(contentHtml, SUMMARY_CLASS);
-    const summary = sanitizeInlineHtml(
+    const nextSummaryHtml = sanitizeInlineHtml(
       summaryField != null ? summaryField : contentHtml
     );
     // Present-but-empty `.thought-summary` must clear, not keep stale text.
     const nextSummary =
-      summaryField != null ? summary : summary || base.summary;
-    const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
-    const isCompleted = isCompletable
-      ? (item.isCompleted ?? base.isCompleted ?? false)
-      : false;
+      summaryField != null ? nextSummaryHtml : nextSummaryHtml || base.summary;
     return {
       ...base,
       summary: nextSummary,
@@ -585,6 +604,41 @@ export function setThoughtCategoryScript(
   try {
     content.dispatchEvent(new Event("input", { bubbles: true }));
   } catch (e) {}
+  return true;
+})();
+`;
+}
+
+export function setThoughtSemanticTitleScript(
+  index: number,
+  title: string
+): string {
+  const label = JSON.stringify(title);
+  return `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+  var lis = content.querySelectorAll("ul > li");
+  var li = lis[${index}];
+  if (!li) return true;
+  var text = ${label};
+  if (!text) return true;
+  var fields = li.querySelector(".thought-fields") || li;
+  var titleEl = li.querySelector(".thought-title");
+  if (!titleEl) {
+    titleEl = document.createElement("div");
+    titleEl.className = "thought-title";
+    titleEl.setAttribute("data-placeholder", "Title");
+    fields.insertBefore(titleEl, fields.firstChild);
+  }
+  titleEl.classList.remove("is-placeholder");
+  titleEl.classList.remove("is-error-placeholder");
+  titleEl.textContent = text;
+  li.classList.add("has-entered-title");
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
+  }
   return true;
 })();
 `;

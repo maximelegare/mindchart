@@ -27,6 +27,7 @@ import { type ThoughtsEditorFormValues } from "./types";
 import {
   htmlToThoughts,
   setThoughtCategoryScript,
+  setThoughtSemanticTitleScript,
   stripHtml,
   thoughtsToHtml,
   buildCategoryLabelsScript,
@@ -1045,6 +1046,11 @@ function ThoughtsEditorInner(
                 : thought
             ),
             { shouldDirty: true }
+          );
+        }
+        if (nextLabel) {
+          richRef.current?.injectJavascript(
+            setThoughtSemanticTitleScript(index, nextLabel)
           );
         }
         if (nextCategory) {
