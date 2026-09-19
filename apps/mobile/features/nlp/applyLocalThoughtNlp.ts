@@ -1,6 +1,6 @@
 import { Thought } from "@repo/zod-schemas";
 import { getOPDatabase, updateThoughtNlpQuery } from "@repo/sqlite";
-import { analyzeThought } from "@/lib/nlp";
+import { analyzeThought, isDisplayableSemanticLabel } from "@/lib/nlp";
 
 const stripHtml = (value: string) =>
   value
@@ -39,13 +39,15 @@ export const applyLocalThoughtNlp = async (thoughts: Thought[]) => {
         categoryId?: string;
       } = { id: thought.id };
 
-      if (isFallbackLabel(thought)) {
-        if (result.semanticLabel) {
-          patch.semanticLabel = result.semanticLabel;
-        } else if (stripHtml(thought.semanticLabel)) {
-          // Don't keep a copy of the full thought as a fake label.
-          patch.semanticLabel = "";
-        }
+      const currentLabel = stripHtml(thought.semanticLabel);
+      if (result.semanticLabel) {
+        patch.semanticLabel = result.semanticLabel;
+      } else if (
+        currentLabel &&
+        (isFallbackLabel(thought) ||
+          !isDisplayableSemanticLabel(currentLabel, text))
+      ) {
+        patch.semanticLabel = "";
       }
 
       const currentCategory = thought.categoryId || "uncategorized";

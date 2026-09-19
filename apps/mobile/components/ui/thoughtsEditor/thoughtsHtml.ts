@@ -1,3 +1,4 @@
+import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
 import { createEmptyThought, type ThoughtsFormValue } from "./types";
 import type { ThoughtFieldPlaceholders } from "./thoughtsEditorLabels";
 
@@ -318,6 +319,7 @@ type ThoughtItemOptions = {
   isCompletable?: boolean;
   isCompleted?: boolean;
   startCollapsed?: boolean;
+  hasEnteredTitle?: boolean;
 };
 
 function thoughtItemHtml(
@@ -336,6 +338,7 @@ function thoughtItemHtml(
   if (completable) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
   if (options.startCollapsed) classNames.push("is-collapsed");
+  if (options.hasEnteredTitle) classNames.push("has-entered-title");
   const graph =
     options.showGraphButton && options.thoughtId
       ? graphButtonHtml(options.thoughtId)
@@ -356,26 +359,47 @@ function thoughtItemHtml(
   );
 }
 
+/** Compact NLP label suitable as a thought heading (not a copy of the body). */
+export function compactSemanticLabel(thought: {
+  semanticLabel?: string | null;
+  summary?: string | null;
+}): string {
+  const label = stripHtml(thought.semanticLabel ?? "");
+  const summary = stripHtml(thought.summary ?? "");
+  if (!isDisplayableSemanticLabel(label, summary)) return "";
+  return thought.semanticLabel?.trim() ?? label;
+}
+
 function liToHtml(
   thought: ThoughtsFormValue,
   showTitles: boolean,
   showGraphButton: boolean,
   placeholders: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">,
-  labels?: Record<string, string>
+  labels?: Record<string, string>,
+  viewMode = false
 ) {
   const categoryId = thought.categoryId || "uncategorized";
+  const enteredTitle = stripHtml(thought.title);
+  const semanticTitle = compactSemanticLabel(thought);
+  const titleValue = enteredTitle
+    ? thought.title
+    : semanticTitle
+      ? thought.semanticLabel
+      : "";
+  const showTitleField = viewMode ? Boolean(stripHtml(titleValue)) : showTitles;
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
     startCollapsed: showGraphButton,
     isCompletable: thought.isCompletable,
     isCompleted: thought.isCompleted,
+    hasEnteredTitle: showTitleField && Boolean(stripHtml(titleValue)),
   };
 
-  if (showTitles) {
+  if (showTitleField) {
     return thoughtItemHtml(
       categoryId,
-      titledFieldHtml(TITLE_CLASS, placeholders.title, thought.title) +
+      titledFieldHtml(TITLE_CLASS, placeholders.title, titleValue) +
         titledFieldHtml(SUMMARY_CLASS, placeholders.summary, thought.summary),
       options,
       labels
@@ -395,6 +419,8 @@ export type ThoughtsToHtmlOptions = {
   showGraphButtons?: boolean;
   placeholders?: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">;
   categoryLabels?: Record<string, string>;
+  /** View mode: show a heading when a title or semantic label exists. */
+  preferSemanticTitle?: boolean;
 };
 
 /** Serialize thoughts into an HTML unordered list for the rich editor. */
@@ -404,6 +430,7 @@ export function thoughtsToHtml(
   options: ThoughtsToHtmlOptions = {}
 ): string {
   const showGraphButtons = options.showGraphButtons ?? false;
+  const viewMode = options.preferSemanticTitle ?? false;
   const labels = options.categoryLabels;
   const placeholders = {
     title: options.placeholders?.title ?? TITLE_PLACEHOLDER,
@@ -421,7 +448,14 @@ export function thoughtsToHtml(
 
   return `<ul>${thoughts
     .map((thought) =>
-      liToHtml(thought, showTitles, showGraphButtons, placeholders, labels)
+      liToHtml(
+        thought,
+        showTitles,
+        showGraphButtons,
+        placeholders,
+        labels,
+        viewMode
+      )
     )
     .join("")}</ul>`;
 }

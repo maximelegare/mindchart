@@ -396,6 +396,7 @@ function ThoughtsEditorInner(
   const htmlOptions = React.useMemo(
     () => ({
       showGraphButtons,
+      preferSemanticTitle: readOnly,
       placeholders: {
         title: thoughtPlaceholders.title,
         summary: thoughtPlaceholders.summary,
@@ -403,7 +404,7 @@ function ThoughtsEditorInner(
       },
       categoryLabels: categoryLabelsRecord,
     }),
-    [showGraphButtons, thoughtPlaceholders, categoryLabelsRecord]
+    [showGraphButtons, thoughtPlaceholders, categoryLabelsRecord, readOnly]
   );
   const validationMessages = React.useMemo(
     () => ({
@@ -788,6 +789,37 @@ function ThoughtsEditorInner(
     showTitles,
     thoughtPlaceholders,
   ]);
+
+  const viewSignature = React.useMemo(
+    () =>
+      readOnly
+        ? (thoughts ?? [])
+            .map(
+              (thought) =>
+                `${thought.id}:${thought.semanticLabel}:${thought.categoryId}:${thought.title}:${thought.summary}`
+            )
+            .join("|")
+        : "",
+    [readOnly, thoughts]
+  );
+  const lastViewSignatureRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (!readOnly) {
+      lastViewSignatureRef.current = null;
+      return;
+    }
+    if (!editorReadyRef.current) return;
+    if (lastViewSignatureRef.current === viewSignature) return;
+    const skipRebuild = lastViewSignatureRef.current == null;
+    lastViewSignatureRef.current = viewSignature;
+    if (skipRebuild) return;
+    const titles = simplifiedRef.current ? false : showTitlesRef.current;
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(getValues("thoughts"), titles, htmlOptions)
+    );
+    refreshCategoryTimers();
+  }, [getValues, htmlOptions, readOnly, refreshCategoryTimers, viewSignature]);
 
   const handleFormat = React.useCallback(
     (command: "bold" | "italic" | "underline") => {
@@ -1356,7 +1388,9 @@ function ThoughtsEditorInner(
                   }
                   .thought-graph {
                     position: absolute;
-                    top: calc(var(--category-stack, 0px) + var(--graph-nudge, 0px));
+                    top: calc(
+                      var(--category-stack, 0px) + var(--check-nudge, 2px) - 5px
+                    );
                     right: 0;
                     width: 32px;
                     height: 32px;
@@ -1438,6 +1472,19 @@ function ThoughtsEditorInner(
                     padding: 0;
                     pointer-events: none;
                   }
+                  li.thought-item.is-collapsed .thought-title {
+                    opacity: 0;
+                    max-height: 0;
+                    min-height: 0;
+                    margin: 0;
+                    padding: 0;
+                    overflow: hidden;
+                    pointer-events: none;
+                  }
+                  li.thought-item.is-collapsed .thought-title.is-placeholder::before,
+                  li.thought-item.is-collapsed .thought-title.is-error-placeholder::before {
+                    content: none;
+                  }
                   li.thought-item.is-collapsed .thought-stripe {
                     opacity: 0;
                     pointer-events: none;
@@ -1467,6 +1514,26 @@ function ThoughtsEditorInner(
                     font-weight: 700;
                     margin-bottom: 2px;
                     opacity: 0.75;
+                    overflow: hidden;
+                    transition:
+                      max-height 0.38s ease,
+                      opacity 0.28s ease,
+                      min-height 0.38s ease,
+                      margin 0.38s ease,
+                      padding 0.38s ease;
+                  }
+                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title {
+                    max-height: 0 !important;
+                    min-height: 0 !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    opacity: 0 !important;
+                    overflow: hidden !important;
+                    pointer-events: none !important;
+                    transition: none !important;
+                  }
+                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title::before {
+                    content: none !important;
                   }
                   .thought-title * {
                     font-weight: 700;

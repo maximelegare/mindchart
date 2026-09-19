@@ -5,6 +5,11 @@ import {
   DOMAIN_TERMS,
 } from "./domainLexicon";
 import {
+  hasEnoughTextForSemanticLabel,
+  isDisplayableSemanticLabel,
+  MAX_SEMANTIC_LABEL_WORDS,
+} from "./labelQuality";
+import {
   GENERIC_WORDS,
   IMPORTANT_NOUNS,
   IMPORTANT_VERBS,
@@ -17,7 +22,7 @@ import type { LabelCandidate, NlpLanguage } from "./types";
 
 nlp.extend({ words: COMPROMISE_DOMAIN_WORDS });
 
-const MAX_WORDS = 7;
+const MAX_WORDS = MAX_SEMANTIC_LABEL_WORDS;
 const MIN_SCORE = 3.4;
 const CONTRACTION_FRAGMENTS = new Set([
   "ve",
@@ -307,23 +312,27 @@ export const pickSemanticLabel = (
   confidence: number;
   candidates: LabelCandidate[];
 } => {
+  if (!hasEnoughTextForSemanticLabel(text)) {
+    return { label: null, confidence: 0, candidates: [] };
+  }
+
   const candidates = extractCandidates(text, language);
   const ranked = [...candidates].sort(
     (a, b) => rankCandidate(b) - rankCandidate(a)
   );
-  const best = ranked[0];
-  if (!best || best.score < MIN_SCORE) {
-    return { label: null, confidence: 0, candidates };
-  }
 
-  const confidence = Math.min(1, best.score / 10);
-  if (confidence < 0.34) {
-    return { label: null, confidence, candidates };
+  for (const candidate of ranked) {
+    if (candidate.score < MIN_SCORE) continue;
+    const confidence = Math.min(1, candidate.score / 10);
+    if (confidence < 0.34) continue;
+    const label = formatSemanticLabel(candidate.text);
+    if (!isDisplayableSemanticLabel(label, text)) continue;
+    return { label, confidence, candidates };
   }
 
   return {
-    label: formatSemanticLabel(best.text),
-    confidence,
+    label: null,
+    confidence: ranked[0] ? Math.min(1, ranked[0].score / 10) : 0,
     candidates,
   };
 };

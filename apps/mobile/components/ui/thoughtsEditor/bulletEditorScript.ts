@@ -4,6 +4,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
+  if (document.documentElement) {
+    document.documentElement.classList.toggle(
+      "mc-editing",
+      !!window.__mcEditing
+    );
+  }
+  content.classList.toggle("mc-editing", !!window.__mcEditing);
 
   function mcPh(key, fallback) {
     var p = window.__mcPlaceholders;
@@ -274,7 +281,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function collapseThoughtCategory(li) {
       if (!li || window.__mcSimplified || window.__mcEditing) return;
+      var title = li.querySelector(".thought-title");
+      if (title) title.__mcTitleH = title.scrollHeight;
       li.classList.add("is-collapsed");
+      if (typeof window.__mcAnimateTitle === "function") {
+        window.__mcAnimateTitle(li);
+      }
       li.__mcBounceTimer = setTimeout(function () {
         bounceStripe(li);
       }, COLLAPSE_TRANSITION_MS);
@@ -289,6 +301,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var stripe = li.querySelector(".thought-stripe");
       if (stripe) stripe.classList.remove("is-bouncing");
       li.classList.remove("is-collapsed");
+      if (typeof window.__mcAnimateTitle === "function") {
+        window.__mcAnimateTitle(li);
+      }
       if (reschedule !== false) {
         scheduleCollapse(li);
       }
@@ -838,6 +853,10 @@ export function setEditingModeScript(editing: boolean): string {
   window.__mcEditing = ${editing ? "true" : "false"};
   var root =
     document.querySelector(".pell-content") || document.getElementById("editor");
+  if (document.documentElement) {
+    document.documentElement.classList.toggle("mc-editing", !!window.__mcEditing);
+  }
+  if (root) root.classList.toggle("mc-editing", !!window.__mcEditing);
   if (!root) return true;
   var lis = root.querySelectorAll("ul > li");
   if (window.__mcEditing) {
@@ -850,6 +869,9 @@ export function setEditingModeScript(editing: boolean): string {
       li.classList.remove("is-collapsed");
       var stripe = li.querySelector(".thought-stripe");
       if (stripe) stripe.classList.remove("is-bouncing");
+      if (typeof window.__mcAnimateTitle === "function") {
+        window.__mcAnimateTitle(li);
+      }
     }
     if (typeof window.__mcSyncChecklistLayouts === "function") {
       window.__mcSyncChecklistLayouts();
@@ -1216,7 +1238,12 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
 
   function collapseThoughtCategory(li) {
     if (!li || window.__mcSimplified || window.__mcEditing) return;
+    var title = li.querySelector(".thought-title");
+    if (title) title.__mcTitleH = title.scrollHeight;
     li.classList.add("is-collapsed");
+    if (typeof window.__mcAnimateTitle === "function") {
+      window.__mcAnimateTitle(li);
+    }
     li.__mcBounceTimer = setTimeout(function () {
       bounceStripe(li);
     }, COLLAPSE_TRANSITION_MS);
@@ -1231,6 +1258,9 @@ export const CATEGORY_COLLAPSE_SCRIPT = `
     var stripe = li.querySelector(".thought-stripe");
     if (stripe) stripe.classList.remove("is-bouncing");
     li.classList.remove("is-collapsed");
+    if (typeof window.__mcAnimateTitle === "function") {
+      window.__mcAnimateTitle(li);
+    }
     if (reschedule !== false) {
       scheduleCollapse(li);
     }
@@ -1396,6 +1426,75 @@ export const CHECKLIST_SCRIPT = `
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
 
+  function titlePlainText(el) {
+    if (!el) return "";
+    return (el.textContent || "")
+      .replace(/\\u00a0/g, " ")
+      .replace(/\\s+/g, " ")
+      .trim();
+  }
+
+  window.__mcAnimateTitle = function (li) {
+    if (!li) return;
+    var title = li.querySelector(".thought-title");
+    var hasText = titlePlainText(title).length > 0;
+    li.classList.toggle("has-entered-title", hasText);
+    if (!title) return;
+
+    var editing = !!window.__mcEditing;
+    var collapsed = li.classList.contains("is-collapsed");
+
+    if (editing) {
+      title.style.maxHeight = "";
+      title.style.opacity = "";
+      title.style.marginBottom = "";
+      title.style.minHeight = "";
+      title.style.overflow = "";
+      title.style.padding = "";
+      return;
+    }
+
+    if (!hasText) {
+      title.style.maxHeight = "0px";
+      title.style.opacity = "0";
+      title.style.marginBottom = "0px";
+      title.style.minHeight = "0px";
+      title.style.overflow = "hidden";
+      title.style.padding = "0px";
+      return;
+    }
+
+    title.style.overflow = "hidden";
+    if (collapsed) {
+      var current = title.style.maxHeight;
+      if (!current || current === "none") {
+        title.style.maxHeight = (title.__mcTitleH || title.scrollHeight || 24) + "px";
+        void title.offsetHeight;
+      }
+      title.style.maxHeight = "0px";
+      title.style.opacity = "0";
+      title.style.marginBottom = "0px";
+      title.style.minHeight = "0px";
+      title.style.padding = "0px";
+      return;
+    }
+
+    var height = title.__mcTitleH || title.scrollHeight || 24;
+    title.style.minHeight = "";
+    title.style.marginBottom = "";
+    title.style.padding = "";
+    title.style.opacity = "";
+    title.style.maxHeight = height + "px";
+  };
+
+  if (document.documentElement) {
+    document.documentElement.classList.toggle(
+      "mc-editing",
+      !!window.__mcEditing
+    );
+  }
+  content.classList.toggle("mc-editing", !!window.__mcEditing);
+
   function closest(node, predicate) {
     while (node && node !== document.body) {
       if (predicate(node)) return node;
@@ -1478,31 +1577,31 @@ export const CHECKLIST_SCRIPT = `
     var title = li.querySelector(".thought-title");
     var summary = li.querySelector(".thought-summary");
     var graph = li.querySelector(".thought-graph");
-    var hasTitle = !!window.__mcShowTitles && !!title;
+    var collapsed = li.classList.contains("is-collapsed");
+    var hasText = titlePlainText(title).length > 0;
+    li.classList.toggle("has-entered-title", hasText);
+    var hasTitle =
+      hasText &&
+      !collapsed &&
+      (!window.__mcEditing || !!window.__mcShowTitles);
     li.classList.toggle("has-title", hasTitle);
 
-    var field = summary || title;
+    var field = (hasTitle ? title : null) || summary || title;
     var lineH = fieldLineHeight(field);
     var fieldH = field ? field.offsetHeight : 0;
     var singleLine = !hasTitle && fieldH <= lineH * 1.6;
     li.classList.toggle("is-single-line", singleLine);
     li.classList.toggle("has-graph", !!graph);
 
-    var fieldsBox = li.querySelector(".thought-fields");
-    if (graph && fieldsBox) {
-      var graphNudge = Math.round((fieldsBox.offsetHeight - 32) / 2);
-      li.style.setProperty("--graph-nudge", graphNudge + "px");
-      if (!graph.classList.contains("is-anchored")) {
-        requestAnimationFrame(function () {
-          graph.classList.add("is-anchored");
-        });
-      }
-    } else {
-      li.style.removeProperty("--graph-nudge");
+    if (graph && !graph.classList.contains("is-anchored")) {
+      requestAnimationFrame(function () {
+        graph.classList.add("is-anchored");
+      });
     }
 
     // Keep top in CSS so it eases with the category line (0.38s).
-    // Only measure the first-line nudge; do not write offsetTop.
+    // Graph button uses the same --category-stack offset — do not recenter
+    // on fields height or it will jump twice while the title animates.
     var target =
       hasTitle && title && !window.__mcSimplified ? title : summary || title;
     if (target) {
@@ -1638,7 +1737,8 @@ export const CHECKLIST_SCRIPT = `
         if (
           !e.target ||
           !e.target.classList ||
-          !e.target.classList.contains("thought-category")
+          (!e.target.classList.contains("thought-category") &&
+            !e.target.classList.contains("thought-title"))
         ) {
           return;
         }

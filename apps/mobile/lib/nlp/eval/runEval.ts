@@ -1,4 +1,8 @@
 import { analyzeThought } from "../analyzeThought";
+import {
+  MIN_SEMANTIC_LABEL_CHARS,
+  MIN_SOURCE_TEXT_CHARS,
+} from "../labelQuality";
 import { EVAL_THOUGHTS } from "./thoughts.eval";
 
 const pad = (value: string, size: number) =>
@@ -36,6 +40,8 @@ const run = () => {
   }> = [
     { text: "Hmm.", expectNull: true },
     { text: "ok", expectNull: true },
+    { text: "Buy oat milk.", expectNull: true },
+    { text: "Pay rent on Friday.", expectNull: true },
     {
       text: "I should call Mom this weekend.",
       labelMustInclude: ["mom"],
@@ -105,6 +111,19 @@ const run = () => {
       check.labelMustNotMatch.test(row.label)
     ) {
       failures.push(`label "${row.label}" matched ${check.labelMustNotMatch}`);
+    }
+  }
+
+  for (const row of rows) {
+    if (row.label && row.label.length < MIN_SEMANTIC_LABEL_CHARS) {
+      failures.push(
+        `label "${row.label}" is ${row.label.length} chars, min ${MIN_SEMANTIC_LABEL_CHARS}`
+      );
+    }
+    if (row.text.trim().length < MIN_SOURCE_TEXT_CHARS && row.label) {
+      failures.push(
+        `expected no label for short source "${row.text}", got "${row.label}"`
+      );
     }
   }
 
