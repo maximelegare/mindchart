@@ -4,6 +4,7 @@ import {
   NoteSchema,
   PersonSchema,
   ThoughtSchema,
+  ThoughtTypeSchema,
 } from "./schemas";
 
 // Client-side API response schemas (what clients receive)
@@ -89,13 +90,20 @@ export type CategoriesJoinThoughtsParsedSchemaModel = z.infer<
 export const PendingEmbeddingSchema = z.object({
   id: z.string(),
   semanticLabel: z.string(),
-  summary: z.string().optional(),
+  text: z.string().optional(),
   thoughtId: z.string(),
 });
 
 export const LocalAIResThoughtSchema = z.object({
   title: z.string().default(""),
   summary: z.string().default(""),
+  type: ThoughtTypeSchema.optional(),
+  content: z
+    .object({
+      text: z.string().optional(),
+      checked: z.boolean().optional(),
+    })
+    .optional(),
   category: z.string().optional(),
   semanticLabel: z.string().default(""),
   thoughtId: z.string().optional(),
@@ -157,6 +165,10 @@ export {
   NoteSchema,
   ThoughtSchema,
   ThoughtWithEmbeddingSchema,
+  ThoughtTypeSchema,
+  assembleThought,
+  getThoughtPlainText,
+  THOUGHT_TYPES,
   CategorySchema,
   CategoryTranslationSchema,
   CategoryWithThoughtsInfosSchema,
@@ -171,6 +183,7 @@ export {
 export type {
   Note,
   Thought,
+  ThoughtType,
   ThoughtWithEmbedding,
   Category,
   CategoryTranslation,

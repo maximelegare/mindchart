@@ -1,4 +1,11 @@
-import { Category, Folder, Note, Thought } from "@repo/zod-schemas";
+import {
+  Category,
+  Folder,
+  Note,
+  Thought,
+  assembleThought,
+  getThoughtPlainText,
+} from "@repo/zod-schemas";
 
 import React from "react";
 import { Alert, Keyboard, ScrollView, TextInput, View } from "react-native";
@@ -46,18 +53,11 @@ type ManualNoteFormProps = {
   defaultFolder?: FolderSelection;
 };
 
-const mapThoughtToFormValue = (thought: Thought, noteId: string) => ({
-  title: thought.title ?? "",
-  summary: thought.summary ?? "",
-  semanticLabel: thought.semanticLabel ?? "",
-  id: thought.id,
-  createdAt: thought.createdAt ?? new Date().toISOString(),
-  noteId: thought.noteId ?? noteId,
-  categoryId: thought.categoryId ?? "uncategorized",
-  thoughtId: thought.thoughtId ?? thought.id,
-  isCompletable: thought.isCompletable ?? false,
-  isCompleted: thought.isCompleted ?? false,
-});
+const mapThoughtToFormValue = (thought: Thought, noteId: string) =>
+  assembleThought({
+    ...thought,
+    noteId: thought.noteId ?? noteId,
+  });
 
 const buildFormDefaultValues = (
   noteId: string,
@@ -159,17 +159,23 @@ export const ManualNoteForm = ({
       .filter(
         (thought) =>
           thought.title.trim() ||
-          thought.summary.trim() ||
+          getThoughtPlainText(thought).trim() ||
           thought.semanticLabel.trim()
       )
       .map((thought) => {
         const title = thought.title.trim();
-        const summary = thought.summary.trim() || title;
+        const text = getThoughtPlainText(thought).trim() || title;
+        const next =
+          thought.type === "checkbox"
+            ? {
+                ...thought,
+                content: { text, checked: thought.content.checked },
+              }
+            : { ...thought, content: { text } };
         return {
-          ...thought,
+          ...next,
           title,
-          summary,
-          semanticLabel: thought.semanticLabel.trim() || title || summary,
+          semanticLabel: thought.semanticLabel.trim() || title || text,
           createdAt: thought.createdAt,
         };
       });

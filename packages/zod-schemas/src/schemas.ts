@@ -74,21 +74,128 @@ const sqliteBoolean = z.preprocess(
   z.boolean()
 );
 
-export const ThoughtSchema = z.object({
-  id: z.string(),
-  title: z.string(),
+export const THOUGHT_TYPES = ["text", "li", "checkbox"] as const;
+export type ThoughtType = (typeof THOUGHT_TYPES)[number];
+
+export const ThoughtTypeSchema = z.enum(THOUGHT_TYPES);
+
+const ThoughtJoinFieldsSchema = z.object({
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
   folderPath: z.string().nullable().optional(),
-  summary: z.string(),
-  semanticLabel: z.string(),
-  noteId: z.string(),
-  categoryId: z.string(),
-  thoughtId: z.string(),
-  createdAt: z.string().nullable(),
-  isCompletable: sqliteBoolean,
-  isCompleted: sqliteBoolean,
 });
+
+export const ThoughtBaseSchema = z
+  .object({
+    id: z.string(),
+    thoughtId: z.string(),
+    noteId: z.string(),
+    contentId: z.string(),
+    title: z.string(),
+    categoryId: z.string(),
+    semanticLabel: z.string(),
+    createdAt: z.string().nullable(),
+  })
+  .merge(ThoughtJoinFieldsSchema);
+
+export const TextThoughtContentSchema = z.object({
+  text: z.string(),
+});
+
+export const ListItemThoughtContentSchema = z.object({
+  text: z.string(),
+});
+
+export const CheckboxThoughtContentSchema = z.object({
+  text: z.string(),
+  checked: sqliteBoolean,
+});
+
+export const TextThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("text"),
+  content: TextThoughtContentSchema,
+});
+
+export const ListItemThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("li"),
+  content: ListItemThoughtContentSchema,
+});
+
+export const CheckboxThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("checkbox"),
+  content: CheckboxThoughtContentSchema,
+});
+
+export const ThoughtSchema = z.discriminatedUnion("type", [
+  TextThoughtSchema,
+  ListItemThoughtSchema,
+  CheckboxThoughtSchema,
+]);
+
+export type TextThought = z.infer<typeof TextThoughtSchema>;
+export type ListItemThought = z.infer<typeof ListItemThoughtSchema>;
+export type CheckboxThought = z.infer<typeof CheckboxThoughtSchema>;
+export type ThoughtContent =
+  | z.infer<typeof TextThoughtContentSchema>
+  | z.infer<typeof ListItemThoughtContentSchema>
+  | z.infer<typeof CheckboxThoughtContentSchema>;
+
+export const getThoughtPlainText = (thought: {
+  content: { text?: string };
+}): string => thought.content.text ?? "";
+
+type LooseThoughtRecord = Record<string, unknown> & {
+  content?: { text?: unknown; checked?: unknown } | null;
+};
+
+const asString = (value: unknown, fallback = ""): string =>
+  typeof value === "string" ? value : value == null ? fallback : String(value);
+
+export const assembleThought = (raw: LooseThoughtRecord): Thought => {
+  const nested =
+    raw.content && typeof raw.content === "object" ? raw.content : {};
+  const type: ThoughtType =
+    raw.type === "text" || raw.type === "li" || raw.type === "checkbox"
+      ? raw.type
+      : raw.isCompletable
+        ? "checkbox"
+        : "li";
+  const text = asString(nested.text ?? raw.contentText ?? raw.summary ?? "");
+  const id = asString(raw.id ?? raw.thoughtId);
+  const base = {
+    id,
+    thoughtId: asString(raw.thoughtId ?? id),
+    noteId: asString(raw.noteId),
+    contentId: asString(raw.contentId ?? ""),
+    title: asString(raw.title),
+    categoryId: asString(raw.categoryId, "uncategorized") || "uncategorized",
+    semanticLabel: asString(raw.semanticLabel),
+    createdAt:
+      raw.createdAt == null || raw.createdAt === ""
+        ? null
+        : asString(raw.createdAt),
+    folderId: (raw.folderId as string | null | undefined) ?? undefined,
+    folderLabel: (raw.folderLabel as string | null | undefined) ?? undefined,
+    folderPath: (raw.folderPath as string | null | undefined) ?? undefined,
+  };
+
+  if (type === "checkbox") {
+    return {
+      ...base,
+      type,
+      content: {
+        text,
+        checked: Boolean(nested.checked ?? raw.checked ?? raw.isCompleted),
+      },
+    };
+  }
+
+  if (type === "text") {
+    return { ...base, type, content: { text } };
+  }
+
+  return { ...base, type: "li", content: { text } };
+};
 
 export const EmbeddingSchema = z.object({
   id: z.string(),
@@ -116,7 +223,11 @@ export const NoteSchema = z.object({
   showTitles: sqliteBoolean.optional(),
 });
 
-export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);
+export const ThoughtWithEmbeddingSchema = ThoughtSchema.and(
+  z.object({
+    embedding: z.custom<Float32Array>().nullable(),
+  })
+);
 
 export const FolderSchema = z.object({
   id: z.string(),

@@ -11,8 +11,10 @@ import {
 import { StaticCheckboxMark } from "@/features/contentList/components/cards/shared/staticCheckboxMark";
 
 export const ThoughtWithoutOverview: React.FC<Thought> = memo(
-  ({ title, noteId, createdAt, isCompletable, isCompleted }) => {
+  ({ title, noteId, createdAt, type, content }) => {
     const { push } = useRouter();
+    const isChecklist = type === "checkbox";
+    const isCompleted = isChecklist && content.checked;
 
     return (
       <Pressable
@@ -26,7 +28,7 @@ export const ThoughtWithoutOverview: React.FC<Thought> = memo(
         </View>
         <Separator className="mb-2" color="border" />
         <View className="flex-row items-center gap-2">
-          {isCompletable ? (
+          {isChecklist ? (
             <StaticCheckboxMark completed={Boolean(isCompleted)} />
           ) : null}
           <View className="flex-1">

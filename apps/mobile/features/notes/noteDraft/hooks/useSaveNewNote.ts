@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Note, Thought } from "@repo/zod-schemas";
+import { Note, Thought, getThoughtPlainText } from "@repo/zod-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useControllers } from "@/api/controllers/useControllers";
 import { runThoughtNlpInBackground } from "@/features/nlp/runThoughtNlpInBackground";
@@ -33,13 +33,19 @@ export const useSaveNewNote = () => {
 
       const thoughtsToInsert: Thought[] = thoughts.map((thought) => {
         const title = asText(thought.title);
-        const summary = asText(thought.summary);
-        const semanticLabel = asText(thought.semanticLabel) || title || summary;
+        const text = asText(getThoughtPlainText(thought));
+        const semanticLabel = asText(thought.semanticLabel) || title || text;
+        const next =
+          thought.type === "checkbox"
+            ? {
+                ...thought,
+                content: { text, checked: thought.content.checked },
+              }
+            : { ...thought, content: { text } };
 
         return {
-          ...thought,
+          ...next,
           title,
-          summary,
           semanticLabel,
           categoryId: asText(thought.categoryId) || "uncategorized",
           noteId: noteToInsert.id,

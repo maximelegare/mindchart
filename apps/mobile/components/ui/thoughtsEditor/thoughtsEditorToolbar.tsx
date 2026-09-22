@@ -20,6 +20,7 @@ import type { IconName } from "@/components/ui/icons/icon-registry";
 import { Portal } from "@/components/primitives/portal";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
+import type { ThoughtType } from "@repo/zod-schemas";
 import {
   ThoughtsEditorTitlesToggleLabel,
   thoughtsEditorBoldAccessibilityLabel,
@@ -28,6 +29,7 @@ import {
   thoughtsEditorUnderlineAccessibilityLabel,
   thoughtsEditorBulletAccessibilityLabel,
   thoughtsEditorChecklistAccessibilityLabel,
+  thoughtsEditorTextAccessibilityLabel,
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
@@ -43,8 +45,8 @@ type ThoughtsEditorToolbarProps = {
   onShowTitlesChange: (next: boolean) => void;
   activeFormats: Record<FormatCommand, boolean>;
   onFormat: (command: FormatCommand) => void;
-  isChecklist: boolean;
-  onListTypeChange: (completable: boolean) => void;
+  thoughtType: ThoughtType;
+  onThoughtTypeChange: (type: ThoughtType) => void;
 };
 
 function FormatButton({
@@ -81,8 +83,8 @@ function ToolbarContent({
   onShowTitlesChange,
   activeFormats,
   onFormat,
-  isChecklist,
-  onListTypeChange,
+  thoughtType,
+  onThoughtTypeChange,
 }: Omit<ThoughtsEditorToolbarProps, "dockToKeyboard">) {
   const { colorScheme } = useColorScheme();
 
@@ -119,16 +121,22 @@ function ToolbarContent({
           }}
         />
         <FormatButton
+          icon="notebook-text"
+          active={thoughtType === "text"}
+          label={thoughtsEditorTextAccessibilityLabel()}
+          onPress={() => onThoughtTypeChange("text")}
+        />
+        <FormatButton
           icon="list"
-          active={!isChecklist}
+          active={thoughtType === "li"}
           label={thoughtsEditorBulletAccessibilityLabel()}
-          onPress={() => onListTypeChange(false)}
+          onPress={() => onThoughtTypeChange("li")}
         />
         <FormatButton
           icon="square-check"
-          active={isChecklist}
+          active={thoughtType === "checkbox"}
           label={thoughtsEditorChecklistAccessibilityLabel()}
-          onPress={() => onListTypeChange(true)}
+          onPress={() => onThoughtTypeChange("checkbox")}
         />
       </View>
       {showTitlesToggle ? (

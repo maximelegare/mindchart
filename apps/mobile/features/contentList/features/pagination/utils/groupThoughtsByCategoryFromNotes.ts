@@ -1,6 +1,9 @@
 import { useMemo } from "react";
 import capitalize from "@/utils/stringManipulations/capitalize";
-import type { NotesJoinThoughtsParsedJSONPageSchemaModel } from "@repo/zod-schemas";
+import type {
+  NotesJoinThoughtsParsedJSONPageSchemaModel,
+  Thought,
+} from "@repo/zod-schemas";
 
 export type CategoryThoughtGroup = {
   id: string;
@@ -8,18 +11,7 @@ export type CategoryThoughtGroup = {
   color: string;
   createdAt?: string;
   updatedAt?: string;
-  thoughts: {
-    id: string;
-    thoughtId: string;
-    title: string;
-    summary: string;
-    semanticLabel: string;
-    categoryId: string;
-    noteId?: string;
-    createdAt?: string | null;
-    isCompletable: boolean;
-    isCompleted: boolean;
-  }[];
+  thoughts: Thought[];
 };
 
 /** Build category sections from a paginated page of notes (without-folders + groupBy categories). */
@@ -48,18 +40,7 @@ export const groupThoughtsByCategoryFromNotes = (
         });
       }
       const group = byCategory.get(categoryId)!;
-      group.thoughts.push({
-        id: thought.id,
-        thoughtId: thought.thoughtId ?? thought.id,
-        title: thought.title ?? "",
-        summary: thought.summary ?? "",
-        semanticLabel: thought.semanticLabel ?? "",
-        categoryId,
-        noteId: thought.noteId ?? note.id,
-        createdAt: thought.createdAt ?? null,
-        isCompletable: thought.isCompletable ?? false,
-        isCompleted: thought.isCompleted ?? false,
-      });
+      group.thoughts.push(thought);
       if (
         thought.createdAt &&
         (!group.createdAt || thought.createdAt > group.createdAt)

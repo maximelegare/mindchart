@@ -17,21 +17,67 @@ export const FolderTable = sqliteTable("folder", {
     .notNull(),
 });
 
+export const ContentTable = sqliteTable("content", {
+  id: text("id").notNull().primaryKey(),
+  type: text("type").notNull(),
+});
+
+export const TextContentTable = sqliteTable(
+  "text_content",
+  {
+    id: text("id").notNull().primaryKey(),
+    text: text("text").notNull().default(""),
+  },
+  (table) => [
+    foreignKey({
+      name: "text_content_id_content_id_fk",
+      columns: [table.id],
+      foreignColumns: [ContentTable.id],
+    }).onDelete("cascade"),
+  ]
+);
+
+export const ListItemContentTable = sqliteTable(
+  "list_item_content",
+  {
+    id: text("id").notNull().primaryKey(),
+    text: text("text").notNull().default(""),
+  },
+  (table) => [
+    foreignKey({
+      name: "list_item_content_id_content_id_fk",
+      columns: [table.id],
+      foreignColumns: [ContentTable.id],
+    }).onDelete("cascade"),
+  ]
+);
+
+export const CheckboxContentTable = sqliteTable(
+  "checkbox_content",
+  {
+    id: text("id").notNull().primaryKey(),
+    text: text("text").notNull().default(""),
+    checked: integer("checked", { mode: "boolean" }).notNull().default(false),
+  },
+  (table) => [
+    foreignKey({
+      name: "checkbox_content_id_content_id_fk",
+      columns: [table.id],
+      foreignColumns: [ContentTable.id],
+    }).onDelete("cascade"),
+  ]
+);
+
 export const ThoughtTable = sqliteTable(
   "thought",
   {
     id: text("id").notNull().primaryKey(),
     noteId: text("note_id").notNull(),
+    type: text("type").notNull(),
+    contentId: text("content_id").notNull(),
     title: text("title"),
-    summary: text("summary"),
     semanticLabel: text("semantic_label"),
     categoryId: text("category_id").notNull().default("uncategorized"),
-    isCompletable: integer("is_completable", { mode: "boolean" })
-      .notNull()
-      .default(false),
-    isCompleted: integer("is_completed", { mode: "boolean" })
-      .notNull()
-      .default(false),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -46,6 +92,11 @@ export const ThoughtTable = sqliteTable(
       name: "thought_category_id_category_id_fk",
       columns: [thought.categoryId],
       foreignColumns: [CategoryTable.id],
+    }),
+    foreignKey({
+      name: "thought_content_id_content_id_fk",
+      columns: [thought.contentId],
+      foreignColumns: [ContentTable.id],
     }),
   ]
 );

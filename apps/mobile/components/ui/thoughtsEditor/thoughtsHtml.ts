@@ -1,5 +1,11 @@
 import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
-import { createEmptyThought, type ThoughtsFormValue } from "./types";
+import { getThoughtPlainText, type ThoughtType } from "@repo/zod-schemas";
+import {
+  convertThoughtType,
+  createEmptyThought,
+  setThoughtContentText,
+  type ThoughtsFormValue,
+} from "./types";
 import type { ThoughtFieldPlaceholders } from "./thoughtsEditorLabels";
 
 const TITLE_CLASS = "thought-title";
@@ -64,7 +70,7 @@ const preservedSemanticLabel = (
     isFallbackSemanticLabel(
       previous.semanticLabel,
       previous.title,
-      previous.summary
+      getThoughtPlainText(previous)
     )
   ) {
     return nextTitle || nextSummary;
@@ -147,10 +153,19 @@ function stripChrome(liHtml: string): string {
 
 type LiItem = {
   categoryId: string | null;
+  thoughtId: string | null;
   innerHtml: string;
-  isCompletable: boolean | null;
-  isCompleted: boolean | null;
+  type: ThoughtType | null;
+  checked: boolean | null;
 };
+
+function parseThoughtType(attrs: string): ThoughtType | null {
+  const match = attrs.match(/data-thought-type=["']([^"']+)["']/i);
+  const value = match?.[1]?.toLowerCase();
+  if (value === "text" || value === "li" || value === "checkbox") return value;
+  if (parseDataBool(attrs, "completable")) return "checkbox";
+  return null;
+}
 
 function parseDataBool(attrs: string, name: string): boolean | null {
   const match = attrs.match(new RegExp(`data-${name}=["']([^"']*)["']`, "i"));
@@ -166,11 +181,13 @@ function extractLiItems(html: string): LiItem[] {
   while ((match = liRegex.exec(html)) !== null) {
     const attrs = match[1] ?? "";
     const categoryMatch = attrs.match(/data-category-id=["']([^"']+)["']/i);
+    const thoughtIdMatch = attrs.match(/data-thought-id=["']([^"']+)["']/i);
     items.push({
       categoryId: categoryMatch?.[1] ?? null,
+      thoughtId: thoughtIdMatch?.[1] ?? null,
       innerHtml: match[2] ?? "",
-      isCompletable: parseDataBool(attrs, "completable"),
-      isCompleted: parseDataBool(attrs, "completed"),
+      type: parseThoughtType(attrs),
+      checked: parseDataBool(attrs, "completed"),
     });
   }
   return items;
@@ -350,8 +367,8 @@ function thoughtCheckHtml(): string {
 type ThoughtItemOptions = {
   thoughtId?: string;
   showGraphButton?: boolean;
-  isCompletable?: boolean;
-  isCompleted?: boolean;
+  type?: ThoughtType;
+  checked?: boolean;
   startCollapsed?: boolean;
   hasEnteredTitle?: boolean;
 };
@@ -363,13 +380,15 @@ function thoughtItemHtml(
   labels?: Record<string, string>
 ): string {
   const id = categoryId || "uncategorized";
+  const type: ThoughtType = options.type ?? "li";
   const thoughtIdAttr = options.thoughtId
     ? ` data-thought-id="${escapeHtml(options.thoughtId)}"`
     : "";
-  const completable = Boolean(options.isCompletable);
-  const completed = completable && Boolean(options.isCompleted);
+  const isCheckbox = type === "checkbox";
+  const completed = isCheckbox && Boolean(options.checked);
   const classNames = ["thought-item"];
-  if (completable) classNames.push("is-checklist");
+  if (type === "text") classNames.push("is-block");
+  if (isCheckbox) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
   if (options.startCollapsed) classNames.push("is-collapsed");
   if (options.hasEnteredTitle) classNames.push("has-entered-title");
@@ -378,7 +397,7 @@ function thoughtItemHtml(
       ? graphButtonHtml(options.thoughtId)
       : "";
   return (
-    `<li class="${classNames.join(" ")}" data-category-id="${escapeHtml(id)}" data-completable="${completable}" data-completed="${completed}"${thoughtIdAttr}>` +
+    `<li class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
     `<div class="thought-dot"></div>` +
@@ -397,10 +416,10 @@ function thoughtItemHtml(
 /** Compact NLP label suitable as a thought heading (not a copy of the body). */
 export function compactSemanticLabel(thought: {
   semanticLabel?: string | null;
-  summary?: string | null;
+  content?: { text?: string | null };
 }): string {
   const label = stripHtml(thought.semanticLabel ?? "");
-  const summary = stripHtml(thought.summary ?? "");
+  const summary = stripHtml(thought.content?.text ?? "");
   if (!isDisplayableSemanticLabel(label, summary)) return "";
   return thought.semanticLabel?.trim() ?? label;
 }
@@ -424,12 +443,13 @@ function liToHtml(
   const showTitleField = viewMode
     ? Boolean(stripHtml(titleValue))
     : showTitles || Boolean(stripHtml(titleValue));
+  const bodyText = thought.content.text;
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
     startCollapsed: true,
-    isCompletable: thought.isCompletable,
-    isCompleted: thought.isCompleted,
+    type: thought.type,
+    checked: thought.type === "checkbox" ? thought.content.checked : false,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
   };
 
@@ -437,13 +457,13 @@ function liToHtml(
     return thoughtItemHtml(
       categoryId,
       titledFieldHtml(TITLE_CLASS, placeholders.title, titleValue) +
-        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, thought.summary),
+        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, bodyText),
       options,
       labels
     );
   }
 
-  const summaryText = thought.summary || thought.title;
+  const summaryText = bodyText || thought.title;
   return thoughtItemHtml(
     categoryId,
     titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, summaryText),
@@ -506,6 +526,37 @@ export function thoughtsToHtml(
  * Parse rich-editor HTML back into thoughts, preserving metadata from
  * previous thoughts at the same index when possible.
  */
+function withParsedFields(
+  thought: ThoughtsFormValue,
+  fields: {
+    title?: string;
+    categoryId: string;
+    semanticLabel: string;
+    text: string;
+    checked?: boolean | null;
+  }
+): ThoughtsFormValue {
+  if (thought.type === "checkbox") {
+    return {
+      ...thought,
+      title: fields.title ?? thought.title,
+      categoryId: fields.categoryId,
+      semanticLabel: fields.semanticLabel,
+      content: {
+        text: fields.text,
+        checked: fields.checked ?? thought.content.checked,
+      },
+    };
+  }
+  return {
+    ...thought,
+    title: fields.title ?? thought.title,
+    categoryId: fields.categoryId,
+    semanticLabel: fields.semanticLabel,
+    content: { text: fields.text },
+  };
+}
+
 export function htmlToThoughts(
   html: string,
   noteId: string,
@@ -521,74 +572,76 @@ export function htmlToThoughts(
     }
 
     const base = previous[0] ?? createEmptyThought(noteId);
+    const nextText = showTitles ? getThoughtPlainText(base) : plain;
     return [
-      {
-        ...base,
-        summary: showTitles ? base.summary : plain,
+      withParsedFields(setThoughtContentText(base, nextText), {
         title: showTitles ? plain : base.title,
+        categoryId: base.categoryId,
         semanticLabel: preservedSemanticLabel(
           base,
           showTitles ? plain : base.title,
-          showTitles ? base.summary : plain
+          nextText
         ),
-      },
+        text: nextText,
+      }),
     ];
   }
 
   const next = liItems.map((item, index) => {
-    const base = previous[index] ?? createEmptyThought(noteId);
+    const base =
+      previous.find((thought) => thought.id === item.thoughtId) ??
+      previous[index] ??
+      createEmptyThought(noteId);
     const contentHtml = stripChrome(item.innerHtml);
     const categoryId = item.categoryId || base.categoryId || "uncategorized";
+    const nextType = item.type ?? base.type ?? "li";
 
     const { title, summary, hasTitleField, hasSummaryField } =
       parseTitledLi(contentHtml);
-    const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
-    const isCompleted = isCompletable
-      ? (item.isCompleted ?? base.isCompleted ?? false)
-      : false;
+
+    const applyType = (thought: ThoughtsFormValue): ThoughtsFormValue =>
+      thought.type === nextType
+        ? thought
+        : convertThoughtType(thought, nextType);
 
     if (hasTitleField || showTitles) {
-      // Only fall back to previous values when the field node is missing from
-      // the HTML (e.g. mid-init). Present-but-empty fields must clear so
-      // validation can re-run after the user dismisses error placeholders.
       const nextTitle = hasTitleField ? title : title || base.title;
-      const nextSummary = hasSummaryField ? summary : summary || base.summary;
+      const nextSummary = hasSummaryField
+        ? summary
+        : summary || getThoughtPlainText(base);
       const resolvedTitle = resolveEditableTitle(base, nextTitle);
-      return {
-        ...base,
+      return withParsedFields(applyType(base), {
         title: resolvedTitle.title,
-        summary: nextSummary,
         categoryId,
         semanticLabel: resolvedTitle.clearSemantic
           ? ""
           : preservedSemanticLabel(base, resolvedTitle.title, nextSummary),
-        isCompletable,
-        isCompleted,
-      };
+        text: nextSummary,
+        checked: item.checked,
+      });
     }
 
     const summaryField = extractByClass(contentHtml, SUMMARY_CLASS);
     const nextSummaryHtml = sanitizeInlineHtml(
       summaryField != null ? summaryField : contentHtml
     );
-    // Present-but-empty `.thought-summary` must clear, not keep stale text.
     const nextSummary =
-      summaryField != null ? nextSummaryHtml : nextSummaryHtml || base.summary;
-    return {
-      ...base,
-      summary: nextSummary,
+      summaryField != null
+        ? nextSummaryHtml
+        : nextSummaryHtml || getThoughtPlainText(base);
+    return withParsedFields(applyType(base), {
       categoryId,
       semanticLabel: preservedSemanticLabel(base, base.title, nextSummary),
-      isCompletable,
-      isCompleted,
-    };
+      text: nextSummary,
+      checked: item.checked,
+    });
   });
 
   const trimmed = next.filter(
     (thought, index) =>
       index === 0 ||
       stripHtml(thought.title).length > 0 ||
-      stripHtml(thought.summary).length > 0
+      stripHtml(getThoughtPlainText(thought)).length > 0
   );
 
   return trimmed.length > 0 ? trimmed : [createEmptyThought(noteId)];

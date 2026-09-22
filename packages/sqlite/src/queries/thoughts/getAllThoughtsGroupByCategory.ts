@@ -1,19 +1,13 @@
-import { eq } from "drizzle-orm";
-import { CategoryTable, ThoughtTable } from "../../schema.root";
+import { eq, sql } from "drizzle-orm";
+import { assembleThought } from "@repo/zod-schemas";
+import {
+  CategoryTable,
+  CheckboxContentTable,
+  ListItemContentTable,
+  TextContentTable,
+  ThoughtTable,
+} from "../../schema.root";
 import { type DB } from "../../utils/initialize/getOPDatabase";
-
-type CategoryThoughtRow = {
-  id: string;
-  thoughtId: string;
-  title: string | null;
-  summary: string | null;
-  semanticLabel: string | null;
-  createdAt: string;
-  categoryId: string;
-  noteId: string;
-  isCompletable: boolean;
-  isCompleted: boolean;
-};
 
 export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
   try {
@@ -25,16 +19,34 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         category_created_at: CategoryTable.createdAt,
         thought_id: ThoughtTable.id,
         thought_title: ThoughtTable.title,
-        thought_summary: ThoughtTable.summary,
         thought_semantic_label: ThoughtTable.semanticLabel,
         thought_created_at: ThoughtTable.createdAt,
         thought_note_id: ThoughtTable.noteId,
         thought_category_id: ThoughtTable.categoryId,
-        thought_is_completable: ThoughtTable.isCompletable,
-        thought_is_completed: ThoughtTable.isCompleted,
+        thought_type: ThoughtTable.type,
+        thought_content_id: ThoughtTable.contentId,
+        content_text: sql<string>`COALESCE(
+          ${TextContentTable.text},
+          ${ListItemContentTable.text},
+          ${CheckboxContentTable.text},
+          ''
+        )`,
+        checked: CheckboxContentTable.checked,
       })
       .from(ThoughtTable)
-      .innerJoin(CategoryTable, eq(ThoughtTable.categoryId, CategoryTable.id));
+      .innerJoin(CategoryTable, eq(ThoughtTable.categoryId, CategoryTable.id))
+      .leftJoin(
+        TextContentTable,
+        eq(TextContentTable.id, ThoughtTable.contentId)
+      )
+      .leftJoin(
+        ListItemContentTable,
+        eq(ListItemContentTable.id, ThoughtTable.contentId)
+      )
+      .leftJoin(
+        CheckboxContentTable,
+        eq(CheckboxContentTable.id, ThoughtTable.contentId)
+      );
 
     const categoriesById = new Map<
       string,
@@ -43,25 +55,26 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         category_name: string;
         category_color: string;
         category_created_at: string;
-        thoughts: CategoryThoughtRow[];
+        thoughts: ReturnType<typeof assembleThought>[];
       }
     >();
 
     for (const row of rows) {
       if (!row.thought_id) continue;
 
-      const thought: CategoryThoughtRow = {
+      const thought = assembleThought({
         id: row.thought_id,
         thoughtId: row.thought_id,
         title: row.thought_title,
-        summary: row.thought_summary,
         semanticLabel: row.thought_semantic_label,
         createdAt: row.thought_created_at,
         categoryId: row.thought_category_id,
         noteId: row.thought_note_id,
-        isCompletable: Boolean(row.thought_is_completable),
-        isCompleted: Boolean(row.thought_is_completed),
-      };
+        type: row.thought_type,
+        contentId: row.thought_content_id,
+        contentText: row.content_text,
+        checked: row.checked,
+      });
 
       const existing = categoriesById.get(row.category_id);
       if (existing) {

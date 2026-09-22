@@ -37,6 +37,10 @@ export function thoughtsEditorBulletAccessibilityLabel() {
   );
 }
 
+export function thoughtsEditorTextAccessibilityLabel() {
+  return fbs("Text block", "Accessibility label for text thought type button");
+}
+
 export function thoughtsEditorChecklistAccessibilityLabel() {
   return fbs(
     "Checklist",

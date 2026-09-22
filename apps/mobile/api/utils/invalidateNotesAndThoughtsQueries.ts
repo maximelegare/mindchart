@@ -90,7 +90,18 @@ function patchThoughtsJson(
     if (!thought || typeof thought !== "object") return thought;
     const row = thought as { id?: string; thoughtId?: string };
     if (row.id !== thoughtId && row.thoughtId !== thoughtId) return thought;
-    return { ...thought, isCompleted };
+    const record = thought as {
+      type?: string;
+      content?: { text?: string; checked?: boolean };
+      contentText?: string;
+    };
+    const text = record.content?.text ?? record.contentText ?? "";
+    return {
+      ...record,
+      type: "checkbox",
+      checked: isCompleted,
+      content: { text, checked: isCompleted },
+    };
   });
   return asString ? JSON.stringify(next) : next;
 }

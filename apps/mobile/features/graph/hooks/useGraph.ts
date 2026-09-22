@@ -6,7 +6,7 @@ import {
   GRAPH_CACHE_VERSION,
   stripEmbeddingsFromCache,
 } from "../utils/parseGraphData";
-import { Folder, Note } from "@repo/zod-schemas";
+import { Folder, Note, getThoughtPlainText } from "@repo/zod-schemas";
 import {
   noteShowsThoughtTitles,
   type ThoughtGraphRow,
@@ -29,7 +29,7 @@ const deriveNotesFromThoughts = (thoughts: ThoughtGraphRow[]): Note[] => {
     byNote.set(thought.noteId, {
       id: thought.noteId,
       title: stripHtml(thought.title ?? "") || "Untitled",
-      summary: stripHtml(thought.summary || ""),
+      summary: stripHtml(getThoughtPlainText(thought) || ""),
       rawText: "",
       folderId: thought.folderId ?? undefined,
       folderLabel: thought.folderLabel ?? undefined,

@@ -596,8 +596,8 @@ function ThoughtTitleRow({
   const markerColor = hslColor(
     (categoryKey && categoryColorMap.get(categoryKey)) || DEFAULT_CATEGORY_COLOR
   );
-  const isChecklist = Boolean(node.isCompletable);
-  const isCompleted = Boolean(node.isCompleted);
+  const isChecklist = node.type === "checkbox";
+  const isCompleted = Boolean(isChecklist && node.checked);
   const emphasized = isCurrent || isFocused;
   const title = (node.title ?? "").trim();
   const hasTitle = title.length > 0;

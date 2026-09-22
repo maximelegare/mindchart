@@ -39,9 +39,11 @@ export const updateNoteAndThoughts = async ({
   thoughts: Array<Thought & { status: "new" | "updated" }>;
 }) => {
   const db = getOPDatabase();
-  await updateNoteQuery(db, note);
-  await updateThoughtsQuery(db, thoughts);
-  await setNotePersonsQuery(db, note.id, note.persons ?? []);
+  await runRawSqliteTransaction(async () => {
+    await updateNoteQuery(db, note);
+    await updateThoughtsQuery(db, thoughts);
+    await setNotePersonsQuery(db, note.id, note.persons ?? []);
+  });
 };
 
 export const deleteNoteById = async ({ noteId }: { noteId: string }) => {

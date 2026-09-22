@@ -1,59 +1,86 @@
 import { eq, sql } from "drizzle-orm";
+import { assembleThought } from "@repo/zod-schemas";
 import {
+  CheckboxContentTable,
   EmbeddingTable,
   FolderTable,
+  ListItemContentTable,
   NoteTable,
+  TextContentTable,
   ThoughtTable,
 } from "../../schema.root";
 import { type DB } from "../../utils/initialize/getOPDatabase";
 
 export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
   try {
-    // Left-join embeddings so thoughts appear in the category graph as soon as
-    // notes are saved — insertEmbeddings runs after insertNoteAndThoughts, and
-    // an inner join would omit new thoughts until a later refetch.
     const rows = await db
       .select({
-        id: EmbeddingTable.id,
+        embeddingId: EmbeddingTable.id,
         thoughtId: ThoughtTable.id,
-        summary: ThoughtTable.summary,
         title: ThoughtTable.title,
         categoryId: ThoughtTable.categoryId,
         noteId: ThoughtTable.noteId,
         semanticLabel: ThoughtTable.semanticLabel,
+        type: ThoughtTable.type,
+        contentId: ThoughtTable.contentId,
+        contentText: sql<string>`COALESCE(
+          ${TextContentTable.text},
+          ${ListItemContentTable.text},
+          ${CheckboxContentTable.text},
+          ''
+        )`,
+        checked: CheckboxContentTable.checked,
         folderId: NoteTable.folderId,
         folderLabel: FolderTable.label,
         folderPath: FolderTable.path,
         showTitles: NoteTable.showTitles,
-        isCompletable: ThoughtTable.isCompletable,
-        isCompleted: ThoughtTable.isCompleted,
-        // Using raw SQL selection to ensure we get the clean binary blob
         embedding: sql<Uint8Array | null>`${EmbeddingTable.embedding}`,
         createdAt: ThoughtTable.createdAt,
       })
       .from(ThoughtTable)
+      .leftJoin(
+        TextContentTable,
+        eq(TextContentTable.id, ThoughtTable.contentId)
+      )
+      .leftJoin(
+        ListItemContentTable,
+        eq(ListItemContentTable.id, ThoughtTable.contentId)
+      )
+      .leftJoin(
+        CheckboxContentTable,
+        eq(CheckboxContentTable.id, ThoughtTable.contentId)
+      )
       .leftJoin(EmbeddingTable, eq(EmbeddingTable.thoughtId, ThoughtTable.id))
       .innerJoin(NoteTable, eq(ThoughtTable.noteId, NoteTable.id))
       .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id));
 
     return rows.map((row) => {
-      const raw = row.embedding;
+      const thought = assembleThought({
+        id: row.thoughtId,
+        thoughtId: row.thoughtId,
+        title: row.title,
+        categoryId: row.categoryId,
+        noteId: row.noteId,
+        semanticLabel: row.semanticLabel,
+        type: row.type,
+        contentId: row.contentId,
+        contentText: row.contentText,
+        checked: row.checked,
+        folderId: row.folderId,
+        folderLabel: row.folderLabel,
+        folderPath: row.folderPath,
+        createdAt: row.createdAt,
+      });
 
-      // If it's truly null or undefined, return empty
+      const raw = row.embedding;
       if (!raw) {
         return {
-          ...row,
-          // Embedding row may be missing; callers treat null as "no vector".
-          id: row.id ?? row.thoughtId,
+          ...thought,
+          showTitles: row.showTitles,
           embedding: null,
         };
       }
 
-      /**
-       * The Fix:
-       * 1. Force into a fresh Uint8Array to normalize the driver's output.
-       * 2. Slice the buffer to ensure 4-byte alignment for Float32.
-       */
       const uint8 = new Uint8Array(raw);
       const buffer = uint8.buffer.slice(
         uint8.byteOffset,
@@ -61,7 +88,8 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
       );
 
       return {
-        ...row,
+        ...thought,
+        showTitles: row.showTitles,
         embedding: new Float32Array(buffer),
       };
     });

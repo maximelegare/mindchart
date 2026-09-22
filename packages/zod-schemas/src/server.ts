@@ -1,10 +1,17 @@
 import { z } from "zod";
-import { NoteSchema, ThoughtSchema } from "./schemas";
+import { NoteSchema, ThoughtSchema, ThoughtTypeSchema } from "./schemas";
 
 // OpenAI API response schemas (what we get from OpenAI)
 export const OpenAIResThoughtSchema = z.object({
   title: z.string(),
   summary: z.string(),
+  type: ThoughtTypeSchema.optional(),
+  content: z
+    .object({
+      text: z.string().optional(),
+      checked: z.boolean().optional(),
+    })
+    .optional(),
   category: z.string().optional(),
   thoughtId: z.string().optional(),
 });

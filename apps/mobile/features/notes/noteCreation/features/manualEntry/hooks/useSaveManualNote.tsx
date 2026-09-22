@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Note, Thought } from "@repo/zod-schemas";
+import { Note, Thought, getThoughtPlainText } from "@repo/zod-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useModal } from "@/components/ui/modal/modal";
@@ -38,7 +38,7 @@ export const useSaveManualNote = (onSuccess?: () => void) => {
           semanticLabel:
             thought.semanticLabel.trim() ||
             thought.title.trim() ||
-            thought.summary.trim(),
+            getThoughtPlainText(thought).trim(),
         }));
 
         await insertNoteAndThoughtsMutateAsync({

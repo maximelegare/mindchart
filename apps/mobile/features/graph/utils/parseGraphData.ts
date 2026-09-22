@@ -1,13 +1,14 @@
-import { Note, ThoughtWithEmbedding } from "@repo/zod-schemas";
+import { Note, ThoughtWithEmbedding, assembleThought } from "@repo/zod-schemas";
 
 import { NodeDatum, GraphDataCache } from "../types/types";
 import { buildGraphByFolder } from "./buildGraphByFolder";
 import { categoryGraphNeedsRebuild } from "./buildGraphByCategoryFolders";
 import { isNoteLeafId } from "./mapNoteToLeaf";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
+import { getThoughtPlainText } from "@repo/zod-schemas";
 
 /** Bump when folder/category graph shape changes (forces DB cache rebuild). */
-export const GRAPH_CACHE_VERSION = 9;
+export const GRAPH_CACHE_VERSION = 10;
 
 const isRootNode = (data: unknown): data is NodeDatum =>
   typeof data === "object" &&
@@ -82,17 +83,24 @@ export const extractThoughtLeaves = (
     if (!node.children?.length) {
       if (node.thoughtId) {
         leaves.push({
-          thoughtId: node.thoughtId,
-          title: node.title ?? null,
-          summary: node.summary ?? null,
-          noteId: node.noteId ?? "",
-          categoryId: node.categoryId ?? "",
-          folderId: node.folderId ?? null,
-          folderLabel: node.folderLabel ?? null,
-          folderPath: node.folderPath ?? null,
-          createdAt: node.createdAt ?? null,
+          ...assembleThought({
+            thoughtId: node.thoughtId,
+            id: node.thoughtId,
+            title: node.title ?? "",
+            contentText: node.summary ?? "",
+            type: node.type ?? "li",
+            checked: node.checked,
+            noteId: node.noteId ?? "",
+            categoryId: node.categoryId ?? "",
+            folderId: node.folderId ?? null,
+            folderLabel: node.folderLabel ?? null,
+            folderPath: node.folderPath ?? null,
+            createdAt: node.createdAt ?? null,
+            semanticLabel: node.semanticLabel ?? "",
+            contentId: "",
+          }),
           embedding: node.embedding ?? null,
-        } as ThoughtWithEmbedding);
+        });
       }
       return;
     }
@@ -111,7 +119,7 @@ const notesFromThoughtLeaves = (thoughts: ThoughtWithEmbedding[]): Note[] => {
     byNote.set(thought.noteId, {
       id: thought.noteId,
       title: stripHtml(thought.title) || "Untitled",
-      summary: stripHtml(thought.summary || ""),
+      summary: stripHtml(getThoughtPlainText(thought) || ""),
       rawText: "",
       folderId: thought.folderId ?? undefined,
       folderLabel: thought.folderLabel ?? undefined,

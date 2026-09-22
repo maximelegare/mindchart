@@ -436,7 +436,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       content.innerHTML =
         '<ul><li class="thought-item' +
         (window.__mcEditing && !window.__mcSimplified ? " is-collapsed" : "") +
-        '" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
+        '" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
         emptyLiHtml("uncategorized") +
         "</li></ul>";
     }
@@ -605,8 +605,16 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       var newLi = document.createElement("li");
-      var completable = li.getAttribute("data-completable") === "true";
-      newLi.className = completable ? "thought-item is-checklist" : "thought-item";
+      var thoughtType = li.getAttribute("data-thought-type") || "li";
+      if (thoughtType !== "text" && thoughtType !== "li" && thoughtType !== "checkbox") {
+        thoughtType = li.getAttribute("data-completable") === "true" ? "checkbox" : "li";
+      }
+      var completable = thoughtType === "checkbox";
+      newLi.className =
+        "thought-item" +
+        (thoughtType === "text" ? " is-block" : "") +
+        (completable ? " is-checklist" : "");
+      newLi.setAttribute("data-thought-type", thoughtType);
       newLi.setAttribute("data-category-id", "uncategorized");
       newLi.setAttribute("data-completable", completable ? "true" : "false");
       newLi.setAttribute("data-completed", "false");
@@ -640,7 +648,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
       if (!parent.querySelector("li")) {
         parent.innerHTML =
-          '<li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
+          '<li class="thought-item" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
           emptyLiHtml("uncategorized") +
           "</li>";
         var only = parent.querySelector("li");
@@ -1065,7 +1073,7 @@ export function setThoughtValidationErrorsScript(options: {
           emptyMsg +
           '"><br></div>';
       content.innerHTML =
-        '<ul><li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
+        '<ul><li class="thought-item" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
         '<div class="thought-fields">' +
         emptyFields +
         "</div></li></ul>";
@@ -1522,15 +1530,19 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
 })();
 `;
 
-export function setThoughtListTypeScript(completable: boolean): string {
+export function setThoughtTypeScript(type: "text" | "li" | "checkbox"): string {
   return `
 (function () {
-  if (typeof window.__mcSetThoughtListType === "function") {
-    window.__mcSetThoughtListType(${completable ? "true" : "false"});
+  if (typeof window.__mcSetThoughtType === "function") {
+    window.__mcSetThoughtType(${JSON.stringify(type)});
   }
   true;
 })();
 `;
+}
+
+export function setThoughtListTypeScript(completable: boolean): string {
+  return setThoughtTypeScript(completable ? "checkbox" : "li");
 }
 
 export const SYNC_CHECKLIST_LAYOUT_SCRIPT = `
@@ -1675,12 +1687,34 @@ export const CHECKLIST_SCRIPT = `
     return 23;
   }
 
+  function thoughtTypeOf(li) {
+    var type = li && li.getAttribute("data-thought-type");
+    if (type === "text" || type === "li" || type === "checkbox") return type;
+    if (isTrueAttr(li, "data-completable")) return "checkbox";
+    return "li";
+  }
+
+  function applyThoughtType(li, type) {
+    if (!li) return;
+    if (type !== "text" && type !== "li" && type !== "checkbox") type = "li";
+    var completable = type === "checkbox";
+    li.setAttribute("data-thought-type", type);
+    li.setAttribute("data-completable", completable ? "true" : "false");
+    if (!completable) {
+      li.setAttribute("data-completed", "false");
+    }
+    li.classList.toggle("is-block", type === "text");
+    li.classList.toggle("is-checklist", completable);
+    if (!completable) li.classList.remove("is-completed");
+  }
+
   function syncChecklistLayout(li) {
     if (!li) return;
     var check = ensureCheckbox(li);
-    var completable = isTrueAttr(li, "data-completable");
+    var type = thoughtTypeOf(li);
+    applyThoughtType(li, type);
+    var completable = type === "checkbox";
     var completed = completable && isTrueAttr(li, "data-completed");
-    li.classList.toggle("is-checklist", completable);
     li.classList.toggle("is-completed", completed);
     if (check) {
       check.setAttribute("aria-checked", completed ? "true" : "false");
@@ -1768,13 +1802,13 @@ export const CHECKLIST_SCRIPT = `
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
         type: "CARET_LIST_TYPE",
-        data: { completable: isTrueAttr(li, "data-completable") },
+        data: { type: thoughtTypeOf(li) },
       })
     );
   }
 
   function toggleCompleted(li) {
-    if (!li || !isTrueAttr(li, "data-completable")) return;
+    if (!li || thoughtTypeOf(li) !== "checkbox") return;
     var now = Date.now();
     if (li.__mcCheckAt && now - li.__mcCheckAt < 400) return;
     li.__mcCheckAt = now;
@@ -1796,15 +1830,12 @@ export const CHECKLIST_SCRIPT = `
 
   window.__mcSyncChecklistLayouts = syncAll;
 
-  window.__mcSetThoughtListType = function (completable) {
+  window.__mcSetThoughtType = function (type) {
     var sel = window.getSelection();
     var li = closestLi(sel && sel.anchorNode);
     if (!li) li = content.querySelector("ul > li");
     if (!li) return true;
-    li.setAttribute("data-completable", completable ? "true" : "false");
-    if (!completable) {
-      li.setAttribute("data-completed", "false");
-    }
+    applyThoughtType(li, type);
     syncChecklistLayout(li);
     try {
       content.dispatchEvent(new Event("input", { bubbles: true }));
@@ -1815,11 +1846,14 @@ export const CHECKLIST_SCRIPT = `
       window.ReactNativeWebView.postMessage(
         JSON.stringify({
           type: "LIST_TYPE",
-          data: { index: index, completable: !!completable },
+          data: { index: index, type: thoughtTypeOf(li) },
         })
       );
     }
     return true;
+  };
+  window.__mcSetThoughtListType = function (completable) {
+    return window.__mcSetThoughtType(completable ? "checkbox" : "li");
   };
 
   if (!window.__mcChecklistInstalled) {

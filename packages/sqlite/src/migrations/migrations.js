@@ -21,6 +21,7 @@ import m0015 from "./0015_thought_checklist.sql";
 import m0016 from "./0016_six_categories.sql";
 import m0017 from "./0017_note_show_titles.sql";
 import m0018 from "./0018_category_theme.sql";
+import m0019 from "./0019_thought_typed_content.sql";
 
 export default {
   journal,
@@ -44,5 +45,6 @@ export default {
     m0016,
     m0017,
     m0018,
+    m0019,
   },
 };

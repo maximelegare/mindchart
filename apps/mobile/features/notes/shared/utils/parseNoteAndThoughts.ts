@@ -1,5 +1,6 @@
 import z from "zod";
 import {
+  assembleThought,
   NotesJoinThoughtsParsedJSONPageSchema,
   NotesJoinThoughtsParsedJSONPageSchemaModel,
 } from "@repo/zod-schemas";
@@ -60,14 +61,9 @@ export const parseNoteAndThoughts = (
       : Array.isArray(row.thoughts_json)
         ? row.thoughts_json
         : []
-    ).map((thought: Record<string, unknown>) => ({
-      ...thought,
-      title: thought.title ?? "",
-      summary: thought.summary ?? "",
-      semanticLabel: thought.semanticLabel ?? "",
-      isCompletable: Boolean(thought.isCompletable),
-      isCompleted: Boolean(thought.isCompleted),
-    })),
+    )
+      .filter(Boolean)
+      .map((thought: Record<string, unknown>) => assembleThought(thought)),
   }));
 
   const result = z

@@ -9,6 +9,7 @@ import {
   CHECKBOX_MARK_SIZE,
   StaticCheckboxMark,
 } from "../shared/staticCheckboxMark";
+import { getThoughtPlainText } from "@repo/zod-schemas";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -25,15 +26,32 @@ export type NoteOverviewItem = {
 };
 
 export function thoughtToOverviewItem(thought: {
-  summary?: string | null;
   title?: string | null;
+  type?: "text" | "li" | "checkbox";
+  content?: { text?: string; checked?: boolean };
+  summary?: string | null;
   isCompletable?: boolean;
   isCompleted?: boolean;
 }): NoteOverviewItem {
+  const text = stripHtml(
+    thought.content?.text ||
+      thought.summary ||
+      thought.title ||
+      (thought.content
+        ? getThoughtPlainText({ content: thought.content })
+        : "") ||
+      ""
+  );
+  const isChecklist =
+    thought.type === "checkbox" || Boolean(thought.isCompletable);
+  const isCompleted =
+    thought.type === "checkbox"
+      ? Boolean(thought.content?.checked)
+      : Boolean(thought.isCompleted);
   return {
-    text: stripHtml(thought.summary || thought.title || ""),
-    isChecklist: Boolean(thought.isCompletable),
-    isCompleted: Boolean(thought.isCompleted),
+    text,
+    isChecklist,
+    isCompleted,
   };
 }
 

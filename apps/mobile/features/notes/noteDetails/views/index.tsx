@@ -11,6 +11,12 @@ import {
   type ThoughtsEditorHandle,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
+import {
+  assembleThought,
+  getThoughtPlainText,
+  type FeelingValue,
+  Person,
+} from "@repo/zod-schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { useSaveNewNote } from "@/features/notes/noteDraft/hooks/useSaveNewNote";
@@ -21,7 +27,6 @@ import {
   noteDetailsTitleRequiredPlaceholder,
   NoteDetailsTitlePlaceholder,
 } from "@/features/notes/noteDetails/noteDetailsLabels";
-import { type FeelingValue, Person } from "@repo/zod-schemas";
 
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
 
@@ -51,31 +56,13 @@ type NoteDetailsFormValues = {
 };
 
 const mapThoughtToFormValue = (
-  thought: {
-    title?: string | null;
-    summary?: string | null;
-    semanticLabel?: string | null;
-    id: string;
-    createdAt?: string | null;
-    noteId: string;
-    categoryId: string;
-    thoughtId: string;
-    isCompletable?: boolean;
-    isCompleted?: boolean;
-  },
+  thought: Parameters<typeof assembleThought>[0] | ThoughtsFormValue,
   noteId: string
-): ThoughtsFormValue => ({
-  title: thought.title ?? "",
-  summary: thought.summary ?? "",
-  semanticLabel: thought.semanticLabel ?? "",
-  id: thought.id,
-  createdAt: thought.createdAt ?? new Date().toISOString(),
-  noteId: thought.noteId ?? noteId,
-  categoryId: thought.categoryId ?? "uncategorized",
-  thoughtId: thought.thoughtId ?? thought.id,
-  isCompletable: thought.isCompletable ?? false,
-  isCompleted: thought.isCompleted ?? false,
-});
+): ThoughtsFormValue =>
+  assembleThought({
+    ...thought,
+    noteId: thought.noteId ?? noteId,
+  });
 
 type TransitionEndEvent = { data?: { closing?: boolean } };
 
@@ -237,18 +224,24 @@ function NoteDetailsContent({
         .filter(
           (thought) =>
             stripHtml(thought.title) ||
-            stripHtml(thought.summary) ||
+            stripHtml(getThoughtPlainText(thought)) ||
             thought.semanticLabel.trim()
         )
         .map((thought) => {
           const thoughtTitle = stripHtml(thought.title);
-          const summary = stripHtml(thought.summary) || thoughtTitle;
+          const text = stripHtml(getThoughtPlainText(thought)) || thoughtTitle;
           const semanticLabel =
-            stripHtml(thought.semanticLabel) || thoughtTitle || summary;
+            stripHtml(thought.semanticLabel) || thoughtTitle || text;
+          const withText =
+            thought.type === "checkbox"
+              ? {
+                  ...thought,
+                  content: { text, checked: thought.content.checked },
+                }
+              : { ...thought, content: { text } };
           return {
-            ...thought,
+            ...withText,
             title: thought.title.trim(),
-            summary: thought.summary.trim() || thought.title.trim(),
             semanticLabel,
             status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
               | "new"

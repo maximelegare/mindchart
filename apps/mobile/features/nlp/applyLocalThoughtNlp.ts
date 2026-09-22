@@ -1,4 +1,4 @@
-import { Thought } from "@repo/zod-schemas";
+import { Thought, getThoughtPlainText } from "@repo/zod-schemas";
 import { getOPDatabase, updateThoughtNlpQuery } from "@repo/sqlite";
 import { analyzeThought, isDisplayableSemanticLabel } from "@/lib/nlp";
 
@@ -10,13 +10,13 @@ const stripHtml = (value: string) =>
     .trim();
 
 const thoughtText = (thought: Thought) =>
-  stripHtml(thought.summary) || stripHtml(thought.title);
+  stripHtml(getThoughtPlainText(thought)) || stripHtml(thought.title);
 
 const isFallbackLabel = (thought: Thought) => {
   const label = stripHtml(thought.semanticLabel).toLowerCase();
   if (!label) return true;
   const title = stripHtml(thought.title).toLowerCase();
-  const summary = stripHtml(thought.summary).toLowerCase();
+  const summary = stripHtml(getThoughtPlainText(thought)).toLowerCase();
   return label === title || label === summary;
 };
 

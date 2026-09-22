@@ -134,6 +134,13 @@
       "when": 1789170000000,
       "tag": "0018_category_theme",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "6",
+      "when": 1789300000000,
+      "tag": "0019_thought_typed_content",
+      "breakpoints": true
     }
   ]
 }

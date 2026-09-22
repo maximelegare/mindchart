@@ -178,7 +178,7 @@ export const runMigrations = async (): Promise<void> => {
     CREATE VIRTUAL TABLE IF NOT EXISTS thought_fts USING fts5(
       id UNINDEXED,
       title,
-      summary,
+      body,
       semantic_label
     );
   `);

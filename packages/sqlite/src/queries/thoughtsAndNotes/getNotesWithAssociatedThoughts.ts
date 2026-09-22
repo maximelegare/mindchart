@@ -5,8 +5,12 @@ import {
   NoteTable,
   FolderTable,
   LocationTable,
+  TextContentTable,
+  ListItemContentTable,
+  CheckboxContentTable,
 } from "../../schema.root";
 import { eq } from "drizzle-orm";
+import { thoughtJsonObjectSql } from "../thoughtContent/thoughtJson";
 
 export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
   try {
@@ -27,23 +31,24 @@ export const getNotesWithAssociatedThoughtsQuery = async (db: DB) => {
         folder_label: FolderTable.label,
         thoughts_json: sql<string>`
           json_group_array(
-            json_object(
-              'id', ${ThoughtTable.id},
-              'thoughtId', ${ThoughtTable.id},
-              'title', ${ThoughtTable.title},
-              'summary', ${ThoughtTable.summary},
-              'createdAt', ${ThoughtTable.createdAt},
-              'semanticLabel', ${ThoughtTable.semanticLabel},
-              'categoryId', ${ThoughtTable.categoryId},
-              'noteId', ${ThoughtTable.noteId},
-              'isCompletable', ${ThoughtTable.isCompletable},
-              'isCompleted', ${ThoughtTable.isCompleted}
-            )
+            ${thoughtJsonObjectSql}
           ) FILTER (WHERE ${ThoughtTable.id} IS NOT NULL)
         `.as("thoughts_json"),
       })
       .from(NoteTable)
       .leftJoin(ThoughtTable, eq(NoteTable.id, ThoughtTable.noteId))
+      .leftJoin(
+        TextContentTable,
+        eq(TextContentTable.id, ThoughtTable.contentId)
+      )
+      .leftJoin(
+        ListItemContentTable,
+        eq(ListItemContentTable.id, ThoughtTable.contentId)
+      )
+      .leftJoin(
+        CheckboxContentTable,
+        eq(CheckboxContentTable.id, ThoughtTable.contentId)
+      )
       .leftJoin(FolderTable, eq(NoteTable.folderId, FolderTable.id))
       .leftJoin(LocationTable, eq(NoteTable.locationId, LocationTable.id))
       .groupBy(NoteTable.id);

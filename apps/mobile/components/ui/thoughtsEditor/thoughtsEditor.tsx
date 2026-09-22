@@ -1,4 +1,8 @@
-import { Category } from "@repo/zod-schemas";
+import {
+  Category,
+  getThoughtPlainText,
+  type ThoughtType,
+} from "@repo/zod-schemas";
 import React from "react";
 import { Keyboard, Platform, Pressable, ScrollView, View } from "react-native";
 import { runOnJS } from "react-native-reanimated";
@@ -23,7 +27,12 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useRouter } from "expo-router";
 import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
-import { type ThoughtsEditorFormValues } from "./types";
+import {
+  convertThoughtType,
+  setThoughtContentText,
+  type ThoughtsEditorFormValues,
+  type ThoughtsFormValue,
+} from "./types";
 import {
   htmlToThoughts,
   setThoughtCategoryScript,
@@ -43,7 +52,7 @@ import {
   setEditingModeScript,
   setShowTitlesScript,
   setSimplifiedModeScript,
-  setThoughtListTypeScript,
+  setThoughtTypeScript,
   setThoughtValidationErrorsScript,
 } from "./bulletEditorScript";
 import {
@@ -57,9 +66,10 @@ import {
 } from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { analyzeThought } from "@/lib/nlp";
+import { thoughtCapabilities } from "./thoughtCapabilities";
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
-export { createEmptyThought } from "./types";
+export { createEmptyThought, convertThoughtType } from "./types";
 
 /** Gap between the caret and the keyboard / format bar. */
 const CARET_BOTTOM_MARGIN = 15;
@@ -119,6 +129,9 @@ function buildCategoryColorCss(categories: Category[]): string {
       li[data-category-id="${category.id}"].is-completed .thought-check-box {
         background-color: ${category.color};
         border-color: ${category.color};
+      }
+      li[data-category-id="${category.id}"].is-block .thought-body {
+        border-left-color: ${category.color};
       }
     `
     )
@@ -340,8 +353,8 @@ function ThoughtsEditorInner(
     italic: false,
     underline: false,
   });
-  const [caretIsChecklist, setCaretIsChecklist] = React.useState(() =>
-    Boolean(getValues("thoughts")?.[0]?.isCompletable)
+  const [caretThoughtType, setCaretThoughtType] = React.useState<ThoughtType>(
+    () => getValues("thoughts")?.[0]?.type ?? "li"
   );
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
@@ -752,7 +765,7 @@ function ThoughtsEditorInner(
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
       const nextThoughts = getValues("thoughts");
-      setCaretIsChecklist(Boolean(nextThoughts?.[0]?.isCompletable));
+      setCaretThoughtType(nextThoughts?.[0]?.type ?? "li");
       richRef.current?.setContentHTML(
         thoughtsToHtml(nextThoughts, showTitles, htmlOptions)
       );
@@ -764,7 +777,7 @@ function ThoughtsEditorInner(
     applyEditorFlags(titles);
     applySimplifiedMode(simplifiedRef.current);
     const nextThoughts = getValues("thoughts");
-    setCaretIsChecklist(Boolean(nextThoughts?.[0]?.isCompletable));
+    setCaretThoughtType(nextThoughts?.[0]?.type ?? "li");
     richRef.current?.setContentHTML(
       thoughtsToHtml(nextThoughts, titles, htmlOptions)
     );
@@ -794,7 +807,7 @@ function ThoughtsEditorInner(
         ? (thoughts ?? [])
             .map(
               (thought) =>
-                `${thought.id}:${thought.semanticLabel}:${thought.categoryId}:${thought.title}:${thought.summary}`
+                `${thought.id}:${thought.semanticLabel}:${thought.categoryId}:${thought.title}:${getThoughtPlainText(thought)}:${thought.type}`
             )
             .join("|")
         : "",
@@ -848,9 +861,9 @@ function ThoughtsEditorInner(
     []
   );
 
-  const handleListType = React.useCallback((completable: boolean) => {
-    setCaretIsChecklist(completable);
-    richRef.current?.injectJavascript(setThoughtListTypeScript(completable));
+  const handleThoughtType = React.useCallback((type: ThoughtType) => {
+    setCaretThoughtType(type);
+    richRef.current?.injectJavascript(setThoughtTypeScript(type));
   }, []);
 
   const handleShowTitlesChange = React.useCallback(
@@ -862,10 +875,12 @@ function ThoughtsEditorInner(
 
       let nextThoughts = getValues("thoughts");
       if (!nextShowTitles) {
-        nextThoughts = nextThoughts.map((thought) => ({
-          ...thought,
-          summary: thought.summary || thought.title,
-        }));
+        nextThoughts = nextThoughts.map((thought) =>
+          setThoughtContentText(
+            thought,
+            getThoughtPlainText(thought) || thought.title
+          )
+        );
         setValue("thoughts", nextThoughts, { shouldDirty: true });
       }
 
@@ -945,10 +960,18 @@ function ThoughtsEditorInner(
         return;
       }
       if (message.type === "CARET_LIST_TYPE") {
-        const completable = Boolean(
-          (message.data as { completable?: boolean } | undefined)?.completable
-        );
-        setCaretIsChecklist(completable);
+        const payload = message.data as
+          | { type?: ThoughtType; completable?: boolean }
+          | undefined;
+        const nextType: ThoughtType =
+          payload?.type === "text" ||
+          payload?.type === "li" ||
+          payload?.type === "checkbox"
+            ? payload.type
+            : payload?.completable
+              ? "checkbox"
+              : "li";
+        setCaretThoughtType(nextType);
         if (keyboardOpenRef.current) {
           scheduleScrollCaretIntoView();
         }
@@ -956,12 +979,19 @@ function ThoughtsEditorInner(
       }
       if (message.type === "LIST_TYPE") {
         const payload = message.data as
-          | { index?: number; completable?: boolean }
+          | { index?: number; type?: ThoughtType; completable?: boolean }
           | undefined;
         const index = Number(payload?.index);
-        const completable = Boolean(payload?.completable);
+        const nextType: ThoughtType =
+          payload?.type === "text" ||
+          payload?.type === "li" ||
+          payload?.type === "checkbox"
+            ? payload.type
+            : payload?.completable
+              ? "checkbox"
+              : "li";
         if (!Number.isFinite(index) || index < 0) return;
-        setCaretIsChecklist(completable);
+        setCaretThoughtType(nextType);
         const previous = getValues("thoughts");
         const current = previous[index];
         if (!current) return;
@@ -969,11 +999,7 @@ function ThoughtsEditorInner(
           "thoughts",
           previous.map((thought, thoughtIndex) =>
             thoughtIndex === index
-              ? {
-                  ...thought,
-                  isCompletable: completable,
-                  isCompleted: completable ? thought.isCompleted : false,
-                }
+              ? convertThoughtType(thought, nextType)
               : thought
           ),
           { shouldDirty: true }
@@ -990,10 +1016,14 @@ function ThoughtsEditorInner(
         const previous = getValues("thoughts");
         const current = previous[index];
         if (!current) return;
+        const checkbox =
+          current.type === "checkbox"
+            ? current
+            : convertThoughtType(current, "checkbox");
         const nextThought = {
-          ...current,
-          isCompletable: true,
-          isCompleted: completed,
+          ...checkbox,
+          type: "checkbox" as const,
+          content: { text: checkbox.content.text, checked: completed },
         };
         setValue(
           "thoughts",
@@ -1020,6 +1050,7 @@ function ThoughtsEditorInner(
         const result = analyzeThought(text);
         const previous = getValues("thoughts");
         const current = previous[index];
+        if (current && !thoughtCapabilities(current.type).nlp) return;
         const currentCategory = current?.categoryId || "uncategorized";
         const nextCategory =
           result.category &&
@@ -1137,13 +1168,9 @@ function ThoughtsEditorInner(
       validateRequiredContent: () => {
         const thoughts = getValues("thoughts") ?? [];
 
-        const isEmptyThought = (thought: {
-          title: string;
-          summary: string;
-          semanticLabel: string;
-        }) =>
+        const isEmptyThought = (thought: ThoughtsFormValue) =>
           !stripHtml(thought.title) &&
-          !stripHtml(thought.summary) &&
+          !stripHtml(getThoughtPlainText(thought)) &&
           !thought.semanticLabel.trim();
 
         // Fully empty bullets are dropped on save — ignore them for "has content".
@@ -1268,6 +1295,16 @@ function ThoughtsEditorInner(
                     box-sizing: border-box;
                     --category-stack: 25px;
                     --dot-size: 8px;
+                  }
+                  li.thought-item.is-block {
+                    padding-left: 10px;
+                  }
+                  li.thought-item.is-block .thought-rail {
+                    display: none;
+                  }
+                  li.thought-item.is-block .thought-body {
+                    border-left: 3px solid transparent;
+                    padding-left: 8px;
                   }
                   li.thought-item.is-collapsed {
                     --category-stack: 2px;
@@ -1660,8 +1697,8 @@ function ThoughtsEditorInner(
               onShowTitlesChange={handleShowTitlesChange}
               activeFormats={activeFormats}
               onFormat={handleFormat}
-              isChecklist={caretIsChecklist}
-              onListTypeChange={handleListType}
+              thoughtType={caretThoughtType}
+              onThoughtTypeChange={handleThoughtType}
             />
           ) : null}
         </View>
@@ -1673,8 +1710,8 @@ function ThoughtsEditorInner(
             onShowTitlesChange={handleShowTitlesChange}
             activeFormats={activeFormats}
             onFormat={handleFormat}
-            isChecklist={caretIsChecklist}
-            onListTypeChange={handleListType}
+            thoughtType={caretThoughtType}
+            onThoughtTypeChange={handleThoughtType}
           />
         ) : null}
       </View>
