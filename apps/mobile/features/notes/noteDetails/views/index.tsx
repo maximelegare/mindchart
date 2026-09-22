@@ -412,14 +412,10 @@ function NoteDetailsContent({
 
         <View
           className="flex-1 min-h-0"
-          style={
-            isEditing
-              ? {
-                  marginLeft: -(gutter("md").marginLeft ?? 8),
-                  marginRight: -(gutter("md").marginRight ?? 8),
-                }
-              : undefined
-          }
+          style={{
+            marginLeft: -(gutter("md").marginLeft ?? 8),
+            marginRight: -(gutter("md").marginRight ?? 8),
+          }}
         >
           <ThoughtsEditor
             ref={thoughtsEditorRef}
@@ -428,10 +424,10 @@ function NoteDetailsContent({
             categories={categoriesData ?? []}
             defaultShowTitles={showTitles}
             readOnly={!isEditing}
-            showGraphButtons={!isEditing && !simplified}
             plain
             simplified={simplified}
             dockToolbarToKeyboard
+            onRequestEdit={() => onEditingChange(true)}
             onToggleCompleted={({ id, isCompleted }) => {
               if (isEditing || isNew) return;
               persistThoughtCompletion({ id, isCompleted });

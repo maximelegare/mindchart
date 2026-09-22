@@ -83,19 +83,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         '<div class="thought-dot"></div></div>' +
         thoughtCheckHtml() +
         '<div class="thought-body">' +
-        categoryLabelHtml(categoryId) +
         '<div class="thought-fields">' +
         fieldsHtml +
-        "</div></div>" +
-        expandButtonHtml()
+        "</div></div>"
       );
     }
 
     function emptyLiHtml(categoryId) {
-      var fields = window.__mcShowTitles
-        ? emptyTitledFieldsHtml()
-        : emptyUntitledFieldHtml();
-      return thoughtItemInnerHtml(categoryId, fields);
+      return thoughtItemInnerHtml(categoryId, emptyUntitledFieldHtml());
     }
 
     function closest(node, predicate) {
@@ -382,15 +377,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var fields = li.querySelector(".thought-fields");
       var chip = li.querySelector(".thought-category");
 
-      if (rail && body && fields && chip) {
-        chip.setAttribute("data-category-id", categoryId);
-        if (!li.querySelector(".thought-expand")) {
-          li.insertAdjacentHTML("beforeend", expandButtonHtml());
-        }
-        if (!li.__mcCollapseTimer && !li.classList.contains("is-collapsed")) {
-          scheduleCollapse(li);
-        }
-        syncExpandButton(li);
+      if (rail && body && fields) {
+        if (chip) chip.setAttribute("data-category-id", categoryId);
         return;
       }
 
@@ -965,22 +953,7 @@ export function setEditingModeScript(editing: boolean): string {
         clearTimeout(li.__mcCollapseTimer);
         li.__mcCollapseTimer = null;
       }
-      if (!li.querySelector(".thought-expand")) {
-        li.insertAdjacentHTML(
-          "beforeend",
-          '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'
-        );
-      }
-      var title = li.querySelector(".thought-title");
-      if (title) title.__mcTitleH = title.scrollHeight;
-      li.classList.add("is-collapsed");
-      var expand = li.querySelector(".thought-expand");
-      if (expand) expand.setAttribute("aria-expanded", "false");
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-      if (typeof window.__mcAnimateTitle === "function") {
-        window.__mcAnimateTitle(li);
-      }
+      li.classList.remove("is-collapsed");
     }
     if (typeof window.__mcSyncChecklistLayouts === "function") {
       window.__mcSyncChecklistLayouts();
@@ -1146,12 +1119,11 @@ true;
 }
 
 const GRAPH_BODY_PAD = `
+      .thought-body,
       li.thought-item.has-graph .thought-body,
-      li.thought-item:has(> .thought-graph) .thought-body {
-        padding-right: 44px !important;
-      }
+      li.thought-item:has(> .thought-graph) .thought-body,
       html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
-        padding-right: 32px !important;
+        padding-right: 0 !important;
       }
     `;
 
@@ -1214,7 +1186,7 @@ export function setSimplifiedModeScript(
         padding-right: 0 !important;
       }
       li.thought-item.is-checklist .thought-check {
-        left: 4px !important;
+        left: 8px !important;
         right: auto !important;
         transition: none !important;
         top: calc(
@@ -1541,6 +1513,86 @@ export function setThoughtTypeScript(type: "text" | "li" | "checkbox"): string {
 `;
 }
 
+export function setSelectedThoughtScript(index: number): string {
+  return `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+  var lis = content.querySelectorAll("ul > li");
+  for (var i = 0; i < lis.length; i++) {
+    lis[i].classList.toggle("is-selected", i === ${index});
+  }
+  true;
+})();
+`;
+}
+
+export function setShowCategoryColorsScript(show: boolean): string {
+  return `
+(function () {
+  var show = ${show ? "true" : "false"};
+  window.__mcShowCategoryColors = show;
+  if (document.documentElement) {
+    document.documentElement.classList.toggle("mc-show-categories", show);
+  }
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.classList.toggle("mc-show-categories", show);
+  true;
+})();
+`;
+}
+
+export function setThoughtTextEditableScript(editable: boolean): string {
+  return `
+(function () {
+  var editable = ${editable ? "true" : "false"};
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (document.documentElement) {
+    document.documentElement.classList.toggle("mc-details-lock", !editable);
+  }
+  if (!window.__mcDetailsLockInstalled) {
+    window.__mcDetailsLockInstalled = true;
+    document.addEventListener(
+      "keydown",
+      function (e) {
+        if (!document.documentElement.classList.contains("mc-details-lock")) {
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+      },
+      true
+    );
+    document.addEventListener(
+      "beforeinput",
+      function (e) {
+        if (!document.documentElement.classList.contains("mc-details-lock")) {
+          return;
+        }
+        e.preventDefault();
+      },
+      true
+    );
+  }
+  if (!content) return true;
+  content.classList.toggle("mc-details-lock", !editable);
+  content.setAttribute("contenteditable", editable ? "true" : "false");
+  var fields = content.querySelectorAll(".thought-summary, .thought-title");
+  for (var i = 0; i < fields.length; i++) {
+    if (editable) {
+      fields[i].removeAttribute("contenteditable");
+    } else {
+      fields[i].setAttribute("contenteditable", "false");
+    }
+  }
+  true;
+})();
+`;
+}
+
 export function setThoughtListTypeScript(completable: boolean): string {
   return setThoughtTypeScript(completable ? "checkbox" : "li");
 }
@@ -1798,11 +1850,25 @@ export const CHECKLIST_SCRIPT = `
   }
 
   function postCaretType(li) {
-    if (!window.ReactNativeWebView || !li) return;
+    if (!li) return;
+    var root =
+      document.querySelector(".pell-content") || document.getElementById("editor");
+    if (root) {
+      var rows = root.querySelectorAll("ul > li");
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].classList.toggle("is-selected", rows[i] === li);
+      }
+    }
+    if (!window.ReactNativeWebView) return;
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
         type: "CARET_LIST_TYPE",
-        data: { type: thoughtTypeOf(li) },
+        data: {
+          type: thoughtTypeOf(li),
+          index: li.parentNode
+            ? Array.prototype.indexOf.call(li.parentNode.children, li)
+            : -1,
+        },
       })
     );
   }
@@ -1856,6 +1922,10 @@ export const CHECKLIST_SCRIPT = `
     return window.__mcSetThoughtType(completable ? "checkbox" : "li");
   };
 
+  function editorRoot() {
+    return document.querySelector(".pell-content") || document.getElementById("editor");
+  }
+
   if (!window.__mcChecklistInstalled) {
     window.__mcChecklistInstalled = true;
 
@@ -1869,7 +1939,13 @@ export const CHECKLIST_SCRIPT = `
       );
     }
 
+    function eventInEditor(e) {
+      var root = editorRoot();
+      return !!(root && e.target && root.contains(e.target));
+    }
+
     function onChecklistPointer(e) {
+      if (!eventInEditor(e)) return;
       if (isCategoryChrome(e.target)) return;
       var check = closestClass(e.target, "thought-check");
       if (!check) return;
@@ -1879,12 +1955,13 @@ export const CHECKLIST_SCRIPT = `
       if (li) toggleCompleted(li);
     }
 
-    content.addEventListener("click", onChecklistPointer, true);
-    content.addEventListener("touchend", onChecklistPointer, true);
+    document.addEventListener("click", onChecklistPointer, true);
+    document.addEventListener("touchend", onChecklistPointer, true);
 
-    content.addEventListener(
+    document.addEventListener(
       "transitionend",
       function (e) {
+        if (!eventInEditor(e)) return;
         if (
           !e.target ||
           !e.target.classList ||
@@ -1905,18 +1982,36 @@ export const CHECKLIST_SCRIPT = `
       if (li) postCaretType(li);
     });
 
-    content.addEventListener("focusin", function () {
+    document.addEventListener("focusin", function (e) {
+      if (!eventInEditor(e)) return;
       var sel = window.getSelection();
       var li = closestLi(sel && sel.anchorNode);
       if (li) postCaretType(li);
     });
 
-    if (typeof ResizeObserver !== "undefined") {
-      var observer = new ResizeObserver(function () {
-        syncAll();
-      });
-      observer.observe(content);
+    document.addEventListener(
+      "click",
+      function (e) {
+        if (!eventInEditor(e)) return;
+        if (closestClass(e.target, "thought-check")) return;
+        var li = closestLi(e.target);
+        if (li) postCaretType(li);
+      },
+      true
+    );
+  }
+
+  if (typeof ResizeObserver !== "undefined" && content) {
+    if (window.__mcChecklistResizeObserver) {
+      try {
+        window.__mcChecklistResizeObserver.disconnect();
+      } catch (err) {}
     }
+    var observer = new ResizeObserver(function () {
+      syncAll();
+    });
+    observer.observe(content);
+    window.__mcChecklistResizeObserver = observer;
   }
 
   syncAll();

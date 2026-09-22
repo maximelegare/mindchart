@@ -18,10 +18,14 @@ export function NoteDetailsViewModeChipLabel({
   simplified: boolean;
 }) {
   if (simplified) {
-    return <fbt desc="Note details view mode: simplified">Simplified View</fbt>;
+    return (
+      <fbt desc="Note details view mode: hide categories">Hide Categories</fbt>
+    );
   }
 
-  return <fbt desc="Note details view mode: complete">Complete View</fbt>;
+  return (
+    <fbt desc="Note details view mode: show categories">Show Categories</fbt>
+  );
 }
 
 export function NoteDetailsTitlePlaceholder() {

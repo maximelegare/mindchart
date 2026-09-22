@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, Pressable, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -13,7 +13,7 @@ import {
   useGenericKeyboardHandler,
 } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Switch } from "@/components/ui/switch";
+import { useIsFocused } from "@react-navigation/native";
 import { Typography } from "@/components/ui/typography";
 import { Icon } from "@/components/ui/icons/icon";
 import type { IconName } from "@/components/ui/icons/icon-registry";
@@ -22,31 +22,47 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import type { ThoughtType } from "@repo/zod-schemas";
 import {
-  ThoughtsEditorTitlesToggleLabel,
   thoughtsEditorBoldAccessibilityLabel,
   thoughtsEditorItalicAccessibilityLabel,
-  thoughtsEditorShowTitlesAccessibilityLabel,
   thoughtsEditorUnderlineAccessibilityLabel,
   thoughtsEditorBulletAccessibilityLabel,
   thoughtsEditorChecklistAccessibilityLabel,
   thoughtsEditorTextAccessibilityLabel,
+  thoughtsEditorDetailsToolbarAccessibilityLabel,
+  thoughtsEditorFormatToolbarAccessibilityLabel,
+  thoughtsEditorTitleLabel,
+  thoughtsEditorEditTitleAccessibilityLabel,
+  thoughtsEditorNoTitleYet,
+  thoughtsEditorCategoryAccessibilityLabel,
+  thoughtsEditorGraphAccessibilityLabel,
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
+export const THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE = 40;
 const APPEAR_OPACITY_MS = 180;
+
+export type ThoughtsToolbarMode = "format" | "details";
 
 type FormatCommand = "bold" | "italic" | "underline";
 
 type ThoughtsEditorToolbarProps = {
   /** When true, the bar sits at the page bottom and snaps onto the keyboard. */
   dockToKeyboard?: boolean;
-  showTitles: boolean;
-  showTitlesToggle: boolean;
-  onShowTitlesChange: (next: boolean) => void;
+  mode: ThoughtsToolbarMode;
+  onModeChange: (mode: ThoughtsToolbarMode) => void;
   activeFormats: Record<FormatCommand, boolean>;
   onFormat: (command: FormatCommand) => void;
   thoughtType: ThoughtType;
   onThoughtTypeChange: (type: ThoughtType) => void;
+  selectedTitle: string;
+  selectedCategoryLabel: string;
+  selectedCategoryColor: string | null;
+  hasSelectedThought: boolean;
+  titleReadOnly: boolean;
+  onTitleChange: (title: string) => void;
+  onTitleFocus: () => void;
+  onOpenCategory: () => void;
+  onOpenGraph: () => void;
 };
 
 function FormatButton({
@@ -77,86 +93,253 @@ function FormatButton({
   );
 }
 
-function ToolbarContent({
-  showTitles,
-  showTitlesToggle,
-  onShowTitlesChange,
+function FormatToolbar({
   activeFormats,
   onFormat,
   thoughtType,
   onThoughtTypeChange,
-}: Omit<ThoughtsEditorToolbarProps, "dockToKeyboard">) {
+}: Pick<
+  ThoughtsEditorToolbarProps,
+  "activeFormats" | "onFormat" | "thoughtType" | "onThoughtTypeChange"
+>) {
   const { colorScheme } = useColorScheme();
 
   return (
-    <View
-      className="flex-row items-center justify-between"
-      style={styles.content}
-    >
-      <View className="flex-row items-center">
-        <FormatButton
-          icon="bold"
-          active={activeFormats.bold}
-          label={thoughtsEditorBoldAccessibilityLabel()}
-          onPress={() => onFormat("bold")}
-        />
-        <FormatButton
-          icon="italic"
-          active={activeFormats.italic}
-          label={thoughtsEditorItalicAccessibilityLabel()}
-          onPress={() => onFormat("italic")}
-        />
-        <FormatButton
-          icon="underline"
-          active={activeFormats.underline}
-          label={thoughtsEditorUnderlineAccessibilityLabel()}
-          onPress={() => onFormat("underline")}
-        />
+    <View className="flex-row items-center" style={styles.content}>
+      <FormatButton
+        icon="bold"
+        active={activeFormats.bold}
+        label={thoughtsEditorBoldAccessibilityLabel()}
+        onPress={() => onFormat("bold")}
+      />
+      <FormatButton
+        icon="italic"
+        active={activeFormats.italic}
+        label={thoughtsEditorItalicAccessibilityLabel()}
+        onPress={() => onFormat("italic")}
+      />
+      <FormatButton
+        icon="underline"
+        active={activeFormats.underline}
+        label={thoughtsEditorUnderlineAccessibilityLabel()}
+        onPress={() => onFormat("underline")}
+      />
+      <View
+        style={{
+          width: StyleSheet.hairlineWidth,
+          height: 20,
+          marginHorizontal: 4,
+          backgroundColor: hsl("input", colorScheme),
+        }}
+      />
+      <FormatButton
+        icon="notebook-text"
+        active={thoughtType === "text"}
+        label={thoughtsEditorTextAccessibilityLabel()}
+        onPress={() => onThoughtTypeChange("text")}
+      />
+      <FormatButton
+        icon="list"
+        active={thoughtType === "li"}
+        label={thoughtsEditorBulletAccessibilityLabel()}
+        onPress={() => onThoughtTypeChange("li")}
+      />
+      <FormatButton
+        icon="square-check"
+        active={thoughtType === "checkbox"}
+        label={thoughtsEditorChecklistAccessibilityLabel()}
+        onPress={() => onThoughtTypeChange("checkbox")}
+      />
+    </View>
+  );
+}
+
+function DetailsToolbar({
+  selectedTitle,
+  selectedCategoryLabel,
+  selectedCategoryColor,
+  hasSelectedThought,
+  titleReadOnly,
+  onTitleChange,
+  onTitleFocus,
+  onOpenCategory,
+  onOpenGraph,
+}: Pick<
+  ThoughtsEditorToolbarProps,
+  | "selectedTitle"
+  | "selectedCategoryLabel"
+  | "selectedCategoryColor"
+  | "hasSelectedThought"
+  | "titleReadOnly"
+  | "onTitleChange"
+  | "onTitleFocus"
+  | "onOpenCategory"
+  | "onOpenGraph"
+>) {
+  const { colorScheme } = useColorScheme();
+  const placeholder = thoughtsEditorNoTitleYet();
+  const titleLabel = thoughtsEditorTitleLabel();
+  const inputRef = React.useRef<TextInput>(null);
+  const pendingFocusRef = React.useRef(false);
+  const titleFieldBackground = hsl("muted", colorScheme).replace(
+    /^hsl\((.+)\)$/,
+    "hsla($1, 0.35)"
+  );
+
+  React.useEffect(() => {
+    if (titleReadOnly || !pendingFocusRef.current) return;
+    pendingFocusRef.current = false;
+    const frame = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+    const timer = setTimeout(() => {
+      inputRef.current?.focus();
+    }, 80);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
+  }, [titleReadOnly]);
+
+  return (
+    <View className="flex-row items-center gap-4" style={styles.detailsContent}>
+      <View
+        className="min-w-0 flex-1 flex-row items-center"
+        style={[styles.titleField, { backgroundColor: titleFieldBackground }]}
+      >
+        <View className="min-w-0 flex-1 justify-center">
+          <Typography
+            className="text-xs text-muted-foreground"
+            numberOfLines={1}
+          >
+            {titleLabel}
+          </Typography>
+          {titleReadOnly ? (
+            <Typography
+              className="text-sm"
+              numberOfLines={1}
+              style={
+                selectedTitle
+                  ? undefined
+                  : { color: hsl("muted-foreground", colorScheme) }
+              }
+            >
+              {selectedTitle || placeholder}
+            </Typography>
+          ) : (
+            <TextInput
+              ref={inputRef}
+              value={selectedTitle}
+              onChangeText={onTitleChange}
+              editable={hasSelectedThought}
+              onFocus={onTitleFocus}
+              placeholder={placeholder}
+              placeholderTextColor={hsl("muted-foreground", colorScheme)}
+              style={[
+                styles.titleInput,
+                {
+                  color: hsl("foreground", colorScheme),
+                },
+              ]}
+            />
+          )}
+        </View>
+        {titleReadOnly ? (
+          <Pressable
+            onPress={() => {
+              pendingFocusRef.current = true;
+              onTitleFocus();
+            }}
+            disabled={!hasSelectedThought}
+            accessibilityRole="button"
+            accessibilityLabel={thoughtsEditorEditTitleAccessibilityLabel()}
+            className="w-8 items-center justify-center self-center"
+            style={{ opacity: hasSelectedThought ? 1 : 0.5 }}
+          >
+            <Icon name="pencil" size={16} color="foreground" />
+          </Pressable>
+        ) : null}
+      </View>
+      <Pressable
+        onPress={onOpenCategory}
+        disabled={!hasSelectedThought}
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorCategoryAccessibilityLabel()}
+        className="h-10 flex-row items-center gap-1.5 px-1"
+        style={{ opacity: hasSelectedThought ? 1 : 0.5 }}
+      >
         <View
+          className="h-3 w-3 rounded-full"
           style={{
-            width: StyleSheet.hairlineWidth,
-            height: 20,
-            marginHorizontal: 4,
-            backgroundColor: hsl("input", colorScheme),
+            backgroundColor: selectedCategoryColor ?? hsl("muted", colorScheme),
           }}
         />
-        <FormatButton
-          icon="notebook-text"
-          active={thoughtType === "text"}
-          label={thoughtsEditorTextAccessibilityLabel()}
-          onPress={() => onThoughtTypeChange("text")}
-        />
-        <FormatButton
-          icon="list"
-          active={thoughtType === "li"}
-          label={thoughtsEditorBulletAccessibilityLabel()}
-          onPress={() => onThoughtTypeChange("li")}
-        />
-        <FormatButton
-          icon="square-check"
-          active={thoughtType === "checkbox"}
-          label={thoughtsEditorChecklistAccessibilityLabel()}
-          onPress={() => onThoughtTypeChange("checkbox")}
-        />
-      </View>
-      {showTitlesToggle ? (
-        <View className="flex-row items-center gap-2">
-          <Typography className="text-sm text-muted-foreground">
-            <ThoughtsEditorTitlesToggleLabel />
-          </Typography>
-          <Switch
-            checked={showTitles}
-            onCheckedChange={onShowTitlesChange}
-            aria-label={thoughtsEditorShowTitlesAccessibilityLabel()}
-            trackColor={hsl("border", colorScheme)}
-            trackCheckedColor={hsl("primary", colorScheme)}
-            thumbColor={hsl("card", colorScheme)}
-          />
-        </View>
-      ) : (
-        <View />
-      )}
+        <Typography
+          className="text-sm"
+          numberOfLines={1}
+          style={{ maxWidth: 72 }}
+        >
+          {selectedCategoryLabel}
+        </Typography>
+        <Icon name="chevron-down" size={16} color="muted-foreground" />
+      </Pressable>
+      <Pressable
+        onPress={onOpenGraph}
+        disabled={!hasSelectedThought}
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorGraphAccessibilityLabel()}
+        className="h-10 w-10 items-center justify-center rounded-md"
+        style={{
+          opacity: hasSelectedThought ? 1 : 0.5,
+        }}
+      >
+        <Icon name="graph" size={20} color="foreground" />
+      </Pressable>
     </View>
+  );
+}
+
+function ToolbarToggle({
+  mode,
+  onModeChange,
+}: Pick<ThoughtsEditorToolbarProps, "mode" | "onModeChange">) {
+  const { colorScheme } = useColorScheme();
+  const nextMode: ThoughtsToolbarMode =
+    mode === "format" ? "details" : "format";
+  const label =
+    nextMode === "details"
+      ? thoughtsEditorDetailsToolbarAccessibilityLabel()
+      : thoughtsEditorFormatToolbarAccessibilityLabel();
+
+  return (
+    <Pressable
+      onPress={() => onModeChange(nextMode)}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[
+        styles.toggle,
+        {
+          backgroundColor: hsl("card", colorScheme),
+          borderColor: hsl("input", colorScheme),
+        },
+      ]}
+    >
+      <Icon
+        name={nextMode === "details" ? "tag" : "bold"}
+        size={18}
+        color="foreground"
+      />
+    </Pressable>
+  );
+}
+
+function ToolbarContent(
+  props: Omit<ThoughtsEditorToolbarProps, "dockToKeyboard">
+) {
+  return props.mode === "details" ? (
+    <DetailsToolbar {...props} />
+  ) : (
+    <FormatToolbar {...props} />
   );
 }
 
@@ -165,6 +348,7 @@ export function ThoughtsEditorToolbar({
   ...contentProps
 }: ThoughtsEditorToolbarProps) {
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const { colorScheme } = useColorScheme();
   const keyboardHeight = useSharedValue(0);
   const isOpening = useSharedValue(false);
@@ -172,8 +356,6 @@ export function ThoughtsEditorToolbar({
   const backgroundColor = hsl("footer", colorScheme);
   const borderColor = hsl("input", colorScheme);
   const bottomInset = insets.bottom;
-  // KeyboardBackgroundView maps Gboard dark to #1c1c2c (navy). Use true black
-  // in dark mode so the bar matches the keyboard instead of that blue-gray.
   const darkKeyboardFill = "#000000";
 
   React.useEffect(() => {
@@ -186,7 +368,6 @@ export function ThoughtsEditorToolbar({
     };
   }, [dockToKeyboard]);
 
-  // Appear only after the IME has settled. Follow the keyboard down on close.
   useGenericKeyboardHandler(
     {
       onStart: (event) => {
@@ -244,22 +425,35 @@ export function ThoughtsEditorToolbar({
 
   const portalName = React.useId();
   const content = <ToolbarContent {...contentProps} />;
+  const toggle = (
+    <ToolbarToggle
+      mode={contentProps.mode}
+      onModeChange={contentProps.onModeChange}
+    />
+  );
 
   if (!dockToKeyboard) {
     return (
-      <View
-        style={[
-          styles.inFlow,
-          {
-            height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
-            backgroundColor,
-            borderTopColor: borderColor,
-          },
-        ]}
-      >
-        {content}
+      <View style={{ overflow: "visible", zIndex: 20, elevation: 20 }}>
+        <View
+          style={[
+            styles.inFlow,
+            {
+              height: THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
+              backgroundColor,
+              borderTopColor: borderColor,
+            },
+          ]}
+        >
+          {content}
+        </View>
+        {toggle}
       </View>
     );
+  }
+
+  if (!isFocused) {
+    return null;
   }
 
   return (
@@ -283,6 +477,7 @@ export function ThoughtsEditorToolbar({
               style={StyleSheet.absoluteFill}
             />
           )}
+          {toggle}
           <View style={styles.dockedRow}>{content}</View>
         </Animated.View>
       </View>
@@ -305,7 +500,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    overflow: "hidden",
+    overflow: "visible",
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   dockedRow: {
@@ -314,5 +509,42 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 5,
+    paddingRight: 56,
+  },
+  detailsContent: {
+    paddingHorizontal: 10,
+    paddingRight: 56,
+    paddingVertical: 2,
+    flex: 1,
+  },
+  titleField: {
+    minHeight: 36,
+    borderRadius: 8,
+    paddingVertical: 2,
+    paddingLeft: 8,
+    paddingRight: 2,
+  },
+  titleInput: {
+    height: 18,
+    padding: 0,
+    margin: 0,
+    fontSize: 15,
+  },
+  toggle: {
+    position: "absolute",
+    right: 12,
+    top: -THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2,
+    zIndex: 50,
+    width: THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE,
+    height: THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE,
+    borderRadius: THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.16,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
 });

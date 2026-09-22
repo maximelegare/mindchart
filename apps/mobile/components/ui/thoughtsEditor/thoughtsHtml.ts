@@ -390,7 +390,6 @@ function thoughtItemHtml(
   if (type === "text") classNames.push("is-block");
   if (isCheckbox) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
-  if (options.startCollapsed) classNames.push("is-collapsed");
   if (options.hasEnteredTitle) classNames.push("has-entered-title");
   const graph =
     options.showGraphButton && options.thoughtId
@@ -404,11 +403,9 @@ function thoughtItemHtml(
     `</div>` +
     thoughtCheckHtml() +
     `<div class="thought-body">` +
-    categoryLabelHtml(id, labels) +
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
     graph +
-    expandButtonHtml() +
     `</li>`
   );
 }
@@ -440,14 +437,11 @@ function liToHtml(
     : semanticTitle
       ? thought.semanticLabel
       : "";
-  const showTitleField = viewMode
-    ? Boolean(stripHtml(titleValue))
-    : showTitles || Boolean(stripHtml(titleValue));
+  const showTitleField = false;
   const bodyText = thought.content.text;
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
-    startCollapsed: true,
     type: thought.type,
     checked: thought.type === "checkbox" ? thought.content.checked : false,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
@@ -463,7 +457,7 @@ function liToHtml(
     );
   }
 
-  const summaryText = bodyText || thought.title;
+  const summaryText = bodyText;
   return thoughtItemHtml(
     categoryId,
     titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, summaryText),
@@ -496,14 +490,10 @@ export function thoughtsToHtml(
   };
 
   if (thoughts.length === 0) {
-    const body = showTitles
-      ? titledFieldHtml(TITLE_CLASS, placeholders.title, "") +
-        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, "")
-      : titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, "");
     return `<ul>${thoughtItemHtml(
       "uncategorized",
-      body,
-      { startCollapsed: true },
+      titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, ""),
+      {},
       labels
     )}</ul>`;
   }
@@ -605,6 +595,17 @@ export function htmlToThoughts(
         : convertThoughtType(thought, nextType);
 
     if (hasTitleField || showTitles) {
+      if (!showTitles) {
+        const nextSummary = hasSummaryField
+          ? summary
+          : summary || getThoughtPlainText(base);
+        return withParsedFields(applyType(base), {
+          categoryId,
+          semanticLabel: preservedSemanticLabel(base, base.title, nextSummary),
+          text: nextSummary,
+          checked: item.checked,
+        });
+      }
       const nextTitle = hasTitleField ? title : title || base.title;
       const nextSummary = hasSummaryField
         ? summary
