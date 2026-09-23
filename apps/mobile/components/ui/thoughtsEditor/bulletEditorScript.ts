@@ -351,18 +351,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     };
 
     window.__mcRefreshCategoryTimers = function () {
-      if (window.__mcSimplified) return;
       var lis = content.querySelectorAll("ul > li");
       for (var i = 0; i < lis.length; i++) {
         ensureCategoryChrome(lis[i]);
-        if (window.__mcEditing) {
-          if (!lis[i].querySelector(".thought-expand")) {
-            lis[i].insertAdjacentHTML("beforeend", expandButtonHtml());
-          }
-          syncExpandButton(lis[i]);
-        } else if (!lis[i].classList.contains("is-collapsed")) {
-          scheduleCollapse(lis[i]);
-        }
       }
     };
 
@@ -772,24 +763,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function onViewThoughtPointer(e) {
-      if (window.__mcEditing || window.__mcSimplified) return;
-      if (closestClass(e.target, "thought-check")) return;
-      if (closestClass(e.target, "thought-graph")) return;
-      if (closestClass(e.target, "thought-expand")) return;
-      var li = closestLi(e.target);
-      if (!li) return;
-      e.preventDefault();
-      e.stopPropagation();
-      var wantsPicker =
-        closestClass(e.target, "thought-category") ||
-        closestClass(e.target, "thought-stripe") ||
-        closestClass(e.target, "thought-rail");
-      if (wantsPicker && !li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, true);
-        openCategoryPicker(li);
-        return;
-      }
-      expandThoughtCategory(li, true);
+      return;
     }
 
     function blurEditor() {
@@ -1544,6 +1518,119 @@ export function setShowCategoryColorsScript(show: boolean): string {
 `;
 }
 
+export function focusThoughtScript(index: number, atEnd: boolean): string {
+  return `
+(function () {
+  var index = ${Math.max(0, Math.floor(index))};
+  var atEnd = ${atEnd ? "true" : "false"};
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+  var lis = content.querySelectorAll("ul > li");
+  if (!lis.length) return true;
+
+  function fieldOf(li) {
+    if (!li) return null;
+    return li.querySelector(".thought-summary") || li.querySelector(".thought-title");
+  }
+
+  function closestLi(node) {
+    while (node && node !== document.body) {
+      if (node.nodeName === "LI") return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function placeCaretAtEnd(el) {
+    var sel = window.getSelection();
+    if (!el || !sel) return;
+    var range = document.createRange();
+    if (
+      el.childNodes.length === 1 &&
+      el.firstChild &&
+      el.firstChild.nodeName === "BR"
+    ) {
+      range.setStart(el, 0);
+      range.collapse(true);
+    } else {
+      range.selectNodeContents(el);
+      range.collapse(false);
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  var sel = window.getSelection();
+  var current = closestLi(sel && sel.anchorNode);
+  var currentField = fieldOf(current);
+  var keepCaret =
+    !atEnd &&
+    currentField &&
+    sel &&
+    sel.rangeCount > 0 &&
+    currentField.contains(sel.anchorNode);
+
+  if (!keepCaret && !atEnd && window.__mcSavedRange && sel) {
+    try {
+      var saved = window.__mcSavedRange;
+      var savedNode =
+        saved.startContainer && saved.startContainer.nodeType === 3
+          ? saved.startContainer.parentNode
+          : saved.startContainer;
+      if (savedNode && content.contains(savedNode)) {
+        sel.removeAllRanges();
+        sel.addRange(saved);
+        current = closestLi(saved.startContainer);
+        keepCaret = true;
+      }
+    } catch (err) {}
+  }
+
+  var li = lis[index] || lis[0];
+  for (var i = 0; i < lis.length; i++) {
+    lis[i].classList.toggle("is-selected", lis[i] === (keepCaret ? current : li));
+  }
+
+  if (!keepCaret) {
+    var field = fieldOf(li);
+    if (field) placeCaretAtEnd(field);
+  }
+
+  try {
+    content.focus();
+  } catch (err) {}
+  true;
+})();
+`;
+}
+
+export function reapplyActiveFormatsScript(formats: {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+}): string {
+  return `
+(function () {
+  var want = ${JSON.stringify(formats)};
+  var saved = window.__mcSavedFormats || {};
+  var sel = window.getSelection();
+  if (!sel || !sel.isCollapsed) return true;
+  var commands = ["bold", "italic", "underline"];
+  for (var i = 0; i < commands.length; i++) {
+    var command = commands[i];
+    if (!want[command] && !saved[command]) continue;
+    try {
+      if (!document.queryCommandState(command)) {
+        document.execCommand(command, false, null);
+      }
+    } catch (err) {}
+  }
+  true;
+})();
+`;
+}
+
 export function setThoughtTextEditableScript(editable: boolean): string {
   return `
 (function () {
@@ -1810,8 +1897,11 @@ export const CHECKLIST_SCRIPT = `
       var alignLineH = fieldLineHeight(target);
       var checkH = (check && check.offsetHeight) || 22;
       var nudge = Math.max(0, Math.round((alignLineH - checkH) / 2));
-      li.style.setProperty("--check-nudge", nudge + "px");
-    } else {
+      var nextNudge = nudge + "px";
+      if (li.style.getPropertyValue("--check-nudge") !== nextNudge) {
+        li.style.setProperty("--check-nudge", nextNudge);
+      }
+    } else if (li.style.getPropertyValue("--check-nudge")) {
       li.style.removeProperty("--check-nudge");
     }
 
@@ -1977,25 +2067,168 @@ export const CHECKLIST_SCRIPT = `
     );
 
     document.addEventListener("selectionchange", function () {
+      if (!window.__mcEditing) return;
       var sel = window.getSelection();
+      var root = editorRoot();
+      if (sel && sel.rangeCount && root && root.contains(sel.anchorNode)) {
+        try {
+          window.__mcSavedRange = sel.getRangeAt(0).cloneRange();
+          window.__mcSavedFormats = {
+            bold: document.queryCommandState("bold"),
+            italic: document.queryCommandState("italic"),
+            underline: document.queryCommandState("underline"),
+          };
+        } catch (err) {}
+      }
       var li = closestLi(sel && sel.anchorNode);
       if (li) postCaretType(li);
     });
 
     document.addEventListener("focusin", function (e) {
+      if (!window.__mcEditing) return;
       if (!eventInEditor(e)) return;
       var sel = window.getSelection();
       var li = closestLi(sel && sel.anchorNode);
       if (li) postCaretType(li);
     });
 
+    function textNodeContainsPoint(node, x, y, slop) {
+      if (!node || node.nodeType !== 3 || !node.length) return false;
+      var pad = slop || 2;
+      var range = document.createRange();
+      range.selectNodeContents(node);
+      var rects = range.getClientRects();
+      for (var i = 0; i < rects.length; i++) {
+        var r = rects[i];
+        if (
+          x >= r.left - pad &&
+          x <= r.right + pad &&
+          y >= r.top - pad &&
+          y <= r.bottom + pad
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function fieldTextContainsPoint(field, x, y) {
+      if (!field) return false;
+      if (field.classList && field.classList.contains("is-placeholder")) {
+        var box = field.getBoundingClientRect();
+        return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+      }
+      var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+      var node;
+      while ((node = walker.nextNode())) {
+        if (textNodeContainsPoint(node, x, y, 8)) return true;
+      }
+      var rects = field.getClientRects();
+      for (var r = 0; r < rects.length; r++) {
+        var rect = rects[r];
+        if (
+          x >= rect.left &&
+          x <= rect.right &&
+          y >= rect.top &&
+          y <= rect.bottom
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function thoughtAtPoint(x, y) {
+      var root = editorRoot();
+      if (!root) return null;
+      var hit = document.elementFromPoint(x, y);
+      var field =
+        closestClass(hit, "thought-summary") ||
+        closestClass(hit, "thought-title");
+      if (field) return closestLi(field);
+      var fromHit = closestLi(hit);
+      if (fromHit) {
+        var hitField =
+          fromHit.querySelector(".thought-summary") ||
+          fromHit.querySelector(".thought-title");
+        if (fieldTextContainsPoint(hitField, x, y)) return fromHit;
+      }
+      var lis = root.querySelectorAll("ul > li");
+      for (var i = 0; i < lis.length; i++) {
+        var nextField =
+          lis[i].querySelector(".thought-summary") ||
+          lis[i].querySelector(".thought-title");
+        if (fieldTextContainsPoint(nextField, x, y)) return lis[i];
+      }
+      return null;
+    }
+
+    function selectThought(li) {
+      if (!li) return;
+      window.__mcSelectAt = Date.now();
+      postCaretType(li);
+    }
+
+    document.addEventListener(
+      "touchstart",
+      function (e) {
+        if (!eventInEditor(e)) {
+          window.__mcPressThought = null;
+          return;
+        }
+        if (closestClass(e.target, "thought-check")) {
+          window.__mcPressThought = null;
+          return;
+        }
+        var t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+        window.__mcPressThought = {
+          x: t.clientX,
+          y: t.clientY,
+          li: thoughtAtPoint(t.clientX, t.clientY),
+        };
+      },
+      true
+    );
+
+    document.addEventListener(
+      "touchend",
+      function (e) {
+        var press = window.__mcPressThought;
+        window.__mcPressThought = null;
+        if (!press) return;
+        if (closestClass(e.target, "thought-check")) return;
+        var t = e.changedTouches && e.changedTouches[0];
+        if (
+          t &&
+          (Math.abs(t.clientX - press.x) > 18 ||
+            Math.abs(t.clientY - press.y) > 18)
+        ) {
+          return;
+        }
+        selectThought(
+          press.li ||
+            thoughtAtPoint(t ? t.clientX : press.x, t ? t.clientY : press.y)
+        );
+      },
+      true
+    );
+
     document.addEventListener(
       "click",
       function (e) {
         if (!eventInEditor(e)) return;
         if (closestClass(e.target, "thought-check")) return;
-        var li = closestLi(e.target);
-        if (li) postCaretType(li);
+        if (window.__mcSelectAt && Date.now() - window.__mcSelectAt < 450) {
+          return;
+        }
+        selectThought(
+          thoughtAtPoint(e.clientX, e.clientY) ||
+            closestLi(
+              closestClass(e.target, "thought-summary") ||
+                closestClass(e.target, "thought-title")
+            )
+        );
       },
       true
     );

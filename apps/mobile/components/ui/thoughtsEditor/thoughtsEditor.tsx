@@ -54,6 +54,7 @@ import {
   setSelectedThoughtScript,
   setThoughtTextEditableScript,
   setShowCategoryColorsScript,
+  focusThoughtScript,
 } from "./bulletEditorScript";
 import {
   ThoughtsEditorContentLabel,
@@ -371,6 +372,12 @@ function ThoughtsEditorInner(
   const pendingFormatRef = React.useRef<"bold" | "italic" | "underline" | null>(
     null
   );
+  const selectedThoughtIndexRef = React.useRef(selectedThoughtIndex);
+  selectedThoughtIndexRef.current = selectedThoughtIndex;
+  const activeFormatsRef = React.useRef(activeFormats);
+  activeFormatsRef.current = activeFormats;
+  const enteringEditFocusRef = React.useRef(false);
+  const preserveFormatsRef = React.useRef(false);
   const showTitlesRef = React.useRef(false);
   showTitlesRef.current = false;
   const simplifiedRef = React.useRef(effectiveSimplified);
@@ -459,6 +466,17 @@ function ThoughtsEditorInner(
   const injectIfReady = React.useCallback((script: string) => {
     if (!editorReadyRef.current) return;
     richRef.current?.injectJavascript(script);
+  }, []);
+
+  const focusSelectedThought = React.useCallback((atEnd: boolean) => {
+    const index = selectedThoughtIndexRef.current;
+    const editor = richRef.current as
+      | (RichEditor & { showAndroidKeyboard?: () => void })
+      | null;
+    if (!editorReadyRef.current || !editor) return;
+    editor.injectJavascript(focusThoughtScript(index, atEnd));
+    editor.showAndroidKeyboard?.();
+    editor.focusContentEditor();
   }, []);
 
   const scrollCaretIntoView = React.useCallback(() => {
@@ -664,6 +682,9 @@ function ThoughtsEditorInner(
         });
         return;
       }
+      if (items.length === 0 && preserveFormatsRef.current) {
+        return;
+      }
       setActiveFormats({
         bold: has(actions.setBold),
         italic: has(actions.setItalic),
@@ -778,6 +799,7 @@ function ThoughtsEditorInner(
       const stayOnDetails = keepDetailsToolbarOnEditRef.current;
       keepDetailsToolbarOnEditRef.current = false;
       if (!stayOnDetails) {
+        enteringEditFocusRef.current = true;
         setToolbarMode("format");
       }
       applyEditorFlags(false);
@@ -794,22 +816,21 @@ function ThoughtsEditorInner(
         Math.max(0, selectedThoughtIndex),
         Math.max(0, (nextThoughts?.length ?? 1) - 1)
       );
+      selectedThoughtIndexRef.current = selectedIndex;
       setCaretThoughtType(nextThoughts?.[selectedIndex]?.type ?? "li");
-      richRef.current?.setContentHTML(
-        thoughtsToHtml(nextThoughts, false, htmlOptions)
+      richRef.current?.injectJavascript(setThoughtTextEditableScript(true));
+      richRef.current?.injectJavascript(
+        setShowCategoryColorsScript(stayOnDetails)
       );
-      refreshCategoryTimers();
-      requestAnimationFrame(() => {
-        richRef.current?.injectJavascript(
-          setSelectedThoughtScript(selectedIndex)
-        );
-        richRef.current?.injectJavascript(
-          setThoughtTextEditableScript(!stayOnDetails)
-        );
-        richRef.current?.injectJavascript(
-          setShowCategoryColorsScript(stayOnDetails)
-        );
-      });
+      richRef.current?.injectJavascript(
+        setSelectedThoughtScript(selectedIndex)
+      );
+      if (!stayOnDetails) {
+        requestAnimationFrame(() => {
+          focusSelectedThought(true);
+          enteringEditFocusRef.current = false;
+        });
+      }
       return;
     }
 
@@ -842,6 +863,7 @@ function ThoughtsEditorInner(
     readOnly,
     refreshCategoryTimers,
     thoughtPlaceholders,
+    focusSelectedThought,
   ]);
 
   const viewSignature = React.useMemo(
@@ -926,12 +948,19 @@ function ThoughtsEditorInner(
 
   const handleToolbarModeChange = React.useCallback(
     (mode: ThoughtsToolbarMode) => {
+      preserveFormatsRef.current = true;
+      setTimeout(() => {
+        preserveFormatsRef.current = false;
+      }, 400);
+      if (mode === "format") {
+        injectIfReady(setShowCategoryColorsScript(false));
+      }
       if (mode === "format" && readOnly) {
         onRequestEdit?.();
       }
       setToolbarMode(mode);
     },
-    [onRequestEdit, readOnly]
+    [injectIfReady, onRequestEdit, readOnly]
   );
 
   const handleSelectedTitleChange = React.useCallback(
@@ -982,13 +1011,23 @@ function ThoughtsEditorInner(
   }, [onRequestEdit, readOnly]);
 
   React.useEffect(() => {
-    const pellEditable = !readOnly && toolbarMode === "format";
+    const pellEditable = !readOnly;
     injectIfReady(setThoughtTextEditableScript(pellEditable));
     injectIfReady(setShowCategoryColorsScript(showCategoryColors));
-    if (!pellEditable) {
+    if (readOnly) {
       richRef.current?.dismissKeyboard();
     }
-  }, [injectIfReady, readOnly, showCategoryColors, toolbarMode]);
+  }, [injectIfReady, readOnly, showCategoryColors]);
+
+  const toolbarModeRef = React.useRef(toolbarMode);
+  React.useEffect(() => {
+    const previous = toolbarModeRef.current;
+    toolbarModeRef.current = toolbarMode;
+    if (previous === toolbarMode) return;
+    if (readOnly || !editorReadyRef.current) return;
+    if (enteringEditFocusRef.current) return;
+    focusSelectedThought(false);
+  }, [focusSelectedThought, readOnly, toolbarMode]);
 
   React.useEffect(() => {
     const length = thoughts?.length ?? 0;
@@ -1404,7 +1443,7 @@ function ThoughtsEditorInner(
                     padding-left: 8px;
                   }
                   li.thought-item.is-collapsed {
-                    --category-stack: 2px;
+                    --category-stack: 0px;
                   }
                   .thought-rail {
                     position: absolute;
@@ -1435,7 +1474,7 @@ function ThoughtsEditorInner(
                     justify-content: center;
                   }
                   .thought-check.is-anchored {
-                    transition: top 0.38s ease;
+                    transition: none;
                   }
                   .thought-check::before {
                     content: "";
@@ -1511,7 +1550,7 @@ function ThoughtsEditorInner(
                     z-index: 1;
                   }
                   .thought-dot.is-anchored {
-                    transition: top 0.38s ease;
+                    transition: none;
                   }
                   li.thought-item.is-checklist .thought-dot {
                     display: none;
@@ -1521,6 +1560,7 @@ function ThoughtsEditorInner(
                     max-width: 100%;
                     display: flex;
                     flex-direction: column;
+                    align-items: flex-start;
                     box-sizing: border-box;
                     padding-right: 0;
                   }
@@ -1689,6 +1729,18 @@ function ThoughtsEditorInner(
                     -webkit-box-decoration-break: clone;
                     box-decoration-break: clone;
                   }
+                  .thought-summary div,
+                  .thought-summary p,
+                  .thought-title div,
+                  .thought-title p {
+                    display: inline;
+                  }
+                  .thought-title::selection,
+                  .thought-title *::selection,
+                  .thought-summary::selection,
+                  .thought-summary *::selection {
+                    background-color: rgba(90, 90, 90, 0.38);
+                  }
                   .thought-title.is-placeholder,
                   .thought-summary.is-placeholder {
                     display: block;
@@ -1826,8 +1878,11 @@ function ThoughtsEditorInner(
                     top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
                   }
                   .thought-fields {
-                    display: block;
+                    display: inline-block;
+                    width: fit-content;
+                    max-width: 100%;
                     min-width: 0;
+                    vertical-align: top;
                   }
                   html.mc-show-categories li.thought-item.is-selected .thought-summary:not(.is-placeholder),
                   html.mc-show-categories li.thought-item.is-selected .thought-title:not(.is-placeholder) {
