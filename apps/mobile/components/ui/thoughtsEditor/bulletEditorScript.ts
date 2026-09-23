@@ -1502,6 +1502,29 @@ export function setSelectedThoughtScript(index: number): string {
 `;
 }
 
+export function setCategoryOpacityScript(opacity: number): string {
+  const value = Math.min(1, Math.max(0, Number(opacity) || 0));
+  return `
+(function () {
+  var o = ${value};
+  window.__mcCategoryOpacity = o;
+  var apply = function (el) {
+    if (!el || !el.style) return;
+    el.style.setProperty("--mc-cat-wash", 18 * o + "%");
+    el.style.setProperty("--mc-cat-wash-selected", 34 * o + "%");
+    el.style.setProperty("--mc-cat-wash-plain", 6 * o + "%");
+    el.style.setProperty("--mc-cat-wash-plain-selected", 16 * o + "%");
+  };
+  apply(document.documentElement);
+  apply(document.body);
+  apply(
+    document.querySelector(".pell-content") || document.getElementById("editor")
+  );
+  true;
+})();
+`;
+}
+
 export function setShowCategoryColorsScript(show: boolean): string {
   return `
 (function () {

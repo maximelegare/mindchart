@@ -28,6 +28,8 @@ export type IconName =
   | "cpu"
   | "database"
   | "download"
+  | "drop-half-bottom"
+  | "drop-slash"
   | "ellipsis-vertical"
   | "ellipsis"
   | "eye"
@@ -81,7 +83,9 @@ export type IconName =
   | "star"
   | "tag"
   | "target"
+  | "text-align-start"
   | "trash-2"
+  | "type-outline"
   | "underline"
   | "undo-dot"
   | "user-round"
@@ -198,6 +202,14 @@ export const ICON_METADATA: Record<
   download: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 15V3m9 12v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10l5 5l5-5"></path></g>`,
+  },
+  "drop-half-bottom": {
+    viewBox: "0 0 256 256",
+    content: `<path fill="currentColor" d="M174 47.75a254.2 254.2 0 0 0-41.45-38.3a8 8 0 0 0-9.18 0A254.2 254.2 0 0 0 82 47.75C54.51 79.32 40 112.6 40 144a88 88 0 0 0 176 0c0-31.4-14.51-64.68-42-96.25M187.83 184H68.17a72 72 0 0 1-8-16h135.7a72 72 0 0 1-8.04 16M200 144a71 71 0 0 1-.46 8H56.46a71 71 0 0 1-.46-8q0-4 .36-8h143.28q.36 4 .36 8M128 26c14.16 11.1 56.86 47.74 68.84 94H59.16C71.14 73.76 113.84 37.12 128 26M82.81 200h90.38a71.82 71.82 0 0 1-90.38 0"></path>`,
+  },
+  "drop-slash": {
+    viewBox: "0 0 256 256",
+    content: `<path fill="currentColor" d="M53.92 34.62a8 8 0 1 0-11.84 10.76l22.64 24.91C48.32 95 40 119.78 40 144a88 88 0 0 0 149.21 63.22l12.87 14.16a8 8 0 1 0 11.84-10.76ZM128 216a72.08 72.08 0 0 1-72-72c0-19.93 6.68-40.57 19.86-61.46l102.57 112.82A71.84 71.84 0 0 1 128 216M90 50.51a8 8 0 0 1-.27-11.31a248 248 0 0 1 33.68-29.75a8 8 0 0 1 9.18 0C136 11.83 216 68.7 216 144a88 88 0 0 1-3.15 23.4a8 8 0 0 1-7.71 5.88A7.8 7.8 0 0 1 203 173a8 8 0 0 1-5.59-9.83A72.6 72.6 0 0 0 200 144c0-57.24-55.48-105-72-118a252 252 0 0 0-26.66 24.23a8 8 0 0 1-11.34.28"></path>`,
   },
   "ellipsis-vertical": {
     viewBox: "0 0 24 24",
@@ -411,9 +423,17 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></g>`,
   },
+  "text-align-start": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 5H3m12 7H3m14 7H3"></path>`,
+  },
   "trash-2": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>`,
+  },
+  "type-outline": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 16.5a.5.5 0 0 0 .5.5h.5a2 2 0 0 1 0 4H9a2 2 0 0 1 0-4h.5a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5V8a2 2 0 0 1-4 0V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-4 0v-.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5Z"></path>`,
   },
   underline: {
     viewBox: "0 0 24 24",

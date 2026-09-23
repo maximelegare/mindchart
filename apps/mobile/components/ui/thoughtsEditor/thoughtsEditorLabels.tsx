@@ -93,10 +93,56 @@ export function ThoughtsEditorTitleSaveLabel() {
   return <fbt desc="Thought title modal save button">Save</fbt>;
 }
 
+export function thoughtsEditorCategoryLabel() {
+  return fbs("Category", "Thought editor toolbar category field label");
+}
+
 export function thoughtsEditorCategoryAccessibilityLabel() {
   return fbs(
     "Thought category",
     "Accessibility label for thought category button in the editor toolbar"
+  );
+}
+
+export function thoughtsEditorHideCategoriesAccessibilityLabel() {
+  return fbs(
+    "Hide categories",
+    "Accessibility label to hide thought category colors"
+  );
+}
+
+export function thoughtsEditorShowCategoriesAccessibilityLabel() {
+  return fbs(
+    "Show categories",
+    "Accessibility label to show thought category colors"
+  );
+}
+
+export function thoughtsEditorCategoryOpacityAccessibilityLabel() {
+  return fbs(
+    "Adjust category opacity",
+    "Accessibility label for long-press category opacity slider"
+  );
+}
+
+export function thoughtsEditorCategoryOpacityLabel() {
+  return fbs(
+    "Category opacity",
+    "Thought editor category opacity slider label"
+  );
+}
+
+export function thoughtsEditorDetailsMoreOptionsAccessibilityLabel() {
+  return fbs(
+    "More category tools",
+    "Accessibility label to show the next category toolbar options"
+  );
+}
+
+export function thoughtsEditorDetailsTitleCategoryAccessibilityLabel() {
+  return fbs(
+    "Title and category",
+    "Accessibility label to return to title and category toolbar options"
   );
 }
 
