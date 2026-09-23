@@ -268,7 +268,7 @@ export const ThoughtBulletItem = ({
                 title="Summary"
                 fontSize="sm"
                 fontFamily="QuicksandRegular"
-                placeholder="Enter a bullet point"
+                placeholder="Write Something..."
                 scrollEnabled={false}
                 onInsertNewItem={handleInsertNewItem}
                 onBackspaceAtStart={() =>
@@ -299,7 +299,7 @@ export const ThoughtBulletItem = ({
             title="Summary"
             fontSize="sm"
             fontFamily="QuicksandRegular"
-            placeholder="Enter a bullet point"
+            placeholder="Write Something..."
             scrollEnabled={false}
             onInsertNewItem={handleInsertNewItem}
             onBackspaceAtStart={() => handleBackspaceAtStart(summaryFieldKey)}

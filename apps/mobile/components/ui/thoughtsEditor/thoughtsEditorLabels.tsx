@@ -167,7 +167,7 @@ export function getThoughtFieldPlaceholders(): ThoughtFieldPlaceholders {
     title: fbs("Title", "Thought editor title field placeholder"),
     summary: fbs("Summary", "Thought editor summary field placeholder"),
     bullet: fbs(
-      "Enter a bullet point",
+      "Write Something...",
       "Thought editor bullet field placeholder"
     ),
     titleRequired: fbs(

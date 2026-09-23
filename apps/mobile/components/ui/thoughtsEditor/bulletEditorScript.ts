@@ -40,7 +40,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function emptyUntitledFieldHtml() {
       return (
         '<div class="thought-summary is-placeholder" data-placeholder="' +
-        mcPh("bullet", "Enter a bullet point") +
+        mcPh("bullet", "Write Something...") +
         '"><br></div>'
       );
     }
@@ -471,7 +471,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         var placeholder =
           window.__mcShowTitles || (li && li.querySelector(".thought-title"))
             ? "Summary"
-            : "Enter a bullet point";
+            : "Write Something...";
         repairEmptyField(summary, placeholder);
       }
     }
@@ -494,7 +494,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
         var summary = li.querySelector(".thought-summary");
         if (summary) {
-          summary.setAttribute("data-placeholder", "Enter a bullet point");
+          summary.setAttribute("data-placeholder", "Write Something...");
           continue;
         }
 
@@ -503,7 +503,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         fields.innerHTML =
           '<div class="thought-summary' +
           (text ? "" : " is-placeholder") +
-          '" data-placeholder="Enter a bullet point">' +
+          '" data-placeholder="Write Something...">' +
           (text ? fields.innerHTML : "<br>") +
           "</div>";
       }
@@ -1083,7 +1083,7 @@ export function clearThoughtValidationErrorsScript(): string {
     } else if (window.__mcShowTitles) {
       el.setAttribute("data-placeholder", "Summary");
     } else {
-      el.setAttribute("data-placeholder", "Enter a bullet point");
+      el.setAttribute("data-placeholder", "Write Something...");
     }
   }
   return true;

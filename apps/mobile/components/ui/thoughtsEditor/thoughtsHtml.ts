@@ -15,7 +15,7 @@ const FIELDS_CLASS = "thought-fields";
 
 export const TITLE_PLACEHOLDER = "Title";
 export const SUMMARY_PLACEHOLDER = "Summary";
-export const BULLET_PLACEHOLDER = "Enter a bullet point";
+export const BULLET_PLACEHOLDER = "Write Something...";
 
 function escapeHtml(value: string): string {
   return value

@@ -1809,9 +1809,12 @@ function ThoughtsEditorInner(
                   .thought-title.is-placeholder,
                   .thought-summary.is-placeholder {
                     display: block;
+                    width: 100%;
                     padding: 0;
                     min-height: 1.35em;
                     background-color: transparent;
+                    overflow-wrap: normal;
+                    word-break: normal;
                   }
                   html {
                     --mc-cat-wash: 18%;
@@ -1878,6 +1881,9 @@ function ThoughtsEditorInner(
                     position: absolute;
                     left: 0;
                     top: 0;
+                    width: max-content;
+                    max-width: 100%;
+                    white-space: nowrap;
                     color: ${placeholderColor};
                     pointer-events: none;
                     font-family: inherit;
@@ -1889,6 +1895,9 @@ function ThoughtsEditorInner(
                     position: absolute;
                     left: 0;
                     top: 0;
+                    width: max-content;
+                    max-width: 100%;
+                    white-space: nowrap;
                     color: ${errorPlaceholderColor};
                     pointer-events: none;
                     font-family: inherit;
@@ -1954,6 +1963,10 @@ function ThoughtsEditorInner(
                     max-width: 100%;
                     min-width: 0;
                     vertical-align: top;
+                  }
+                  .thought-fields:has(.is-placeholder),
+                  .thought-fields:has(.is-error-placeholder) {
+                    width: 100%;
                   }
                   html.mc-show-categories li.thought-item.is-selected .thought-summary:not(.is-placeholder),
                   html.mc-show-categories li.thought-item.is-selected .thought-title:not(.is-placeholder) {
