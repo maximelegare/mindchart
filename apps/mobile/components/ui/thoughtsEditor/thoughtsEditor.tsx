@@ -70,6 +70,8 @@ import {
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { analyzeThought } from "@/lib/nlp";
 import { thoughtCapabilities } from "./thoughtCapabilities";
+import { useModal } from "@/components/ui/modal/modal";
+import { ThoughtTitleModalContent } from "./thoughtTitleModalContent";
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought, convertThoughtType } from "./types";
@@ -338,6 +340,7 @@ function ThoughtsEditorInner(
   const insets = useSafeAreaInsets();
   const categoryLabels = useCategoryLabelsMap();
   const { push } = useRouter();
+  const { openModal } = useModal();
   const { getValues, setValue, watch } =
     useFormContext<ThoughtsEditorFormValues>();
   // Static simplified chrome only applies in the view editor.
@@ -963,24 +966,6 @@ function ThoughtsEditorInner(
     [injectIfReady, onRequestEdit, readOnly]
   );
 
-  const handleSelectedTitleChange = React.useCallback(
-    (title: string) => {
-      const index = selectedThoughtIndex;
-      if (index < 0) return;
-      const previous = getValues("thoughts");
-      const current = previous[index];
-      if (!current) return;
-      setValue(
-        "thoughts",
-        previous.map((thought, thoughtIndex) =>
-          thoughtIndex === index ? { ...thought, title } : thought
-        ),
-        { shouldDirty: true }
-      );
-    },
-    [getValues, selectedThoughtIndex, setValue]
-  );
-
   const handleOpenSelectedCategory = React.useCallback(() => {
     if (selectedThoughtIndex < 0) return;
     richRef.current?.dismissKeyboard();
@@ -1003,12 +988,40 @@ function ThoughtsEditorInner(
     });
   }, [getValues, push, selectedThoughtIndex]);
 
-  const handleTitleFocus = React.useCallback(() => {
-    if (readOnly) {
-      keepDetailsToolbarOnEditRef.current = true;
-      onRequestEdit?.();
-    }
-  }, [onRequestEdit, readOnly]);
+  const handleEditTitle = React.useCallback(() => {
+    const index = selectedThoughtIndex;
+    if (index < 0) return;
+    const currentTitle = getValues("thoughts")?.[index]?.title ?? "";
+    openModal({
+      customContent: () => (
+        <ThoughtTitleModalContent
+          initialTitle={currentTitle}
+          onSave={(title) => {
+            const previous = getValues("thoughts");
+            if (!previous[index]) return;
+            setValue(
+              "thoughts",
+              previous.map((thought, thoughtIndex) =>
+                thoughtIndex === index ? { ...thought, title } : thought
+              ),
+              { shouldDirty: true }
+            );
+            if (readOnly) {
+              keepDetailsToolbarOnEditRef.current = true;
+              onRequestEdit?.();
+            }
+          }}
+        />
+      ),
+    });
+  }, [
+    getValues,
+    onRequestEdit,
+    openModal,
+    readOnly,
+    selectedThoughtIndex,
+    setValue,
+  ]);
 
   React.useEffect(() => {
     const pellEditable = !readOnly;
@@ -1935,9 +1948,7 @@ function ThoughtsEditorInner(
               }
               selectedCategoryColor={selectedCategory?.color ?? null}
               hasSelectedThought={selectedThought != null}
-              titleReadOnly={readOnly}
-              onTitleChange={handleSelectedTitleChange}
-              onTitleFocus={handleTitleFocus}
+              onEditTitle={handleEditTitle}
               onOpenCategory={handleOpenSelectedCategory}
               onOpenGraph={handleOpenSelectedGraph}
             />
@@ -1962,9 +1973,7 @@ function ThoughtsEditorInner(
             }
             selectedCategoryColor={selectedCategory?.color ?? null}
             hasSelectedThought={selectedThought != null}
-            titleReadOnly={readOnly}
-            onTitleChange={handleSelectedTitleChange}
-            onTitleFocus={handleTitleFocus}
+            onEditTitle={handleEditTitle}
             onOpenCategory={handleOpenSelectedCategory}
             onOpenGraph={handleOpenSelectedGraph}
           />

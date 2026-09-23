@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -58,9 +58,7 @@ type ThoughtsEditorToolbarProps = {
   selectedCategoryLabel: string;
   selectedCategoryColor: string | null;
   hasSelectedThought: boolean;
-  titleReadOnly: boolean;
-  onTitleChange: (title: string) => void;
-  onTitleFocus: () => void;
+  onEditTitle: () => void;
   onOpenCategory: () => void;
   onOpenGraph: () => void;
 };
@@ -159,9 +157,7 @@ function DetailsToolbar({
   selectedCategoryLabel,
   selectedCategoryColor,
   hasSelectedThought,
-  titleReadOnly,
-  onTitleChange,
-  onTitleFocus,
+  onEditTitle,
   onOpenCategory,
   onOpenGraph,
 }: Pick<
@@ -170,42 +166,33 @@ function DetailsToolbar({
   | "selectedCategoryLabel"
   | "selectedCategoryColor"
   | "hasSelectedThought"
-  | "titleReadOnly"
-  | "onTitleChange"
-  | "onTitleFocus"
+  | "onEditTitle"
   | "onOpenCategory"
   | "onOpenGraph"
 >) {
   const { colorScheme } = useColorScheme();
   const placeholder = thoughtsEditorNoTitleYet();
   const titleLabel = thoughtsEditorTitleLabel();
-  const inputRef = React.useRef<TextInput>(null);
-  const pendingFocusRef = React.useRef(false);
   const titleFieldBackground = hsl("muted", colorScheme).replace(
     /^hsl\((.+)\)$/,
     "hsla($1, 0.35)"
   );
 
-  React.useEffect(() => {
-    if (titleReadOnly || !pendingFocusRef.current) return;
-    pendingFocusRef.current = false;
-    const frame = requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    });
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 80);
-    return () => {
-      cancelAnimationFrame(frame);
-      clearTimeout(timer);
-    };
-  }, [titleReadOnly]);
-
   return (
     <View className="flex-row items-center gap-4" style={styles.detailsContent}>
-      <View
+      <Pressable
+        onPress={onEditTitle}
+        disabled={!hasSelectedThought}
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorEditTitleAccessibilityLabel()}
         className="min-w-0 flex-1 flex-row items-center"
-        style={[styles.titleField, { backgroundColor: titleFieldBackground }]}
+        style={[
+          styles.titleField,
+          {
+            backgroundColor: titleFieldBackground,
+            opacity: hasSelectedThought ? 1 : 0.5,
+          },
+        ]}
       >
         <View className="min-w-0 flex-1 justify-center">
           <Typography
@@ -214,52 +201,22 @@ function DetailsToolbar({
           >
             {titleLabel}
           </Typography>
-          {titleReadOnly ? (
-            <Typography
-              className="text-sm"
-              numberOfLines={1}
-              style={
-                selectedTitle
-                  ? undefined
-                  : { color: hsl("muted-foreground", colorScheme) }
-              }
-            >
-              {selectedTitle || placeholder}
-            </Typography>
-          ) : (
-            <TextInput
-              ref={inputRef}
-              value={selectedTitle}
-              onChangeText={onTitleChange}
-              editable={hasSelectedThought}
-              onFocus={onTitleFocus}
-              placeholder={placeholder}
-              placeholderTextColor={hsl("muted-foreground", colorScheme)}
-              style={[
-                styles.titleInput,
-                {
-                  color: hsl("foreground", colorScheme),
-                },
-              ]}
-            />
-          )}
-        </View>
-        {titleReadOnly ? (
-          <Pressable
-            onPress={() => {
-              pendingFocusRef.current = true;
-              onTitleFocus();
-            }}
-            disabled={!hasSelectedThought}
-            accessibilityRole="button"
-            accessibilityLabel={thoughtsEditorEditTitleAccessibilityLabel()}
-            className="w-8 items-center justify-center self-center"
-            style={{ opacity: hasSelectedThought ? 1 : 0.5 }}
+          <Typography
+            className="text-sm"
+            numberOfLines={1}
+            style={
+              selectedTitle
+                ? undefined
+                : { color: hsl("muted-foreground", colorScheme) }
+            }
           >
-            <Icon name="pencil" size={16} color="foreground" />
-          </Pressable>
-        ) : null}
-      </View>
+            {selectedTitle || placeholder}
+          </Typography>
+        </View>
+        <View className="w-8 items-center justify-center self-center">
+          <Icon name="pencil" size={16} color="foreground" />
+        </View>
+      </Pressable>
       <Pressable
         onPress={onOpenCategory}
         disabled={!hasSelectedThought}
@@ -523,12 +480,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingLeft: 8,
     paddingRight: 2,
-  },
-  titleInput: {
-    height: 18,
-    padding: 0,
-    margin: 0,
-    fontSize: 15,
   },
   toggle: {
     position: "absolute",

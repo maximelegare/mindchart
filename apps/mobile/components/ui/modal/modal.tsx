@@ -16,7 +16,7 @@ import {
   Keyboard,
   Modal as RNModal,
 } from "react-native";
-import { Modal, Portal } from "react-native-paper";
+import { Modal, Portal, useTheme } from "react-native-paper";
 import { Typography } from "../typography";
 import { Button } from "../button";
 import {
@@ -60,10 +60,18 @@ const ModalContext = createContext<ModalContextType | null>(null);
 const modalFunctionsRef = React.createRef<ModalContextType>();
 
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
+  const paperTheme = useTheme();
   const [isVisible, setIsVisible] = useState(false);
   const [modalOptions, setModalOptions] = useState<ModalOptions>({});
   const [contentKey, setContentKey] = useState(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const paperModalTheme = {
+    ...paperTheme,
+    colors: {
+      ...paperTheme.colors,
+      backdrop: "transparent",
+    },
+  };
 
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -292,6 +300,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
           {backdrop}
           <Modal
             visible={isVisible}
+            theme={paperModalTheme}
             onDismiss={
               dismissOnBackgroundPress ? onCancel || closeModal : undefined
             }

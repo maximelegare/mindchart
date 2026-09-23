@@ -81,6 +81,18 @@ export function thoughtsEditorNoTitleYet() {
   return fbs("No title yet", "Thought editor empty title placeholder");
 }
 
+export function ThoughtsEditorTitleModalTitle() {
+  return <fbt desc="Thought title modal heading">Title</fbt>;
+}
+
+export function ThoughtsEditorTitleCancelLabel() {
+  return <fbt desc="Thought title modal cancel button">Cancel</fbt>;
+}
+
+export function ThoughtsEditorTitleSaveLabel() {
+  return <fbt desc="Thought title modal save button">Save</fbt>;
+}
+
 export function thoughtsEditorCategoryAccessibilityLabel() {
   return fbs(
     "Thought category",
