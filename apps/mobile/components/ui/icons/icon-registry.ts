@@ -6,6 +6,7 @@ export type IconName =
   | "arrow-down-wide-narrow"
   | "arrow-left"
   | "arrow-right-left"
+  | "arrow-right"
   | "arrow-up-a-z"
   | "arrow-up-from-line"
   | "arrow-up-narrow-wide"
@@ -114,6 +115,10 @@ export const ICON_METADATA: Record<
   "arrow-right-left": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 3l4 4l-4 4m4-4H4m4 14l-4-4l4-4m-4 4h16"></path>`,
+  },
+  "arrow-right": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7l-7 7"></path>`,
   },
   "arrow-up-a-z": {
     viewBox: "0 0 24 24",

@@ -1,8 +1,9 @@
 import { memo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
-import { useRouter } from "expo-router";
 import { CardTitleRow, pushNoteDetails } from "../shared/cardTitleRow";
 import { NoteBottomSheet } from "@/features/notes/noteBottomSheet";
 import {
@@ -13,26 +14,39 @@ import { getThoughtPlainText } from "@repo/zod-schemas";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { Icon } from "@/components/ui/icons/icon";
 
 const MAX_VISIBLE_BULLETS = 4;
+
 const BULLET_SIZE = 6;
-const TEXT_LINE_HEIGHT = 22;
+const TEXT_LINE_HEIGHT = 18;
+
+const COMPACT_GAP = 4;
+const TYPE_CHANGE_GAP = 8;
+const PARAGRAPH_GAP = 14;
+
+type ThoughtType = "text" | "li" | "checkbox";
 
 export type NoteOverviewItem = {
+  type: ThoughtType;
   text: string;
-  isChecklist?: boolean;
   isCompleted?: boolean;
   markerColor?: string;
 };
 
 export function thoughtToOverviewItem(thought: {
   title?: string | null;
-  type?: "text" | "li" | "checkbox";
-  content?: { text?: string; checked?: boolean };
+  type?: ThoughtType;
+  content?: {
+    text?: string;
+    checked?: boolean;
+  };
   summary?: string | null;
   isCompletable?: boolean;
   isCompleted?: boolean;
 }): NoteOverviewItem {
+  const type = thought.type ?? "text";
+
   const text = stripHtml(
     thought.content?.text ||
       thought.summary ||
@@ -42,18 +56,82 @@ export function thoughtToOverviewItem(thought: {
         : "") ||
       ""
   );
-  const isChecklist =
-    thought.type === "checkbox" || Boolean(thought.isCompletable);
+
   const isCompleted =
-    thought.type === "checkbox"
+    type === "checkbox"
       ? Boolean(thought.content?.checked)
       : Boolean(thought.isCompleted);
+
   return {
+    type,
     text,
-    isChecklist,
     isCompleted,
   };
 }
+
+type ThoughtOverviewItemProps = {
+  item: NoteOverviewItem;
+  markerColor: string;
+};
+
+const ThoughtOverviewItem = memo(
+  ({ item, markerColor }: ThoughtOverviewItemProps) => {
+    const isParagraph = item.type === "text";
+    const isCheckbox = item.type === "checkbox";
+    const isCompleted = isCheckbox && Boolean(item.isCompleted);
+
+    return (
+      <View className="flex-row items-start">
+        {!isParagraph && (
+          <View
+            className="ml-1"
+            style={{
+              width: CHECKBOX_MARK_SIZE,
+              minHeight: TEXT_LINE_HEIGHT,
+              marginRight: 10,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {isCheckbox ? (
+              <StaticCheckboxMark completed={Boolean(item.isCompleted)} />
+            ) : (
+              <View
+                className="rounded-full"
+                style={{
+                  width: BULLET_SIZE,
+                  height: BULLET_SIZE,
+                  backgroundColor: item.markerColor ?? markerColor,
+                }}
+              />
+            )}
+          </View>
+        )}
+
+        <View className="flex-1">
+          <Typography
+            variant="p"
+            padding={false}
+            style={{
+              lineHeight: TEXT_LINE_HEIGHT,
+              includeFontPadding: false,
+              ...(isCompleted
+                ? {
+                    textDecorationLine: "line-through",
+                    opacity: 0.55,
+                  }
+                : null),
+            }}
+          >
+            {item.text}
+          </Typography>
+        </View>
+      </View>
+    );
+  }
+);
+
+ThoughtOverviewItem.displayName = "ThoughtOverviewItem";
 
 type ListItemProps = {
   id: string;
@@ -61,18 +139,48 @@ type ListItemProps = {
   date?: string | null;
   category?: string | null;
   overviewItems: NoteOverviewItem[];
+
   /** When true, render every thought instead of the truncated overview. */
   showAllContent?: boolean;
+
   onPress?: (id: string) => void;
 };
+
+function getItemGap(
+  current: NoteOverviewItem,
+  next?: NoteOverviewItem
+): number {
+  if (!next) {
+    return 0;
+  }
+
+  // Two paragraphs get the largest spacing.
+  if (current.type === "text" && next.type === "text") {
+    return PARAGRAPH_GAP;
+  }
+
+  // Consecutive items of the same list type form a compact group.
+  if (
+    current.type === next.type &&
+    (current.type === "li" || current.type === "checkbox")
+  ) {
+    return COMPACT_GAP;
+  }
+
+  // Changing between thought types gets an intermediate gap.
+  return TYPE_CHANGE_GAP;
+}
 
 export const NoteWithThoughts: React.FC<ListItemProps> = memo(
   ({ title, id, date, overviewItems, showAllContent = false, onPress }) => {
     const { push } = useRouter();
     const { colorScheme } = useColorScheme();
+
     const markerColor = hsl("muted-foreground", colorScheme);
+
     const hasMore =
       !showAllContent && overviewItems.length > MAX_VISIBLE_BULLETS;
+
     const visibleItems = hasMore
       ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
       : overviewItems;
@@ -82,6 +190,7 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
         onPress(id);
         return;
       }
+
       pushNoteDetails(push, id);
     };
 
@@ -96,72 +205,53 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
           accessibilityLabel={title}
           style={StyleSheet.absoluteFillObject}
         />
+
         <View pointerEvents="box-none">
           <View
-            className="flex-row items-center justify-between mb-1"
+            className="mb-1 flex-row items-center justify-between"
             pointerEvents="none"
           >
             <DisplayDate date={date} />
           </View>
+
           <CardTitleRow title={title} menu={<NoteBottomSheet noteId={id} />} />
+
           {visibleItems.length > 0 && (
             <View className="mt-4 ml-2" pointerEvents="none">
-              {visibleItems.map((item, idx) => {
-                const completed = Boolean(item.isChecklist && item.isCompleted);
+              {visibleItems.map((item, index) => {
+                const nextItem = visibleItems[index + 1];
+                const gap = getItemGap(item, nextItem);
+
                 return (
-                  <View
-                    key={idx}
-                    className="flex-row items-start"
-                    style={{ marginBottom: 10 }}
-                  >
-                    <View
-                      style={{
-                        width: CHECKBOX_MARK_SIZE,
-                        height: TEXT_LINE_HEIGHT,
-                        marginRight: 10,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {item.isChecklist ? (
-                        <StaticCheckboxMark
-                          completed={completed}
-                          color={item.markerColor ?? markerColor}
-                        />
-                      ) : (
-                        <View
-                          className="rounded-full"
+                  <View key={index}>
+                    <ThoughtOverviewItem
+                      item={item}
+                      markerColor={markerColor}
+                    />
+
+                    {gap > 0 && <View style={{ height: gap }} />}
+
+                    {index === visibleItems.length - 1 && hasMore ? (
+                      <View className="mt-1 ml-1 flex-row items-center gap-1">
+                        <Typography
+                          variant="muted"
+                          padding={false}
                           style={{
-                            width: BULLET_SIZE,
-                            height: BULLET_SIZE,
-                            backgroundColor: item.markerColor ?? markerColor,
+                            fontSize: 13,
+                            opacity: 0.75,
                           }}
-                        />
-                      )}
-                    </View>
-                    <View className="flex-1">
-                      <Typography
-                        variant="p"
-                        padding={false}
-                        style={{
-                          lineHeight: TEXT_LINE_HEIGHT,
-                          includeFontPadding: false,
-                          ...(completed
-                            ? {
-                                textDecorationLine: "line-through" as const,
-                                opacity: 0.55,
-                              }
-                            : null),
-                        }}
-                      >
-                        {item.text}
-                      </Typography>
-                      {idx === visibleItems.length - 1 && hasMore ? (
-                        <Typography variant="muted" padding={false}>
-                          ...
+                        >
+                          See more
                         </Typography>
-                      ) : null}
-                    </View>
+
+                        <Icon
+                          name="arrow-right"
+                          size={12}
+                          color="muted-foreground"
+                          style={{ marginTop: 2 }}
+                        />
+                      </View>
+                    ) : null}
                   </View>
                 );
               })}
@@ -178,3 +268,5 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
     prevProps.showAllContent === nextProps.showAllContent &&
     prevProps.onPress === nextProps.onPress
 );
+
+NoteWithThoughts.displayName = "NoteWithThoughts";
