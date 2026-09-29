@@ -153,6 +153,45 @@ export function thoughtsEditorGraphAccessibilityLabel() {
   );
 }
 
+export function thoughtsEditorSplitAccessibilityLabel() {
+  return fbs("Split thought", "Accessibility label for the thought split tool");
+}
+
+export function thoughtsEditorSplitLeftAccessibilityLabel() {
+  return fbs(
+    "New category on the left",
+    "Accessibility label to point the split toward the left piece"
+  );
+}
+
+export function thoughtsEditorSplitRightAccessibilityLabel() {
+  return fbs(
+    "New category on the right",
+    "Accessibility label to point the split toward the right piece"
+  );
+}
+
+export function thoughtsEditorSplitCursorAccessibilityHint() {
+  return fbs(
+    "Move the split cursor in the text, then confirm to split",
+    "Accessibility hint for the thought split tool"
+  );
+}
+
+export function thoughtsEditorSplitConfirmAccessibilityLabel() {
+  return fbs(
+    "Confirm split",
+    "Accessibility label to confirm splitting a thought"
+  );
+}
+
+export function thoughtsEditorSplitCancelAccessibilityLabel() {
+  return fbs(
+    "Cancel split",
+    "Accessibility label to cancel splitting a thought"
+  );
+}
+
 export type ThoughtFieldPlaceholders = {
   title: string;
   summary: string;

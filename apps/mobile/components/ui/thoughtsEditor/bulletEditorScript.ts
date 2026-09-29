@@ -1673,6 +1673,8 @@ export const CHECKLIST_SCRIPT = `
     }
     li.classList.toggle("is-block", type === "text");
     li.classList.toggle("is-checklist", completable);
+    if (type !== "text") li.classList.remove("is-inline");
+    if (type !== "text") li.removeAttribute("data-inline");
     if (!completable) li.classList.remove("is-completed");
   }
 
@@ -1963,7 +1965,7 @@ export const CHECKLIST_SCRIPT = `
     }
 
     function selectThought(li) {
-      if (!li) return;
+      if (!li || window.__mcSplitting) return;
       window.__mcSelectAt = Date.now();
       postCaretType(li);
     }
@@ -2050,3 +2052,622 @@ export const CHECKLIST_SCRIPT = `
   return true;
 })();
 `;
+
+export const THOUGHT_SPLIT_SCRIPT = `
+(function () {
+  if (window.__mcSplitInstalled) return true;
+  window.__mcSplitInstalled = true;
+
+  function editorRoot() {
+    return document.querySelector(".pell-content") || document.getElementById("editor");
+  }
+
+  function closest(node, predicate) {
+    while (node && node !== document.body) {
+      if (predicate(node)) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function closestThought(node) {
+    return closest(node, function (n) {
+      return n.classList && n.classList.contains("thought-item");
+    });
+  }
+
+  function closestClass(node, className) {
+    return closest(node, function (n) {
+      return n.classList && n.classList.contains(className);
+    });
+  }
+
+  function fieldOf(thought) {
+    if (!thought) return null;
+    return (
+      thought.querySelector(".thought-summary") ||
+      thought.querySelector(".thought-title")
+    );
+  }
+
+  function selectedThought() {
+    var root = editorRoot();
+    if (!root) return null;
+    return (
+      root.querySelector(".thought-item.is-selected") ||
+      root.querySelector(".thought-item")
+    );
+  }
+
+  var ARROW_H = 14;
+  var ARROW_SVG =
+    '<svg class="mc-arrow-left" viewBox="0 0 24 24" width="14" height="14">' +
+    '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19l-7-7l7-7m7 7H5"></path>' +
+    "</svg>" +
+    '<svg class="mc-arrow-right" viewBox="0 0 24 24" width="14" height="14">' +
+    '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7l-7 7"></path>' +
+    "</svg>";
+
+  function ensureStyle() {
+    var style = document.getElementById("mc-split-style");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "mc-split-style";
+      document.head.appendChild(style);
+    }
+    style.textContent =
+      "html.mc-splitting .pell-content{caret-color:transparent !important;}" +
+      ".mc-split-caret{position:fixed;z-index:40;width:0;height:0;overflow:visible;pointer-events:none;}" +
+      ".mc-split-line{position:absolute;left:0;top:" +
+      ARROW_H +
+      "px;bottom:" +
+      ARROW_H +
+      "px;width:2px;margin-left:-1px;background:currentColor;border-radius:1px;}" +
+      ".mc-split-arrow{position:absolute;left:0;width:14px;height:14px;}" +
+      ".mc-split-arrow svg{display:none;width:14px;height:14px;overflow:visible;}" +
+      ".mc-split-arrow-top{top:4px;}" +
+      ".mc-split-arrow-bottom{bottom:4px;}" +
+      ".mc-split-caret[data-side=\\"left\\"] .mc-arrow-left{display:block;}" +
+      ".mc-split-caret[data-side=\\"right\\"] .mc-arrow-right{display:block;}" +
+      ".mc-split-caret[data-side=\\"left\\"] .mc-split-arrow{margin-left:-12px;}" +
+      ".mc-split-caret[data-side=\\"right\\"] .mc-split-arrow{margin-left:-2px;}";
+  }
+
+  function caretEl() {
+    ensureStyle();
+    var el = document.getElementById("mc-split-caret");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "mc-split-caret";
+      el.className = "mc-split-caret";
+      el.setAttribute("contenteditable", "false");
+      document.body.appendChild(el);
+    }
+    el.innerHTML =
+      '<span class="mc-split-arrow mc-split-arrow-top">' +
+      ARROW_SVG +
+      "</span>" +
+      '<span class="mc-split-line"></span>' +
+      '<span class="mc-split-arrow mc-split-arrow-bottom">' +
+      ARROW_SVG +
+      "</span>";
+    return el;
+  }
+
+  function rangeFromPoint(x, y) {
+    if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+    if (document.caretPositionFromPoint) {
+      var pos = document.caretPositionFromPoint(x, y);
+      if (!pos) return null;
+      var ranged = document.createRange();
+      ranged.setStart(pos.offsetNode, pos.offset);
+      ranged.collapse(true);
+      return ranged;
+    }
+    return null;
+  }
+
+  function rangeAtOffset(field, offset) {
+    var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+    var left = Math.max(0, offset);
+    var node;
+    while ((node = walker.nextNode())) {
+      if (left <= node.length) {
+        var range = document.createRange();
+        range.setStart(node, left);
+        range.collapse(true);
+        return range;
+      }
+      left -= node.length;
+    }
+    var end = document.createRange();
+    end.selectNodeContents(field);
+    end.collapse(false);
+    return end;
+  }
+
+  function fieldTextLength(field) {
+    return (field.textContent || "").replace(/\\u00a0/g, " ").length;
+  }
+
+  function caretRect(range) {
+    if (!range) return null;
+    var rects = range.getClientRects();
+    if (rects && rects.length) {
+      var first = rects[0];
+      return {
+        left: first.left,
+        top: first.top,
+        height: first.height,
+        bottom: first.bottom,
+      };
+    }
+    if (range.startContainer.nodeType === 3 && range.startOffset > 0) {
+      var prevProbe = range.cloneRange();
+      prevProbe.setStart(range.startContainer, range.startOffset - 1);
+      prevProbe.setEnd(range.startContainer, range.startOffset);
+      var prev = prevProbe.getBoundingClientRect();
+      if (prev && prev.height) {
+        return {
+          left: prev.right,
+          top: prev.top,
+          height: prev.height,
+          bottom: prev.bottom,
+        };
+      }
+    }
+    if (
+      range.startContainer.nodeType === 3 &&
+      range.startOffset < range.startContainer.length
+    ) {
+      var nextProbe = range.cloneRange();
+      nextProbe.setStart(range.startContainer, range.startOffset);
+      nextProbe.setEnd(range.startContainer, range.startOffset + 1);
+      var next = nextProbe.getBoundingClientRect();
+      if (next && next.height) {
+        return {
+          left: next.left,
+          top: next.top,
+          height: next.height,
+          bottom: next.bottom,
+        };
+      }
+    }
+    var rect = range.getBoundingClientRect();
+    if (rect && (rect.width || rect.height)) {
+      return {
+        left: rect.left,
+        top: rect.top,
+        height: rect.height || 18,
+        bottom: rect.bottom,
+      };
+    }
+    return null;
+  }
+
+  function positionCaret() {
+    var state = window.__mcSplit;
+    var el = document.getElementById("mc-split-caret");
+    if (!state || !state.range || !el) return;
+    var rect = caretRect(state.range);
+    if (!rect) return;
+    var height = Math.max(16, rect.height || 16);
+    el.style.left = Math.round(rect.left) + "px";
+    el.style.top = Math.round(rect.top - ARROW_H) + "px";
+    el.style.height = Math.round(height + ARROW_H * 2) + "px";
+  }
+
+  function rangeInField(range, field) {
+    if (!range || !field) return false;
+    var node = range.startContainer;
+    return node === field || field.contains(node);
+  }
+
+  function closestRangeInField(field, x, y) {
+    var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+    var best = null;
+    var bestScore = Infinity;
+    var node;
+    while ((node = walker.nextNode())) {
+      var len = node.length;
+      if (!len) continue;
+      for (var i = 0; i < len; i++) {
+        var probe = document.createRange();
+        probe.setStart(node, i);
+        probe.setEnd(node, i + 1);
+        var r = probe.getBoundingClientRect();
+        if (!r.height && !r.width) continue;
+        var onLine = y >= r.top - 6 && y <= r.bottom + 6;
+        var dx = x < r.left ? r.left - x : x > r.right ? x - r.right : 0;
+        var dy = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0;
+        var score = dx * dx + dy * dy * 8;
+        if (onLine) score -= 10000;
+        if (score < bestScore) {
+          bestScore = score;
+          best = {
+            node: node,
+            offset: x > (r.left + r.right) / 2 ? i + 1 : i,
+          };
+        }
+      }
+    }
+    var range = document.createRange();
+    if (!best) {
+      range.selectNodeContents(field);
+      range.collapse(false);
+      return range;
+    }
+    range.setStart(best.node, Math.min(best.offset, best.node.length));
+    range.collapse(true);
+    return range;
+  }
+
+  function rangeFromPointInField(field, x, y) {
+    var el = document.getElementById("mc-split-caret");
+    if (el) el.style.visibility = "hidden";
+    var range = rangeFromPoint(x, y);
+    if (!rangeInField(range, field)) {
+      var box = field.getBoundingClientRect();
+      var cx = Math.min(Math.max(x, box.left + 1), box.right - 1);
+      var cy = Math.min(Math.max(y, box.top + 1), box.bottom - 1);
+      range = rangeFromPoint(cx, cy);
+    }
+    if (el) el.style.visibility = "";
+    if (rangeInField(range, field)) {
+      range = range.cloneRange();
+      range.collapse(true);
+      var rect = caretRect(range);
+      if (rect) {
+        var dx = x < rect.left ? rect.left - x : x > rect.left + 2 ? x - rect.left : 0;
+        var dy = y < rect.top ? rect.top - y : y > rect.bottom ? y - rect.bottom : 0;
+        if (dx * dx + dy * dy < 144) return range;
+      }
+    }
+    return closestRangeInField(field, x, y);
+  }
+
+  function setSplitRange(range, field) {
+    if (!range || !window.__mcSplit) return;
+    window.__mcSplit.range = range.cloneRange();
+    window.__mcSplit.field = field || window.__mcSplit.field;
+    try {
+      window.__mcSplit.range.collapse(true);
+    } catch (err) {}
+    positionCaret();
+  }
+
+  function placeAtPoint(x, y) {
+    var state = window.__mcSplit;
+    if (!state || !state.thought) return false;
+    var el = document.getElementById("mc-split-caret");
+    if (el) el.style.visibility = "hidden";
+    var hit = document.elementFromPoint(x, y);
+    if (el) el.style.visibility = "";
+    var thought = closestThought(hit);
+    var nextField = fieldOf(thought);
+    if (
+      thought &&
+      thought !== state.thought &&
+      nextField &&
+      (hit === nextField || nextField.contains(hit))
+    ) {
+      state.thought = thought;
+      state.field = nextField;
+    }
+    var field = fieldOf(state.thought);
+    if (!field) return false;
+    var range = rangeFromPointInField(field, x, y);
+    if (!range) return false;
+    setSplitRange(range, field);
+    return true;
+  }
+
+  function htmlForRange(range) {
+    var holder = document.createElement("div");
+    holder.appendChild(range.cloneContents());
+    return holder.innerHTML;
+  }
+
+  function splitHtml(field, range) {
+    var before = document.createRange();
+    before.selectNodeContents(field);
+    before.setEnd(range.startContainer, range.startOffset);
+    var after = document.createRange();
+    after.selectNodeContents(field);
+    after.setStart(range.startContainer, range.startOffset);
+    return { left: htmlForRange(before), right: htmlForRange(after) };
+  }
+
+  function setSummaryHtml(thought, html) {
+    var summary = thought.querySelector(".thought-summary") || fieldOf(thought);
+    if (!summary) return;
+    var text = (html || "")
+      .replace(/<br\\s*\\/?>/gi, " ")
+      .replace(/<[^>]+>/g, "")
+      .replace(/\\u00a0/g, " ")
+      .trim();
+    if (!text) {
+      summary.innerHTML = "<br>";
+      summary.classList.add("is-placeholder");
+      return;
+    }
+    summary.innerHTML = html || "<br>";
+    summary.classList.remove("is-placeholder");
+    summary.classList.remove("is-error-placeholder");
+  }
+
+  function clearTitle(thought) {
+    var title = thought.querySelector(".thought-title");
+    if (!title) return;
+    title.innerHTML = "<br>";
+    title.classList.add("is-placeholder");
+    thought.classList.remove("has-entered-title");
+    thought.classList.remove("has-title");
+  }
+
+  function stopSplit() {
+    window.__mcSplitting = false;
+    window.__mcSplit = null;
+    if (document.documentElement) {
+      document.documentElement.classList.remove("mc-splitting");
+    }
+    var root = editorRoot();
+    if (root) root.classList.remove("mc-splitting");
+    var el = document.getElementById("mc-split-caret");
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  window.__mcCancelThoughtSplit = function () {
+    stopSplit();
+    return true;
+  };
+
+  window.__mcStartThoughtSplit = function (side, color) {
+    var thought = selectedThought();
+    var field = fieldOf(thought);
+    if (!thought || !field) return false;
+    ensureStyle();
+    window.__mcSplitting = true;
+    if (document.documentElement) {
+      document.documentElement.classList.add("mc-splitting");
+    }
+    var root = editorRoot();
+    if (root) root.classList.add("mc-splitting");
+    var el = caretEl();
+    el.setAttribute("data-side", side === "left" ? "left" : "right");
+    el.style.color = color || "#2563eb";
+    var sel = window.getSelection();
+    var range = null;
+    if (sel && sel.rangeCount && field.contains(sel.anchorNode)) {
+      range = sel.getRangeAt(0).cloneRange();
+      range.collapse(true);
+    } else {
+      range = rangeAtOffset(field, Math.floor(fieldTextLength(field) / 2));
+    }
+    window.__mcSplit = {
+      side: side === "left" ? "left" : "right",
+      thought: thought,
+      field: field,
+      range: range,
+    };
+    positionCaret();
+    return true;
+  };
+
+  window.__mcSetThoughtSplitSide = function (side) {
+    if (!window.__mcSplit) return window.__mcStartThoughtSplit(side);
+    window.__mcSplit.side = side === "left" ? "left" : "right";
+    var el = caretEl();
+    el.setAttribute("data-side", window.__mcSplit.side);
+    positionCaret();
+    return true;
+  };
+
+  window.__mcConfirmThoughtSplit = function (newThoughtId) {
+    var state = window.__mcSplit;
+    if (!state || !state.range || !state.thought || !state.field) return false;
+    var thought = state.thought;
+    if (!thought.parentNode) return false;
+    var index = Array.prototype.indexOf.call(thought.parentNode.children, thought);
+    if (index < 0) return false;
+    var parts = splitHtml(state.field, state.range);
+    var clone = thought.cloneNode(true);
+    clone.classList.remove("is-selected");
+    clone.setAttribute("data-thought-id", newThoughtId);
+    clone.setAttribute("data-completed", "false");
+    clone.classList.remove("is-completed");
+    clone.setAttribute("data-category-id", "uncategorized");
+    clearTitle(clone);
+    if (thought.getAttribute("data-thought-type") === "text") {
+      thought.classList.add("is-inline");
+      thought.setAttribute("data-inline", "true");
+      clone.classList.add("is-inline");
+      clone.setAttribute("data-inline", "true");
+    }
+    var created = clone;
+    if (state.side === "right") {
+      setSummaryHtml(thought, parts.left);
+      setSummaryHtml(clone, parts.right);
+      thought.parentNode.insertBefore(clone, thought.nextSibling);
+    } else {
+      setSummaryHtml(clone, parts.left);
+      setSummaryHtml(thought, parts.right);
+      thought.parentNode.insertBefore(clone, thought);
+    }
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
+    }
+    stopSplit();
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "SPLIT_THOUGHT",
+          data: {
+            index: index,
+            newSide: state.side,
+            newThoughtId: newThoughtId,
+            leftHtml: parts.left,
+            rightHtml: parts.right,
+          },
+        })
+      );
+    }
+    void created;
+    return true;
+  };
+
+  document.addEventListener(
+    "keydown",
+    function (e) {
+      if (!window.__mcSplitting) return;
+      if (e.key === "Enter" || e.keyCode === 13) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: "CONFIRM_SPLIT" })
+          );
+        }
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        stopSplit();
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: "CANCEL_SPLIT" })
+          );
+        }
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    true
+  );
+
+  document.addEventListener(
+    "beforeinput",
+    function (e) {
+      if (!window.__mcSplitting) return;
+      e.preventDefault();
+    },
+    true
+  );
+
+  function pointFromEvent(e) {
+    var t = e.changedTouches && e.changedTouches[0];
+    if (t) return { x: t.clientX, y: t.clientY, touch: true };
+    if (typeof e.clientX === "number") {
+      return { x: e.clientX, y: e.clientY, touch: false };
+    }
+    return null;
+  }
+
+  function onSplitPointerDown(e) {
+    if (!window.__mcSplitting || !window.__mcSplit) return;
+    var p = pointFromEvent(e);
+    if (!p) return;
+    if (!p.touch && window.__mcSplitIgnoreMouse) return;
+    if (p.touch) window.__mcSplitIgnoreMouse = true;
+    window.__mcSplitPress = { x: p.x, y: p.y, dragged: false, touch: p.touch };
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onSplitPointerMove(e) {
+    var press = window.__mcSplitPress;
+    if (!press || !window.__mcSplitting) return;
+    var p = pointFromEvent(e);
+    if (!p) return;
+    var dx = p.x - press.x;
+    var dy = p.y - press.y;
+    if (!press.dragged && dx * dx + dy * dy < 100) return;
+    press.dragged = true;
+    placeAtPoint(p.x, p.y);
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onSplitPointerUp(e) {
+    var press = window.__mcSplitPress;
+    window.__mcSplitPress = null;
+    if (!press || !window.__mcSplitting) return;
+    var p = pointFromEvent(e) || { x: press.x, y: press.y };
+    if (!press.dragged) placeAtPoint(p.x, p.y);
+    if (press.touch) {
+      setTimeout(function () {
+        window.__mcSplitIgnoreMouse = false;
+      }, 400);
+    }
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  document.addEventListener("touchstart", onSplitPointerDown, true);
+  document.addEventListener("mousedown", onSplitPointerDown, true);
+  document.addEventListener("touchmove", onSplitPointerMove, true);
+  document.addEventListener("mousemove", onSplitPointerMove, true);
+  document.addEventListener("touchend", onSplitPointerUp, true);
+  document.addEventListener("mouseup", onSplitPointerUp, true);
+  document.addEventListener(
+    "scroll",
+    function () {
+      if (window.__mcSplitting) positionCaret();
+    },
+    true
+  );
+  window.addEventListener("resize", function () {
+    if (window.__mcSplitting) positionCaret();
+  });
+
+  return true;
+})();
+`;
+
+export function startThoughtSplitScript(
+  side: "left" | "right",
+  color: string
+): string {
+  return `
+(function () {
+  if (typeof window.__mcStartThoughtSplit === "function") {
+    window.__mcStartThoughtSplit(${JSON.stringify(side)}, ${JSON.stringify(color)});
+  }
+  true;
+})();
+`;
+}
+
+export function setThoughtSplitSideScript(side: "left" | "right"): string {
+  return `
+(function () {
+  if (typeof window.__mcSetThoughtSplitSide === "function") {
+    window.__mcSetThoughtSplitSide(${JSON.stringify(side)});
+  }
+  true;
+})();
+`;
+}
+
+export function confirmThoughtSplitScript(newThoughtId: string): string {
+  return `
+(function () {
+  if (typeof window.__mcConfirmThoughtSplit === "function") {
+    window.__mcConfirmThoughtSplit(${JSON.stringify(newThoughtId)});
+  }
+  true;
+})();
+`;
+}
+
+export function cancelThoughtSplitScript(): string {
+  return `
+(function () {
+  if (typeof window.__mcCancelThoughtSplit === "function") {
+    window.__mcCancelThoughtSplit();
+  }
+  true;
+})();
+`;
+}

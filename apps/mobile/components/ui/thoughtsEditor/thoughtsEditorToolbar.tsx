@@ -43,6 +43,12 @@ import {
   thoughtsEditorNoTitleYet,
   thoughtsEditorCategoryAccessibilityLabel,
   thoughtsEditorGraphAccessibilityLabel,
+  thoughtsEditorSplitAccessibilityLabel,
+  thoughtsEditorSplitLeftAccessibilityLabel,
+  thoughtsEditorSplitRightAccessibilityLabel,
+  thoughtsEditorSplitCursorAccessibilityHint,
+  thoughtsEditorSplitConfirmAccessibilityLabel,
+  thoughtsEditorSplitCancelAccessibilityLabel,
   thoughtsEditorHideCategoriesAccessibilityLabel,
   thoughtsEditorShowCategoriesAccessibilityLabel,
   thoughtsEditorCategoryOpacityAccessibilityLabel,
@@ -92,6 +98,11 @@ type ThoughtsEditorToolbarProps = {
   categoryOpacity: number;
   onToggleCategories: () => void;
   onCategoryOpacityChange: (opacity: number) => void;
+  splitSide: "left" | "right" | null;
+  onSplit: () => void;
+  onSplitSide: (side: "left" | "right") => void;
+  onConfirmSplit: () => void;
+  onCancelSplit: () => void;
 };
 
 function FormatButton({
@@ -333,6 +344,143 @@ function CategoryOpacityPopup({
   );
 }
 
+function SplitSessionToolbar({
+  splitSide,
+  selectedCategoryLabel,
+  selectedCategoryColor,
+  onConfirmSplit,
+  onCancelSplit,
+  onSplitSide,
+  onOpenCategory,
+}: {
+  splitSide: "left" | "right";
+  selectedCategoryLabel: string;
+  selectedCategoryColor: string | null;
+  onConfirmSplit: () => void;
+  onCancelSplit: () => void;
+  onSplitSide: (side: "left" | "right") => void;
+  onOpenCategory: () => void;
+}) {
+  const { colorScheme } = useColorScheme();
+  const chipBackground = hsl("muted", colorScheme).replace(
+    /^hsl\((.+)\)$/,
+    "hsla($1, 0.35)"
+  );
+
+  return (
+    <View className="flex-row items-center" style={styles.splitSession}>
+      <View style={styles.splitConfirmCluster}>
+        <Pressable
+          onPress={onConfirmSplit}
+          accessibilityRole="button"
+          accessibilityLabel={thoughtsEditorSplitConfirmAccessibilityLabel()}
+          className="h-10 w-10 items-center justify-center rounded-md"
+        >
+          <Icon name="circle-check" size={28} color="primary" />
+        </Pressable>
+        <Pressable
+          onPress={onCancelSplit}
+          accessibilityRole="button"
+          accessibilityLabel={thoughtsEditorSplitCancelAccessibilityLabel()}
+          className="h-10 w-10 items-center justify-center rounded-md"
+        >
+          <Icon
+            name="circle-x"
+            size={28}
+            hslColor={hsl("foreground-errors", colorScheme)}
+          />
+        </Pressable>
+      </View>
+      <SplitDirectionTool side={splitSide} onSplitSide={onSplitSide} />
+      <Pressable
+        onPress={onOpenCategory}
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorCategoryAccessibilityLabel()}
+        style={[styles.splitCategoryChip, { backgroundColor: chipBackground }]}
+      >
+        <View
+          className="h-3 w-3 rounded-full"
+          style={{
+            backgroundColor: selectedCategoryColor ?? hsl("muted", colorScheme),
+          }}
+        />
+        <Typography className="min-w-0 flex-1 text-base" numberOfLines={1}>
+          {selectedCategoryLabel}
+        </Typography>
+        <Icon name="chevron-down" size={16} color="muted-foreground" />
+      </Pressable>
+    </View>
+  );
+}
+
+function SplitDirectionTool({
+  side,
+  onSplitSide,
+}: {
+  side: "left" | "right";
+  onSplitSide: (side: "left" | "right") => void;
+}) {
+  const { colorScheme } = useColorScheme();
+  return (
+    <View
+      className="h-10 flex-row items-center rounded-md px-0.5"
+      style={{ backgroundColor: hsl("border", colorScheme) }}
+    >
+      <Pressable
+        onPress={() => onSplitSide("left")}
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorSplitLeftAccessibilityLabel()}
+        accessibilityState={{ selected: side === "left" }}
+        className="h-10 w-8 items-center justify-center"
+      >
+        <Icon
+          name="arrow-left"
+          size={16}
+          color={side === "left" ? "primary" : "muted-foreground"}
+          style={{ transform: [{ translateX: 4 }] }}
+        />
+      </Pressable>
+      <Icon name="square-split-horizontal" size={18} color="primary" />
+      <Pressable
+        onPress={() => onSplitSide("right")}
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorSplitRightAccessibilityLabel()}
+        accessibilityState={{ selected: side === "right" }}
+        className="h-10 w-8 items-center justify-center"
+      >
+        <Icon
+          name="arrow-right"
+          size={16}
+          color={side === "right" ? "primary" : "muted-foreground"}
+          style={{ transform: [{ translateX: -4 }] }}
+        />
+      </Pressable>
+    </View>
+  );
+}
+
+function SplitToolButton({
+  disabled,
+  onPress,
+}: {
+  disabled?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={thoughtsEditorSplitAccessibilityLabel()}
+      accessibilityHint={thoughtsEditorSplitCursorAccessibilityHint()}
+      className="h-10 w-10 items-center justify-center rounded-md"
+      style={disabled ? { opacity: 0.5 } : undefined}
+    >
+      <Icon name="square-split-horizontal" size={18} color="foreground" />
+    </Pressable>
+  );
+}
+
 function DetailsToolbar({
   selectedTitle,
   selectedCategoryLabel,
@@ -345,6 +493,11 @@ function DetailsToolbar({
   categoryOpacity,
   onToggleCategories,
   onCategoryOpacityChange,
+  splitSide,
+  onSplit,
+  onSplitSide,
+  onConfirmSplit,
+  onCancelSplit,
 }: Pick<
   ThoughtsEditorToolbarProps,
   | "selectedTitle"
@@ -358,6 +511,11 @@ function DetailsToolbar({
   | "categoryOpacity"
   | "onToggleCategories"
   | "onCategoryOpacityChange"
+  | "splitSide"
+  | "onSplit"
+  | "onSplitSide"
+  | "onConfirmSplit"
+  | "onCancelSplit"
 >) {
   const { colorScheme } = useColorScheme();
   const placeholder = thoughtsEditorNoTitleYet();
@@ -390,137 +548,169 @@ function DetailsToolbar({
   };
 
   return (
-    <View className="flex-row items-center" style={styles.detailsContent}>
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        nestedScrollEnabled
-        keyboardShouldPersistTaps="handled"
-        showsHorizontalScrollIndicator={false}
-        style={styles.detailsScroll}
-        onLayout={(event) => {
-          setPageWidth(event.nativeEvent.layout.width);
-        }}
-        onMomentumScrollEnd={(event) => {
-          if (pageWidth <= 0) return;
-          setPage(Math.round(event.nativeEvent.contentOffset.x / pageWidth));
-        }}
-      >
-        <View
-          style={[styles.detailsPage, pageWidth ? { width: pageWidth } : null]}
-        >
-          <Pressable
-            onPress={onEditTitle}
-            disabled={!hasSelectedThought}
-            accessibilityRole="button"
-            accessibilityLabel={thoughtsEditorEditTitleAccessibilityLabel()}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: chipBackground,
-                opacity: hasSelectedThought ? 1 : 0.5,
-              },
-            ]}
-          >
-            <Typography
-              className="min-w-0 flex-1 text-base"
-              numberOfLines={1}
-              style={
-                selectedTitle
-                  ? undefined
-                  : { color: hsl("muted-foreground", colorScheme) }
-              }
-            >
-              {selectedTitle || placeholder}
-            </Typography>
-            <Icon name="pencil" size={16} color="foreground" />
-          </Pressable>
-          <Pressable
-            onPress={onOpenCategory}
-            disabled={!hasSelectedThought}
-            accessibilityRole="button"
-            accessibilityLabel={thoughtsEditorCategoryAccessibilityLabel()}
-            style={[
-              styles.chip,
-              {
-                backgroundColor: chipBackground,
-                opacity: hasSelectedThought ? 1 : 0.5,
-              },
-            ]}
-          >
-            <View
-              className="h-3 w-3 rounded-full"
-              style={{
-                backgroundColor:
-                  selectedCategoryColor ?? hsl("muted", colorScheme),
-              }}
-            />
-            <Typography className="min-w-0 flex-1 text-base" numberOfLines={1}>
-              {selectedCategoryLabel}
-            </Typography>
-            <Icon name="chevron-down" size={16} color="muted-foreground" />
-          </Pressable>
-          <Pressable
-            onPress={onOpenGraph}
-            disabled={!hasSelectedThought}
-            accessibilityRole="button"
-            accessibilityLabel={thoughtsEditorGraphAccessibilityLabel()}
-            className="h-10 w-10 items-center justify-center rounded-md"
-            style={{
-              opacity: hasSelectedThought ? 1 : 0.5,
+    <View
+      className="flex-row items-center"
+      style={splitSide ? styles.splitContent : styles.detailsContent}
+    >
+      {splitSide ? (
+        <SplitSessionToolbar
+          splitSide={splitSide}
+          selectedCategoryLabel={selectedCategoryLabel}
+          selectedCategoryColor={selectedCategoryColor}
+          onConfirmSplit={onConfirmSplit}
+          onCancelSplit={onCancelSplit}
+          onSplitSide={onSplitSide}
+          onOpenCategory={onOpenCategory}
+        />
+      ) : (
+        <>
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            pagingEnabled
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsHorizontalScrollIndicator={false}
+            style={styles.detailsScroll}
+            onLayout={(event) => {
+              setPageWidth(event.nativeEvent.layout.width);
+            }}
+            onMomentumScrollEnd={(event) => {
+              if (pageWidth <= 0) return;
+              setPage(
+                Math.round(event.nativeEvent.contentOffset.x / pageWidth)
+              );
             }}
           >
-            <Icon name="graph" size={20} color="foreground" />
-          </Pressable>
-        </View>
-        <View
-          style={[styles.detailsPage, pageWidth ? { width: pageWidth } : null]}
-        >
+            <View
+              style={[
+                styles.detailsPage,
+                pageWidth ? { width: pageWidth } : null,
+              ]}
+            >
+              <Pressable
+                onPress={onEditTitle}
+                disabled={!hasSelectedThought}
+                accessibilityRole="button"
+                accessibilityLabel={thoughtsEditorEditTitleAccessibilityLabel()}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: chipBackground,
+                    opacity: hasSelectedThought ? 1 : 0.5,
+                  },
+                ]}
+              >
+                <Typography
+                  className="min-w-0 flex-1 text-base"
+                  numberOfLines={1}
+                  style={
+                    selectedTitle
+                      ? undefined
+                      : { color: hsl("muted-foreground", colorScheme) }
+                  }
+                >
+                  {selectedTitle || placeholder}
+                </Typography>
+                <Icon name="pencil" size={16} color="foreground" />
+              </Pressable>
+              <Pressable
+                onPress={onOpenCategory}
+                disabled={!hasSelectedThought}
+                accessibilityRole="button"
+                accessibilityLabel={thoughtsEditorCategoryAccessibilityLabel()}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: chipBackground,
+                    opacity: hasSelectedThought ? 1 : 0.5,
+                  },
+                ]}
+              >
+                <View
+                  className="h-3 w-3 rounded-full"
+                  style={{
+                    backgroundColor:
+                      selectedCategoryColor ?? hsl("muted", colorScheme),
+                  }}
+                />
+                <Typography
+                  className="min-w-0 flex-1 text-base"
+                  numberOfLines={1}
+                >
+                  {selectedCategoryLabel}
+                </Typography>
+                <Icon name="chevron-down" size={16} color="muted-foreground" />
+              </Pressable>
+              <Pressable
+                onPress={onOpenGraph}
+                disabled={!hasSelectedThought}
+                accessibilityRole="button"
+                accessibilityLabel={thoughtsEditorGraphAccessibilityLabel()}
+                className="h-10 w-10 items-center justify-center rounded-md"
+                style={{
+                  opacity: hasSelectedThought ? 1 : 0.5,
+                }}
+              >
+                <Icon name="graph" size={20} color="foreground" />
+              </Pressable>
+            </View>
+            <View
+              style={[
+                styles.detailsPage,
+                pageWidth ? { width: pageWidth } : null,
+              ]}
+            >
+              <Pressable
+                ref={blendRef}
+                onPress={onToggleCategories}
+                onLongPress={openOpacityPopup}
+                delayLongPress={350}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  categoriesShowing
+                    ? thoughtsEditorHideCategoriesAccessibilityLabel()
+                    : thoughtsEditorShowCategoriesAccessibilityLabel()
+                }
+                accessibilityHint={thoughtsEditorCategoryOpacityAccessibilityLabel()}
+                accessibilityState={{ selected: categoriesShowing }}
+                className="h-10 w-10 items-center justify-center rounded-md"
+                style={
+                  categoriesShowing
+                    ? { backgroundColor: hsl("border", colorScheme) }
+                    : { opacity: 0.45 }
+                }
+              >
+                <Icon
+                  name={categoriesShowing ? "drop-half-bottom" : "drop-slash"}
+                  size={20}
+                  color={categoriesShowing ? "primary" : "muted-foreground"}
+                />
+              </Pressable>
+              <SplitToolButton
+                disabled={!hasSelectedThought}
+                onPress={onSplit}
+              />
+            </View>
+          </ScrollView>
           <Pressable
-            ref={blendRef}
-            onPress={onToggleCategories}
-            onLongPress={openOpacityPopup}
-            delayLongPress={350}
+            onPress={() => goToPage(page === 0 ? 1 : 0)}
             accessibilityRole="button"
             accessibilityLabel={
-              categoriesShowing
-                ? thoughtsEditorHideCategoriesAccessibilityLabel()
-                : thoughtsEditorShowCategoriesAccessibilityLabel()
+              page === 0
+                ? thoughtsEditorDetailsMoreOptionsAccessibilityLabel()
+                : thoughtsEditorDetailsTitleCategoryAccessibilityLabel()
             }
-            accessibilityHint={thoughtsEditorCategoryOpacityAccessibilityLabel()}
-            accessibilityState={{ selected: categoriesShowing }}
-            className="h-10 w-10 items-center justify-center rounded-md"
-            style={
-              categoriesShowing
-                ? { backgroundColor: hsl("border", colorScheme) }
-                : { opacity: 0.45 }
-            }
+            className="h-10 w-8 items-center justify-center"
           >
             <Icon
-              name={categoriesShowing ? "drop-half-bottom" : "drop-slash"}
-              size={20}
-              color={categoriesShowing ? "primary" : "muted-foreground"}
+              name={page === 0 ? "chevron-right" : "chevron-left"}
+              size={18}
+              color="foreground"
             />
           </Pressable>
-        </View>
-      </ScrollView>
-      <Pressable
-        onPress={() => goToPage(page === 0 ? 1 : 0)}
-        accessibilityRole="button"
-        accessibilityLabel={
-          page === 0
-            ? thoughtsEditorDetailsMoreOptionsAccessibilityLabel()
-            : thoughtsEditorDetailsTitleCategoryAccessibilityLabel()
-        }
-        className="h-10 w-8 items-center justify-center"
-      >
-        <Icon
-          name={page === 0 ? "chevron-right" : "chevron-left"}
-          size={18}
-          color="foreground"
-        />
-      </Pressable>
+        </>
+      )}
       {opacityPopupAnchor ? (
         <CategoryOpacityPopup
           visible={opacityPopupVisible}
@@ -710,7 +900,7 @@ export function ThoughtsEditorToolbar({
   const content = (
     <ToolbarContent {...contentProps} detailsProgress={detailsProgress} />
   );
-  const toggle = (
+  const toggle = contentProps.splitSide ? null : (
     <ToolbarToggle
       mode={contentProps.mode}
       onModeChange={contentProps.onModeChange}
@@ -811,6 +1001,35 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 56,
     flex: 1,
+  },
+  splitContent: {
+    paddingLeft: 6,
+    paddingRight: 12,
+    flex: 1,
+  },
+  splitSession: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  splitConfirmCluster: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  splitCategoryChip: {
+    height: 36,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minWidth: 72,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    paddingLeft: 10,
+    paddingRight: 8,
+    gap: 6,
+    marginLeft: 4,
   },
   detailsScroll: {
     flex: 1,

@@ -157,6 +157,7 @@ type ThoughtItemRecord = {
   innerHtml: string;
   type: ThoughtType | null;
   checked: boolean | null;
+  inline: boolean;
 };
 
 function itemFromAttrs(attrs: string, innerHtml: string): ThoughtItemRecord {
@@ -168,6 +169,8 @@ function itemFromAttrs(attrs: string, innerHtml: string): ThoughtItemRecord {
     innerHtml,
     type: parseThoughtType(attrs),
     checked: parseDataBool(attrs, "completed"),
+    inline:
+      /\bis-inline\b/.test(attrs) || parseDataBool(attrs, "inline") === true,
   };
 }
 
@@ -467,6 +470,7 @@ type ThoughtItemOptions = {
   checked?: boolean;
   startCollapsed?: boolean;
   hasEnteredTitle?: boolean;
+  inline?: boolean;
 };
 
 function thoughtItemHtml(
@@ -487,12 +491,15 @@ function thoughtItemHtml(
   if (isCheckbox) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
   if (options.hasEnteredTitle) classNames.push("has-entered-title");
+  if (type === "text" && options.inline) classNames.push("is-inline");
+  const inlineAttr =
+    type === "text" && options.inline ? ` data-inline="true"` : "";
   const graph =
     options.showGraphButton && options.thoughtId
       ? graphButtonHtml(options.thoughtId)
       : "";
   return (
-    `<div class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}>` +
+    `<div class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}${inlineAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
     `<div class="thought-dot"></div>` +
@@ -541,6 +548,7 @@ function liToHtml(
     type: thought.type,
     checked: thought.type === "checkbox" ? thought.content.checked : false,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
+    inline: thought.type === "text" ? thought.inline : undefined,
   };
 
   if (showTitleField) {
@@ -698,10 +706,15 @@ export function htmlToThoughts(
     const hasSummaryField =
       parsed.hasSummaryField || Boolean(stripHtml(leftover));
 
-    const applyType = (thought: ThoughtsFormValue): ThoughtsFormValue =>
-      thought.type === nextType
-        ? thought
-        : convertThoughtType(thought, nextType);
+    const applyType = (thought: ThoughtsFormValue): ThoughtsFormValue => {
+      const next =
+        thought.type === nextType
+          ? thought
+          : convertThoughtType(thought, nextType);
+      return nextType === "text" && item.inline
+        ? { ...next, inline: true }
+        : { ...next, inline: undefined };
+    };
 
     if (hasTitleField || showTitles) {
       if (!showTitles) {

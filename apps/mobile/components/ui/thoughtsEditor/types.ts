@@ -5,7 +5,10 @@ import {
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 
-export type ThoughtsFormValue = Thought;
+export type ThoughtsFormValue = Thought & {
+  /** Paragraph pieces that should sit on the same line after a split. */
+  inline?: boolean;
+};
 
 export type ThoughtsEditorFormValues = {
   thoughts: ThoughtsFormValue[];
@@ -38,11 +41,13 @@ export const convertThoughtType = (
   if (thought.type === type) return thought;
   const text = thought.content.text;
   const contentId = generateID();
+  const inline = type === "text" ? thought.inline : undefined;
   if (type === "checkbox") {
     return {
       ...thought,
       type,
       contentId,
+      inline,
       content: { text, checked: false },
     };
   }
@@ -50,6 +55,7 @@ export const convertThoughtType = (
     ...thought,
     type,
     contentId,
+    inline,
     content: { text },
   };
 };

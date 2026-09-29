@@ -35,6 +35,8 @@ import { useRouter } from "expo-router";
 import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import {
   convertThoughtType,
+  createEmptyThought,
+  setThoughtContentText,
   type ThoughtsEditorFormValues,
   type ThoughtsFormValue,
 } from "./types";
@@ -42,6 +44,7 @@ import {
   htmlToThoughts,
   setThoughtCategoryScript,
   setThoughtSemanticTitleScript,
+  sanitizeInlineHtml,
   stripHtml,
   thoughtsToHtml,
   buildCategoryLabelsScript,
@@ -62,6 +65,11 @@ import {
   setShowCategoryColorsScript,
   setCategoryOpacityScript,
   focusThoughtScript,
+  THOUGHT_SPLIT_SCRIPT,
+  startThoughtSplitScript,
+  setThoughtSplitSideScript,
+  confirmThoughtSplitScript,
+  cancelThoughtSplitScript,
 } from "./bulletEditorScript";
 import {
   ThoughtsEditorContentLabel,
@@ -81,6 +89,7 @@ import { thoughtCapabilities } from "./thoughtCapabilities";
 import { useModal } from "@/components/ui/modal/modal";
 import { ThoughtTitleModalContent } from "./thoughtTitleModalContent";
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
+import { generateID } from "@/utils/genrateID";
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
 export { createEmptyThought, convertThoughtType } from "./types";
@@ -282,18 +291,18 @@ function CategoryListItem({
 }
 
 /** Presents the category sheet from inside the BottomSheet provider. */
-function CategorySheetPresenter({ index }: { index: number | null }) {
+function CategorySheetPresenter({ open }: { open: boolean }) {
   const { sheetRef } = useBottomSheetContext();
 
   React.useEffect(() => {
-    if (index == null) return;
+    if (!open) return;
     Keyboard.dismiss();
     const timer = setTimeout(() => {
       Keyboard.dismiss();
       sheetRef.current?.present();
     }, 40);
     return () => clearTimeout(timer);
-  }, [index, sheetRef]);
+  }, [open, sheetRef]);
 
   return null;
 }
@@ -382,6 +391,13 @@ function ThoughtsEditorInner(
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
   >(null);
+  const [splitSide, setSplitSide] = React.useState<"left" | "right" | null>(
+    null
+  );
+  const [splitCategoryId, setSplitCategoryId] = React.useState<string | null>(
+    null
+  );
+  const [splitCategoryPicking, setSplitCategoryPicking] = React.useState(false);
 
   const richRef = React.useRef<RichEditor>(null);
   const editorReadyRef = React.useRef(false);
@@ -472,8 +488,9 @@ function ThoughtsEditorInner(
     /<[^>]+>/g,
     ""
   );
-  const selectedCategoryId =
-    categoryPickerIndex != null
+  const selectedCategoryId = splitCategoryPicking
+    ? (splitCategoryId ?? "uncategorized")
+    : categoryPickerIndex != null
       ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
       : null;
   const selectedCategory =
@@ -481,6 +498,20 @@ function ThoughtsEditorInner(
       (category) =>
         category.id === (selectedThought?.categoryId || "uncategorized")
     ) ?? null;
+  const splitCategory =
+    categories.find(
+      (category) => category.id === (splitCategoryId || "uncategorized")
+    ) ?? null;
+  const toolbarCategoryId = splitSide
+    ? (splitCategoryId ?? "uncategorized")
+    : selectedThought?.categoryId || "uncategorized";
+  const toolbarCategoryLabel =
+    categoryLabels.get(toolbarCategoryId) ??
+    (splitSide ? splitCategory?.name : selectedCategory?.name) ??
+    "Uncategorized";
+  const toolbarCategoryColor = splitSide
+    ? (splitCategory?.color ?? null)
+    : (selectedCategory?.color ?? null);
   const pendingNlpByIndexRef = React.useRef(
     new Map<number, { categoryId?: string; semanticLabel?: string }>()
   );
@@ -741,6 +772,7 @@ function ThoughtsEditorInner(
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
     }
     richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
+    richRef.current?.injectJavascript(THOUGHT_SPLIT_SCRIPT);
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
@@ -804,6 +836,7 @@ function ThoughtsEditorInner(
       if (!editorReadyRef.current) return;
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
+      richRef.current?.injectJavascript(THOUGHT_SPLIT_SCRIPT);
       richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
     });
   }, []);
@@ -981,6 +1014,10 @@ function ThoughtsEditorInner(
       }, 400);
       if (mode === "format") {
         injectIfReady(setShowCategoryColorsScript(false));
+        setSplitSide(null);
+        setSplitCategoryId(null);
+        setSplitCategoryPicking(false);
+        injectIfReady(cancelThoughtSplitScript());
       } else {
         injectIfReady(setShowCategoryColorsScript(!hideCategoriesRef.current));
       }
@@ -1007,12 +1044,139 @@ function ThoughtsEditorInner(
     [injectIfReady, setCategoryOpacity]
   );
 
+  const handleSplit = React.useCallback(() => {
+    if (selectedThoughtIndex < 0) return;
+    if (readOnly) {
+      keepDetailsToolbarOnEditRef.current = true;
+      onRequestEdit?.();
+    }
+    if (splitSide) return;
+    setSplitSide("right");
+    setSplitCategoryId(null);
+    injectIfReady(
+      startThoughtSplitScript("right", hsl("primary", colorScheme))
+    );
+  }, [
+    colorScheme,
+    injectIfReady,
+    onRequestEdit,
+    readOnly,
+    selectedThoughtIndex,
+    splitSide,
+  ]);
+
+  const handleSplitSide = React.useCallback(
+    (side: "left" | "right") => {
+      if (!splitSide || splitSide === side) return;
+      setSplitSide(side);
+      injectIfReady(setThoughtSplitSideScript(side));
+    },
+    [injectIfReady, splitSide]
+  );
+
+  const handleConfirmSplit = React.useCallback(() => {
+    if (!splitSide) return;
+    injectIfReady(confirmThoughtSplitScript(generateID()));
+  }, [injectIfReady, splitSide]);
+
+  const handleCancelSplit = React.useCallback(() => {
+    setSplitSide(null);
+    setSplitCategoryId(null);
+    setSplitCategoryPicking(false);
+    injectIfReady(cancelThoughtSplitScript());
+  }, [injectIfReady]);
+
+  const applySplitThought = React.useCallback(
+    (payload: {
+      index: number;
+      newSide: "left" | "right";
+      newThoughtId: string;
+      leftHtml: string;
+      rightHtml: string;
+    }) => {
+      const previous = getValues("thoughts");
+      const source = previous[payload.index];
+      if (!source) return;
+      const leftText = sanitizeInlineHtml(payload.leftHtml);
+      const rightText = sanitizeInlineHtml(payload.rightHtml);
+      const newText = payload.newSide === "left" ? leftText : rightText;
+      const keptText = payload.newSide === "left" ? rightText : leftText;
+      const created = createEmptyThought(noteId, source.type);
+      const newThought = setThoughtContentText(
+        {
+          ...created,
+          id: payload.newThoughtId,
+          thoughtId: payload.newThoughtId,
+          categoryId: splitCategoryId ?? "uncategorized",
+          inline: source.type === "text" ? true : undefined,
+        },
+        newText
+      );
+      const kept = setThoughtContentText(
+        source.type === "text" ? { ...source, inline: true } : source,
+        keptText
+      );
+      const next =
+        payload.newSide === "right"
+          ? [
+              ...previous.slice(0, payload.index),
+              kept,
+              newThought,
+              ...previous.slice(payload.index + 1),
+            ]
+          : [
+              ...previous.slice(0, payload.index),
+              newThought,
+              kept,
+              ...previous.slice(payload.index + 1),
+            ];
+      const pickerIndex =
+        payload.newSide === "right" ? payload.index + 1 : payload.index;
+      setValue("thoughts", next, { shouldDirty: true });
+      setSelectedThoughtIndex(pickerIndex);
+      setSplitSide(null);
+      injectIfReady(setSelectedThoughtScript(pickerIndex));
+      injectIfReady(SYNC_CHECKLIST_LAYOUT_SCRIPT);
+      if (splitCategoryId && splitCategoryId !== "uncategorized") {
+        injectIfReady(
+          setThoughtCategoryScript(
+            pickerIndex,
+            splitCategoryId,
+            categoryLabels.get(splitCategoryId)
+          )
+        );
+      }
+      const pickedCategory = splitCategoryId;
+      setSplitCategoryId(null);
+      setSplitCategoryPicking(false);
+      richRef.current?.dismissKeyboard();
+      Keyboard.dismiss();
+      if (!pickedCategory) {
+        setCategoryPickerIndex(pickerIndex);
+      }
+    },
+    [
+      categoryLabels,
+      getValues,
+      injectIfReady,
+      noteId,
+      setValue,
+      splitCategoryId,
+    ]
+  );
+
   const handleOpenSelectedCategory = React.useCallback(() => {
+    if (splitSide) {
+      richRef.current?.dismissKeyboard();
+      Keyboard.dismiss();
+      setSplitCategoryPicking(true);
+      return;
+    }
     if (selectedThoughtIndex < 0) return;
     richRef.current?.dismissKeyboard();
     Keyboard.dismiss();
     setCategoryPickerIndex(selectedThoughtIndex);
-  }, [selectedThoughtIndex]);
+  }, [selectedThoughtIndex, splitSide]);
 
   const handleOpenSelectedGraph = React.useCallback(() => {
     const thought = getValues("thoughts")?.[selectedThoughtIndex];
@@ -1276,6 +1440,46 @@ function ThoughtsEditorInner(
         }
         return;
       }
+      if (message.type === "CONFIRM_SPLIT") {
+        injectIfReady(confirmThoughtSplitScript(generateID()));
+        return;
+      }
+      if (message.type === "CANCEL_SPLIT") {
+        setSplitSide(null);
+        setSplitCategoryId(null);
+        setSplitCategoryPicking(false);
+        return;
+      }
+      if (message.type === "SPLIT_THOUGHT") {
+        const payload = message.data as
+          | {
+              index?: number;
+              newSide?: "left" | "right";
+              newThoughtId?: string;
+              leftHtml?: string;
+              rightHtml?: string;
+            }
+          | undefined;
+        const index = Number(payload?.index);
+        const newSide = payload?.newSide;
+        const newThoughtId = String(payload?.newThoughtId ?? "");
+        if (
+          !Number.isFinite(index) ||
+          index < 0 ||
+          (newSide !== "left" && newSide !== "right") ||
+          !newThoughtId
+        ) {
+          return;
+        }
+        applySplitThought({
+          index,
+          newSide,
+          newThoughtId,
+          leftHtml: String(payload?.leftHtml ?? ""),
+          rightHtml: String(payload?.rightHtml ?? ""),
+        });
+        return;
+      }
       if (message.type !== "SELECT_CATEGORY") return;
       const index = Number(message.data);
       if (!Number.isFinite(index) || index < 0) return;
@@ -1284,8 +1488,10 @@ function ThoughtsEditorInner(
       setCategoryPickerIndex(index);
     },
     [
+      applySplitThought,
       categoryLabels,
       getValues,
+      injectIfReady,
       onToggleCompleted,
       push,
       readOnly,
@@ -1296,6 +1502,12 @@ function ThoughtsEditorInner(
 
   const handleSelectCategory = React.useCallback(
     (category: Category) => {
+      if (splitCategoryPicking) {
+        setSplitCategoryId(category.id);
+        closeCategorySheet();
+        setSplitCategoryPicking(false);
+        return;
+      }
       if (categoryPickerIndex == null) return;
       const previous = getValues("thoughts");
       const next = previous.map((thought, index) =>
@@ -1331,6 +1543,7 @@ function ThoughtsEditorInner(
       onChangeCategory,
       readOnly,
       setValue,
+      splitCategoryPicking,
     ]
   );
 
@@ -1402,7 +1615,9 @@ function ThoughtsEditorInner(
 
   return (
     <BottomSheet className="flex-1 min-h-0">
-      <CategorySheetPresenter index={categoryPickerIndex} />
+      <CategorySheetPresenter
+        open={categoryPickerIndex != null || splitCategoryPicking}
+      />
       <View className="relative flex-col flex-1 min-h-0">
         {!readOnly && !plain ? (
           <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
@@ -1974,6 +2189,33 @@ function ThoughtsEditorInner(
                   .thought-fields:has(.is-error-placeholder) {
                     width: 100%;
                   }
+                  .thought-item.is-inline {
+                    display: inline;
+                    padding-left: 0;
+                    padding-right: 0;
+                    margin-bottom: 0;
+                    vertical-align: baseline;
+                  }
+                  .thought-item.is-inline .thought-rail,
+                  .thought-item.is-inline .thought-dot,
+                  .thought-item.is-inline .thought-check {
+                    display: none !important;
+                  }
+                  .thought-item.is-inline .thought-body,
+                  .thought-item.is-inline .thought-fields {
+                    display: inline;
+                    width: auto;
+                    max-width: none;
+                    min-width: 0;
+                    vertical-align: baseline;
+                    border-left: none;
+                    padding-left: 0;
+                    padding-right: 0;
+                  }
+                  .thought-item.is-inline .thought-summary,
+                  .thought-item.is-inline .thought-title {
+                    display: inline;
+                  }
                   html.mc-show-categories .thought-item.is-selected .thought-summary:not(.is-placeholder),
                   html.mc-show-categories .thought-item.is-selected .thought-title:not(.is-placeholder) {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
@@ -2016,14 +2258,8 @@ function ThoughtsEditorInner(
               thoughtType={caretThoughtType}
               onThoughtTypeChange={handleThoughtType}
               selectedTitle={selectedTitleText}
-              selectedCategoryLabel={
-                categoryLabels.get(
-                  selectedThought?.categoryId || "uncategorized"
-                ) ??
-                selectedCategory?.name ??
-                "Uncategorized"
-              }
-              selectedCategoryColor={selectedCategory?.color ?? null}
+              selectedCategoryLabel={toolbarCategoryLabel}
+              selectedCategoryColor={toolbarCategoryColor}
               hasSelectedThought={selectedThought != null}
               onEditTitle={handleEditTitle}
               onOpenCategory={handleOpenSelectedCategory}
@@ -2032,6 +2268,11 @@ function ThoughtsEditorInner(
               categoryOpacity={categoryOpacity}
               onToggleCategories={handleToggleCategories}
               onCategoryOpacityChange={handleCategoryOpacityChange}
+              splitSide={splitSide}
+              onSplit={handleSplit}
+              onSplitSide={handleSplitSide}
+              onConfirmSplit={handleConfirmSplit}
+              onCancelSplit={handleCancelSplit}
             />
           ) : null}
         </View>
@@ -2045,14 +2286,8 @@ function ThoughtsEditorInner(
             thoughtType={caretThoughtType}
             onThoughtTypeChange={handleThoughtType}
             selectedTitle={selectedTitleText}
-            selectedCategoryLabel={
-              categoryLabels.get(
-                selectedThought?.categoryId || "uncategorized"
-              ) ??
-              selectedCategory?.name ??
-              "Uncategorized"
-            }
-            selectedCategoryColor={selectedCategory?.color ?? null}
+            selectedCategoryLabel={toolbarCategoryLabel}
+            selectedCategoryColor={toolbarCategoryColor}
             hasSelectedThought={selectedThought != null}
             onEditTitle={handleEditTitle}
             onOpenCategory={handleOpenSelectedCategory}
@@ -2061,6 +2296,11 @@ function ThoughtsEditorInner(
             categoryOpacity={categoryOpacity}
             onToggleCategories={handleToggleCategories}
             onCategoryOpacityChange={handleCategoryOpacityChange}
+            splitSide={splitSide}
+            onSplit={handleSplit}
+            onSplitSide={handleSplitSide}
+            onConfirmSplit={handleConfirmSplit}
+            onCancelSplit={handleCancelSplit}
           />
         ) : null}
       </View>
@@ -2070,7 +2310,10 @@ function ThoughtsEditorInner(
         style={{ zIndex: 100 }}
         enablePanDownToClose
         enableContentPanningGesture={false}
-        onDismiss={() => setCategoryPickerIndex(null)}
+        onDismiss={() => {
+          setCategoryPickerIndex(null);
+          setSplitCategoryPicking(false);
+        }}
       >
         <BottomSheetView className="gap-5 pt-6 bg-background">
           <BottomSheetHeader className="bg-background">
