@@ -133,12 +133,12 @@ function buildCategoryColorCss(categories: Category[]): string {
   return categories
     .map(
       (category) => `
-      html.mc-show-categories li[data-category-id="${category.id}"] .thought-summary:not(.is-placeholder),
-      html.mc-show-categories li[data-category-id="${category.id}"] .thought-title:not(.is-placeholder) {
+      html.mc-show-categories .thought-item[data-category-id="${category.id}"] .thought-summary:not(.is-placeholder),
+      html.mc-show-categories .thought-item[data-category-id="${category.id}"] .thought-title:not(.is-placeholder) {
         background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash, 18%), transparent);
       }
-      html.mc-show-categories li[data-category-id="${category.id}"].is-selected .thought-summary:not(.is-placeholder),
-      html.mc-show-categories li[data-category-id="${category.id}"].is-selected .thought-title:not(.is-placeholder) {
+      html.mc-show-categories .thought-item[data-category-id="${category.id}"].is-selected .thought-summary:not(.is-placeholder),
+      html.mc-show-categories .thought-item[data-category-id="${category.id}"].is-selected .thought-title:not(.is-placeholder) {
         background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash-selected, 34%), transparent);
       }
     `
@@ -177,8 +177,8 @@ function buildEditorThemeCss(colors: {
     .thought-check-box svg {
       color: ${colors.card};
     }
-    li.thought-item.is-completed[data-category-id="uncategorized"] .thought-check-box,
-    li.thought-item.is-completed:not([data-category-id]) .thought-check-box {
+    .thought-item.is-completed[data-category-id="uncategorized"] .thought-check-box,
+    .thought-item.is-completed:not([data-category-id]) .thought-check-box {
       background: ${colors.mutedFg};
       border-color: ${colors.mutedFg};
     }
@@ -1482,12 +1482,18 @@ function ThoughtsEditorInner(
                   box-sizing: border-box;
                 `,
                 cssText: `
-                  ul {
+                  .mc-thoughts {
                     padding-left: 0;
                     margin: 0;
+                  }
+                  .pell-content ul,
+                  .pell-content ol {
+                    margin: 0;
+                    padding: 0;
                     list-style: none;
                   }
-                  li.thought-item {
+                  .thought-item {
+                    display: block;
                     position: relative;
                     margin-bottom: 0.85em;
                     padding-left: 36px;
@@ -1497,17 +1503,17 @@ function ThoughtsEditorInner(
                     --category-stack: 25px;
                     --dot-size: 8px;
                   }
-                  li.thought-item.is-block {
+                  .thought-item.is-block {
                     padding-left: 10px;
                   }
-                  li.thought-item.is-block .thought-rail {
+                  .thought-item.is-block .thought-rail {
                     display: none;
                   }
-                  li.thought-item.is-block .thought-body {
+                  .thought-item.is-block .thought-body {
                     border-left: 3px solid transparent;
                     padding-left: 8px;
                   }
-                  li.thought-item.is-collapsed {
+                  .thought-item.is-collapsed {
                     --category-stack: 0px;
                   }
                   .thought-rail {
@@ -1549,7 +1555,7 @@ function ThoughtsEditorInner(
                     bottom: -8px;
                     left: -2px;
                   }
-                  li.thought-item.is-checklist .thought-check {
+                  .thought-item.is-checklist .thought-check {
                     display: flex;
                     left: 8px;
                     top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
@@ -1573,20 +1579,20 @@ function ThoughtsEditorInner(
                     height: 16px;
                     color: ${cardColor};
                   }
-                  li.thought-item.is-completed .thought-check-box {
+                  .thought-item.is-completed .thought-check-box {
                     background: ${mutedFg};
                     border-color: ${mutedFg};
                   }
-                  li.thought-item.is-completed .thought-check-box svg {
+                  .thought-item.is-completed .thought-check-box svg {
                     display: block;
                   }
-                  li.thought-item.is-completed .thought-title,
-                  li.thought-item.is-completed .thought-summary {
+                  .thought-item.is-completed .thought-title,
+                  .thought-item.is-completed .thought-summary {
                     text-decoration: line-through;
                     opacity: 0.55;
                   }
-                  li.thought-item.is-completed .thought-title u,
-                  li.thought-item.is-completed .thought-summary u {
+                  .thought-item.is-completed .thought-title u,
+                  .thought-item.is-completed .thought-summary u {
                     text-decoration: underline line-through;
                   }
                   .thought-stripe {
@@ -1617,7 +1623,7 @@ function ThoughtsEditorInner(
                   .thought-dot.is-anchored {
                     transition: none;
                   }
-                  li.thought-item.is-checklist .thought-dot {
+                  .thought-item.is-checklist .thought-dot {
                     display: none;
                   }
                   .thought-body {
@@ -1664,7 +1670,7 @@ function ThoughtsEditorInner(
                     pointer-events: none;
                     transition: transform 0.28s ease;
                   }
-                  li.thought-item:not(.is-collapsed) .thought-expand svg {
+                  .thought-item:not(.is-collapsed) .thought-expand svg {
                     transform: rotate(180deg);
                   }
                   .thought-graph {
@@ -1744,7 +1750,7 @@ function ThoughtsEditorInner(
                   .thought-fields {
                     min-width: 0;
                   }
-                  li.thought-item.is-collapsed .thought-category {
+                  .thought-item.is-collapsed .thought-category {
                     opacity: 0;
                     height: 0;
                     min-height: 0;
@@ -1752,7 +1758,7 @@ function ThoughtsEditorInner(
                     padding: 0;
                     pointer-events: none;
                   }
-                  li.thought-item.is-collapsed .thought-title {
+                  .thought-item.is-collapsed .thought-title {
                     opacity: 0;
                     max-height: 0;
                     min-height: 0;
@@ -1761,11 +1767,11 @@ function ThoughtsEditorInner(
                     overflow: hidden;
                     pointer-events: none;
                   }
-                  li.thought-item.is-collapsed .thought-title.is-placeholder::before,
-                  li.thought-item.is-collapsed .thought-title.is-error-placeholder::before {
+                  .thought-item.is-collapsed .thought-title.is-placeholder::before,
+                  .thought-item.is-collapsed .thought-title.is-error-placeholder::before {
                     content: none;
                   }
-                  li.thought-item.is-collapsed .thought-stripe {
+                  .thought-item.is-collapsed .thought-stripe {
                     opacity: 0;
                     pointer-events: none;
                   }
@@ -1838,7 +1844,7 @@ function ThoughtsEditorInner(
                       margin 0.38s ease,
                       padding 0.38s ease;
                   }
-                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title {
+                  html:not(.mc-editing) .thought-item:not(.has-entered-title) .thought-title {
                     max-height: 0 !important;
                     min-height: 0 !important;
                     margin: 0 !important;
@@ -1848,7 +1854,7 @@ function ThoughtsEditorInner(
                     pointer-events: none !important;
                     transition: none !important;
                   }
-                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title::before {
+                  html:not(.mc-editing) .thought-item:not(.has-entered-title) .thought-title::before {
                     content: none !important;
                   }
                   .thought-title * {
@@ -1924,36 +1930,36 @@ function ThoughtsEditorInner(
                   .pell-content.mc-details-lock {
                     caret-color: transparent;
                   }
-                  li.thought-item {
+                  .thought-item {
                     padding-left: 36px;
                     padding-right: 8px;
                     --category-stack: 0px;
                   }
                   .thought-body,
-                  li.thought-item.has-graph .thought-body,
-                  li.thought-item:has(> .thought-graph) .thought-body,
-                  html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
+                  .thought-item.has-graph .thought-body,
+                  .thought-item:has(> .thought-graph) .thought-body,
+                  html.mc-editing .thought-item:has(> .thought-expand) .thought-body {
                     padding-right: 0 !important;
                   }
-                  li.thought-item.is-block {
+                  .thought-item.is-block {
                     padding-left: 8px;
                   }
-                  li.thought-item.is-block .thought-rail,
-                  li.thought-item.is-block .thought-dot,
-                  li.thought-item.is-block .thought-check {
+                  .thought-item.is-block .thought-rail,
+                  .thought-item.is-block .thought-dot,
+                  .thought-item.is-block .thought-check {
                     display: none !important;
                   }
-                  li.thought-item.is-block .thought-body {
+                  .thought-item.is-block .thought-body {
                     border-left: none;
                     padding-left: 0;
                   }
-                  li.thought-item.is-checklist {
+                  .thought-item.is-checklist {
                     padding-left: 36px;
                   }
-                  li.thought-item.is-checklist .thought-dot {
+                  .thought-item.is-checklist .thought-dot {
                     display: none !important;
                   }
-                  li.thought-item.is-checklist .thought-check {
+                  .thought-item.is-checklist .thought-check {
                     left: 8px;
                     top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
                   }
@@ -1968,12 +1974,12 @@ function ThoughtsEditorInner(
                   .thought-fields:has(.is-error-placeholder) {
                     width: 100%;
                   }
-                  html.mc-show-categories li.thought-item.is-selected .thought-summary:not(.is-placeholder),
-                  html.mc-show-categories li.thought-item.is-selected .thought-title:not(.is-placeholder) {
+                  html.mc-show-categories .thought-item.is-selected .thought-summary:not(.is-placeholder),
+                  html.mc-show-categories .thought-item.is-selected .thought-title:not(.is-placeholder) {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
                   }
-                  html.mc-show-categories li.thought-item.is-selected .thought-summary.is-placeholder,
-                  html.mc-show-categories li.thought-item.is-selected .thought-title.is-placeholder {
+                  html.mc-show-categories .thought-item.is-selected .thought-summary.is-placeholder,
+                  html.mc-show-categories .thought-item.is-selected .thought-title.is-placeholder {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
                     border-radius: 4px;
                   }

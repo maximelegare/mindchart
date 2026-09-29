@@ -151,13 +151,25 @@ function stripChrome(liHtml: string): string {
     );
 }
 
-type LiItem = {
+type ThoughtItemRecord = {
   categoryId: string | null;
   thoughtId: string | null;
   innerHtml: string;
   type: ThoughtType | null;
   checked: boolean | null;
 };
+
+function itemFromAttrs(attrs: string, innerHtml: string): ThoughtItemRecord {
+  const categoryMatch = attrs.match(/data-category-id=["']([^"']+)["']/i);
+  const thoughtIdMatch = attrs.match(/data-thought-id=["']([^"']+)["']/i);
+  return {
+    categoryId: categoryMatch?.[1] ?? null,
+    thoughtId: thoughtIdMatch?.[1] ?? null,
+    innerHtml,
+    type: parseThoughtType(attrs),
+    checked: parseDataBool(attrs, "completed"),
+  };
+}
 
 function parseThoughtType(attrs: string): ThoughtType | null {
   const match = attrs.match(/data-thought-type=["']([^"']+)["']/i);
@@ -174,23 +186,133 @@ function parseDataBool(attrs: string, name: string): boolean | null {
   return value === "true" || value === "1";
 }
 
-function extractLiItems(html: string): LiItem[] {
-  const items: LiItem[] = [];
+function extractThoughtItemDivs(html: string): ThoughtItemRecord[] {
+  const items: ThoughtItemRecord[] = [];
+  const openRegex =
+    /<div\b([^>]*class=["'][^"']*\bthought-item\b[^"']*["'][^>]*)>/gi;
+  let openMatch: RegExpExecArray | null;
+  while ((openMatch = openRegex.exec(html)) !== null) {
+    const attrs = openMatch[1] ?? "";
+    const contentStart = openMatch.index + openMatch[0].length;
+    let depth = 1;
+    const tagRegex = /<\/?div\b[^>]*>/gi;
+    tagRegex.lastIndex = contentStart;
+    let tag: RegExpExecArray | null;
+    let closed = false;
+    while ((tag = tagRegex.exec(html)) !== null) {
+      const isClose = /^<\//.test(tag[0]);
+      const isSelfClose = /\/>$/.test(tag[0]);
+      if (isClose) {
+        depth -= 1;
+        if (depth === 0) {
+          items.push(itemFromAttrs(attrs, html.slice(contentStart, tag.index)));
+          openRegex.lastIndex = tag.index + tag[0].length;
+          closed = true;
+          break;
+        }
+        continue;
+      }
+      if (!isSelfClose) depth += 1;
+    }
+    if (!closed) break;
+  }
+  return items;
+}
+
+function extractLegacyLiItems(html: string): ThoughtItemRecord[] {
+  const items: ThoughtItemRecord[] = [];
   const liRegex = /<li\b([^>]*)>([\s\S]*?)<\/li>/gi;
   let match: RegExpExecArray | null;
   while ((match = liRegex.exec(html)) !== null) {
-    const attrs = match[1] ?? "";
-    const categoryMatch = attrs.match(/data-category-id=["']([^"']+)["']/i);
-    const thoughtIdMatch = attrs.match(/data-thought-id=["']([^"']+)["']/i);
-    items.push({
-      categoryId: categoryMatch?.[1] ?? null,
-      thoughtId: thoughtIdMatch?.[1] ?? null,
-      innerHtml: match[2] ?? "",
-      type: parseThoughtType(attrs),
-      checked: parseDataBool(attrs, "completed"),
-    });
+    items.push(itemFromAttrs(match[1] ?? "", match[2] ?? ""));
   }
   return items;
+}
+
+function removeClassBlocks(html: string, className: string): string {
+  let result = "";
+  let cursor = 0;
+  const openRegex = new RegExp(
+    `<div\\b([^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*)>`,
+    "gi"
+  );
+  let openMatch: RegExpExecArray | null;
+  while ((openMatch = openRegex.exec(html)) !== null) {
+    result += html.slice(cursor, openMatch.index);
+    const contentStart = openMatch.index + openMatch[0].length;
+    let depth = 1;
+    const tagRegex = /<\/?div\b[^>]*>/gi;
+    tagRegex.lastIndex = contentStart;
+    let end = html.length;
+    let tag: RegExpExecArray | null;
+    while ((tag = tagRegex.exec(html)) !== null) {
+      const isClose = /^<\//.test(tag[0]);
+      const isSelfClose = /\/>$/.test(tag[0]);
+      if (isClose) {
+        depth -= 1;
+        if (depth === 0) {
+          end = tag.index + tag[0].length;
+          break;
+        }
+        continue;
+      }
+      if (!isSelfClose) depth += 1;
+    }
+    openRegex.lastIndex = end;
+    cursor = end;
+  }
+  result += html.slice(cursor);
+  return result;
+}
+
+function extractStrayParagraphs(html: string): ThoughtItemRecord[] {
+  if (!stripHtml(html)) return [];
+
+  const blocks: string[] = [];
+  const blockRegex = /<(div|p)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
+  let match: RegExpExecArray | null;
+  let foundBlock = false;
+  while ((match = blockRegex.exec(html)) !== null) {
+    const inner = sanitizeInlineHtml(match[3] ?? "");
+    if (stripHtml(inner)) {
+      blocks.push(inner);
+      foundBlock = true;
+    }
+  }
+  if (!foundBlock) {
+    const plain = sanitizeInlineHtml(html);
+    if (stripHtml(plain)) blocks.push(plain);
+  }
+
+  return blocks.map((innerHtml) =>
+    itemFromAttrs("", `<div class="${SUMMARY_CLASS}">${innerHtml}</div>`)
+  );
+}
+
+function leftoverFieldsHtml(contentHtml: string): string {
+  const fields = extractByClass(contentHtml, FIELDS_CLASS) ?? contentHtml;
+  const rest = removeClassBlocks(
+    removeClassBlocks(fields, TITLE_CLASS),
+    SUMMARY_CLASS
+  );
+  return sanitizeInlineHtml(rest);
+}
+
+function joinThoughtHtml(left: string, right: string): string {
+  if (!stripHtml(right)) return left;
+  if (!stripHtml(left)) return right;
+  return `${left}<br>${right}`;
+}
+
+function extractThoughtItems(html: string): ThoughtItemRecord[] {
+  const fromDivs = extractThoughtItemDivs(html);
+  const container = extractByClass(html, "mc-thoughts") ?? html;
+  const stray = extractStrayParagraphs(
+    removeClassBlocks(container, "thought-item")
+  );
+  if (fromDivs.length > 0) return fromDivs.concat(stray);
+  if (stray.length > 0) return stray;
+  return extractLegacyLiItems(html);
 }
 
 /**
@@ -370,7 +492,7 @@ function thoughtItemHtml(
       ? graphButtonHtml(options.thoughtId)
       : "";
   return (
-    `<li class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}>` +
+    `<div class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
     `<div class="thought-dot"></div>` +
@@ -380,7 +502,7 @@ function thoughtItemHtml(
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
     graph +
-    `</li>`
+    `</div>`
   );
 }
 
@@ -448,7 +570,11 @@ export type ThoughtsToHtmlOptions = {
   preferSemanticTitle?: boolean;
 };
 
-/** Serialize thoughts into an HTML unordered list for the rich editor. */
+function thoughtsRootHtml(inner: string): string {
+  return `<div class="mc-thoughts">${inner}</div>`;
+}
+
+/** Serialize thoughts into HTML for the rich editor. */
 export function thoughtsToHtml(
   thoughts: ThoughtsFormValue[],
   showTitles: boolean,
@@ -464,26 +590,30 @@ export function thoughtsToHtml(
   };
 
   if (thoughts.length === 0) {
-    return `<ul>${thoughtItemHtml(
-      "uncategorized",
-      titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, ""),
-      {},
-      labels
-    )}</ul>`;
+    return thoughtsRootHtml(
+      thoughtItemHtml(
+        "uncategorized",
+        titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, ""),
+        {},
+        labels
+      )
+    );
   }
 
-  return `<ul>${thoughts
-    .map((thought) =>
-      liToHtml(
-        thought,
-        showTitles,
-        showGraphButtons,
-        placeholders,
-        labels,
-        viewMode
+  return thoughtsRootHtml(
+    thoughts
+      .map((thought) =>
+        liToHtml(
+          thought,
+          showTitles,
+          showGraphButtons,
+          placeholders,
+          labels,
+          viewMode
+        )
       )
-    )
-    .join("")}</ul>`;
+      .join("")
+  );
 }
 
 /**
@@ -527,7 +657,7 @@ export function htmlToThoughts(
   previous: ThoughtsFormValue[],
   showTitles: boolean
 ): ThoughtsFormValue[] {
-  const liItems = extractLiItems(html);
+  const liItems = extractThoughtItems(html);
 
   if (liItems.length === 0) {
     const plain = stripHtml(html);
@@ -560,8 +690,13 @@ export function htmlToThoughts(
     const categoryId = item.categoryId || base.categoryId || "uncategorized";
     const nextType = item.type ?? base.type ?? "li";
 
-    const { title, summary, hasTitleField, hasSummaryField } =
-      parseTitledLi(contentHtml);
+    const parsed = parseTitledLi(contentHtml);
+    const leftover = leftoverFieldsHtml(contentHtml);
+    const title = parsed.title;
+    const summary = joinThoughtHtml(parsed.summary, leftover);
+    const hasTitleField = parsed.hasTitleField;
+    const hasSummaryField =
+      parsed.hasSummaryField || Boolean(stripHtml(leftover));
 
     const applyType = (thought: ThoughtsFormValue): ThoughtsFormValue =>
       thought.type === nextType
@@ -597,13 +732,11 @@ export function htmlToThoughts(
     }
 
     const summaryField = extractByClass(contentHtml, SUMMARY_CLASS);
-    const nextSummaryHtml = sanitizeInlineHtml(
-      summaryField != null ? summaryField : contentHtml
-    );
-    const nextSummary =
-      summaryField != null
-        ? nextSummaryHtml
-        : nextSummaryHtml || getThoughtPlainText(base);
+    const nextSummary = stripHtml(summary)
+      ? summary
+      : summaryField != null
+        ? summary
+        : getThoughtPlainText(base);
     return withParsedFields(applyType(base), {
       categoryId,
       semanticLabel: preservedSemanticLabel(base, base.title, nextSummary),
@@ -637,7 +770,7 @@ export function setThoughtCategoryScript(
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
-  var lis = content.querySelectorAll("ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   var li = lis[${index}];
   if (!li) return true;
   var categoryId = ${id};
@@ -649,10 +782,8 @@ export function setThoughtCategoryScript(
     var name = chip.querySelector(".thought-category-name");
     if (name) name.textContent = label;
   }
-  if (!window.__mcEditing && typeof window.__mcExpandThoughtCategory === "function") {
-    window.__mcExpandThoughtCategory(li);
-  } else if (typeof window.__mcAnimateTitle === "function") {
-    window.__mcAnimateTitle(li);
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
   }
   try {
     content.dispatchEvent(new Event("input", { bubbles: true }));
@@ -672,7 +803,7 @@ export function setThoughtSemanticTitleScript(
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
-  var lis = content.querySelectorAll("ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   var li = lis[${index}];
   if (!li) return true;
   var text = ${label};
@@ -689,9 +820,6 @@ export function setThoughtSemanticTitleScript(
   titleEl.classList.remove("is-error-placeholder");
   titleEl.textContent = text;
   li.classList.add("has-entered-title");
-  if (typeof window.__mcAnimateTitle === "function") {
-    window.__mcAnimateTitle(li);
-  }
   if (typeof window.__mcSyncChecklistLayouts === "function") {
     window.__mcSyncChecklistLayouts();
   }

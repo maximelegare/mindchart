@@ -1,4 +1,4 @@
-/** Injected into the pell WebView to keep content as bullets and shape titled items. */
+/** Injected into the pell WebView to keep thoughts as independent items. */
 export const BULLET_EDITOR_GUARD_SCRIPT = `
 (function () {
   var content =
@@ -19,12 +19,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
   if (!window.__mcBulletGuardInstalled) {
     window.__mcBulletGuardInstalled = true;
-    // Preserve a flag set by setShowTitlesScript; only default when unset.
     if (typeof window.__mcShowTitles !== "boolean") {
       window.__mcShowTitles = false;
     }
-    var CATEGORY_FADE_MS = 3000;
-    var COLLAPSE_TRANSITION_MS = 380;
 
     function emptyTitledFieldsHtml() {
       return (
@@ -45,34 +42,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
-    function categoryLabelHtml(categoryId) {
-      var id = categoryId || "uncategorized";
-      var labels = window.__mcCategoryLabels;
-      var label =
-        (labels && labels[id]) || id.charAt(0).toUpperCase() + id.slice(1);
-      return (
-        '<div class="thought-category" contenteditable="false" data-category-id="' +
-        id +
-        '"><span class="thought-category-name">' +
-        label +
-        "</span></div>"
-      );
-    }
-
     function thoughtCheckHtml() {
       return (
         '<button type="button" class="thought-check" contenteditable="false">' +
         '<span class="thought-check-box">' +
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">' +
         '<path d="M20 6L9 17l-5-5"/></svg></span></button>'
-      );
-    }
-
-    function expandButtonHtml() {
-      return (
-        '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true">' +
-        '<path d="M6 9l6 6 6-6"/></svg></button>'
       );
     }
 
@@ -90,7 +65,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function emptyLiHtml(categoryId) {
-      return thoughtItemInnerHtml(categoryId, emptyUntitledFieldHtml());
+      return thoughtItemInnerHtml(
+        categoryId,
+        window.__mcShowTitles ? emptyTitledFieldsHtml() : emptyUntitledFieldHtml()
+      );
     }
 
     function closest(node, predicate) {
@@ -101,10 +79,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       return null;
     }
 
-    function closestLi(node) {
+    function closestThought(node) {
       return closest(node, function (n) {
-        return n.nodeName === "LI";
+        return n.classList && n.classList.contains("thought-item");
       });
+    }
+
+    function isThought(node) {
+      return !!(node && node.classList && node.classList.contains("thought-item"));
     }
 
     function closestClass(node, className) {
@@ -258,166 +240,290 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
-    function clearCollapseTimer(li) {
-      if (li && li.__mcCollapseTimer) {
-        clearTimeout(li.__mcCollapseTimer);
-        li.__mcCollapseTimer = null;
-      }
-      if (li && li.__mcBounceTimer) {
-        clearTimeout(li.__mcBounceTimer);
-        li.__mcBounceTimer = null;
-      }
+    function createCheckButton() {
+      var check = document.createElement("button");
+      check.type = "button";
+      check.className = "thought-check";
+      check.setAttribute("contenteditable", "false");
+      check.innerHTML =
+        '<span class="thought-check-box">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">' +
+        '<path d="M20 6L9 17l-5-5"/></svg></span>';
+      return check;
     }
 
-    function bounceStripe(li) {
-      if (window.__mcSimplified) return;
-      if (li && li.classList.contains("is-checklist")) return;
-      var dot = li && li.querySelector(".thought-dot");
-      if (!dot) return;
-      dot.classList.remove("is-bouncing");
-      void dot.offsetWidth;
-      dot.classList.add("is-bouncing");
-      li.__mcBounceTimer = setTimeout(function () {
-        dot.classList.remove("is-bouncing");
-        li.__mcBounceTimer = null;
-      }, 1800);
+    function isChromeNode(node) {
+      if (!node || !node.classList) return false;
+      return (
+        node.classList.contains("thought-rail") ||
+        node.classList.contains("thought-check") ||
+        node.classList.contains("thought-body") ||
+        node.classList.contains("thought-graph") ||
+        node.classList.contains("thought-expand") ||
+        node.classList.contains("mc-thoughts")
+      );
     }
 
-    function syncExpandButton(li) {
-      if (!li) return;
-      var btn = li.querySelector(".thought-expand");
-      if (btn) {
-        btn.setAttribute(
-          "aria-expanded",
-          li.classList.contains("is-collapsed") ? "false" : "true"
-        );
-      }
+    function summaryPlaceholder(li) {
+      return window.__mcShowTitles || (li && li.querySelector(".thought-title"))
+        ? mcPh("summary", "Summary")
+        : mcPh("bullet", "Write Something...");
     }
-
-    function collapseThoughtCategory(li) {
-      if (!li || window.__mcSimplified) return;
-      var title = li.querySelector(".thought-title");
-      if (title) title.__mcTitleH = title.scrollHeight;
-      li.classList.add("is-collapsed");
-      syncExpandButton(li);
-      if (typeof window.__mcAnimateTitle === "function") {
-        window.__mcAnimateTitle(li);
-      }
-      if (!window.__mcEditing) {
-        li.__mcBounceTimer = setTimeout(function () {
-          bounceStripe(li);
-        }, COLLAPSE_TRANSITION_MS);
-      }
-      if (typeof window.__mcSyncChecklistLayouts === "function") {
-        window.__mcSyncChecklistLayouts();
-      }
-    }
-
-    function expandThoughtCategory(li, reschedule) {
-      if (!li) return;
-      clearCollapseTimer(li);
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-      li.classList.remove("is-collapsed");
-      syncExpandButton(li);
-      if (typeof window.__mcAnimateTitle === "function") {
-        window.__mcAnimateTitle(li);
-      }
-      if (reschedule !== false && !window.__mcEditing) {
-        scheduleCollapse(li);
-      }
-      if (typeof window.__mcSyncChecklistLayouts === "function") {
-        window.__mcSyncChecklistLayouts();
-      }
-    }
-
-    function scheduleCollapse(li) {
-      if (!li || window.__mcSimplified || window.__mcEditing) return;
-      clearCollapseTimer(li);
-      li.classList.remove("is-collapsed");
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-      li.__mcCollapseTimer = setTimeout(function () {
-        collapseThoughtCategory(li);
-        li.__mcCollapseTimer = null;
-      }, CATEGORY_FADE_MS);
-    }
-
-    window.__mcExpandThoughtCategory = function (li) {
-      expandThoughtCategory(li, !window.__mcEditing);
-    };
-    window.__mcCollapseThoughtCategory = function (li) {
-      collapseThoughtCategory(li);
-    };
-
-    window.__mcRefreshCategoryTimers = function () {
-      var lis = content.querySelectorAll("ul > li");
-      for (var i = 0; i < lis.length; i++) {
-        ensureCategoryChrome(lis[i]);
-      }
-    };
 
     function ensureCategoryChrome(li) {
       if (!li) return;
       var categoryId = liCategoryId(li);
       li.classList.add("thought-item");
       li.setAttribute("data-category-id", categoryId);
+      if (!li.getAttribute("data-thought-type")) {
+        li.setAttribute("data-thought-type", "li");
+        li.setAttribute("data-completable", "false");
+        li.setAttribute("data-completed", "false");
+      }
 
-      var rail = li.querySelector(".thought-rail");
-      var body = li.querySelector(".thought-body");
       var fields = li.querySelector(".thought-fields");
-      var chip = li.querySelector(".thought-category");
-
+      var body = li.querySelector(".thought-body");
+      var rail = li.querySelector(".thought-rail");
+      var check = li.querySelector(".thought-check");
       if (rail && body && fields) {
-        if (chip) chip.setAttribute("data-category-id", categoryId);
+        if (!check) {
+          li.insertBefore(createCheckButton(), body);
+        }
         return;
       }
 
-      // Rebuild chrome while preserving editable field content.
-      var title = li.querySelector(".thought-title");
-      var summary = li.querySelector(".thought-summary");
-      var fieldsHtml = "";
-      if (title || summary) {
-        if (title) fieldsHtml += title.outerHTML;
-        if (summary) fieldsHtml += summary.outerHTML;
-      } else {
-        var clone = li.cloneNode(true);
-        var stripSel = clone.querySelectorAll(
-          ".thought-rail, .thought-check, .thought-graph, .thought-expand, .thought-category, .thought-body, .thought-fields"
-        );
-        for (var s = 0; s < stripSel.length; s++) {
-          var node = stripSel[s];
-          if (node.parentNode) node.parentNode.removeChild(node);
+      var graph = li.querySelector(".thought-graph");
+      if (graph && graph.parentNode) graph.parentNode.removeChild(graph);
+
+      if (!fields) {
+        var title = li.querySelector(".thought-title");
+        var summary = li.querySelector(".thought-summary");
+        fields = document.createElement("div");
+        fields.className = "thought-fields";
+        if (title || summary) {
+          if (title) fields.appendChild(title);
+          if (summary) fields.appendChild(summary);
+        } else {
+          var leftovers = [];
+          while (li.firstChild) {
+            var child = li.firstChild;
+            li.removeChild(child);
+            if (isChromeNode(child)) continue;
+            leftovers.push(child);
+          }
+          for (var i = 0; i < leftovers.length; i++) {
+            fields.appendChild(leftovers[i]);
+          }
+          if (!fields.querySelector(".thought-summary") && !fields.querySelector(".thought-title")) {
+            var wrap = document.createElement("div");
+            wrap.className =
+              "thought-summary" + (isEmptyField(fields) ? " is-placeholder" : "");
+            wrap.setAttribute("data-placeholder", summaryPlaceholder(li));
+            while (fields.firstChild) wrap.appendChild(fields.firstChild);
+            if (!wrap.firstChild) wrap.innerHTML = "<br>";
+            fields.appendChild(wrap);
+          }
         }
-        var text = (clone.textContent || "").trim();
-        fieldsHtml = text
-          ? clone.innerHTML
-          : window.__mcShowTitles
-            ? emptyTitledFieldsHtml()
-            : emptyUntitledFieldHtml();
       }
 
-      var wasCollapsed = li.classList.contains("is-collapsed");
-      li.innerHTML = thoughtItemInnerHtml(categoryId, fieldsHtml);
-      if (wasCollapsed || (window.__mcEditing && !window.__mcSimplified)) {
-        li.classList.add("is-collapsed");
-        syncExpandButton(li);
-      } else {
-        scheduleCollapse(li);
+      if (!body) {
+        body = document.createElement("div");
+        body.className = "thought-body";
       }
-      if (typeof window.__mcSyncChecklistLayouts === "function") {
-        window.__mcSyncChecklistLayouts();
+      if (fields.parentNode !== body) body.appendChild(fields);
+
+      if (!rail) {
+        rail = document.createElement("div");
+        rail.className = "thought-rail";
+        rail.setAttribute("contenteditable", "false");
+        rail.innerHTML =
+          '<div class="thought-stripe"></div><div class="thought-dot"></div>';
+      }
+      if (!check) check = createCheckButton();
+
+      li.appendChild(rail);
+      li.appendChild(check);
+      li.appendChild(body);
+      if (graph) li.appendChild(graph);
+    }
+
+    function listItemToThought(li) {
+      if (!li) return null;
+      if (li.classList && li.classList.contains("thought-item") && li.nodeName !== "LI") {
+        return li;
+      }
+      var thought = document.createElement("div");
+      thought.className = li.className || "";
+      if (!thought.classList.contains("thought-item")) {
+        thought.classList.add("thought-item");
+      }
+      if (li.attributes) {
+        for (var a = 0; a < li.attributes.length; a++) {
+          var attr = li.attributes[a];
+          if (attr.name === "class") continue;
+          thought.setAttribute(attr.name, attr.value);
+        }
+      }
+      while (li.firstChild) thought.appendChild(li.firstChild);
+      return thought;
+    }
+
+    function unwrapLists() {
+      var lists = content.querySelectorAll("ul, ol");
+      for (var i = lists.length - 1; i >= 0; i--) {
+        var list = lists[i];
+        var parent = list.parentNode;
+        if (!parent) continue;
+        var host = closestThought(list);
+        var insertParent = host && host.parentNode ? host.parentNode : parent;
+        var insertBefore = host && host.parentNode ? host.nextSibling : list;
+        while (list.firstChild) {
+          var child = list.firstChild;
+          list.removeChild(child);
+          var thought =
+            child.nodeName === "LI"
+              ? listItemToThought(child)
+              : child.classList && child.classList.contains("thought-item")
+                ? child
+                : thoughtFromNode(child, "li");
+          if (thought) {
+            insertParent.insertBefore(thought, insertBefore);
+            ensureCategoryChrome(thought);
+          }
+        }
+        if (list.parentNode) list.parentNode.removeChild(list);
       }
     }
 
-    function ensureUl() {
-      if (content.querySelector("ul")) return;
-      content.innerHTML =
-        '<ul><li class="thought-item' +
-        (window.__mcEditing && !window.__mcSimplified ? " is-collapsed" : "") +
-        '" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
-        emptyLiHtml("uncategorized") +
-        "</li></ul>";
+    function createThoughtShell(type) {
+      var thoughtType =
+        type === "text" || type === "li" || type === "checkbox" ? type : "li";
+      var completable = thoughtType === "checkbox";
+      var created = document.createElement("div");
+      created.className =
+        "thought-item" +
+        (thoughtType === "text" ? " is-block" : "") +
+        (completable ? " is-checklist" : "");
+      created.setAttribute("data-thought-type", thoughtType);
+      created.setAttribute("data-category-id", "uncategorized");
+      created.setAttribute("data-completable", completable ? "true" : "false");
+      created.setAttribute("data-completed", "false");
+      created.innerHTML = emptyLiHtml("uncategorized");
+      return created;
+    }
+
+    function fillThoughtSummary(created, node) {
+      var summary = created.querySelector(".thought-summary");
+      if (!summary) return created;
+      if (node.nodeType === 3) {
+        summary.textContent = node.textContent || "";
+      } else if (node.nodeName === "BR") {
+        summary.innerHTML = "<br>";
+      } else {
+        while (node.firstChild) summary.appendChild(node.firstChild);
+      }
+      if (isEmptyField(summary)) {
+        summary.innerHTML = "<br>";
+        summary.classList.add("is-placeholder");
+      } else {
+        summary.classList.remove("is-placeholder");
+        summary.classList.remove("is-error-placeholder");
+      }
+      return created;
+    }
+
+    function thoughtFromNode(node, type) {
+      if (!node) return null;
+      if (node.nodeType === 1 && node.classList && node.classList.contains("thought-item")) {
+        return node;
+      }
+      if (node.nodeType === 3 && !(node.textContent || "").trim()) return null;
+      var created = createThoughtShell(type);
+      fillThoughtSummary(created, node);
+      return created;
+    }
+
+    function promoteStrayBlocks() {
+      var root = content.querySelector(".mc-thoughts") || content;
+      var node = root.firstChild;
+      while (node) {
+        var next = node.nextSibling;
+        if (node.nodeType === 1 && node.classList && node.classList.contains("thought-item")) {
+          var fields = node.querySelector(".thought-fields");
+          if (fields) {
+            var fieldChild = fields.firstChild;
+            var insertAfter = node;
+            while (fieldChild) {
+              var fieldNext = fieldChild.nextSibling;
+              var isKnown =
+                fieldChild.classList &&
+                (fieldChild.classList.contains("thought-summary") ||
+                  fieldChild.classList.contains("thought-title"));
+              if (isChromeNode(fieldChild)) {
+                fieldChild = fieldNext;
+                continue;
+              }
+              if (!isKnown && (fieldChild.nodeType !== 3 || (fieldChild.textContent || "").trim())) {
+                var sibling = thoughtFromNode(
+                  fieldChild,
+                  node.getAttribute("data-thought-type") || "li"
+                );
+                if (sibling) {
+                  if (fieldChild.parentNode) fieldChild.parentNode.removeChild(fieldChild);
+                  insertAfter.parentNode.insertBefore(sibling, insertAfter.nextSibling);
+                  ensureCategoryChrome(sibling);
+                  insertAfter = sibling;
+                }
+              }
+              fieldChild = fieldNext;
+            }
+          }
+          node = next;
+          continue;
+        }
+        if (isChromeNode(node)) {
+          node = next;
+          continue;
+        }
+        var prev = node.previousElementSibling;
+        var type =
+          prev && prev.classList && prev.classList.contains("thought-item")
+            ? prev.getAttribute("data-thought-type")
+            : "li";
+        var thought = thoughtFromNode(node, type);
+        if (thought) {
+          root.insertBefore(thought, node);
+          if (node.parentNode) node.parentNode.removeChild(node);
+          ensureCategoryChrome(thought);
+        } else if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
+        node = next;
+      }
+    }
+
+    function emptyThoughtHtml() {
+      return createThoughtShell("li").outerHTML;
+    }
+
+    function ensureThoughts() {
+      unwrapLists();
+      var root = content.querySelector(".mc-thoughts");
+      if (!root) {
+        root = document.createElement("div");
+        root.className = "mc-thoughts";
+        content.insertBefore(root, content.firstChild);
+      }
+      var child = content.firstChild;
+      while (child) {
+        var nextChild = child.nextSibling;
+        if (child !== root) root.appendChild(child);
+        child = nextChild;
+      }
+      promoteStrayBlocks();
+      if (!root.querySelector(".thought-item")) {
+        root.innerHTML = emptyThoughtHtml();
+      }
     }
 
     function clearField(el, placeholder) {
@@ -431,7 +537,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function repairEmptyField(el, placeholder) {
       if (!el) return;
       if (isEmptyField(el)) {
-        // Keep validation error copy until the user types.
         if (!el.classList.contains("is-error-placeholder")) {
           el.setAttribute("data-placeholder", placeholder);
         }
@@ -463,16 +568,11 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var titles = content.querySelectorAll(".thought-title");
       var summaries = content.querySelectorAll(".thought-summary");
       for (var t = 0; t < titles.length; t++) {
-        repairEmptyField(titles[t], "Title");
+        repairEmptyField(titles[t], mcPh("title", "Title"));
       }
       for (var s = 0; s < summaries.length; s++) {
         var summary = summaries[s];
-        var li = closestLi(summary);
-        var placeholder =
-          window.__mcShowTitles || (li && li.querySelector(".thought-title"))
-            ? "Summary"
-            : "Write Something...";
-        repairEmptyField(summary, placeholder);
+        repairEmptyField(summary, summaryPlaceholder(closestThought(summary)));
       }
     }
 
@@ -482,37 +582,45 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function normalizeUntitledLis() {
       if (window.__mcShowTitles) return;
-      var lis = content.querySelectorAll("ul > li");
+      var lis = content.querySelectorAll(".thought-item");
       for (var i = 0; i < lis.length; i++) {
         var li = lis[i];
         ensureCategoryChrome(li);
 
         var title = li.querySelector(".thought-title");
-        if (title && !(title.textContent || "").replace(/\u00a0/g, " ").trim()) {
+        if (title && !(title.textContent || "").replace(/\\u00a0/g, " ").trim()) {
           if (title.parentNode) title.parentNode.removeChild(title);
         }
 
         var summary = li.querySelector(".thought-summary");
         if (summary) {
-          summary.setAttribute("data-placeholder", "Write Something...");
+          if (!summary.classList.contains("is-error-placeholder")) {
+            summary.setAttribute(
+              "data-placeholder",
+              mcPh("bullet", "Write Something...")
+            );
+          }
           continue;
         }
 
         var fields = getFieldsContainer(li);
-        var text = (fields.textContent || "").trim();
-        fields.innerHTML =
-          '<div class="thought-summary' +
-          (text ? "" : " is-placeholder") +
-          '" data-placeholder="Write Something...">' +
-          (text ? fields.innerHTML : "<br>") +
-          "</div>";
+        var wrap = document.createElement("div");
+        wrap.className =
+          "thought-summary" + (isEmptyField(fields) ? " is-placeholder" : "");
+        wrap.setAttribute(
+          "data-placeholder",
+          mcPh("bullet", "Write Something...")
+        );
+        while (fields.firstChild) wrap.appendChild(fields.firstChild);
+        if (!wrap.firstChild) wrap.innerHTML = "<br>";
+        fields.appendChild(wrap);
       }
       repairAllPlaceholderFields();
     }
 
     function normalizeTitledLis() {
       if (!window.__mcShowTitles) return;
-      var lis = content.querySelectorAll("ul > li");
+      var lis = content.querySelectorAll(".thought-item");
       for (var i = 0; i < lis.length; i++) {
         var li = lis[i];
         ensureCategoryChrome(li);
@@ -521,7 +629,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           if (!li.querySelector(".thought-summary")) {
             var summary = document.createElement("div");
             summary.className = "thought-summary is-placeholder";
-            summary.setAttribute("data-placeholder", "Summary");
+            summary.setAttribute("data-placeholder", mcPh("summary", "Summary"));
             summary.innerHTML = "<br>";
             getFieldsContainer(li).appendChild(summary);
           }
@@ -535,24 +643,38 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           : (fields.textContent || "").trim();
 
         if (!text) {
-          var wasCollapsed = li.classList.contains("is-collapsed");
-          li.innerHTML = emptyLiHtml(liCategoryId(li));
-          if (wasCollapsed) li.classList.add("is-collapsed");
-          else scheduleCollapse(li);
-        } else {
-          var body = existingSummary
-            ? existingSummary.innerHTML
-            : fields.innerHTML;
-          fields.innerHTML =
-            '<div class="thought-title" data-placeholder="Title">' +
-            body +
-            '</div><div class="thought-summary is-placeholder" data-placeholder="Summary"><br></div>';
+          var titleEl = document.createElement("div");
+          titleEl.className = "thought-title is-placeholder";
+          titleEl.setAttribute("data-placeholder", mcPh("title", "Title"));
+          titleEl.innerHTML = "<br>";
+          var summaryEl = document.createElement("div");
+          summaryEl.className = "thought-summary is-placeholder";
+          summaryEl.setAttribute("data-placeholder", mcPh("summary", "Summary"));
+          summaryEl.innerHTML = "<br>";
+          while (fields.firstChild) fields.removeChild(fields.firstChild);
+          fields.appendChild(titleEl);
+          fields.appendChild(summaryEl);
+        } else if (existingSummary) {
+          var movedTitle = document.createElement("div");
+          movedTitle.className = "thought-title";
+          movedTitle.setAttribute("data-placeholder", mcPh("title", "Title"));
+          while (existingSummary.firstChild) {
+            movedTitle.appendChild(existingSummary.firstChild);
+          }
+          existingSummary.className = "thought-summary is-placeholder";
+          existingSummary.setAttribute(
+            "data-placeholder",
+            mcPh("summary", "Summary")
+          );
+          existingSummary.innerHTML = "<br>";
+          fields.insertBefore(movedTitle, existingSummary);
         }
       }
       repairAllPlaceholderFields();
     }
 
     function normalizeLis() {
+      unwrapLists();
       if (window.__mcShowTitles) {
         normalizeTitledLis();
       } else {
@@ -566,9 +688,20 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } catch (e) {}
     }
 
+    function thoughtTypeOf(li) {
+      var type = li && li.getAttribute("data-thought-type");
+      if (type === "text" || type === "li" || type === "checkbox") return type;
+      if (li && li.getAttribute("data-completable") === "true") return "checkbox";
+      return "li";
+    }
+
+    var lastEnterAt = 0;
     function handleEnter(e, li, anchor) {
       e.preventDefault();
       e.stopPropagation();
+      var now = Date.now();
+      if (now - lastEnterAt < 80) return;
+      lastEnterAt = now;
 
       requestClassifyBullet(li);
 
@@ -579,59 +712,30 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      if (window.__mcEditing && !window.__mcSimplified) {
-        collapseThoughtCategory(li);
-      }
-
-      var newLi = document.createElement("li");
-      var thoughtType = li.getAttribute("data-thought-type") || "li";
-      if (thoughtType !== "text" && thoughtType !== "li" && thoughtType !== "checkbox") {
-        thoughtType = li.getAttribute("data-completable") === "true" ? "checkbox" : "li";
-      }
-      var completable = thoughtType === "checkbox";
-      newLi.className =
-        "thought-item" +
-        (thoughtType === "text" ? " is-block" : "") +
-        (completable ? " is-checklist" : "");
-      newLi.setAttribute("data-thought-type", thoughtType);
-      newLi.setAttribute("data-category-id", "uncategorized");
-      newLi.setAttribute("data-completable", completable ? "true" : "false");
-      newLi.setAttribute("data-completed", "false");
-      newLi.innerHTML = emptyLiHtml("uncategorized");
-      if (window.__mcEditing && !window.__mcSimplified) {
-        newLi.classList.add("is-collapsed");
-      }
+      var created = createThoughtShell(thoughtTypeOf(li));
       if (li.nextSibling) {
-        li.parentNode.insertBefore(newLi, li.nextSibling);
+        li.parentNode.insertBefore(created, li.nextSibling);
       } else {
-        li.parentNode.appendChild(newLi);
+        li.parentNode.appendChild(created);
       }
-      scheduleCollapse(newLi);
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
       }
-      var focusField =
-        window.__mcShowTitles && !newLi.classList.contains("is-collapsed")
-          ? newLi.querySelector(".thought-title")
-          : newLi.querySelector(".thought-summary");
+      var focusField = window.__mcShowTitles
+        ? created.querySelector(".thought-title")
+        : created.querySelector(".thought-summary");
       if (focusField) placeCaretAtStartSoon(focusField);
       notifyChange();
     }
 
-    function removeBullet(li) {
-      clearCollapseTimer(li);
+    function removeThought(li) {
       var parent = li.parentNode;
       var prev = li.previousElementSibling;
       var next = li.nextElementSibling;
       parent.removeChild(li);
 
-      if (!parent.querySelector("li")) {
-        parent.innerHTML =
-          '<li class="thought-item" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
-          emptyLiHtml("uncategorized") +
-          "</li>";
-        var only = parent.querySelector("li");
-        scheduleCollapse(only);
+      if (!parent.querySelector(".thought-item")) {
+        parent.innerHTML = emptyThoughtHtml();
         repairAllPlaceholderFields();
         placeCaretAtStartSoon(
           parent.querySelector(".thought-title") ||
@@ -641,13 +745,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      if (prev && prev.nodeName === "LI") {
+      if (isThought(prev)) {
         placeCaretAtEndSoon(
           prev.querySelector(".thought-summary") ||
             prev.querySelector(".thought-title") ||
             prev
         );
-      } else if (next && next.nodeName === "LI") {
+      } else if (isThought(next)) {
         placeCaretAtStartSoon(
           next.querySelector(".thought-title") ||
             next.querySelector(".thought-summary") ||
@@ -657,28 +761,26 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       notifyChange();
     }
 
-    function handleBackspaceUntitled(e, li, anchor) {
+    function handleBackspaceUntitled(e, li) {
       var summaryEl = li.querySelector(".thought-summary") || li;
 
       if (isEmptyField(summaryEl) || isCaretAtStartOf(summaryEl)) {
         e.preventDefault();
         e.stopPropagation();
         if (isEmptyField(summaryEl)) {
-          removeBullet(li);
+          removeThought(li);
           return;
         }
         var prev = li.previousElementSibling;
-        if (prev && prev.nodeName === "LI") {
-          placeCaretAtEndSoon(
-            prev.querySelector(".thought-summary") || prev
-          );
+        if (isThought(prev)) {
+          placeCaretAtEndSoon(prev.querySelector(".thought-summary") || prev);
         }
       }
     }
 
     function handleBackspace(e, li, anchor) {
       if (!window.__mcShowTitles && !li.querySelector(".thought-title")) {
-        handleBackspaceUntitled(e, li, anchor);
+        handleBackspaceUntitled(e, li);
         return;
       }
 
@@ -697,7 +799,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         if (summaryText.length === 1 && window.getSelection().isCollapsed) {
           e.preventDefault();
           e.stopPropagation();
-          clearField(summary, "Summary");
+          clearField(summary, mcPh("summary", "Summary"));
           placeCaretAtStartSoon(summary);
           notifyChange();
           return;
@@ -707,9 +809,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           e.preventDefault();
           e.stopPropagation();
           if (isEmptyField(summary)) {
-            clearField(summary, "Summary");
+            clearField(summary, mcPh("summary", "Summary"));
             if (isEmptyField(titleEl)) {
-              removeBullet(li);
+              removeThought(li);
               return;
             }
           }
@@ -725,12 +827,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         e.stopPropagation();
 
         if (bothEmpty) {
-          removeBullet(li);
+          removeThought(li);
           return;
         }
 
         var prev = li.previousElementSibling;
-        if (prev && prev.nodeName === "LI") {
+        if (isThought(prev)) {
           placeCaretAtEndSoon(
             prev.querySelector(".thought-summary") ||
               prev.querySelector(".thought-title") ||
@@ -739,8 +841,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           return;
         }
 
-        repairEmptyField(title, "Title");
-        repairEmptyField(summaryEl, "Summary");
+        repairEmptyField(title, mcPh("title", "Title"));
+        repairEmptyField(summaryEl, mcPh("summary", "Summary"));
         placeCaretAtStartSoon(title);
       }
     }
@@ -762,57 +864,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
-    function onViewThoughtPointer(e) {
-      return;
-    }
-
-    function blurEditor() {
-      var active = document.activeElement;
-      if (active && active !== document.body && typeof active.blur === "function") {
-        try {
-          active.blur();
-        } catch (err) {}
-      }
-      try {
-        content.blur();
-      } catch (err) {}
-      if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: "DISMISS_KEYBOARD" })
-        );
-      }
-    }
-
-    function onExpandPointerDown(e) {
-      if (!closestClass(e.target, "thought-expand")) return;
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    function onExpandPointer(e) {
-      if (!window.__mcEditing || window.__mcSimplified) return;
-      var btn = closestClass(e.target, "thought-expand");
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      var now = Date.now();
-      if (window.__mcExpandAt && now - window.__mcExpandAt < 400) return;
-      window.__mcExpandAt = now;
-      var li = closestLi(btn);
-      if (!li) return;
-      if (li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, false);
-      } else {
-        collapseThoughtCategory(li);
-      }
-      blurEditor();
-    }
-
     function onCategoryChromePointer(e) {
       if (window.__mcSimplified) return;
-      if (!window.__mcEditing) return;
       if (closestClass(e.target, "thought-check")) return;
-      if (closestClass(e.target, "thought-expand")) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
       var chip = closestClass(e.target, "thought-category");
@@ -821,12 +875,21 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       e.preventDefault();
       e.stopPropagation();
 
-      var li = closestLi(e.target);
+      var li = closestThought(e.target);
       if (!li) return;
-
-      // Expanded edit chrome opens the picker; collapsed thoughts use the arrow.
       openCategoryPicker(li);
     }
+
+    window.__mcExpandThoughtCategory = function () {};
+    window.__mcCollapseThoughtCategory = function () {};
+    window.__mcRefreshCategoryTimers = function () {
+      var lis = content.querySelectorAll(".thought-item");
+      for (var i = 0; i < lis.length; i++) {
+        ensureCategoryChrome(lis[i]);
+      }
+      unwrapLists();
+      repairAllPlaceholderFields();
+    };
 
     content.addEventListener(
       "keydown",
@@ -835,19 +898,19 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         var isBackspace = e.key === "Backspace" || e.keyCode === 8;
         if (!isEnter && !isBackspace) return;
 
-        ensureUl();
-        if (!content.querySelector("ul")) {
+        ensureThoughts();
+        if (!content.querySelector(".thought-item")) {
           e.preventDefault();
           return;
         }
 
         var sel = window.getSelection();
         var anchor = sel && sel.anchorNode;
-        var li = closestLi(anchor);
+        var li = closestThought(anchor);
 
         if (!li) {
           e.preventDefault();
-          ensureUl();
+          ensureThoughts();
           return;
         }
 
@@ -869,14 +932,20 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       true
     );
 
-    content.addEventListener("click", onViewThoughtPointer, true);
-    content.addEventListener("touchend", onViewThoughtPointer, true);
-    content.addEventListener("touchstart", onExpandPointerDown, true);
-    content.addEventListener("mousedown", onExpandPointerDown, true);
-    content.addEventListener("click", onExpandPointer, true);
-    content.addEventListener("touchend", onExpandPointer, true);
+    content.addEventListener(
+      "beforeinput",
+      function (e) {
+        if (e.inputType !== "insertParagraph") return;
+        var sel = window.getSelection();
+        var anchor = sel && sel.anchorNode;
+        var li = closestThought(anchor);
+        if (!li) return;
+        handleEnter(e, li, anchor);
+      },
+      true
+    );
+
     content.addEventListener("click", onCategoryChromePointer, true);
-    // Android WebView often delivers contenteditable=false taps more reliably here.
     content.addEventListener(
       "touchend",
       function (e) {
@@ -890,12 +959,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     );
 
     content.addEventListener("input", function () {
-      ensureUl();
+      ensureThoughts();
       normalizeLis();
       repairAllPlaceholderFields();
     });
 
-    ensureUl();
+    ensureThoughts();
     normalizeLis();
     repairAllPlaceholderFields();
   }
@@ -918,22 +987,8 @@ export function setEditingModeScript(editing: boolean): string {
     document.documentElement.classList.toggle("mc-editing", !!window.__mcEditing);
   }
   if (root) root.classList.toggle("mc-editing", !!window.__mcEditing);
-  if (!root) return true;
-  var lis = root.querySelectorAll("ul > li");
-  if (window.__mcEditing) {
-    for (var i = 0; i < lis.length; i++) {
-      var li = lis[i];
-      if (li.__mcCollapseTimer) {
-        clearTimeout(li.__mcCollapseTimer);
-        li.__mcCollapseTimer = null;
-      }
-      li.classList.remove("is-collapsed");
-    }
-    if (typeof window.__mcSyncChecklistLayouts === "function") {
-      window.__mcSyncChecklistLayouts();
-    }
-  } else if (typeof window.__mcRefreshCategoryTimers === "function") {
-    window.__mcRefreshCategoryTimers();
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
   }
   true;
 })();
@@ -989,7 +1044,6 @@ export function setThoughtValidationErrorsScript(options: {
     el.classList.remove("is-placeholder");
     el.removeAttribute("data-placeholder");
     el.innerHTML = "<br>";
-    // Force a style recalc so ::before placeholders reappear after clear.
     void el.offsetWidth;
     el.setAttribute("data-placeholder", placeholder);
     el.classList.add("is-placeholder");
@@ -998,7 +1052,7 @@ export function setThoughtValidationErrorsScript(options: {
 
   clearErrors();
 
-  var lis = content.querySelectorAll("ul > li.thought-item, ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   var emptyContent = ${options.emptyContent ? "true" : "false"};
   var incomplete = ${JSON.stringify(options.incomplete)};
   var titleMsg = ${titleMsg};
@@ -1020,10 +1074,10 @@ export function setThoughtValidationErrorsScript(options: {
           emptyMsg +
           '"><br></div>';
       content.innerHTML =
-        '<ul><li class="thought-item" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
+        '<div class="mc-thoughts"><div class="thought-item" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
         '<div class="thought-fields">' +
         emptyFields +
-        "</div></li></ul>";
+        "</div></div></div>";
       return true;
     }
 
@@ -1074,16 +1128,20 @@ export function clearThoughtValidationErrorsScript(): string {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return false;
+  var placeholders = window.__mcPlaceholders || {};
   var errored = content.querySelectorAll(".is-error-placeholder");
   for (var i = 0; i < errored.length; i++) {
     var el = errored[i];
     el.classList.remove("is-error-placeholder");
     if (el.classList.contains("thought-title")) {
-      el.setAttribute("data-placeholder", "Title");
+      el.setAttribute("data-placeholder", placeholders.title || "Title");
     } else if (window.__mcShowTitles) {
-      el.setAttribute("data-placeholder", "Summary");
+      el.setAttribute("data-placeholder", placeholders.summary || "Summary");
     } else {
-      el.setAttribute("data-placeholder", "Write Something...");
+      el.setAttribute(
+        "data-placeholder",
+        placeholders.bullet || "Write Something..."
+      );
     }
   }
   return true;
@@ -1094,14 +1152,13 @@ true;
 
 const GRAPH_BODY_PAD = `
       .thought-body,
-      li.thought-item.has-graph .thought-body,
-      li.thought-item:has(> .thought-graph) .thought-body,
-      html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
+      .thought-item.has-graph .thought-body,
+      .thought-item:has(> .thought-graph) .thought-body {
         padding-right: 0 !important;
       }
     `;
 
-/** Toggle simplified (plain bullets) chrome inside the editor WebView. */
+/** Toggle simplified chrome inside the editor WebView. */
 export function setSimplifiedModeScript(
   simplified: boolean,
   markerColor: string,
@@ -1128,12 +1185,9 @@ export function setSimplifiedModeScript(
         cursor: default !important;
       }
       .thought-stripe,
-      li.thought-item .thought-stripe,
-      li.thought-item.is-collapsed .thought-stripe {
+      .thought-item .thought-stripe {
         opacity: 0 !important;
         pointer-events: none !important;
-        transition: none !important;
-        animation: none !important;
       }
       .thought-dot {
         top: 6px !important;
@@ -1141,47 +1195,39 @@ export function setSimplifiedModeScript(
         height: 8px !important;
         margin-left: -4px !important;
         background-color: ${markerColor} !important;
-        transition: none !important;
-        animation: none !important;
-        transform: none !important;
       }
-      .thought-dot.is-bouncing {
-        animation: none !important;
-      }
-      li.thought-item.is-checklist .thought-stripe,
-      li.thought-item.is-checklist .thought-dot {
+      .thought-item.is-checklist .thought-stripe,
+      .thought-item.is-checklist .thought-dot {
         display: none !important;
       }
-      li.thought-item {
+      .thought-item {
         --category-stack: 0px !important;
         padding-right: 0 !important;
       }
       .thought-body {
         padding-right: 0 !important;
       }
-      li.thought-item.is-checklist .thought-check {
+      .thought-item.is-checklist .thought-check {
         left: 8px !important;
         right: auto !important;
-        transition: none !important;
         top: calc(
           var(--category-stack, 0px) + var(--check-nudge, 2px)
         ) !important;
       }
-      li.thought-item .thought-check-box,
-      li.thought-item[data-category-id] .thought-check-box {
+      .thought-item .thought-check-box,
+      .thought-item[data-category-id] .thought-check-box {
         border-color: ${markerColor} !important;
         background: ${surfaceColor} !important;
       }
-      li.thought-item.is-completed .thought-check-box,
-      li.thought-item[data-category-id].is-completed .thought-check-box {
+      .thought-item.is-completed .thought-check-box,
+      .thought-item[data-category-id].is-completed .thought-check-box {
         background-color: ${markerColor} !important;
         border-color: ${markerColor} !important;
       }
-      li.thought-item.is-completed .thought-check-box svg {
+      .thought-item.is-completed .thought-check-box svg {
         color: ${surfaceColor} !important;
       }
-      .thought-graph,
-      .thought-expand {
+      .thought-graph {
         display: none !important;
       }
     `
@@ -1199,29 +1245,7 @@ export function setSimplifiedModeScript(
   }
   style.textContent = ${JSON.stringify(css)};
 
-  var content =
-    document.querySelector(".pell-content") || document.getElementById("editor");
-  if (content) {
-    var lis = content.querySelectorAll("ul > li.thought-item, ul > li");
-    for (var i = 0; i < lis.length; i++) {
-      var li = lis[i];
-      if (li.__mcCollapseTimer) {
-        clearTimeout(li.__mcCollapseTimer);
-        li.__mcCollapseTimer = null;
-      }
-      if (li.__mcBounceTimer) {
-        clearTimeout(li.__mcBounceTimer);
-        li.__mcBounceTimer = null;
-      }
-      if (window.__mcSimplified) {
-        li.classList.remove("is-collapsed");
-      }
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-    }
-  }
-
-  if (!window.__mcSimplified && typeof window.__mcRefreshCategoryTimers === "function") {
+  if (typeof window.__mcRefreshCategoryTimers === "function") {
     window.__mcRefreshCategoryTimers();
   }
   if (typeof window.__mcSyncChecklistLayouts === "function") {
@@ -1241,179 +1265,11 @@ export const REFRESH_CATEGORY_TIMERS_SCRIPT = `
 })();
 `;
 
-/** Category fade/collapse for view-only editors (does not rebuild chrome). */
 export const CATEGORY_COLLAPSE_SCRIPT = `
 (function () {
-  var content =
-    document.querySelector(".pell-content") || document.getElementById("editor");
-  if (!content || window.__mcCategoryCollapseInstalled) return true;
-  window.__mcCategoryCollapseInstalled = true;
-
-  var CATEGORY_FADE_MS = 3000;
-  var COLLAPSE_TRANSITION_MS = 380;
-
-  function closest(node, predicate) {
-    while (node && node !== document.body) {
-      if (predicate(node)) return node;
-      node = node.parentNode;
-    }
-    return null;
-  }
-
-  function closestLi(node) {
-    return closest(node, function (n) {
-      return n.nodeName === "LI";
-    });
-  }
-
-  function closestClass(node, className) {
-    return closest(node, function (n) {
-      return n.classList && n.classList.contains(className);
-    });
-  }
-
-  function clearCollapseTimer(li) {
-    if (li && li.__mcCollapseTimer) {
-      clearTimeout(li.__mcCollapseTimer);
-      li.__mcCollapseTimer = null;
-    }
-  }
-
-  function bounceStripe(li) {
-    if (window.__mcSimplified) return;
-    if (li && li.classList.contains("is-checklist")) return;
-    var dot = li && li.querySelector(".thought-dot");
-    if (!dot) return;
-    if (li.__mcBounceTimer) {
-      clearTimeout(li.__mcBounceTimer);
-      li.__mcBounceTimer = null;
-    }
-    dot.classList.remove("is-bouncing");
-    void dot.offsetWidth;
-    dot.classList.add("is-bouncing");
-    li.__mcBounceTimer = setTimeout(function () {
-      dot.classList.remove("is-bouncing");
-      li.__mcBounceTimer = null;
-    }, 1800);
-  }
-
-  function collapseThoughtCategory(li) {
-    if (!li || window.__mcSimplified) return;
-    var title = li.querySelector(".thought-title");
-    if (title) title.__mcTitleH = title.scrollHeight;
-    li.classList.add("is-collapsed");
-    var expand = li.querySelector(".thought-expand");
-    if (expand) expand.setAttribute("aria-expanded", "false");
-    if (typeof window.__mcAnimateTitle === "function") {
-      window.__mcAnimateTitle(li);
-    }
-    if (!window.__mcEditing) {
-      li.__mcBounceTimer = setTimeout(function () {
-        bounceStripe(li);
-      }, COLLAPSE_TRANSITION_MS);
-    }
-    if (typeof window.__mcSyncChecklistLayouts === "function") {
-      window.__mcSyncChecklistLayouts();
-    }
-  }
-
-  function expandThoughtCategory(li, reschedule) {
-    if (!li) return;
-    clearCollapseTimer(li);
-    var stripe = li.querySelector(".thought-stripe");
-    if (stripe) stripe.classList.remove("is-bouncing");
-    li.classList.remove("is-collapsed");
-    var expand = li.querySelector(".thought-expand");
-    if (expand) expand.setAttribute("aria-expanded", "true");
-    if (typeof window.__mcAnimateTitle === "function") {
-      window.__mcAnimateTitle(li);
-    }
-    if (reschedule !== false && !window.__mcEditing) {
-      scheduleCollapse(li);
-    }
-    if (typeof window.__mcSyncChecklistLayouts === "function") {
-      window.__mcSyncChecklistLayouts();
-    }
-  }
-
-  function scheduleCollapse(li) {
-    if (!li || window.__mcSimplified || window.__mcEditing) return;
-    clearCollapseTimer(li);
-    li.classList.remove("is-collapsed");
-    var stripe = li.querySelector(".thought-stripe");
-    if (stripe) stripe.classList.remove("is-bouncing");
-    li.__mcCollapseTimer = setTimeout(function () {
-      collapseThoughtCategory(li);
-      li.__mcCollapseTimer = null;
-    }, CATEGORY_FADE_MS);
-  }
-
-  window.__mcExpandThoughtCategory = function (li) {
-    expandThoughtCategory(li, !window.__mcEditing);
-  };
-  window.__mcCollapseThoughtCategory = function (li) {
-    collapseThoughtCategory(li);
-  };
-
-  window.__mcRefreshCategoryTimers = function () {
-    if (window.__mcSimplified) return;
-    var lis = content.querySelectorAll("ul > li.thought-item");
-    for (var i = 0; i < lis.length; i++) {
-      if (window.__mcEditing) {
-        var expand = lis[i].querySelector(".thought-expand");
-        if (expand) {
-          expand.setAttribute(
-            "aria-expanded",
-            lis[i].classList.contains("is-collapsed") ? "false" : "true"
-          );
-        }
-      } else if (!lis[i].classList.contains("is-collapsed")) {
-        scheduleCollapse(lis[i]);
-      }
-    }
-  };
-
-  function openCategoryPicker(li) {
-    if (!li || !li.parentNode || !window.ReactNativeWebView) return;
-    var index = Array.prototype.indexOf.call(li.parentNode.children, li);
-    if (index < 0) return;
-    var now = Date.now();
-    if (window.__mcCategoryPickerAt && now - window.__mcCategoryPickerAt < 400) {
-      return;
-    }
-    window.__mcCategoryPickerAt = now;
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ type: "SELECT_CATEGORY", data: index })
-    );
-  }
-
-  function onViewThoughtPointer(e) {
-    if (window.__mcBulletGuardInstalled) return;
-    if (window.__mcEditing || window.__mcSimplified) return;
-    if (closestClass(e.target, "thought-check")) return;
-    if (closestClass(e.target, "thought-graph")) return;
-    if (closestClass(e.target, "thought-expand")) return;
-    var li = closestLi(e.target);
-    if (!li) return;
-    e.preventDefault();
-    e.stopPropagation();
-    var wantsPicker =
-      closestClass(e.target, "thought-category") ||
-      closestClass(e.target, "thought-stripe") ||
-      closestClass(e.target, "thought-rail");
-    if (wantsPicker && !li.classList.contains("is-collapsed")) {
-      expandThoughtCategory(li, true);
-      openCategoryPicker(li);
-      return;
-    }
-    expandThoughtCategory(li, true);
-  }
-
-  content.addEventListener("click", onViewThoughtPointer, true);
-  content.addEventListener("touchend", onViewThoughtPointer, true);
-
-  window.__mcRefreshCategoryTimers();
-  return true;
+  window.__mcExpandThoughtCategory = function () {};
+  window.__mcCollapseThoughtCategory = function () {};
+  true;
 })();
 `;
 
@@ -1427,20 +1283,12 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
 
   function closestGraph(node) {
     while (node && node !== content) {
-      if (
-        node.classList &&
-        node.classList.contains("thought-graph")
-      ) {
+      if (node.classList && node.classList.contains("thought-graph")) {
         return node;
       }
       node = node.parentNode;
     }
     return null;
-  }
-
-  function setGraphPressed(btn, pressed) {
-    if (!btn) return;
-    btn.classList.toggle("is-pressed", !!pressed);
   }
 
   function onGraphPointer(event) {
@@ -1453,23 +1301,11 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
     var now = Date.now();
     if (window.__mcGraphAt && now - window.__mcGraphAt < 400) return;
     window.__mcGraphAt = now;
-    setGraphPressed(btn, true);
-    setTimeout(function () {
-      setGraphPressed(btn, false);
-    }, 180);
     window.ReactNativeWebView.postMessage(
       JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
     );
   }
 
-  content.addEventListener(
-    "touchstart",
-    function (event) {
-      var btn = closestGraph(event.target);
-      if (btn) setGraphPressed(btn, true);
-    },
-    true
-  );
   content.addEventListener("click", onGraphPointer, true);
   content.addEventListener("touchend", onGraphPointer, true);
   return true;
@@ -1493,7 +1329,7 @@ export function setSelectedThoughtScript(index: number): string {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
-  var lis = content.querySelectorAll("ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   for (var i = 0; i < lis.length; i++) {
     lis[i].classList.toggle("is-selected", i === ${index});
   }
@@ -1549,7 +1385,7 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
-  var lis = content.querySelectorAll("ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   if (!lis.length) return true;
 
   function fieldOf(li) {
@@ -1557,9 +1393,9 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
     return li.querySelector(".thought-summary") || li.querySelector(".thought-title");
   }
 
-  function closestLi(node) {
+  function closestThought(node) {
     while (node && node !== document.body) {
-      if (node.nodeName === "LI") return node;
+      if (node.classList && node.classList.contains("thought-item")) return node;
       node = node.parentNode;
     }
     return null;
@@ -1585,7 +1421,7 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
   }
 
   var sel = window.getSelection();
-  var current = closestLi(sel && sel.anchorNode);
+  var current = closestThought(sel && sel.anchorNode);
   var currentField = fieldOf(current);
   var keepCaret =
     !atEnd &&
@@ -1604,7 +1440,7 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
       if (savedNode && content.contains(savedNode)) {
         sel.removeAllRanges();
         sel.addRange(saved);
-        current = closestLi(saved.startContainer);
+        current = closestThought(saved.startContainer);
         keepCaret = true;
       }
     } catch (err) {}
@@ -1716,7 +1552,7 @@ export const SYNC_CHECKLIST_LAYOUT_SCRIPT = `
 })();
 `;
 
-/** Checkbox chrome, layout, and completion toggles inside the pell WebView. */
+/** Checkbox chrome, layout, selection, and completion toggles. */
 export const CHECKLIST_SCRIPT = `
 (function () {
   var content =
@@ -1734,44 +1570,14 @@ export const CHECKLIST_SCRIPT = `
   window.__mcAnimateTitle = function (li) {
     if (!li) return;
     var title = li.querySelector(".thought-title");
-    var hasText = titlePlainText(title).length > 0;
-    li.classList.toggle("has-entered-title", hasText);
-    if (!title) return;
-
-    var collapsed = li.classList.contains("is-collapsed");
-
-    if (!hasText && !window.__mcEditing) {
-      title.style.maxHeight = "0px";
-      title.style.opacity = "0";
-      title.style.marginBottom = "0px";
-      title.style.minHeight = "0px";
-      title.style.overflow = "hidden";
-      title.style.padding = "0px";
-      return;
-    }
-
-    title.style.overflow = "hidden";
-    if (collapsed) {
-      var current = title.style.maxHeight;
-      if (!current || current === "none") {
-        title.style.maxHeight = (title.__mcTitleH || title.scrollHeight || 24) + "px";
-        void title.offsetHeight;
-      }
-      title.style.maxHeight = "0px";
-      title.style.opacity = "0";
-      title.style.marginBottom = "0px";
-      title.style.minHeight = "0px";
-      title.style.padding = "0px";
-      return;
-    }
-
-    var height = title.__mcTitleH || title.scrollHeight || 24;
-    title.style.minHeight = "";
-    title.style.marginBottom = "";
-    title.style.padding = "";
-    title.style.opacity = "";
-    title.style.maxHeight = height + "px";
+    li.classList.toggle("has-entered-title", titlePlainText(title).length > 0);
   };
+  if (typeof window.__mcExpandThoughtCategory !== "function") {
+    window.__mcExpandThoughtCategory = function () {};
+  }
+  if (typeof window.__mcCollapseThoughtCategory !== "function") {
+    window.__mcCollapseThoughtCategory = function () {};
+  }
 
   if (document.documentElement) {
     document.documentElement.classList.toggle(
@@ -1789,9 +1595,9 @@ export const CHECKLIST_SCRIPT = `
     return null;
   }
 
-  function closestLi(node) {
+  function closestThought(node) {
     return closest(node, function (n) {
-      return n.nodeName === "LI";
+      return n.classList && n.classList.contains("thought-item");
     });
   }
 
@@ -1885,37 +1691,18 @@ export const CHECKLIST_SCRIPT = `
     var title = li.querySelector(".thought-title");
     var summary = li.querySelector(".thought-summary");
     var graph = li.querySelector(".thought-graph");
-    var expand = li.querySelector(".thought-expand");
-    var collapsed = li.classList.contains("is-collapsed");
     var hasText = titlePlainText(title).length > 0;
     li.classList.toggle("has-entered-title", hasText);
-    var hasTitle = hasText && !collapsed;
-    li.classList.toggle("has-title", hasTitle);
+    li.classList.toggle("has-title", hasText);
+    li.classList.toggle("has-graph", !!graph);
 
-    var field = (hasTitle ? title : null) || summary || title;
+    var field = (hasText ? title : null) || summary || title;
     var lineH = fieldLineHeight(field);
     var fieldH = field ? field.offsetHeight : 0;
-    var singleLine = !hasTitle && fieldH <= lineH * 1.6;
-    li.classList.toggle("is-single-line", singleLine);
-    li.classList.toggle("has-graph", !!graph);
-    li.classList.toggle("has-expand", !!expand && !!window.__mcEditing);
+    li.classList.toggle("is-single-line", !hasText && fieldH <= lineH * 1.6);
 
-    if (graph && !graph.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        graph.classList.add("is-anchored");
-      });
-    }
-    if (expand && !expand.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        expand.classList.add("is-anchored");
-      });
-    }
-
-    // Keep top in CSS so it eases with the category line (0.38s).
-    // Graph button uses the same --category-stack offset — do not recenter
-    // on fields height or it will jump twice while the title animates.
     var target =
-      hasTitle && title && !window.__mcSimplified ? title : summary || title;
+      hasText && title && !window.__mcSimplified ? title : summary || title;
     if (target) {
       var alignLineH = fieldLineHeight(target);
       var checkH = (check && check.offsetHeight) || 22;
@@ -1928,35 +1715,19 @@ export const CHECKLIST_SCRIPT = `
       li.style.removeProperty("--check-nudge");
     }
 
-    var dot = ensureDot(li);
-    if (dot && !dot.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        dot.classList.add("is-anchored");
-      });
-    }
+    ensureDot(li);
 
     if (!check) return;
-
     check.style.left = "";
     check.style.right = "";
     check.style.top = "";
-
-    if (!completable) {
-      return;
-    }
-
-    if (!check.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        check.classList.add("is-anchored");
-      });
-    }
   }
 
   function syncAll() {
     var root =
       document.querySelector(".pell-content") || document.getElementById("editor");
     if (!root) return;
-    var lis = root.querySelectorAll("ul > li");
+    var lis = root.querySelectorAll(".thought-item");
     for (var i = 0; i < lis.length; i++) {
       syncChecklistLayout(lis[i]);
     }
@@ -1967,7 +1738,7 @@ export const CHECKLIST_SCRIPT = `
     var root =
       document.querySelector(".pell-content") || document.getElementById("editor");
     if (root) {
-      var rows = root.querySelectorAll("ul > li");
+      var rows = root.querySelectorAll(".thought-item");
       for (var i = 0; i < rows.length; i++) {
         rows[i].classList.toggle("is-selected", rows[i] === li);
       }
@@ -2011,8 +1782,8 @@ export const CHECKLIST_SCRIPT = `
 
   window.__mcSetThoughtType = function (type) {
     var sel = window.getSelection();
-    var li = closestLi(sel && sel.anchorNode);
-    if (!li) li = content.querySelector("ul > li");
+    var li = closestThought(sel && sel.anchorNode);
+    if (!li) li = content.querySelector(".thought-item.is-selected") || content.querySelector(".thought-item");
     if (!li) return true;
     applyThoughtType(li, type);
     syncChecklistLayout(li);
@@ -2047,8 +1818,7 @@ export const CHECKLIST_SCRIPT = `
         closestClass(node, "thought-rail") ||
         closestClass(node, "thought-stripe") ||
         closestClass(node, "thought-category") ||
-        closestClass(node, "thought-graph") ||
-        closestClass(node, "thought-expand")
+        closestClass(node, "thought-graph")
       );
     }
 
@@ -2062,7 +1832,7 @@ export const CHECKLIST_SCRIPT = `
       if (isCategoryChrome(e.target)) return;
       var check = closestClass(e.target, "thought-check");
       if (!check) return;
-      var li = closestLi(e.target);
+      var li = closestThought(e.target);
       e.preventDefault();
       e.stopPropagation();
       if (li) toggleCompleted(li);
@@ -2071,23 +1841,29 @@ export const CHECKLIST_SCRIPT = `
     document.addEventListener("click", onChecklistPointer, true);
     document.addEventListener("touchend", onChecklistPointer, true);
 
-    document.addEventListener(
-      "transitionend",
-      function (e) {
-        if (!eventInEditor(e)) return;
-        if (
-          !e.target ||
-          !e.target.classList ||
-          (!e.target.classList.contains("thought-category") &&
-            !e.target.classList.contains("thought-title"))
-        ) {
-          return;
-        }
-        var li = closestLi(e.target);
-        if (li) syncChecklistLayout(li);
-      },
-      true
-    );
+    function closestGraph(node) {
+      return closestClass(node, "thought-graph");
+    }
+
+    function onGraphPointer(event) {
+      if (!eventInEditor(event)) return;
+      var btn = closestGraph(event.target);
+      if (!btn) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var thoughtId = btn.getAttribute("data-thought-id");
+      if (!thoughtId || !window.ReactNativeWebView) return;
+      var now = Date.now();
+      if (window.__mcGraphAt && now - window.__mcGraphAt < 400) return;
+      window.__mcGraphAt = now;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
+      );
+    }
+
+    document.addEventListener("click", onGraphPointer, true);
+    document.addEventListener("touchend", onGraphPointer, true);
+    window.__mcGraphButtonInstalled = true;
 
     document.addEventListener("selectionchange", function () {
       if (!window.__mcEditing) return;
@@ -2103,7 +1879,7 @@ export const CHECKLIST_SCRIPT = `
           };
         } catch (err) {}
       }
-      var li = closestLi(sel && sel.anchorNode);
+      var li = closestThought(sel && sel.anchorNode);
       if (li) postCaretType(li);
     });
 
@@ -2111,7 +1887,7 @@ export const CHECKLIST_SCRIPT = `
       if (!window.__mcEditing) return;
       if (!eventInEditor(e)) return;
       var sel = window.getSelection();
-      var li = closestLi(sel && sel.anchorNode);
+      var li = closestThought(sel && sel.anchorNode);
       if (li) postCaretType(li);
     });
 
@@ -2168,15 +1944,15 @@ export const CHECKLIST_SCRIPT = `
       var field =
         closestClass(hit, "thought-summary") ||
         closestClass(hit, "thought-title");
-      if (field) return closestLi(field);
-      var fromHit = closestLi(hit);
+      if (field) return closestThought(field);
+      var fromHit = closestThought(hit);
       if (fromHit) {
         var hitField =
           fromHit.querySelector(".thought-summary") ||
           fromHit.querySelector(".thought-title");
         if (fieldTextContainsPoint(hitField, x, y)) return fromHit;
       }
-      var lis = root.querySelectorAll("ul > li");
+      var lis = root.querySelectorAll(".thought-item");
       for (var i = 0; i < lis.length; i++) {
         var nextField =
           lis[i].querySelector(".thought-summary") ||
@@ -2247,7 +2023,7 @@ export const CHECKLIST_SCRIPT = `
         }
         selectThought(
           thoughtAtPoint(e.clientX, e.clientY) ||
-            closestLi(
+            closestThought(
               closestClass(e.target, "thought-summary") ||
                 closestClass(e.target, "thought-title")
             )
