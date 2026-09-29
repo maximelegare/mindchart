@@ -3,6 +3,7 @@ import {
   assembleThought,
   NotesJoinThoughtsParsedJSONPageSchema,
   NotesJoinThoughtsParsedJSONPageSchemaModel,
+  type Thought,
 } from "@repo/zod-schemas";
 
 /** Unwrap legacy JSON-stringified note summaries from the DB. */
@@ -63,7 +64,8 @@ export const parseNoteAndThoughts = (
         : []
     )
       .filter(Boolean)
-      .map((thought: Record<string, unknown>) => assembleThought(thought)),
+      .map((thought: Record<string, unknown>) => assembleThought(thought))
+      .sort((a: Thought, b: Thought) => (a.position ?? 0) - (b.position ?? 0)),
   }));
 
   const result = z

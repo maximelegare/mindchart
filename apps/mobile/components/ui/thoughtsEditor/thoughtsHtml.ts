@@ -1,8 +1,13 @@
 import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
-import { getThoughtPlainText, type ThoughtType } from "@repo/zod-schemas";
+import {
+  getThoughtPlainText,
+  parseTextContentStyle,
+  type ThoughtType,
+} from "@repo/zod-schemas";
 import {
   convertThoughtType,
   createEmptyThought,
+  setTextThoughtStyle,
   setThoughtContentText,
   type ThoughtsFormValue,
 } from "./types";
@@ -548,7 +553,7 @@ function liToHtml(
     type: thought.type,
     checked: thought.type === "checkbox" ? thought.content.checked : false,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
-    inline: thought.type === "text" ? thought.inline : undefined,
+    inline: thought.type === "text" && thought.content.style === "inline",
   };
 
   if (showTitleField) {
@@ -650,6 +655,18 @@ function withParsedFields(
       },
     };
   }
+  if (thought.type === "text") {
+    return {
+      ...thought,
+      title: fields.title ?? thought.title,
+      categoryId: fields.categoryId,
+      semanticLabel: fields.semanticLabel,
+      content: {
+        text: fields.text,
+        style: parseTextContentStyle(thought.content.style),
+      },
+    };
+  }
   return {
     ...thought,
     title: fields.title ?? thought.title,
@@ -691,9 +708,16 @@ export function htmlToThoughts(
 
   const next = liItems.map((item, index) => {
     const base =
-      previous.find((thought) => thought.id === item.thoughtId) ??
-      previous[index] ??
-      createEmptyThought(noteId);
+      (item.thoughtId
+        ? previous.find((thought) => thought.id === item.thoughtId)
+        : undefined) ??
+      (item.thoughtId
+        ? {
+            ...createEmptyThought(noteId),
+            id: item.thoughtId,
+            thoughtId: item.thoughtId,
+          }
+        : (previous[index] ?? createEmptyThought(noteId)));
     const contentHtml = stripChrome(item.innerHtml);
     const categoryId = item.categoryId || base.categoryId || "uncategorized";
     const nextType = item.type ?? base.type ?? "li";
@@ -711,9 +735,8 @@ export function htmlToThoughts(
         thought.type === nextType
           ? thought
           : convertThoughtType(thought, nextType);
-      return nextType === "text" && item.inline
-        ? { ...next, inline: true }
-        : { ...next, inline: undefined };
+      if (nextType !== "text") return next;
+      return setTextThoughtStyle(next, item.inline ? "inline" : "block");
     };
 
     if (hasTitleField || showTitles) {

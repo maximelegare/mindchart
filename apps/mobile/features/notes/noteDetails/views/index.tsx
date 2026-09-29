@@ -14,6 +14,7 @@ import {
 import {
   assembleThought,
   getThoughtPlainText,
+  parseTextContentStyle,
   type FeelingValue,
   Person,
 } from "@repo/zod-schemas";
@@ -227,7 +228,7 @@ function NoteDetailsContent({
             stripHtml(getThoughtPlainText(thought)) ||
             thought.semanticLabel.trim()
         )
-        .map((thought) => {
+        .map((thought, index) => {
           const thoughtTitle = stripHtml(thought.title);
           const text = stripHtml(getThoughtPlainText(thought)) || thoughtTitle;
           const semanticLabel =
@@ -238,11 +239,20 @@ function NoteDetailsContent({
                   ...thought,
                   content: { text, checked: thought.content.checked },
                 }
-              : { ...thought, content: { text } };
+              : thought.type === "text"
+                ? {
+                    ...thought,
+                    content: {
+                      text,
+                      style: parseTextContentStyle(thought.content.style),
+                    },
+                  }
+                : { ...thought, content: { text } };
           return {
             ...withText,
             title: thought.title.trim(),
             semanticLabel,
+            position: index,
             status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
               | "new"
               | "updated",

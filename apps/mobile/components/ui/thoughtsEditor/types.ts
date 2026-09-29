@@ -1,14 +1,12 @@
 import {
   assembleThought,
+  parseTextContentStyle,
   type Thought,
   type ThoughtType,
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 
-export type ThoughtsFormValue = Thought & {
-  /** Paragraph pieces that should sit on the same line after a split. */
-  inline?: boolean;
-};
+export type ThoughtsFormValue = Thought;
 
 export type ThoughtsEditorFormValues = {
   thoughts: ThoughtsFormValue[];
@@ -41,21 +39,26 @@ export const convertThoughtType = (
   if (thought.type === type) return thought;
   const text = thought.content.text;
   const contentId = generateID();
-  const inline = type === "text" ? thought.inline : undefined;
   if (type === "checkbox") {
     return {
       ...thought,
       type,
       contentId,
-      inline,
       content: { text, checked: false },
+    };
+  }
+  if (type === "text") {
+    return {
+      ...thought,
+      type,
+      contentId,
+      content: { text, style: "block" },
     };
   }
   return {
     ...thought,
     type,
     contentId,
-    inline,
     content: { text },
   };
 };
@@ -67,5 +70,19 @@ export const setThoughtContentText = (
   if (thought.type === "checkbox") {
     return { ...thought, content: { text, checked: thought.content.checked } };
   }
+  if (thought.type === "text") {
+    return {
+      ...thought,
+      content: { text, style: parseTextContentStyle(thought.content.style) },
+    };
+  }
   return { ...thought, content: { text } };
+};
+
+export const setTextThoughtStyle = (
+  thought: ThoughtsFormValue,
+  style: "block" | "inline"
+): ThoughtsFormValue => {
+  if (thought.type !== "text") return thought;
+  return { ...thought, content: { ...thought.content, style } };
 };

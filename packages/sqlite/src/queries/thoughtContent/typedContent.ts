@@ -24,6 +24,7 @@ const insertTypeRow = async (tx: DB, thought: Thought) => {
     await tx.insert(TextContentTable).values({
       id: thought.contentId,
       text: thought.content.text,
+      style: thought.content.style === "inline" ? "inline" : "block",
     });
     return;
   }

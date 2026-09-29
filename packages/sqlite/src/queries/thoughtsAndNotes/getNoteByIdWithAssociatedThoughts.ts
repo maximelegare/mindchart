@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import { DB } from "../../utils/initialize/getOPDatabase";
 import {
   ThoughtTable,
@@ -11,7 +10,7 @@ import {
 } from "../../schema.root";
 
 import { eq } from "drizzle-orm";
-import { thoughtJsonObjectSql } from "../thoughtContent/thoughtJson";
+import { thoughtsJsonGroupArraySql } from "../thoughtContent/thoughtJson";
 
 export const getNoteByIdWithAssociatedThoughtsQuery = async (
   db: DB,
@@ -33,11 +32,7 @@ export const getNoteByIdWithAssociatedThoughtsQuery = async (
         location_name: LocationTable.name,
         folder_id: NoteTable.folderId,
         folder_label: FolderTable.label,
-        thoughts_json: sql<string>`
-          json_group_array(
-            ${thoughtJsonObjectSql}
-          ) FILTER (WHERE ${ThoughtTable.id} IS NOT NULL)
-        `.as("thoughts_json"),
+        thoughts_json: thoughtsJsonGroupArraySql.as("thoughts_json"),
       })
       .from(NoteTable)
       .leftJoin(ThoughtTable, eq(ThoughtTable.noteId, NoteTable.id))

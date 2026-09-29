@@ -5,6 +5,7 @@ import {
   Thought,
   assembleThought,
   getThoughtPlainText,
+  parseTextContentStyle,
 } from "@repo/zod-schemas";
 
 import React from "react";
@@ -171,7 +172,15 @@ export const ManualNoteForm = ({
                 ...thought,
                 content: { text, checked: thought.content.checked },
               }
-            : { ...thought, content: { text } };
+            : thought.type === "text"
+              ? {
+                  ...thought,
+                  content: {
+                    text,
+                    style: parseTextContentStyle(thought.content.style),
+                  },
+                }
+              : { ...thought, content: { text } };
         return {
           ...next,
           title,

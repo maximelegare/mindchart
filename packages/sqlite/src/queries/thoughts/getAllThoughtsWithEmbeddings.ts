@@ -29,6 +29,7 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
           ${CheckboxContentTable.text},
           ''
         )`,
+        contentStyle: TextContentTable.style,
         checked: CheckboxContentTable.checked,
         folderId: NoteTable.folderId,
         folderLabel: FolderTable.label,
@@ -65,6 +66,7 @@ export const getAllThoughtsWithEmbeddingsQuery = async (db: DB) => {
         type: row.type,
         contentId: row.contentId,
         contentText: row.contentText,
+        contentStyle: row.contentStyle,
         checked: row.checked,
         folderId: row.folderId,
         folderLabel: row.folderLabel,

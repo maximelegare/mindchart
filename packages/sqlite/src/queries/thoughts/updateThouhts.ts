@@ -10,7 +10,7 @@ import {
   updateThoughtFts,
 } from "../thoughtContent/typedContent";
 
-const thoughtRow = (thought: Thought) => ({
+const thoughtRow = (thought: Thought, position = 0) => ({
   id: thought.id,
   noteId: thought.noteId,
   type: thought.type,
@@ -18,6 +18,7 @@ const thoughtRow = (thought: Thought) => ({
   title: thought.title,
   semanticLabel: thought.semanticLabel,
   categoryId: thought.categoryId,
+  position: thought.position ?? position,
   createdAt: thought.createdAt ?? new Date().toISOString(),
 });
 
@@ -40,14 +41,14 @@ export const updateThoughtsQuery = async (
     const toInsert = validData.filter((t) => t.status === "new");
     const toUpdate = validData.filter((t) => t.status === "updated");
 
-    for (const thought of toInsert) {
+    for (const [index, thought] of toInsert.entries()) {
       await insertTypedContent(db, thought);
-      await db.insert(ThoughtTable).values(thoughtRow(thought));
+      await db.insert(ThoughtTable).values(thoughtRow(thought, index));
       await insertThoughtFts(db, thought);
       inserted += 1;
     }
 
-    for (const thought of toUpdate) {
+    for (const [index, thought] of toUpdate.entries()) {
       const [existing] = await db
         .select({ contentId: ThoughtTable.contentId })
         .from(ThoughtTable)
@@ -69,6 +70,7 @@ export const updateThoughtsQuery = async (
           categoryId: thought.categoryId,
           type: thought.type,
           contentId: thought.contentId,
+          position: thought.position ?? index,
         })
         .where(eq(ThoughtTable.id, thought.id));
       await updateThoughtFts(db, thought);

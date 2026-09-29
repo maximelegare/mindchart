@@ -27,6 +27,7 @@ export const TextContentTable = sqliteTable(
   {
     id: text("id").notNull().primaryKey(),
     text: text("text").notNull().default(""),
+    style: text("style").notNull().default("block"),
   },
   (table) => [
     foreignKey({
@@ -78,6 +79,7 @@ export const ThoughtTable = sqliteTable(
     title: text("title"),
     semanticLabel: text("semantic_label"),
     categoryId: text("category_id").notNull().default("uncategorized"),
+    position: integer("position").notNull().default(0),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

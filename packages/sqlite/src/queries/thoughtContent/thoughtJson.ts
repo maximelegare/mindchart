@@ -18,6 +18,8 @@ export const thoughtJsonObjectSql = sql`
     'noteId', ${ThoughtTable.noteId},
     'type', ${ThoughtTable.type},
     'contentId', ${ThoughtTable.contentId},
+    'position', ${ThoughtTable.position},
+    'contentStyle', COALESCE(${TextContentTable.style}, 'block'),
     'contentText', COALESCE(
       ${TextContentTable.text},
       ${ListItemContentTable.text},
@@ -26,4 +28,11 @@ export const thoughtJsonObjectSql = sql`
     ),
     'checked', ${CheckboxContentTable.checked}
   )
+`;
+
+export const thoughtsJsonGroupArraySql = sql<string>`
+  json_group_array(
+    ${thoughtJsonObjectSql}
+    ORDER BY ${ThoughtTable.position} ASC, ${ThoughtTable.id} ASC
+  ) FILTER (WHERE ${ThoughtTable.id} IS NOT NULL)
 `;

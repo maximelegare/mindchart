@@ -37,9 +37,17 @@ const thoughtFromLocalAi = (t: LocalAIResThought, noteId: string): Thought => {
     };
   }
 
+  if (type === "text") {
+    return {
+      ...base,
+      type: "text",
+      content: { text: thoughtText, style: "block" },
+    };
+  }
+
   return {
     ...base,
-    type,
+    type: "li",
     content: { text: thoughtText },
   };
 };

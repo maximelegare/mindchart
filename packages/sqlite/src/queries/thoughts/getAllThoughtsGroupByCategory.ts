@@ -31,6 +31,7 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
           ${CheckboxContentTable.text},
           ''
         )`,
+        content_style: TextContentTable.style,
         checked: CheckboxContentTable.checked,
       })
       .from(ThoughtTable)
@@ -73,6 +74,7 @@ export const getAllThoughtsGroupByCategoryQuery = async (db: DB) => {
         type: row.thought_type,
         contentId: row.thought_content_id,
         contentText: row.content_text,
+        contentStyle: row.content_style,
         checked: row.checked,
       });
 

@@ -10,7 +10,7 @@ import {
   CHECKBOX_MARK_SIZE,
   StaticCheckboxMark,
 } from "../shared/staticCheckboxMark";
-import { getThoughtPlainText } from "@repo/zod-schemas";
+import { getThoughtPlainText, parseTextContentStyle } from "@repo/zod-schemas";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -30,6 +30,7 @@ type ThoughtType = "text" | "li" | "checkbox";
 export type NoteOverviewItem = {
   type: ThoughtType;
   text: string;
+  style?: "block" | "inline";
   isCompleted?: boolean;
   markerColor?: string;
 };
@@ -40,6 +41,7 @@ export function thoughtToOverviewItem(thought: {
   content?: {
     text?: string;
     checked?: boolean;
+    style?: string;
   };
   summary?: string | null;
   isCompletable?: boolean;
@@ -65,6 +67,10 @@ export function thoughtToOverviewItem(thought: {
   return {
     type,
     text,
+    style:
+      type === "text"
+        ? parseTextContentStyle(thought.content?.style)
+        : undefined,
     isCompleted,
   };
 }
@@ -108,7 +114,11 @@ const ThoughtOverviewItem = memo(
           </View>
         )}
 
-        <View className="flex-1">
+        <View
+          className={
+            isParagraph && item.style === "inline" ? undefined : "flex-1"
+          }
+        >
           <Typography
             variant="p"
             padding={false}
@@ -124,6 +134,7 @@ const ThoughtOverviewItem = memo(
             }}
           >
             {item.text}
+            {isParagraph && item.style === "inline" ? " " : ""}
           </Typography>
         </View>
       </View>
@@ -146,11 +157,19 @@ type ListItemProps = {
   onPress?: (id: string) => void;
 };
 
+function isInlineParagraph(item: NoteOverviewItem): boolean {
+  return item.type === "text" && item.style === "inline";
+}
+
 function getItemGap(
   current: NoteOverviewItem,
   next?: NoteOverviewItem
 ): number {
   if (!next) {
+    return 0;
+  }
+
+  if (isInlineParagraph(current) && isInlineParagraph(next)) {
     return 0;
   }
 
@@ -217,13 +236,17 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
           <CardTitleRow title={title} menu={<NoteBottomSheet noteId={id} />} />
 
           {visibleItems.length > 0 && (
-            <View className="mt-4 ml-2" pointerEvents="none">
+            <View className="mt-4 ml-2 flex-row flex-wrap" pointerEvents="none">
               {visibleItems.map((item, index) => {
                 const nextItem = visibleItems[index + 1];
                 const gap = getItemGap(item, nextItem);
+                const inline = isInlineParagraph(item);
 
                 return (
-                  <View key={index}>
+                  <View
+                    key={index}
+                    style={inline ? undefined : { width: "100%" }}
+                  >
                     <ThoughtOverviewItem
                       item={item}
                       markerColor={markerColor}

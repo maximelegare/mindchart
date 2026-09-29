@@ -6,7 +6,7 @@ import {
   insertTypedContent,
 } from "../thoughtContent/typedContent";
 
-const thoughtRow = (thought: Thought) => ({
+const thoughtRow = (thought: Thought, position = 0) => ({
   id: thought.id,
   noteId: thought.noteId,
   type: thought.type,
@@ -14,6 +14,7 @@ const thoughtRow = (thought: Thought) => ({
   title: thought.title,
   semanticLabel: thought.semanticLabel,
   categoryId: thought.categoryId,
+  position: thought.position ?? position,
   createdAt: thought.createdAt ?? new Date().toISOString(),
 });
 
@@ -21,9 +22,11 @@ export const insertThoughtsQuery = async (db: DB, data: Thought[]) => {
   // Sequential on the caller connection. Nested `db.transaction` inside
   // `runRawSqliteTransaction` hits "cannot start a transaction within a
   // transaction" on OP SQLite.
-  for (const thought of data) {
+  for (let index = 0; index < data.length; index++) {
+    const thought = data[index];
+    if (!thought) continue;
     await insertTypedContent(db, thought);
-    await db.insert(ThoughtTable).values(thoughtRow(thought));
+    await db.insert(ThoughtTable).values(thoughtRow(thought, index));
     await insertThoughtFts(db, thought);
   }
 };

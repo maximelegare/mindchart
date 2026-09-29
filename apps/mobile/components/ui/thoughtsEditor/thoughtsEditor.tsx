@@ -36,6 +36,7 @@ import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
 import {
   convertThoughtType,
   createEmptyThought,
+  setTextThoughtStyle,
   setThoughtContentText,
   type ThoughtsEditorFormValues,
   type ThoughtsFormValue,
@@ -1103,17 +1104,26 @@ function ThoughtsEditorInner(
       const keptText = payload.newSide === "left" ? rightText : leftText;
       const created = createEmptyThought(noteId, source.type);
       const newThought = setThoughtContentText(
-        {
-          ...created,
-          id: payload.newThoughtId,
-          thoughtId: payload.newThoughtId,
-          categoryId: splitCategoryId ?? "uncategorized",
-          inline: source.type === "text" ? true : undefined,
-        },
+        source.type === "text"
+          ? setTextThoughtStyle(
+              {
+                ...created,
+                id: payload.newThoughtId,
+                thoughtId: payload.newThoughtId,
+                categoryId: splitCategoryId ?? "uncategorized",
+              },
+              "inline"
+            )
+          : {
+              ...created,
+              id: payload.newThoughtId,
+              thoughtId: payload.newThoughtId,
+              categoryId: splitCategoryId ?? "uncategorized",
+            },
         newText
       );
       const kept = setThoughtContentText(
-        source.type === "text" ? { ...source, inline: true } : source,
+        source.type === "text" ? setTextThoughtStyle(source, "inline") : source,
         keptText
       );
       const next =
@@ -1698,8 +1708,13 @@ function ThoughtsEditorInner(
                 `,
                 cssText: `
                   .mc-thoughts {
-                    padding-left: 0;
+                    padding-left: 8px;
+                    padding-right: 8px;
                     margin: 0;
+                  }
+                  .thought-item:not(.is-inline) {
+                    margin-left: -8px;
+                    margin-right: -8px;
                   }
                   .pell-content ul,
                   .pell-content ol {
@@ -2195,6 +2210,14 @@ function ThoughtsEditorInner(
                     padding-right: 0;
                     margin-bottom: 0;
                     vertical-align: baseline;
+                  }
+                  .thought-item.is-inline + .thought-item:not(.is-inline) {
+                    margin-top: 0.85em;
+                  }
+                  .mc-thoughts:has(> .thought-item.is-inline:last-child)::after {
+                    content: "";
+                    display: block;
+                    height: 0.85em;
                   }
                   .thought-item.is-inline .thought-rail,
                   .thought-item.is-inline .thought-dot,

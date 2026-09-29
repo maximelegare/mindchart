@@ -95,11 +95,19 @@ export const ThoughtBaseSchema = z
     categoryId: z.string(),
     semanticLabel: z.string(),
     createdAt: z.string().nullable(),
+    position: z.number().int().optional(),
   })
   .merge(ThoughtJoinFieldsSchema);
 
+export const TEXT_CONTENT_STYLES = ["block", "inline"] as const;
+export type TextContentStyle = (typeof TEXT_CONTENT_STYLES)[number];
+
+export const parseTextContentStyle = (value: unknown): TextContentStyle =>
+  value === "inline" ? "inline" : "block";
+
 export const TextThoughtContentSchema = z.object({
   text: z.string(),
+  style: z.enum(TEXT_CONTENT_STYLES).optional().default("block"),
 });
 
 export const ListItemThoughtContentSchema = z.object({
@@ -145,7 +153,7 @@ export const getThoughtPlainText = (thought: {
 }): string => thought.content.text ?? "";
 
 type LooseThoughtRecord = Record<string, unknown> & {
-  content?: { text?: unknown; checked?: unknown } | null;
+  content?: { text?: unknown; checked?: unknown; style?: unknown } | null;
 };
 
 const asString = (value: unknown, fallback = ""): string =>
@@ -177,6 +185,15 @@ export const assembleThought = (raw: LooseThoughtRecord): Thought => {
     folderId: (raw.folderId as string | null | undefined) ?? undefined,
     folderLabel: (raw.folderLabel as string | null | undefined) ?? undefined,
     folderPath: (raw.folderPath as string | null | undefined) ?? undefined,
+    position: (() => {
+      const value =
+        typeof raw.position === "number"
+          ? raw.position
+          : typeof raw.position === "string" && raw.position.trim() !== ""
+            ? Number(raw.position)
+            : NaN;
+      return Number.isFinite(value) ? value : undefined;
+    })(),
   };
 
   if (type === "checkbox") {
@@ -191,7 +208,10 @@ export const assembleThought = (raw: LooseThoughtRecord): Thought => {
   }
 
   if (type === "text") {
-    return { ...base, type, content: { text } };
+    const style = parseTextContentStyle(
+      nested.style ?? raw.contentStyle ?? raw.style
+    );
+    return { ...base, type, content: { text, style } };
   }
 
   return { ...base, type: "li", content: { text } };
