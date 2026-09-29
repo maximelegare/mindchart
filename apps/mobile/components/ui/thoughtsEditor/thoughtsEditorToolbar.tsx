@@ -547,6 +547,12 @@ function DetailsToolbar({
     scrollRef.current?.scrollTo({ x: next * pageWidth, animated: true });
   };
 
+  React.useEffect(() => {
+    if (splitSide) return;
+    setPage(0);
+    scrollRef.current?.scrollTo({ x: 0, animated: false });
+  }, [splitSide]);
+
   return (
     <View
       className="flex-row items-center"
