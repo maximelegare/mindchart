@@ -121,7 +121,7 @@ export function thoughtsEditorShowCategoriesAccessibilityLabel() {
 export function thoughtsEditorCategoryOpacityAccessibilityLabel() {
   return fbs(
     "Adjust category opacity",
-    "Accessibility label for long-press category opacity slider"
+    "Accessibility label for category opacity slider"
   );
 }
 

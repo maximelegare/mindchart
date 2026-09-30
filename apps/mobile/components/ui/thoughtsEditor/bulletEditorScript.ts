@@ -1403,12 +1403,13 @@ export function setCategoryOpacityScript(opacity: number): string {
 (function () {
   var o = ${value};
   window.__mcCategoryOpacity = o;
+  var scale = o / 0.6;
   var apply = function (el) {
     if (!el || !el.style) return;
-    el.style.setProperty("--mc-cat-wash", 18 * o + "%");
-    el.style.setProperty("--mc-cat-wash-selected", 34 * o + "%");
-    el.style.setProperty("--mc-cat-wash-plain", 6 * o + "%");
-    el.style.setProperty("--mc-cat-wash-plain-selected", 16 * o + "%");
+    el.style.setProperty("--mc-cat-wash", 18 * scale + "%");
+    el.style.setProperty("--mc-cat-wash-selected", 34 * scale + "%");
+    el.style.setProperty("--mc-cat-wash-plain", 6 * scale + "%");
+    el.style.setProperty("--mc-cat-wash-plain-selected", 16 * scale + "%");
   };
   apply(document.documentElement);
   apply(document.body);

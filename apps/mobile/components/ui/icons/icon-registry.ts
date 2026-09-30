@@ -31,8 +31,11 @@ export type IconName =
   | "download"
   | "drop-half-bottom"
   | "drop-slash"
+  | "droplet-off"
+  | "droplet"
   | "ellipsis-vertical"
   | "ellipsis"
+  | "eye-off"
   | "eye"
   | "folder-tree"
   | "folder"
@@ -218,6 +221,14 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 256 256",
     content: `<path fill="currentColor" d="M53.92 34.62a8 8 0 1 0-11.84 10.76l22.64 24.91C48.32 95 40 119.78 40 144a88 88 0 0 0 149.21 63.22l12.87 14.16a8 8 0 1 0 11.84-10.76ZM128 216a72.08 72.08 0 0 1-72-72c0-19.93 6.68-40.57 19.86-61.46l102.57 112.82A71.84 71.84 0 0 1 128 216M90 50.51a8 8 0 0 1-.27-11.31a248 248 0 0 1 33.68-29.75a8 8 0 0 1 9.18 0C136 11.83 216 68.7 216 144a88 88 0 0 1-3.15 23.4a8 8 0 0 1-7.71 5.88A7.8 7.8 0 0 1 203 173a8 8 0 0 1-5.59-9.83A72.6 72.6 0 0 0 200 144c0-57.24-55.48-105-72-118a252 252 0 0 0-26.66 24.23a8 8 0 0 1-11.34.28"></path>`,
   },
+  "droplet-off": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M18.715 13.186C18.29 11.858 17.384 10.349 16 9c-1.5-1.6-3.5-4-4-6.5-.4 2.1-1.5 3.8-2.7 5.2"></path><path d="m2 2 20 20"></path><path d="M8.587 8.464C6.4 11 5 13 5 15a7 7 0 0 0 12.27 4.268"></path><path d="M19.144 19.144A7 7 0 0 0 19 15c0-.7-.1-1.4-.3-2.1"></path></g>`,
+  },
+  droplet: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></g>`,
+  },
   "ellipsis-vertical": {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></g>`,
@@ -225,6 +236,10 @@ export const ICON_METADATA: Record<
   ellipsis: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></g>`,
+  },
+  "eye-off": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575a1 1 0 0 1 0 .696a10.8 10.8 0 0 1-1.444 2.49m-6.41-.679a3 3 0 0 1-4.242-4.242"></path><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 4.446-5.143M2 2l20 20"></path></g>`,
   },
   eye: {
     viewBox: "0 0 24 24",

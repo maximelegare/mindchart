@@ -645,6 +645,7 @@ function DetailsToolbar({
   );
 
   const openOpacityPopup = () => {
+    if (!categoriesShowing) onToggleCategories();
     blendRef.current?.measureInWindow((x, y, width) => {
       setOpacityPopupAnchor({ x, y, width });
       setOpacityPopupVisible(true);
@@ -788,17 +789,13 @@ function DetailsToolbar({
               ]}
             >
               <Pressable
-                ref={blendRef}
                 onPress={onToggleCategories}
-                onLongPress={openOpacityPopup}
-                delayLongPress={350}
                 accessibilityRole="button"
                 accessibilityLabel={
                   categoriesShowing
                     ? thoughtsEditorHideCategoriesAccessibilityLabel()
                     : thoughtsEditorShowCategoriesAccessibilityLabel()
                 }
-                accessibilityHint={thoughtsEditorCategoryOpacityAccessibilityLabel()}
                 accessibilityState={{ selected: categoriesShowing }}
                 className="h-10 w-10 items-center justify-center rounded-md"
                 style={
@@ -808,7 +805,26 @@ function DetailsToolbar({
                 }
               >
                 <Icon
-                  name={categoriesShowing ? "drop-half-bottom" : "drop-slash"}
+                  name={categoriesShowing ? "eye" : "eye-off"}
+                  size={20}
+                  color={categoriesShowing ? "primary" : "muted-foreground"}
+                />
+              </Pressable>
+              <Pressable
+                ref={blendRef}
+                onPress={openOpacityPopup}
+                accessibilityRole="button"
+                accessibilityLabel={thoughtsEditorCategoryOpacityAccessibilityLabel()}
+                accessibilityState={{ selected: categoriesShowing }}
+                className="h-10 w-10 items-center justify-center rounded-md"
+                style={
+                  categoriesShowing
+                    ? { backgroundColor: hsl("border", colorScheme) }
+                    : { opacity: 0.45 }
+                }
+              >
+                <Icon
+                  name={categoriesShowing ? "droplet" : "droplet-off"}
                   size={20}
                   color={categoriesShowing ? "primary" : "muted-foreground"}
                 />
