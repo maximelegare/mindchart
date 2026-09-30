@@ -54,7 +54,16 @@ export const updateThoughtsQuery = async (
         .from(ThoughtTable)
         .where(eq(ThoughtTable.id, thought.id))
         .limit(1);
-      const previousContentId = existing?.contentId;
+
+      if (!existing) {
+        await insertTypedContent(db, thought);
+        await db.insert(ThoughtTable).values(thoughtRow(thought, index));
+        await insertThoughtFts(db, thought);
+        inserted += 1;
+        continue;
+      }
+
+      const previousContentId = existing.contentId;
 
       if (!previousContentId || previousContentId !== thought.contentId) {
         await insertTypedContent(db, thought);

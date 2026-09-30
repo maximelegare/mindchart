@@ -196,6 +196,8 @@ function NoteDetailsContent({
     const title = (titleDraftRef.current ?? data.title ?? "").trim();
     setValue("title", title, { shouldDirty: true });
 
+    await thoughtsEditorRef.current?.flushThoughts();
+
     let hasError = false;
 
     const titleMissing = !title;
@@ -222,10 +224,11 @@ function NoteDetailsContent({
     Keyboard.dismiss();
     onSavingChange?.(true);
     try {
+      const flushedThoughts = getValues("thoughts");
       // Drop fully empty bullets on save; keep only contentful thoughts.
       const showTitles =
         thoughtsEditorRef.current?.titlesEnabled() ?? note.showTitles ?? false;
-      const nextThoughts = data.thoughts
+      const nextThoughts = flushedThoughts
         .filter(
           (thought) =>
             stripHtml(thought.title) ||
@@ -301,6 +304,11 @@ function NoteDetailsContent({
       setTitleRequiredError(false);
       onFolderErrorChange?.(false);
       thoughtsEditorRef.current?.clearValidationErrors();
+      setValue(
+        "thoughts",
+        nextThoughts.map(({ status: _status, ...thought }) => thought),
+        { shouldDirty: false }
+      );
       keepDraftOnExitRef.current = true;
       onEditingChange(false);
     } finally {

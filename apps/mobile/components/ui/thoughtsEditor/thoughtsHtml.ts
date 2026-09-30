@@ -235,7 +235,9 @@ function extractThoughtItemDivs(html: string): ThoughtItemRecord[] {
       }
       if (!isSelfClose) depth += 1;
     }
-    if (!closed) break;
+    if (!closed) {
+      openRegex.lastIndex = contentStart;
+    }
   }
   return items;
 }
@@ -794,14 +796,7 @@ export function htmlToThoughts(
     });
   });
 
-  const trimmed = next.filter(
-    (thought, index) =>
-      index === 0 ||
-      stripHtml(thought.title).length > 0 ||
-      stripHtml(getThoughtPlainText(thought)).length > 0
-  );
-
-  return trimmed.length > 0 ? trimmed : [createEmptyThought(noteId)];
+  return next.length > 0 ? next : [createEmptyThought(noteId)];
 }
 
 /** Build a JS snippet that updates one thought's category chrome in the editor. */

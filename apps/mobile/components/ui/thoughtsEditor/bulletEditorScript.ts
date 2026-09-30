@@ -270,10 +270,24 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         : mcPh("bullet", "Write Something...");
     }
 
+    function newThoughtId() {
+      return (
+        "t" +
+        Date.now().toString(36) +
+        Math.random().toString(36).slice(2, 10)
+      );
+    }
+
+    function ensureThoughtId(li) {
+      if (!li || li.getAttribute("data-thought-id")) return;
+      li.setAttribute("data-thought-id", newThoughtId());
+    }
+
     function ensureCategoryChrome(li) {
       if (!li) return;
       var categoryId = liCategoryId(li);
       li.classList.add("thought-item");
+      ensureThoughtId(li);
       li.setAttribute("data-category-id", categoryId);
       if (!li.getAttribute("data-thought-type")) {
         li.setAttribute("data-thought-type", "li");
@@ -405,6 +419,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         (thoughtType === "text" ? " is-block" : "") +
         (completable ? " is-checklist" : "");
       created.setAttribute("data-thought-type", thoughtType);
+      created.setAttribute("data-thought-id", newThoughtId());
       created.setAttribute("data-category-id", "uncategorized");
       created.setAttribute("data-completable", completable ? "true" : "false");
       created.setAttribute("data-completed", "false");
@@ -1396,6 +1411,20 @@ export function setMergeHighlightScript(indexes: number[]): string {
 })();
 `;
 }
+
+export const REQUEST_EDITOR_HTML_SCRIPT = `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  var html = content ? content.innerHTML : "";
+  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ type: "HTML_SYNC", data: html })
+    );
+  }
+  true;
+})();
+`;
 
 export function setCategoryOpacityScript(opacity: number): string {
   const value = Math.min(1, Math.max(0, Number(opacity) || 0));

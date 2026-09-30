@@ -67,6 +67,7 @@ import {
   setThoughtTextEditableScript,
   setShowCategoryColorsScript,
   setCategoryOpacityScript,
+  REQUEST_EDITOR_HTML_SCRIPT,
   focusThoughtScript,
   THOUGHT_SPLIT_SCRIPT,
   startThoughtSplitScript,
@@ -343,6 +344,8 @@ export type ThoughtsEditorHandle = {
   clearValidationErrors: () => void;
   /** Whether any thought currently has a title. */
   titlesEnabled: () => boolean;
+  /** Pull live WebView HTML into form state before save. */
+  flushThoughts: () => Promise<ThoughtsFormValue[]>;
 };
 
 function ThoughtsEditorInner(
@@ -438,6 +441,10 @@ function ThoughtsEditorInner(
   simplifiedRef.current = effectiveSimplified;
   const hideCategoriesRef = React.useRef(hideCategories);
   hideCategoriesRef.current = hideCategories;
+  const lastHtmlRef = React.useRef("");
+  const pendingHtmlSyncRef = React.useRef<((html: string) => void) | null>(
+    null
+  );
   const mutedFg = hsl("muted-foreground", colorScheme);
   const cardColor = hsl("card", colorScheme);
   const surfaceColor = plain
@@ -844,6 +851,7 @@ function ThoughtsEditorInner(
 
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
+      lastHtmlRef.current = html;
       const previous = getValues("thoughts");
       const next = htmlToThoughts(
         html,
@@ -1515,6 +1523,14 @@ function ThoughtsEditorInner(
         Keyboard.dismiss();
         return;
       }
+      if (message.type === "HTML_SYNC") {
+        const html = typeof message.data === "string" ? message.data : "";
+        lastHtmlRef.current = html;
+        syncThoughtsFromHtml(html);
+        pendingHtmlSyncRef.current?.(html);
+        pendingHtmlSyncRef.current = null;
+        return;
+      }
       if (message.type === "OPEN_GRAPH") {
         const thoughtId = String(message.data ?? "");
         if (!thoughtId) return;
@@ -1736,6 +1752,7 @@ function ThoughtsEditorInner(
       readOnly,
       scheduleScrollCaretIntoView,
       setValue,
+      syncThoughtsFromHtml,
     ]
   );
 
@@ -1865,8 +1882,27 @@ function ThoughtsEditorInner(
         (getValues("thoughts") ?? []).some(
           (thought) => stripHtml(thought.title).length > 0
         ),
+      flushThoughts: () =>
+        new Promise<ThoughtsFormValue[]>((resolve) => {
+          if (lastHtmlRef.current) {
+            syncThoughtsFromHtml(lastHtmlRef.current);
+          }
+          let settled = false;
+          const finish = () => {
+            if (settled) return;
+            settled = true;
+            pendingHtmlSyncRef.current = null;
+            resolve(getValues("thoughts") ?? []);
+          };
+          const timeout = setTimeout(finish, 250);
+          pendingHtmlSyncRef.current = () => {
+            clearTimeout(timeout);
+            finish();
+          };
+          richRef.current?.injectJavascript(REQUEST_EDITOR_HTML_SCRIPT);
+        }),
     }),
-    [getValues, validationMessages]
+    [getValues, syncThoughtsFromHtml, validationMessages]
   );
 
   return (
