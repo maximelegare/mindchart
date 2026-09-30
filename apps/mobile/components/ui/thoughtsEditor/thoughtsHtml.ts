@@ -83,6 +83,19 @@ const preservedSemanticLabel = (
   return previous.semanticLabel;
 };
 
+/** Join two thought bodies after a merge, keeping inline markup. */
+export function joinMergedThoughtHtml(left: string, right: string): string {
+  const a = sanitizeInlineHtml(left)
+    .replace(/(<br\s*\/?>)+$/gi, "")
+    .trim();
+  const b = sanitizeInlineHtml(right)
+    .replace(/^(<br\s*\/?>)+/gi, "")
+    .trim();
+  if (!a) return b;
+  if (!b) return a;
+  return `${a} ${b}`;
+}
+
 /** Keep only inline bold/italic/underline markup for editor round-trips. */
 export function sanitizeInlineHtml(html: string): string {
   if (!html) return "";

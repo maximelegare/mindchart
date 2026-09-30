@@ -82,6 +82,7 @@ export type IconName =
   | "square-mouse-pointer"
   | "square-split-horizontal"
   | "square"
+  | "squares-unite"
   | "star"
   | "tag"
   | "target"
@@ -420,6 +421,10 @@ export const ICON_METADATA: Record<
   square: {
     viewBox: "0 0 24 24",
     content: `<rect width="18" height="18" x="3" y="3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" rx="2"></rect>`,
+  },
+  "squares-unite": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3a1 1 0 0 0 1 1h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-3a1 1 0 0 0-1-1z"></path>`,
   },
   star: {
     viewBox: "0 0 24 24",

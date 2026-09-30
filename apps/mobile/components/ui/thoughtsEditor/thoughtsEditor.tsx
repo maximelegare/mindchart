@@ -45,6 +45,7 @@ import {
   htmlToThoughts,
   setThoughtCategoryScript,
   setThoughtSemanticTitleScript,
+  joinMergedThoughtHtml,
   sanitizeInlineHtml,
   stripHtml,
   thoughtsToHtml,
@@ -62,6 +63,7 @@ import {
   setThoughtTypeScript,
   setThoughtValidationErrorsScript,
   setSelectedThoughtScript,
+  setMergeHighlightScript,
   setThoughtTextEditableScript,
   setShowCategoryColorsScript,
   setCategoryOpacityScript,
@@ -331,6 +333,8 @@ type ThoughtsEditorProps = {
   onToggleCompleted?: (thought: { id: string; isCompleted: boolean }) => void;
   /** Persist category when it is changed in view mode. */
   onChangeCategory?: (thought: { id: string; categoryId: string }) => void;
+  /** True while split or merge is using the toolbar session. */
+  onToolSessionChange?: (active: boolean) => void;
 };
 
 export type ThoughtsEditorHandle = {
@@ -351,6 +355,7 @@ function ThoughtsEditorInner(
     onToggleCompleted,
     onChangeCategory,
     onRequestEdit,
+    onToolSessionChange,
   }: ThoughtsEditorProps,
   ref: React.ForwardedRef<ThoughtsEditorHandle>
 ) {
@@ -399,6 +404,12 @@ function ThoughtsEditorInner(
     null
   );
   const [splitCategoryPicking, setSplitCategoryPicking] = React.useState(false);
+  const [merging, setMerging] = React.useState(false);
+  const [mergeIndexes, setMergeIndexes] = React.useState<number[]>([]);
+  const [mergeCategoryId, setMergeCategoryId] = React.useState<string | null>(
+    null
+  );
+  const [mergeCategoryPicking, setMergeCategoryPicking] = React.useState(false);
 
   const richRef = React.useRef<RichEditor>(null);
   const editorReadyRef = React.useRef(false);
@@ -411,6 +422,12 @@ function ThoughtsEditorInner(
   );
   const selectedThoughtIndexRef = React.useRef(selectedThoughtIndex);
   selectedThoughtIndexRef.current = selectedThoughtIndex;
+  const mergingRef = React.useRef(merging);
+  mergingRef.current = merging;
+  const mergeIndexesRef = React.useRef(mergeIndexes);
+  mergeIndexesRef.current = mergeIndexes;
+  const splitSideRef = React.useRef(splitSide);
+  splitSideRef.current = splitSide;
   const activeFormatsRef = React.useRef(activeFormats);
   activeFormatsRef.current = activeFormats;
   const enteringEditFocusRef = React.useRef(false);
@@ -491,9 +508,11 @@ function ThoughtsEditorInner(
   );
   const selectedCategoryId = splitCategoryPicking
     ? (splitCategoryId ?? "uncategorized")
-    : categoryPickerIndex != null
-      ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
-      : null;
+    : mergeCategoryPicking
+      ? (mergeCategoryId ?? "uncategorized")
+      : categoryPickerIndex != null
+        ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
+        : null;
   const selectedCategory =
     categories.find(
       (category) =>
@@ -503,16 +522,32 @@ function ThoughtsEditorInner(
     categories.find(
       (category) => category.id === (splitCategoryId || "uncategorized")
     ) ?? null;
+  const mergeCategory =
+    categories.find(
+      (category) => category.id === (mergeCategoryId || "uncategorized")
+    ) ?? null;
   const toolbarCategoryId = splitSide
     ? (splitCategoryId ?? "uncategorized")
-    : selectedThought?.categoryId || "uncategorized";
+    : merging
+      ? (mergeCategoryId ?? "uncategorized")
+      : selectedThought?.categoryId || "uncategorized";
   const toolbarCategoryLabel =
     categoryLabels.get(toolbarCategoryId) ??
-    (splitSide ? splitCategory?.name : selectedCategory?.name) ??
+    (splitSide
+      ? splitCategory?.name
+      : merging
+        ? mergeCategory?.name
+        : selectedCategory?.name) ??
     "Uncategorized";
   const toolbarCategoryColor = splitSide
     ? (splitCategory?.color ?? null)
-    : (selectedCategory?.color ?? null);
+    : merging
+      ? (mergeCategory?.color ?? null)
+      : (selectedCategory?.color ?? null);
+  const mergeCanConfirm =
+    mergeIndexes.length >= 2 &&
+    Math.max(...mergeIndexes) - Math.min(...mergeIndexes) + 1 ===
+      mergeIndexes.length;
   const pendingNlpByIndexRef = React.useRef(
     new Map<number, { categoryId?: string; semanticLabel?: string }>()
   );
@@ -879,13 +914,21 @@ function ThoughtsEditorInner(
       );
       selectedThoughtIndexRef.current = selectedIndex;
       setCaretThoughtType(nextThoughts?.[selectedIndex]?.type ?? "li");
-      richRef.current?.injectJavascript(setThoughtTextEditableScript(true));
+      const sessionLock = mergingRef.current || splitSideRef.current != null;
+      richRef.current?.injectJavascript(
+        setThoughtTextEditableScript(!sessionLock)
+      );
       richRef.current?.injectJavascript(
         setShowCategoryColorsScript(stayOnDetails && !hideCategoriesRef.current)
       );
       richRef.current?.injectJavascript(
         setSelectedThoughtScript(selectedIndex)
       );
+      if (mergingRef.current) {
+        richRef.current?.injectJavascript(
+          setMergeHighlightScript(mergeIndexesRef.current)
+        );
+      }
       if (!stayOnDetails) {
         requestAnimationFrame(() => {
           focusSelectedThought(true);
@@ -1019,6 +1062,12 @@ function ThoughtsEditorInner(
         setSplitCategoryId(null);
         setSplitCategoryPicking(false);
         injectIfReady(cancelThoughtSplitScript());
+        setMerging(false);
+        setMergeIndexes([]);
+        mergeIndexesRef.current = [];
+        setMergeCategoryId(null);
+        setMergeCategoryPicking(false);
+        injectIfReady(setMergeHighlightScript([]));
       } else {
         injectIfReady(setShowCategoryColorsScript(!hideCategoriesRef.current));
       }
@@ -1052,6 +1101,11 @@ function ThoughtsEditorInner(
       onRequestEdit?.();
     }
     if (splitSide) return;
+    setMerging(false);
+    setMergeIndexes([]);
+    setMergeCategoryId(null);
+    setMergeCategoryPicking(false);
+    injectIfReady(setMergeHighlightScript([]));
     setSplitSide("right");
     setSplitCategoryId(null);
     injectIfReady(
@@ -1086,6 +1140,158 @@ function ThoughtsEditorInner(
     setSplitCategoryPicking(false);
     injectIfReady(cancelThoughtSplitScript());
   }, [injectIfReady]);
+
+  const applyMergeTap = React.useCallback(
+    (index: number) => {
+      if (index < 0) return;
+      const previous = mergeIndexesRef.current;
+      const start = previous.length ? Math.min(...previous) : index;
+      const end = previous.length ? Math.max(...previous) : index;
+      let next: number[];
+      if (previous.includes(index)) {
+        next = previous;
+      } else if (
+        previous.length > 0 &&
+        (index === start - 1 || index === end + 1)
+      ) {
+        const nextStart = Math.min(start, index);
+        const nextEnd = Math.max(end, index);
+        next = Array.from(
+          { length: nextEnd - nextStart + 1 },
+          (_, offset) => nextStart + offset
+        );
+      } else {
+        next = [index];
+        setMergeCategoryId(
+          getValues("thoughts")?.[index]?.categoryId ?? "uncategorized"
+        );
+      }
+      mergeIndexesRef.current = next;
+      setMergeIndexes(next);
+      setSelectedThoughtIndex(index);
+      injectIfReady(setMergeHighlightScript(next));
+    },
+    [getValues, injectIfReady]
+  );
+
+  const handleMerge = React.useCallback(() => {
+    if (selectedThoughtIndex < 0) return;
+    if (merging) return;
+    if (readOnly) {
+      keepDetailsToolbarOnEditRef.current = true;
+      onRequestEdit?.();
+    }
+    setSplitSide(null);
+    setSplitCategoryId(null);
+    setSplitCategoryPicking(false);
+    injectIfReady(cancelThoughtSplitScript());
+    const seed = Math.max(0, selectedThoughtIndex);
+    const seedThought = getValues("thoughts")?.[seed];
+    const next = [seed];
+    mergeIndexesRef.current = next;
+    setMerging(true);
+    setMergeIndexes(next);
+    setMergeCategoryId(seedThought?.categoryId ?? "uncategorized");
+    setMergeCategoryPicking(false);
+    injectIfReady(setMergeHighlightScript(next));
+    richRef.current?.dismissKeyboard();
+    Keyboard.dismiss();
+  }, [
+    getValues,
+    injectIfReady,
+    merging,
+    onRequestEdit,
+    readOnly,
+    selectedThoughtIndex,
+  ]);
+
+  const handleCancelMerge = React.useCallback(() => {
+    mergeIndexesRef.current = [];
+    setMerging(false);
+    setMergeIndexes([]);
+    setMergeCategoryId(null);
+    setMergeCategoryPicking(false);
+    injectIfReady(setMergeHighlightScript([]));
+  }, [injectIfReady]);
+
+  const handleConfirmMerge = React.useCallback(() => {
+    if (mergeIndexes.length < 2) return;
+    const start = Math.min(...mergeIndexes);
+    const end = Math.max(...mergeIndexes);
+    if (end - start + 1 !== mergeIndexes.length) return;
+    const previous = getValues("thoughts");
+    const pieces = previous.slice(start, end + 1);
+    const first = pieces[0];
+    if (!first || pieces.length < 2) return;
+    const joined = pieces.reduce(
+      (html, thought, index) =>
+        index === 0
+          ? thought.content.text
+          : joinMergedThoughtHtml(html, thought.content.text),
+      ""
+    );
+    let merged = setThoughtContentText(
+      {
+        ...first,
+        categoryId: mergeCategoryId ?? first.categoryId,
+      },
+      joined
+    );
+    if (merged.type === "text") {
+      const before = previous[start - 1];
+      const after = previous[end + 1];
+      const neighborInline = (thought?: ThoughtsFormValue) =>
+        thought?.type === "text" && thought.content.style === "inline";
+      const anyInline = pieces.some(
+        (thought) =>
+          thought.type === "text" && thought.content.style === "inline"
+      );
+      merged = setTextThoughtStyle(
+        merged,
+        neighborInline(before) || neighborInline(after) || anyInline
+          ? "inline"
+          : "block"
+      );
+    }
+    const nextThoughts = [
+      ...previous.slice(0, start),
+      merged,
+      ...previous.slice(end + 1),
+    ];
+    setValue("thoughts", nextThoughts, { shouldDirty: true });
+    mergeIndexesRef.current = [];
+    setMerging(false);
+    setMergeIndexes([]);
+    setMergeCategoryId(null);
+    setMergeCategoryPicking(false);
+    setSelectedThoughtIndex(start);
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(nextThoughts, false, htmlOptions)
+    );
+    refreshCategoryTimers();
+    requestAnimationFrame(() => {
+      injectIfReady(setMergeHighlightScript([]));
+      injectIfReady(setSelectedThoughtScript(start));
+    });
+    richRef.current?.dismissKeyboard();
+    Keyboard.dismiss();
+  }, [
+    getValues,
+    htmlOptions,
+    injectIfReady,
+    mergeCategoryId,
+    mergeIndexes,
+    refreshCategoryTimers,
+    setValue,
+  ]);
+
+  React.useEffect(() => {
+    if (!merging) {
+      injectIfReady(setMergeHighlightScript([]));
+      return;
+    }
+    injectIfReady(setMergeHighlightScript(mergeIndexes));
+  }, [injectIfReady, mergeIndexes, merging]);
 
   const applySplitThought = React.useCallback(
     (payload: {
@@ -1182,11 +1388,17 @@ function ThoughtsEditorInner(
       setSplitCategoryPicking(true);
       return;
     }
+    if (merging) {
+      richRef.current?.dismissKeyboard();
+      Keyboard.dismiss();
+      setMergeCategoryPicking(true);
+      return;
+    }
     if (selectedThoughtIndex < 0) return;
     richRef.current?.dismissKeyboard();
     Keyboard.dismiss();
     setCategoryPickerIndex(selectedThoughtIndex);
-  }, [selectedThoughtIndex, splitSide]);
+  }, [merging, selectedThoughtIndex, splitSide]);
 
   const handleOpenSelectedGraph = React.useCallback(() => {
     const thought = getValues("thoughts")?.[selectedThoughtIndex];
@@ -1239,14 +1451,23 @@ function ThoughtsEditorInner(
   ]);
 
   React.useEffect(() => {
-    const pellEditable = !readOnly;
-    injectIfReady(setThoughtTextEditableScript(pellEditable));
+    const textEditable =
+      !readOnly && toolbarMode === "format" && !splitSide && !merging;
+    injectIfReady(setThoughtTextEditableScript(textEditable));
     injectIfReady(setShowCategoryColorsScript(showCategoryColors));
     injectIfReady(setCategoryOpacityScript(categoryOpacity));
-    if (readOnly) {
+    if (readOnly || splitSide || merging) {
       richRef.current?.dismissKeyboard();
     }
-  }, [injectIfReady, readOnly, showCategoryColors, categoryOpacity]);
+  }, [
+    categoryOpacity,
+    injectIfReady,
+    merging,
+    readOnly,
+    showCategoryColors,
+    splitSide,
+    toolbarMode,
+  ]);
 
   const toolbarModeRef = React.useRef(toolbarMode);
   React.useEffect(() => {
@@ -1255,8 +1476,9 @@ function ThoughtsEditorInner(
     if (previous === toolbarMode) return;
     if (readOnly || !editorReadyRef.current) return;
     if (enteringEditFocusRef.current) return;
+    if (mergingRef.current || splitSide) return;
     focusSelectedThought(false);
-  }, [focusSelectedThought, readOnly, toolbarMode]);
+  }, [focusSelectedThought, readOnly, splitSide, toolbarMode]);
 
   React.useEffect(() => {
     const length = thoughts?.length ?? 0;
@@ -1322,7 +1544,11 @@ function ThoughtsEditorInner(
         setCaretThoughtType(nextType);
         const index = Number(payload?.index);
         if (Number.isFinite(index) && index >= 0) {
-          setSelectedThoughtIndex(index);
+          if (mergingRef.current) {
+            applyMergeTap(index);
+          } else {
+            setSelectedThoughtIndex(index);
+          }
         }
         if (keyboardOpenRef.current) {
           scheduleScrollCaretIntoView();
@@ -1330,6 +1556,7 @@ function ThoughtsEditorInner(
         return;
       }
       if (message.type === "LIST_TYPE") {
+        if (mergingRef.current) return;
         const payload = message.data as
           | { index?: number; type?: ThoughtType; completable?: boolean }
           | undefined;
@@ -1360,6 +1587,7 @@ function ThoughtsEditorInner(
         return;
       }
       if (message.type === "TOGGLE_COMPLETED") {
+        if (mergingRef.current) return;
         const payload = message.data as
           | { index?: number; completed?: boolean }
           | undefined;
@@ -1498,6 +1726,7 @@ function ThoughtsEditorInner(
       setCategoryPickerIndex(index);
     },
     [
+      applyMergeTap,
       applySplitThought,
       categoryLabels,
       getValues,
@@ -1516,6 +1745,12 @@ function ThoughtsEditorInner(
         setSplitCategoryId(category.id);
         closeCategorySheet();
         setSplitCategoryPicking(false);
+        return;
+      }
+      if (mergeCategoryPicking) {
+        setMergeCategoryId(category.id);
+        closeCategorySheet();
+        setMergeCategoryPicking(false);
         return;
       }
       if (categoryPickerIndex == null) return;
@@ -1554,6 +1789,7 @@ function ThoughtsEditorInner(
       readOnly,
       setValue,
       splitCategoryPicking,
+      mergeCategoryPicking,
     ]
   );
 
@@ -1580,6 +1816,16 @@ function ThoughtsEditorInner(
     }),
     [editorToolbarPad]
   );
+
+  React.useEffect(() => {
+    onToolSessionChange?.(Boolean(splitSide) || merging);
+  }, [merging, onToolSessionChange, splitSide]);
+
+  React.useEffect(() => {
+    return () => {
+      onToolSessionChange?.(false);
+    };
+  }, [onToolSessionChange]);
 
   React.useImperativeHandle(
     ref,
@@ -1626,7 +1872,11 @@ function ThoughtsEditorInner(
   return (
     <BottomSheet className="flex-1 min-h-0">
       <CategorySheetPresenter
-        open={categoryPickerIndex != null || splitCategoryPicking}
+        open={
+          categoryPickerIndex != null ||
+          splitCategoryPicking ||
+          mergeCategoryPicking
+        }
       />
       <View className="relative flex-col flex-1 min-h-0">
         {!readOnly && !plain ? (
@@ -2157,8 +2407,12 @@ function ThoughtsEditorInner(
                     display: none !important;
                   }
                   html.mc-details-lock .pell-content,
-                  .pell-content.mc-details-lock {
+                  .pell-content.mc-details-lock,
+                  html.mc-merging .pell-content,
+                  html.mc-merging .pell-content * {
                     caret-color: transparent;
+                    user-select: none;
+                    -webkit-user-select: none;
                   }
                   .thought-item {
                     padding-left: 36px;
@@ -2248,11 +2502,21 @@ function ThoughtsEditorInner(
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
                     border-radius: 4px;
                   }
+                  html.mc-merging .thought-item.is-merge-selected .thought-summary:not(.is-placeholder),
+                  html.mc-merging .thought-item.is-merge-selected .thought-title:not(.is-placeholder) {
+                    background-color: color-mix(in srgb, ${caretColor} 28%, transparent);
+                    border-radius: 3px;
+                  }
+                  html.mc-merging .thought-item.is-merge-selected .thought-summary.is-placeholder,
+                  html.mc-merging .thought-item.is-merge-selected .thought-title.is-placeholder {
+                    background-color: color-mix(in srgb, ${caretColor} 28%, transparent);
+                    border-radius: 4px;
+                  }
                   ${categoryColorsCss}
                 `,
               }}
               onChange={
-                readOnly
+                readOnly || merging
                   ? undefined
                   : (html) => {
                       syncThoughtsFromHtml(html);
@@ -2262,7 +2526,7 @@ function ThoughtsEditorInner(
                     }
               }
               onCursorPosition={
-                readOnly
+                readOnly || merging
                   ? undefined
                   : () => {
                       tryApplyPendingFormat();
@@ -2296,6 +2560,11 @@ function ThoughtsEditorInner(
               onSplitSide={handleSplitSide}
               onConfirmSplit={handleConfirmSplit}
               onCancelSplit={handleCancelSplit}
+              merging={merging}
+              mergeCanConfirm={mergeCanConfirm}
+              onMerge={handleMerge}
+              onConfirmMerge={handleConfirmMerge}
+              onCancelMerge={handleCancelMerge}
             />
           ) : null}
         </View>
@@ -2324,6 +2593,11 @@ function ThoughtsEditorInner(
             onSplitSide={handleSplitSide}
             onConfirmSplit={handleConfirmSplit}
             onCancelSplit={handleCancelSplit}
+            merging={merging}
+            mergeCanConfirm={mergeCanConfirm}
+            onMerge={handleMerge}
+            onConfirmMerge={handleConfirmMerge}
+            onCancelMerge={handleCancelMerge}
           />
         ) : null}
       </View>
@@ -2336,6 +2610,7 @@ function ThoughtsEditorInner(
         onDismiss={() => {
           setCategoryPickerIndex(null);
           setSplitCategoryPicking(false);
+          setMergeCategoryPicking(false);
         }}
       >
         <BottomSheetView className="gap-5 pt-6 bg-background">

@@ -8,7 +8,10 @@ import { NoteEditorHeaderActions } from "@/features/notes/noteDetails/components
 import { NoteDetailsOptionsHeader } from "@/features/notes/noteDetails/components/noteDetailsOptionsHeader";
 import { useNoteDetailsData } from "@/features/notes/noteDetails/hooks/useNoteDetailsData";
 import { NoteDetailsFeature } from "@/features/notes/noteDetails/views";
-import type { NoteEditorMode } from "@/features/notes/noteDetails/types";
+import type {
+  BindNoteSave,
+  NoteEditorMode,
+} from "@/features/notes/noteDetails/types";
 import { useNoteDraftStore } from "@/features/notes/noteDraft/store/noteDraftStore";
 import {
   noteDetailsDeleteNoteMenuLabel,
@@ -63,7 +66,11 @@ export const NoteDetailsPage = () => {
     null
   );
   const [folderRequiredError, setFolderRequiredError] = useState(false);
+  const [toolSessionActive, setToolSessionActive] = useState(false);
   const saveActionRef = useRef<(() => void) | null>(null);
+  const bindSave = useCallback<BindNoteSave>((save) => {
+    saveActionRef.current = save;
+  }, []);
   const { deleteNoteAction } = useDeleteNote();
   const { openModal, closeModal } = useModal();
   const isNewMode = editorMode === "new";
@@ -201,6 +208,7 @@ export const NoteDetailsPage = () => {
   };
 
   const handleConfirmNote = () => {
+    if (toolSessionActive) return;
     saveActionRef.current?.();
   };
 
@@ -336,6 +344,7 @@ export const NoteDetailsPage = () => {
                 onConfirm={handleConfirmNote}
                 onDeny={handleDenyNote}
                 disabled={isSaving || isDiscarding || !noteId}
+                confirmDisabled={toolSessionActive}
                 denyVariant={headerDenyVariant}
               />,
             ]
@@ -364,7 +373,7 @@ export const NoteDetailsPage = () => {
                 key="edit-note"
                 isEditing={isEditing}
                 onPress={handleEditPress}
-                disabled={isSaving || isDiscarding}
+                disabled={isSaving || isDiscarding || toolSessionActive}
               />,
             ]
           : []
@@ -381,7 +390,7 @@ export const NoteDetailsPage = () => {
         note={note}
         isEditing={isEditing}
         onEditingChange={handleEditingChange}
-        saveActionRef={saveActionRef}
+        onBindSave={bindSave}
         onSavingChange={setIsSaving}
         folderId={headerFolder?.id ?? null}
         persons={headerPersons}
@@ -390,6 +399,7 @@ export const NoteDetailsPage = () => {
         locationName={headerLocationName}
         isNew={isNewMode}
         onFolderErrorChange={setFolderRequiredError}
+        onToolSessionChange={setToolSessionActive}
       />
     </PageContainer>
   );

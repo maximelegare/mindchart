@@ -30,13 +30,14 @@ import {
 } from "@/features/notes/noteDetails/noteDetailsLabels";
 
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
+import type { BindNoteSave } from "@/features/notes/noteDetails/types";
 
-type NoteDetailsFeatureProps = {
+export type NoteDetailsFeatureProps = {
   isPending: boolean;
   note: ReturnType<typeof parseNoteAndThoughts>;
   isEditing: boolean;
   onEditingChange: (editing: boolean) => void;
-  saveActionRef?: React.MutableRefObject<(() => void) | null>;
+  onBindSave?: BindNoteSave;
   onSavingChange?: (saving: boolean) => void;
   /** Current folder from the header selector (preferred over stale note data). */
   folderId?: string | null;
@@ -47,6 +48,7 @@ type NoteDetailsFeatureProps = {
   isNew?: boolean;
   /** Called when save validation needs to highlight the folder selector. */
   onFolderErrorChange?: (hasError: boolean) => void;
+  onToolSessionChange?: (active: boolean) => void;
 };
 
 type NoteRow = NonNullable<ReturnType<typeof parseNoteAndThoughts>>[number];
@@ -80,7 +82,7 @@ type NoteDetailsContentProps = {
   note: NoteRow;
   isEditing: boolean;
   onEditingChange: (editing: boolean) => void;
-  saveActionRef?: React.MutableRefObject<(() => void) | null>;
+  onBindSave?: BindNoteSave;
   onSavingChange?: (saving: boolean) => void;
   folderId: string | null;
   persons: Person[];
@@ -89,13 +91,14 @@ type NoteDetailsContentProps = {
   locationName: string | null;
   isNew: boolean;
   onFolderErrorChange?: (hasError: boolean) => void;
+  onToolSessionChange?: (active: boolean) => void;
 };
 
 function NoteDetailsContent({
   note,
   isEditing,
   onEditingChange,
-  saveActionRef,
+  onBindSave,
   onSavingChange,
   folderId,
   persons,
@@ -104,6 +107,7 @@ function NoteDetailsContent({
   locationName,
   isNew,
   onFolderErrorChange,
+  onToolSessionChange,
 }: NoteDetailsContentProps) {
   const { editNoteAction } = useEditNote();
   const { saveNewNote } = useSaveNewNote();
@@ -330,14 +334,13 @@ function NoteDetailsContent({
   ]);
 
   React.useEffect(() => {
-    if (!saveActionRef) return;
-    saveActionRef.current = () => {
+    onBindSave?.(() => {
       void saveNote();
-    };
+    });
     return () => {
-      saveActionRef.current = null;
+      onBindSave?.(null);
     };
-  }, [saveActionRef, saveNote]);
+  }, [onBindSave, saveNote]);
 
   const showTitles = note.showTitles ?? false;
 
@@ -446,6 +449,7 @@ function NoteDetailsContent({
               if (isEditing || isNew) return;
               persistThoughtCategory({ id, categoryId });
             }}
+            onToolSessionChange={onToolSessionChange}
           />
         </View>
       </View>
@@ -453,12 +457,12 @@ function NoteDetailsContent({
   );
 }
 
-export const NoteDetailsFeature = ({
+export function NoteDetailsFeature({
   isPending,
   note,
   isEditing,
   onEditingChange,
-  saveActionRef,
+  onBindSave,
   onSavingChange,
   folderId = null,
   persons = [],
@@ -467,7 +471,8 @@ export const NoteDetailsFeature = ({
   locationName = null,
   isNew = false,
   onFolderErrorChange,
-}: NoteDetailsFeatureProps) => {
+  onToolSessionChange,
+}: NoteDetailsFeatureProps) {
   const navigation = useNavigation();
   const [surfaceReady, setSurfaceReady] = React.useState(false);
 
@@ -515,7 +520,7 @@ export const NoteDetailsFeature = ({
       note={noteRow}
       isEditing={isEditing}
       onEditingChange={onEditingChange}
-      saveActionRef={saveActionRef}
+      onBindSave={onBindSave}
       onSavingChange={onSavingChange}
       folderId={folderId ?? noteRow.folderId ?? null}
       persons={persons}
@@ -524,6 +529,7 @@ export const NoteDetailsFeature = ({
       locationName={locationName}
       isNew={isNew}
       onFolderErrorChange={onFolderErrorChange}
+      onToolSessionChange={onToolSessionChange}
     />
   );
-};
+}

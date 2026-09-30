@@ -192,6 +192,31 @@ export function thoughtsEditorSplitCancelAccessibilityLabel() {
   );
 }
 
+export function thoughtsEditorMergeAccessibilityLabel() {
+  return fbs(
+    "Merge thoughts",
+    "Accessibility label for the thought merge tool"
+  );
+}
+
+export function thoughtsEditorMergeAccessibilityHint() {
+  return fbs(
+    "Tap neighboring thoughts, then confirm to merge them",
+    "Accessibility hint for the thought merge tool"
+  );
+}
+
+export function thoughtsEditorMergeConfirmAccessibilityLabel() {
+  return fbs(
+    "Confirm merge",
+    "Accessibility label to confirm merging thoughts"
+  );
+}
+
+export function thoughtsEditorMergeCancelAccessibilityLabel() {
+  return fbs("Cancel merge", "Accessibility label to cancel merging thoughts");
+}
+
 export type ThoughtFieldPlaceholders = {
   title: string;
   summary: string;

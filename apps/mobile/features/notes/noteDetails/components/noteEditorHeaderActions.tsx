@@ -10,6 +10,7 @@ type NoteEditorHeaderActionsProps = {
   onConfirm: () => void;
   onDeny: () => void;
   disabled?: boolean;
+  confirmDisabled?: boolean;
   /** Preview/new delete the note; editing an existing note discards edits. */
   denyVariant?: "delete" | "discard";
 };
@@ -18,6 +19,7 @@ export function NoteEditorHeaderActions({
   onConfirm,
   onDeny,
   disabled,
+  confirmDisabled,
   denyVariant = "discard",
 }: NoteEditorHeaderActionsProps) {
   return (
@@ -27,7 +29,7 @@ export function NoteEditorHeaderActions({
         size="icon"
         cornerRadius="full"
         onPress={onConfirm}
-        disabled={disabled}
+        disabled={disabled || confirmDisabled}
         accessibilityRole="button"
         accessibilityLabel={EditNoteSaveAccessibilityLabel()}
       >

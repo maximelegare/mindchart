@@ -1338,6 +1338,65 @@ export function setSelectedThoughtScript(index: number): string {
 `;
 }
 
+export function setMergeHighlightScript(indexes: number[]): string {
+  const selected = JSON.stringify(
+    indexes.filter((index) => Number.isFinite(index) && index >= 0)
+  );
+  return `
+(function () {
+  var selected = ${selected};
+  var merging = selected.length > 0;
+  window.__mcMerging = merging;
+  window.__mcMergeIndexes = selected;
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (document.documentElement) {
+    document.documentElement.classList.toggle("mc-merging", merging);
+  }
+  var style = document.getElementById("mc-merge-highlight");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "mc-merge-highlight";
+    (document.head || document.documentElement).appendChild(style);
+  }
+  style.textContent = merging
+    ? "html.mc-merging .thought-item.is-selected .thought-summary," +
+      "html.mc-merging .thought-item.is-selected .thought-title," +
+      "html.mc-merging .thought-item.is-merge-selected .thought-summary," +
+      "html.mc-merging .thought-item.is-merge-selected .thought-title{" +
+      "background-color:color-mix(in srgb, currentColor 22%, transparent);" +
+      "border-radius:3px;}"
+    : "";
+  if (!content) return true;
+  content.classList.toggle("mc-merging", merging);
+  var lis = content.querySelectorAll(".thought-item");
+  for (var i = 0; i < lis.length; i++) {
+    var on = selected.indexOf(i) !== -1;
+    lis[i].classList.toggle("is-merge-selected", on);
+    if (merging) {
+      lis[i].classList.toggle("is-selected", on);
+    }
+    var fields = lis[i].querySelectorAll(".thought-summary, .thought-title");
+    for (var f = 0; f < fields.length; f++) {
+      if (on) {
+        fields[f].style.backgroundColor =
+          "color-mix(in srgb, currentColor 28%, transparent)";
+      } else {
+        fields[f].style.removeProperty("background-color");
+      }
+    }
+  }
+  if (merging) {
+    try {
+      var sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    } catch (err) {}
+  }
+  true;
+})();
+`;
+}
+
 export function setCategoryOpacityScript(opacity: number): string {
   const value = Math.min(1, Math.max(0, Number(opacity) || 0));
   return `
@@ -1522,6 +1581,16 @@ export function setThoughtTextEditableScript(editable: boolean): string {
       },
       true
     );
+    document.addEventListener(
+      "selectstart",
+      function (e) {
+        if (!document.documentElement.classList.contains("mc-details-lock")) {
+          return;
+        }
+        e.preventDefault();
+      },
+      true
+    );
   }
   if (!content) return true;
   content.classList.toggle("mc-details-lock", !editable);
@@ -1533,6 +1602,13 @@ export function setThoughtTextEditableScript(editable: boolean): string {
     } else {
       fields[i].setAttribute("contenteditable", "false");
     }
+  }
+  if (!editable) {
+    try {
+      var sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+      content.blur();
+    } catch (err) {}
   }
   true;
 })();
@@ -1737,12 +1813,14 @@ export const CHECKLIST_SCRIPT = `
 
   function postCaretType(li) {
     if (!li) return;
-    var root =
-      document.querySelector(".pell-content") || document.getElementById("editor");
-    if (root) {
-      var rows = root.querySelectorAll(".thought-item");
-      for (var i = 0; i < rows.length; i++) {
-        rows[i].classList.toggle("is-selected", rows[i] === li);
+    if (!window.__mcMerging) {
+      var root =
+        document.querySelector(".pell-content") || document.getElementById("editor");
+      if (root) {
+        var rows = root.querySelectorAll(".thought-item");
+        for (var i = 0; i < rows.length; i++) {
+          rows[i].classList.toggle("is-selected", rows[i] === li);
+        }
       }
     }
     if (!window.ReactNativeWebView) return;

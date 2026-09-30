@@ -49,6 +49,10 @@ import {
   thoughtsEditorSplitCursorAccessibilityHint,
   thoughtsEditorSplitConfirmAccessibilityLabel,
   thoughtsEditorSplitCancelAccessibilityLabel,
+  thoughtsEditorMergeAccessibilityLabel,
+  thoughtsEditorMergeAccessibilityHint,
+  thoughtsEditorMergeConfirmAccessibilityLabel,
+  thoughtsEditorMergeCancelAccessibilityLabel,
   thoughtsEditorHideCategoriesAccessibilityLabel,
   thoughtsEditorShowCategoriesAccessibilityLabel,
   thoughtsEditorCategoryOpacityAccessibilityLabel,
@@ -103,6 +107,11 @@ type ThoughtsEditorToolbarProps = {
   onSplitSide: (side: "left" | "right") => void;
   onConfirmSplit: () => void;
   onCancelSplit: () => void;
+  merging: boolean;
+  mergeCanConfirm: boolean;
+  onMerge: () => void;
+  onConfirmMerge: () => void;
+  onCancelMerge: () => void;
 };
 
 function FormatButton({
@@ -413,6 +422,74 @@ function SplitSessionToolbar({
   );
 }
 
+function MergeSessionToolbar({
+  mergeCanConfirm,
+  selectedCategoryLabel,
+  selectedCategoryColor,
+  onConfirmMerge,
+  onCancelMerge,
+  onOpenCategory,
+}: {
+  mergeCanConfirm: boolean;
+  selectedCategoryLabel: string;
+  selectedCategoryColor: string | null;
+  onConfirmMerge: () => void;
+  onCancelMerge: () => void;
+  onOpenCategory: () => void;
+}) {
+  const { colorScheme } = useColorScheme();
+  const chipBackground = hsl("muted", colorScheme).replace(
+    /^hsl\((.+)\)$/,
+    "hsla($1, 0.35)"
+  );
+
+  return (
+    <View className="flex-row items-center" style={styles.splitSession}>
+      <View style={styles.splitConfirmCluster}>
+        <Pressable
+          onPress={onConfirmMerge}
+          disabled={!mergeCanConfirm}
+          accessibilityRole="button"
+          accessibilityLabel={thoughtsEditorMergeConfirmAccessibilityLabel()}
+          className="h-10 w-10 items-center justify-center rounded-md"
+          style={!mergeCanConfirm ? { opacity: 0.4 } : undefined}
+        >
+          <Icon name="circle-check" size={28} color="primary" />
+        </Pressable>
+        <Pressable
+          onPress={onCancelMerge}
+          accessibilityRole="button"
+          accessibilityLabel={thoughtsEditorMergeCancelAccessibilityLabel()}
+          className="h-10 w-10 items-center justify-center rounded-md"
+        >
+          <Icon
+            name="circle-x"
+            size={28}
+            hslColor={hsl("foreground-errors", colorScheme)}
+          />
+        </Pressable>
+      </View>
+      <Pressable
+        onPress={onOpenCategory}
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorCategoryAccessibilityLabel()}
+        style={[styles.splitCategoryChip, { backgroundColor: chipBackground }]}
+      >
+        <View
+          className="h-3 w-3 rounded-full"
+          style={{
+            backgroundColor: selectedCategoryColor ?? hsl("muted", colorScheme),
+          }}
+        />
+        <Typography className="min-w-0 flex-1 text-base" numberOfLines={1}>
+          {selectedCategoryLabel}
+        </Typography>
+        <Icon name="chevron-down" size={16} color="muted-foreground" />
+      </Pressable>
+    </View>
+  );
+}
+
 function SplitDirectionTool({
   side,
   onSplitSide,
@@ -481,6 +558,28 @@ function SplitToolButton({
   );
 }
 
+function MergeToolButton({
+  disabled,
+  onPress,
+}: {
+  disabled?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={thoughtsEditorMergeAccessibilityLabel()}
+      accessibilityHint={thoughtsEditorMergeAccessibilityHint()}
+      className="h-10 w-10 items-center justify-center rounded-md"
+      style={disabled ? { opacity: 0.5 } : undefined}
+    >
+      <Icon name="squares-unite" size={18} color="foreground" />
+    </Pressable>
+  );
+}
+
 function DetailsToolbar({
   selectedTitle,
   selectedCategoryLabel,
@@ -498,6 +597,11 @@ function DetailsToolbar({
   onSplitSide,
   onConfirmSplit,
   onCancelSplit,
+  merging,
+  mergeCanConfirm,
+  onMerge,
+  onConfirmMerge,
+  onCancelMerge,
 }: Pick<
   ThoughtsEditorToolbarProps,
   | "selectedTitle"
@@ -516,6 +620,11 @@ function DetailsToolbar({
   | "onSplitSide"
   | "onConfirmSplit"
   | "onCancelSplit"
+  | "merging"
+  | "mergeCanConfirm"
+  | "onMerge"
+  | "onConfirmMerge"
+  | "onCancelMerge"
 >) {
   const { colorScheme } = useColorScheme();
   const placeholder = thoughtsEditorNoTitleYet();
@@ -547,16 +656,18 @@ function DetailsToolbar({
     scrollRef.current?.scrollTo({ x: next * pageWidth, animated: true });
   };
 
+  const inToolSession = Boolean(splitSide) || merging;
+
   React.useEffect(() => {
-    if (splitSide) return;
+    if (inToolSession) return;
     setPage(0);
     scrollRef.current?.scrollTo({ x: 0, animated: false });
-  }, [splitSide]);
+  }, [inToolSession]);
 
   return (
     <View
       className="flex-row items-center"
-      style={splitSide ? styles.splitContent : styles.detailsContent}
+      style={inToolSession ? styles.splitContent : styles.detailsContent}
     >
       {splitSide ? (
         <SplitSessionToolbar
@@ -566,6 +677,15 @@ function DetailsToolbar({
           onConfirmSplit={onConfirmSplit}
           onCancelSplit={onCancelSplit}
           onSplitSide={onSplitSide}
+          onOpenCategory={onOpenCategory}
+        />
+      ) : merging ? (
+        <MergeSessionToolbar
+          mergeCanConfirm={mergeCanConfirm}
+          selectedCategoryLabel={selectedCategoryLabel}
+          selectedCategoryColor={selectedCategoryColor}
+          onConfirmMerge={onConfirmMerge}
+          onCancelMerge={onCancelMerge}
           onOpenCategory={onOpenCategory}
         />
       ) : (
@@ -696,6 +816,10 @@ function DetailsToolbar({
               <SplitToolButton
                 disabled={!hasSelectedThought}
                 onPress={onSplit}
+              />
+              <MergeToolButton
+                disabled={!hasSelectedThought}
+                onPress={onMerge}
               />
             </View>
           </ScrollView>
@@ -906,12 +1030,13 @@ export function ThoughtsEditorToolbar({
   const content = (
     <ToolbarContent {...contentProps} detailsProgress={detailsProgress} />
   );
-  const toggle = contentProps.splitSide ? null : (
-    <ToolbarToggle
-      mode={contentProps.mode}
-      onModeChange={contentProps.onModeChange}
-    />
-  );
+  const toggle =
+    contentProps.splitSide || contentProps.merging ? null : (
+      <ToolbarToggle
+        mode={contentProps.mode}
+        onModeChange={contentProps.onModeChange}
+      />
+    );
 
   if (!dockToKeyboard) {
     return (
