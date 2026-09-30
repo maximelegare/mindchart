@@ -1958,6 +1958,11 @@ function ThoughtsEditorInner(
                 `,
                 cssText: `
                   .mc-thoughts {
+                    --mc-gap-compact: 4px;
+                    --mc-gap-block: 14px;
+                    --mc-gap-type: 8px;
+                    --mc-list-indent: 16px;
+                    --mc-list-pad: 44px;
                     padding-left: 8px;
                     padding-right: 8px;
                     margin: 0;
@@ -1975,8 +1980,9 @@ function ThoughtsEditorInner(
                   .thought-item {
                     display: block;
                     position: relative;
-                    margin-bottom: 0.85em;
-                    padding-left: 36px;
+                    margin-top: var(--mc-gap-compact);
+                    margin-bottom: 0;
+                    padding-left: var(--mc-list-pad);
                     padding-right: 0;
                     overflow: visible;
                     box-sizing: border-box;
@@ -1998,7 +2004,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-rail {
                     position: absolute;
-                    left: 8px;
+                    left: var(--mc-list-indent);
                     top: 0;
                     bottom: 0;
                     width: 22px;
@@ -2011,7 +2017,7 @@ function ThoughtsEditorInner(
                     display: none;
                     position: absolute;
                     z-index: 4;
-                    left: 8px;
+                    left: var(--mc-list-indent);
                     width: 22px;
                     height: 22px;
                     padding: 0;
@@ -2037,7 +2043,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-item.is-checklist .thought-check {
                     display: flex;
-                    left: 8px;
+                    left: var(--mc-list-indent);
                     top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
                   }
                   .thought-check-box {
@@ -2415,7 +2421,7 @@ function ThoughtsEditorInner(
                     -webkit-user-select: none;
                   }
                   .thought-item {
-                    padding-left: 36px;
+                    padding-left: var(--mc-list-pad);
                     padding-right: 8px;
                     --category-stack: 0px;
                   }
@@ -2438,13 +2444,13 @@ function ThoughtsEditorInner(
                     padding-left: 0;
                   }
                   .thought-item.is-checklist {
-                    padding-left: 36px;
+                    padding-left: var(--mc-list-pad);
                   }
                   .thought-item.is-checklist .thought-dot {
                     display: none !important;
                   }
                   .thought-item.is-checklist .thought-check {
-                    left: 8px;
+                    left: var(--mc-list-indent);
                     top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
                   }
                   .thought-fields {
@@ -2462,16 +2468,36 @@ function ThoughtsEditorInner(
                     display: inline;
                     padding-left: 0;
                     padding-right: 0;
+                    margin-top: 0;
                     margin-bottom: 0;
                     vertical-align: baseline;
                   }
+                  .thought-item.is-block:not(.is-inline),
+                  .thought-item[data-thought-type="text"]:not(.is-inline) {
+                    margin-top: var(--mc-gap-block);
+                  }
+                  .thought-item[data-thought-type="text"]:not(.is-inline)
+                    + .thought-item:not(.is-inline) {
+                    margin-top: var(--mc-gap-block);
+                  }
+                  .thought-item[data-thought-type="li"] + .thought-item.is-checklist,
+                  .thought-item.is-checklist + .thought-item[data-thought-type="li"] {
+                    margin-top: var(--mc-gap-type);
+                  }
+                  .thought-item.is-checklist:has(+ .thought-item[data-thought-type="text"]),
+                  .thought-item[data-thought-type="li"]:has(+ .thought-item[data-thought-type="text"]) {
+                    margin-bottom: var(--mc-gap-block);
+                  }
                   .thought-item.is-inline + .thought-item:not(.is-inline) {
-                    margin-top: 0.85em;
+                    margin-top: var(--mc-gap-block);
+                  }
+                  .mc-thoughts > .thought-item:first-child {
+                    margin-top: 0;
                   }
                   .mc-thoughts:has(> .thought-item.is-inline:last-child)::after {
                     content: "";
                     display: block;
-                    height: 0.85em;
+                    height: var(--mc-gap-block);
                   }
                   .thought-item.is-inline .thought-rail,
                   .thought-item.is-inline .thought-dot,

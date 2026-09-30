@@ -1208,7 +1208,7 @@ export function setSimplifiedModeScript(
         padding-right: 0 !important;
       }
       .thought-item.is-checklist .thought-check {
-        left: 8px !important;
+        left: var(--mc-list-indent, 16px) !important;
         right: auto !important;
         top: calc(
           var(--category-stack, 0px) + var(--check-nudge, 2px)
