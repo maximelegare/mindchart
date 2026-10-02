@@ -154,10 +154,20 @@ function buildCategoryColorCss(categories: Category[]): string {
       html.mc-show-categories .thought-item[data-category-id="${category.id}"] .thought-summary:not(.is-placeholder),
       html.mc-show-categories .thought-item[data-category-id="${category.id}"] .thought-title:not(.is-placeholder) {
         background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash, 18%), transparent);
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        line-height: inherit;
       }
       html.mc-show-categories .thought-item[data-category-id="${category.id}"].is-selected .thought-summary:not(.is-placeholder),
       html.mc-show-categories .thought-item[data-category-id="${category.id}"].is-selected .thought-title:not(.is-placeholder) {
         background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash-selected, 34%), transparent);
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        line-height: inherit;
       }
     `
     )
@@ -1102,7 +1112,10 @@ function ThoughtsEditorInner(
         setMergeCategoryPicking(false);
         injectIfReady(setMergeHighlightScript([]));
       } else {
-        injectIfReady(setShowCategoryColorsScript(!hideCategoriesRef.current));
+        if (hideCategoriesRef.current) {
+          useNoteDetailsViewStore.getState().setSimplified(false);
+        }
+        injectIfReady(setShowCategoryColorsScript(true));
       }
       if (mode === "format" && readOnly) {
         onRequestEdit?.();
@@ -1521,21 +1534,8 @@ function ThoughtsEditorInner(
   React.useEffect(() => {
     if (lastSimplifiedRef.current === effectiveSimplified) return;
     lastSimplifiedRef.current = effectiveSimplified;
-
-    applyEditorFlags(false);
-    richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), false, htmlOptions)
-    );
-    refreshCategoryTimers();
     applySimplifiedMode(effectiveSimplified);
-  }, [
-    applyEditorFlags,
-    applySimplifiedMode,
-    effectiveSimplified,
-    getValues,
-    htmlOptions,
-    refreshCategoryTimers,
-  ]);
+  }, [applySimplifiedMode, effectiveSimplified]);
 
   const handleEditorMessage = React.useCallback(
     (message: { type: string; data?: unknown }) => {
@@ -2031,7 +2031,7 @@ function ThoughtsEditorInner(
                     padding-right: 0;
                     overflow: visible;
                     box-sizing: border-box;
-                    --category-stack: 25px;
+                    --category-stack: 0px;
                     --dot-size: 8px;
                   }
                   .thought-item.is-block {
@@ -2089,7 +2089,7 @@ function ThoughtsEditorInner(
                   .thought-item.is-checklist .thought-check {
                     display: flex;
                     left: var(--mc-list-indent);
-                    top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
+                    top: calc(var(--check-nudge, 2px));
                   }
                   .thought-check-box {
                     display: flex;
@@ -2145,10 +2145,7 @@ function ThoughtsEditorInner(
                     margin-left: calc(var(--dot-size) / -2);
                     border-radius: 999px;
                     background-color: ${mutedFg};
-                    top: calc(
-                      var(--category-stack, 0px) + var(--check-nudge, 2px) - 3px +
-                        (22px - var(--dot-size)) / 2
-                    );
+                    top: 6px;
                     z-index: 1;
                   }
                   .thought-dot.is-anchored {
@@ -2359,9 +2356,19 @@ function ThoughtsEditorInner(
                     --mc-cat-wash-plain: 6%;
                     --mc-cat-wash-plain-selected: 16%;
                   }
+                  html.mc-show-categories .thought-title,
+                  html.mc-show-categories .thought-summary {
+                    -webkit-box-decoration-break: slice;
+                    box-decoration-break: slice;
+                  }
                   html.mc-show-categories .thought-title:not(.is-placeholder),
                   html.mc-show-categories .thought-summary:not(.is-placeholder) {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain, 6%), transparent);
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    line-height: inherit;
                   }
                   .thought-title {
                     font-weight: 700;
@@ -2496,7 +2503,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-item.is-checklist .thought-check {
                     left: var(--mc-list-indent);
-                    top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
+                    top: calc(var(--check-nudge, 2px));
                   }
                   .thought-fields {
                     display: inline-block;
@@ -2605,11 +2612,20 @@ function ThoughtsEditorInner(
                   html.mc-show-categories .thought-item.is-selected .thought-summary:not(.is-placeholder),
                   html.mc-show-categories .thought-item.is-selected .thought-title:not(.is-placeholder) {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    line-height: inherit;
                   }
                   html.mc-show-categories .thought-item.is-selected .thought-summary.is-placeholder,
                   html.mc-show-categories .thought-item.is-selected .thought-title.is-placeholder {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
-                    border-radius: 4px;
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    line-height: inherit;
                   }
                   html.mc-merging .thought-item.is-merge-selected .thought-summary:not(.is-placeholder),
                   html.mc-merging .thought-item.is-merge-selected .thought-title:not(.is-placeholder) {

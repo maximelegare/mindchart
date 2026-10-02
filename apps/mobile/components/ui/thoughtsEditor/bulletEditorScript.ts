@@ -1680,9 +1680,7 @@ export function setSimplifiedModeScript(
       .thought-item.is-checklist .thought-check {
         left: var(--mc-list-indent, 16px) !important;
         right: auto !important;
-        top: calc(
-          var(--category-stack, 0px) + var(--check-nudge, 2px)
-        ) !important;
+        top: calc(var(--check-nudge, 2px)) !important;
       }
       .thought-item .thought-check-box,
       .thought-item[data-category-id] .thought-check-box {
@@ -2288,8 +2286,7 @@ export const CHECKLIST_SCRIPT = `
     var fieldH = field ? field.offsetHeight : 0;
     li.classList.toggle("is-single-line", !hasText && fieldH <= lineH * 1.6);
 
-    var target =
-      hasText && title && !window.__mcSimplified ? title : summary || title;
+    var target = summary || title;
     if (target) {
       var alignLineH = fieldLineHeight(target);
       var checkH = (check && check.offsetHeight) || 22;
