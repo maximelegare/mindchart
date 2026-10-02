@@ -2111,8 +2111,12 @@ function ThoughtsEditorInner(
                     padding-left: 8px;
                     padding-right: 8px;
                     margin: 0;
+                    font-size: 0;
                   }
-                  .thought-item:not(.is-inline) {
+                  .thought-item {
+                    font-size: 16px;
+                  }
+                  .thought-item:not(.is-inline):not(.is-run-start) {
                     margin-left: -8px;
                     margin-right: -8px;
                   }
@@ -2610,6 +2614,7 @@ function ThoughtsEditorInner(
                     width: 100%;
                   }
                   .thought-item.is-inline,
+                  .thought-item.is-run-start,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) {
                     display: inline;
                     padding-left: 0;
@@ -2619,6 +2624,7 @@ function ThoughtsEditorInner(
                     margin-left: 0;
                     margin-right: 0;
                     vertical-align: baseline;
+                    font-size: 0;
                   }
                   .thought-item.is-inline + .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline)::before {
                     content: "\\A";
@@ -2627,8 +2633,8 @@ function ThoughtsEditorInner(
                   .thought-item:not(.is-inline):has(+ .thought-item[data-thought-type="text"]:not(.is-inline) + .thought-item.is-inline) {
                     margin-bottom: var(--mc-gap-block);
                   }
-                  .thought-item.is-block:not(.is-inline),
-                  .thought-item[data-thought-type="text"]:not(.is-inline) {
+                  .thought-item.is-block:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)),
+                  .thought-item[data-thought-type="text"]:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)) {
                     margin-top: var(--mc-gap-block);
                   }
                   .thought-item[data-thought-type="text"]:not(.is-inline)
@@ -2654,9 +2660,20 @@ function ThoughtsEditorInner(
                     display: block;
                     height: var(--mc-gap-block);
                   }
+                  .thought-item.is-inline .thought-category,
+                  .thought-item.is-run-start .thought-category,
+                  .thought-item.is-inline .thought-graph,
+                  .thought-item.is-run-start .thought-graph,
+                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-category,
+                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-graph {
+                    display: none !important;
+                  }
                   .thought-item.is-inline .thought-rail,
                   .thought-item.is-inline .thought-dot,
                   .thought-item.is-inline .thought-check,
+                  .thought-item.is-run-start .thought-rail,
+                  .thought-item.is-run-start .thought-dot,
+                  .thought-item.is-run-start .thought-check,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-rail,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-dot,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-check {
@@ -2664,6 +2681,8 @@ function ThoughtsEditorInner(
                   }
                   .thought-item.is-inline .thought-body,
                   .thought-item.is-inline .thought-fields,
+                  .thought-item.is-run-start .thought-body,
+                  .thought-item.is-run-start .thought-fields,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-body,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-fields {
                     display: inline;
@@ -2677,11 +2696,14 @@ function ThoughtsEditorInner(
                   }
                   .thought-item.is-inline .thought-summary,
                   .thought-item.is-inline .thought-title,
+                  .thought-item.is-run-start .thought-summary,
+                  .thought-item.is-run-start .thought-title,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-summary,
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-title {
                     display: inline;
                     overflow: visible;
                     margin-bottom: 0;
+                    font-size: 16px;
                   }
                   html.mc-show-categories .thought-item.is-selected .thought-summary:not(.is-placeholder),
                   html.mc-show-categories .thought-item.is-selected .thought-title:not(.is-placeholder) {
