@@ -85,15 +85,11 @@ const preservedSemanticLabel = (
 
 /** Join two thought bodies after a merge, keeping inline markup. */
 export function joinMergedThoughtHtml(left: string, right: string): string {
-  const a = sanitizeInlineHtml(left)
-    .replace(/(<br\s*\/?>)+$/gi, "")
-    .trim();
-  const b = sanitizeInlineHtml(right)
-    .replace(/^(<br\s*\/?>)+/gi, "")
-    .trim();
+  const a = sanitizeInlineHtml(left).replace(/(<br\s*\/?>)+$/gi, "");
+  const b = sanitizeInlineHtml(right).replace(/^(<br\s*\/?>)+/gi, "");
   if (!a) return b;
   if (!b) return a;
-  return `${a} ${b}`;
+  return a + b;
 }
 
 /** Keep only inline bold/italic/underline markup for editor round-trips. */
@@ -122,7 +118,7 @@ export function sanitizeInlineHtml(html: string): string {
     return "";
   });
 
-  return value.replace(/^(<br>)+|(<br>)+$/gi, "").trim();
+  return value.replace(/^(<br>)+|(<br>)+$/gi, "");
 }
 
 function formatCategoryLabel(

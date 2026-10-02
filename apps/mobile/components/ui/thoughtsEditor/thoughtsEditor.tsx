@@ -1250,29 +1250,13 @@ function ThoughtsEditorInner(
           : joinMergedThoughtHtml(html, thought.content.text),
       ""
     );
-    let merged = setThoughtContentText(
+    const merged = setThoughtContentText(
       {
         ...first,
         categoryId: mergeCategoryId ?? first.categoryId,
       },
       joined
     );
-    if (merged.type === "text") {
-      const before = previous[start - 1];
-      const after = previous[end + 1];
-      const neighborInline = (thought?: ThoughtsFormValue) =>
-        thought?.type === "text" && thought.content.style === "inline";
-      const anyInline = pieces.some(
-        (thought) =>
-          thought.type === "text" && thought.content.style === "inline"
-      );
-      merged = setTextThoughtStyle(
-        merged,
-        neighborInline(before) || neighborInline(after) || anyInline
-          ? "inline"
-          : "block"
-      );
-    }
     const nextThoughts = [
       ...previous.slice(0, start),
       merged,
@@ -1413,6 +1397,12 @@ function ThoughtsEditorInner(
       const newText = payload.newSide === "left" ? leftText : rightText;
       const keptText = payload.newSide === "left" ? rightText : leftText;
       const created = createEmptyThought(noteId, source.type);
+      const sourceStyle =
+        source.type === "text" && source.content.style === "inline"
+          ? "inline"
+          : "block";
+      const styleForSide = (side: "left" | "right") =>
+        side === "right" ? "inline" : sourceStyle;
       const newThought = setThoughtContentText(
         source.type === "text"
           ? setTextThoughtStyle(
@@ -1422,7 +1412,7 @@ function ThoughtsEditorInner(
                 thoughtId: payload.newThoughtId,
                 categoryId: splitCategoryId ?? "uncategorized",
               },
-              "inline"
+              styleForSide(payload.newSide)
             )
           : {
               ...created,
@@ -1433,7 +1423,12 @@ function ThoughtsEditorInner(
         newText
       );
       const kept = setThoughtContentText(
-        source.type === "text" ? setTextThoughtStyle(source, "inline") : source,
+        source.type === "text"
+          ? setTextThoughtStyle(
+              source,
+              styleForSide(payload.newSide === "left" ? "right" : "left")
+            )
+          : source,
         keptText
       );
       const next =
@@ -2434,7 +2429,7 @@ function ThoughtsEditorInner(
                   .thought-summary {
                     position: relative;
                     display: inline;
-                    padding: 0 0.12em;
+                    padding: 0;
                     border-radius: 2px;
                     overflow-wrap: anywhere;
                     word-break: break-word;

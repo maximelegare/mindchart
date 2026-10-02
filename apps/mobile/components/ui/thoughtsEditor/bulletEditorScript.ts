@@ -144,20 +144,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         while (el.lastChild && el.lastChild.nodeName === "BR") {
           el.removeChild(el.lastChild);
         }
-        var last = el.lastChild;
-        if (last && last.nodeType === 3 && last.nodeValue) {
-          last.nodeValue = last.nodeValue.replace(/\\u00a0+$/g, "");
-          if (!last.nodeValue) el.removeChild(last);
-        }
         return;
       }
       while (el.firstChild && el.firstChild.nodeName === "BR") {
         el.removeChild(el.firstChild);
-      }
-      var first = el.firstChild;
-      if (first && first.nodeType === 3 && first.nodeValue) {
-        first.nodeValue = first.nodeValue.replace(/^\\u00a0+/g, "");
-        if (!first.nodeValue) el.removeChild(first);
       }
     }
 
@@ -831,6 +821,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
     }
 
+    window.__mcStripThoughtSeparatorWhitespace = function () {
+      stripThoughtSeparatorWhitespace(
+        content.querySelector(".mc-thoughts") || content
+      );
+    };
+
     function normalizeLis() {
       unwrapLists();
       if (window.__mcShowTitles) {
@@ -875,6 +871,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
+      }
+      if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
+        window.__mcStripThoughtSeparatorWhitespace();
       }
       notifyChange();
     };
@@ -957,6 +956,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       ensureCategoryChrome(created);
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
+      }
+      if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
+        window.__mcStripThoughtSeparatorWhitespace();
       }
       if (createdSummary) placeCaretAtStartSoon(createdSummary);
       notifyChange();
@@ -3037,24 +3039,42 @@ export const THOUGHT_SPLIT_SCRIPT = `
     clone.classList.remove("is-completed");
     clone.setAttribute("data-category-id", "uncategorized");
     clearTitle(clone);
-    if (thought.getAttribute("data-thought-type") === "text") {
-      thought.classList.add("is-inline");
-      thought.setAttribute("data-inline", "true");
-      clone.classList.add("is-inline");
-      clone.setAttribute("data-inline", "true");
+    var wasInline =
+      thought.classList.contains("is-inline") ||
+      thought.getAttribute("data-inline") === "true";
+    function setParagraphStyle(el, inline) {
+      if (inline) {
+        el.classList.add("is-inline");
+        el.setAttribute("data-inline", "true");
+        return;
+      }
+      el.classList.remove("is-inline");
+      el.removeAttribute("data-inline");
+      el.classList.add("is-block");
     }
     var created = clone;
     if (state.side === "right") {
       setSummaryHtml(thought, parts.left);
       setSummaryHtml(clone, parts.right);
+      if (thought.getAttribute("data-thought-type") === "text") {
+        setParagraphStyle(thought, wasInline);
+        setParagraphStyle(clone, true);
+      }
       thought.parentNode.insertBefore(clone, thought.nextSibling);
     } else {
       setSummaryHtml(clone, parts.left);
       setSummaryHtml(thought, parts.right);
+      if (thought.getAttribute("data-thought-type") === "text") {
+        setParagraphStyle(clone, wasInline);
+        setParagraphStyle(thought, true);
+      }
       thought.parentNode.insertBefore(clone, thought);
     }
     if (typeof window.__mcSyncChecklistLayouts === "function") {
       window.__mcSyncChecklistLayouts();
+    }
+    if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
+      window.__mcStripThoughtSeparatorWhitespace();
     }
     stopSplit();
     if (window.ReactNativeWebView) {
