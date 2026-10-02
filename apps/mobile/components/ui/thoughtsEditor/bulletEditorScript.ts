@@ -1103,6 +1103,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         li.classList.remove("is-inline");
         li.removeAttribute("data-inline");
         li.classList.remove("is-run-start");
+        var next = li.nextElementSibling;
+        if (isThought(next) && isInlineThought(next)) {
+          next.classList.remove("is-inline");
+          next.removeAttribute("data-inline");
+          next.classList.add("is-block");
+        }
       }
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
@@ -2224,7 +2230,10 @@ export const CHECKLIST_SCRIPT = `
   function applyThoughtType(li, type) {
     if (!li) return;
     if (type !== "text" && type !== "li" && type !== "checkbox") type = "li";
+    var previousType = thoughtTypeOf(li);
     var completable = type === "checkbox";
+    var becomingParagraph =
+      type === "text" && (previousType === "li" || previousType === "checkbox");
     li.setAttribute("data-thought-type", type);
     li.setAttribute("data-completable", completable ? "true" : "false");
     if (!completable) {
@@ -2232,8 +2241,25 @@ export const CHECKLIST_SCRIPT = `
     }
     li.classList.toggle("is-block", type === "text");
     li.classList.toggle("is-checklist", completable);
-    if (type !== "text") li.classList.remove("is-inline");
-    if (type !== "text") li.removeAttribute("data-inline");
+    if (type !== "text" || becomingParagraph) {
+      li.classList.remove("is-inline");
+      li.removeAttribute("data-inline");
+    }
+    if (becomingParagraph) {
+      li.classList.remove("is-run-start");
+      var next = li.nextElementSibling;
+      if (
+        next &&
+        next.classList &&
+        next.classList.contains("thought-item") &&
+        (next.classList.contains("is-inline") ||
+          next.getAttribute("data-inline") === "true")
+      ) {
+        next.classList.remove("is-inline");
+        next.removeAttribute("data-inline");
+        next.classList.add("is-block");
+      }
+    }
     if (!completable) li.classList.remove("is-completed");
   }
 
