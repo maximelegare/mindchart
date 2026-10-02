@@ -915,7 +915,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         var prev = li.previousElementSibling;
         if (isThought(prev)) {
           if (isInlineThought(li)) {
-            setThoughtAsParagraph(li, false);
+            promoteThoughtToBlock(li);
             placeCaretAtStartSoon(summary);
             notifyChange();
             return true;
@@ -986,7 +986,25 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
+      var next = li.nextElementSibling;
+      if (isThought(next) && isInlineThought(next)) {
+        promoteThoughtToBlock(next);
+        var nextSummary = next.querySelector(".thought-summary");
+        if (nextSummary) placeCaretAtStartSoon(nextSummary);
+        if (typeof window.__mcSyncChecklistLayouts === "function") {
+          window.__mcSyncChecklistLayouts();
+        }
+        notifyChange();
+        return;
+      }
+
       var created = createThoughtShell(type);
+      if (type === "text") {
+        created.classList.add("is-block");
+        created.classList.remove("is-inline");
+        created.classList.remove("is-run-start");
+        created.removeAttribute("data-inline");
+      }
       if (li.nextSibling) {
         li.parentNode.insertBefore(created, li.nextSibling);
       } else {
@@ -996,21 +1014,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         window.__mcSyncChecklistLayouts();
       }
 
-      var splitPending = false;
-      if (type === "text") {
-        splitPending = requestParagraphSplit(
-          li,
-          created.getAttribute("data-thought-id")
-        );
-      } else {
-        requestClassifyBullet(li);
-      }
+      requestClassifyBullet(li);
 
       var focusField = window.__mcShowTitles
         ? created.querySelector(".thought-title")
         : created.querySelector(".thought-summary");
       if (focusField) placeCaretAtStartSoon(focusField);
-      if (!splitPending) notifyChange();
+      notifyChange();
     }
 
     function isInlineThought(li) {
@@ -1019,6 +1029,30 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         (li.classList.contains("is-inline") ||
           li.getAttribute("data-inline") === "true")
       );
+    }
+
+    function promoteThoughtToBlock(li) {
+      if (!li) return;
+      li.setAttribute("data-thought-type", "text");
+      li.setAttribute("data-completable", "false");
+      li.setAttribute("data-completed", "false");
+      li.classList.add("is-block");
+      li.classList.remove("is-inline");
+      li.classList.remove("is-checklist");
+      li.removeAttribute("data-inline");
+      var following = li.nextElementSibling;
+      if (isThought(following) && isInlineThought(following)) {
+        li.classList.add("is-run-start");
+      } else {
+        li.classList.remove("is-run-start");
+      }
+      var previous = li.previousElementSibling;
+      if (isThought(previous) && previous.classList.contains("is-run-start")) {
+        var previousNext = previous.nextElementSibling;
+        if (!(isThought(previousNext) && isInlineThought(previousNext))) {
+          previous.classList.remove("is-run-start");
+        }
+      }
     }
 
     function placeCaretAtTextOffset(el, offset) {
