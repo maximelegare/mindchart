@@ -819,6 +819,18 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       repairAllPlaceholderFields();
     }
 
+    function stripThoughtSeparatorWhitespace(root) {
+      if (!root) return;
+      var node = root.firstChild;
+      while (node) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3 && !/\\S/.test(node.nodeValue || "")) {
+          root.removeChild(node);
+        }
+        node = next;
+      }
+    }
+
     function normalizeLis() {
       unwrapLists();
       if (window.__mcShowTitles) {
@@ -826,6 +838,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } else {
         normalizeUntitledLis();
       }
+      stripThoughtSeparatorWhitespace(
+        content.querySelector(".mc-thoughts") || content
+      );
     }
 
     function notifyChange() {
@@ -1978,8 +1993,12 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
   }
 
   try {
-    content.focus();
-  } catch (err) {}
+    content.focus({ preventScroll: true });
+  } catch (err) {
+    try {
+      content.focus();
+    } catch (err2) {}
+  }
   true;
 })();
 `;

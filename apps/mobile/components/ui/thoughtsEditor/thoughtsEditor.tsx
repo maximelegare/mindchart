@@ -112,37 +112,41 @@ const scrollCaretIntoViewScript = (bottomMargin: number) => `
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
 
-  var sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return true;
-
-  var range = sel.getRangeAt(0).cloneRange();
-  var rect = range.getClientRects()[0];
-  if (!rect || (rect.height === 0 && rect.width === 0)) {
-    rect = range.getBoundingClientRect();
-  }
-
   var margin = ${Math.max(0, Math.floor(bottomMargin))};
-  var contentRect = content.getBoundingClientRect();
-
+  var sel = window.getSelection();
+  var rect = null;
+  if (sel && sel.rangeCount > 0) {
+    var range = sel.getRangeAt(0).cloneRange();
+    rect = range.getClientRects()[0] || range.getBoundingClientRect();
+  }
   if (!rect || (rect.height === 0 && rect.width === 0)) {
-    var node = sel.anchorNode;
-    var el = node && (node.nodeType === 3 ? node.parentElement : node);
-    if (el && el.scrollIntoView) {
-      el.scrollIntoView({ block: "nearest", inline: "nearest" });
-    }
-    return true;
+    var thought = document.querySelector(".thought-item.is-selected");
+    if (thought) rect = thought.getBoundingClientRect();
+  }
+  if (!rect || (rect.height === 0 && rect.width === 0)) return true;
+
+  var contentRect = content.getBoundingClientRect();
+  var layoutBottom = contentRect.top + content.clientHeight;
+  var viewBottom = layoutBottom;
+  var viewTop = contentRect.top;
+  if (window.visualViewport) {
+    var vvTop = window.visualViewport.offsetTop;
+    var vvBottom = vvTop + window.visualViewport.height;
+    if (vvBottom < layoutBottom - 1) viewBottom = vvBottom;
+    if (vvTop > viewTop + 1) viewTop = vvTop;
   }
 
-  var caretTop = rect.top - contentRect.top + content.scrollTop;
-  var caretBottom = rect.bottom - contentRect.top + content.scrollTop;
-  var visibleTop = content.scrollTop + 8;
-  var visibleBottom = content.scrollTop + content.clientHeight - margin;
-
-  if (caretBottom > visibleBottom) {
-    content.scrollTop = Math.max(0, caretBottom - content.clientHeight + margin);
-  } else if (caretTop < visibleTop) {
-    content.scrollTop = Math.max(0, caretTop - 8);
+  var limitBottom = viewBottom - margin;
+  var limitTop = viewTop + 8;
+  var delta = 0;
+  if (rect.bottom > limitBottom) {
+    delta = Math.ceil(rect.bottom - limitBottom);
+  } else if (rect.top < limitTop) {
+    delta = Math.floor(rect.top - limitTop);
   }
+  if (!delta) return true;
+
+  content.scrollTop = Math.max(0, content.scrollTop + delta);
   return true;
 })();
 `;
@@ -424,6 +428,7 @@ function ThoughtsEditorInner(
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const keyboardHeightRef = React.useRef(0);
+  const toolbarModeRef = React.useRef(toolbarMode);
   const scrollCaretFrameRef = React.useRef<number | null>(null);
   const pendingFormatRef = React.useRef<"bold" | "italic" | "underline" | null>(
     null
@@ -945,6 +950,7 @@ function ThoughtsEditorInner(
       if (!stayOnDetails) {
         requestAnimationFrame(() => {
           focusSelectedThought(true);
+          scheduleScrollCaretIntoView();
           enteringEditFocusRef.current = false;
         });
       }
@@ -981,6 +987,7 @@ function ThoughtsEditorInner(
     refreshCategoryTimers,
     thoughtPlaceholders,
     focusSelectedThought,
+    scheduleScrollCaretIntoView,
   ]);
 
   const viewSignature = React.useMemo(
@@ -1566,7 +1573,6 @@ function ThoughtsEditorInner(
     toolbarMode,
   ]);
 
-  const toolbarModeRef = React.useRef(toolbarMode);
   React.useEffect(() => {
     const previous = toolbarModeRef.current;
     toolbarModeRef.current = toolbarMode;
@@ -2702,7 +2708,8 @@ function ThoughtsEditorInner(
                   .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-title {
                     display: inline;
                     overflow: visible;
-                    margin-bottom: 0;
+                    margin: 0;
+                    padding: 0;
                     font-size: 16px;
                   }
                   html.mc-show-categories .thought-item.is-selected .thought-summary:not(.is-placeholder),
