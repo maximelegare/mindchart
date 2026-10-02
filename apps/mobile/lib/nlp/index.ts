@@ -2,6 +2,14 @@ export { analyzeThought } from "./analyzeThought";
 export { classifyCategory } from "./categoryClassifier";
 export { detectLanguage } from "./language";
 export {
+  hashNlpSource,
+  thoughtHasNlpText,
+  thoughtNlpSourceHash,
+} from "./contentHash";
+export { needsNlp } from "./needsNlp";
+export { NLP_DEBOUNCE_MS, createNlpJob, processNlpJob } from "./processNlpJob";
+export type { NlpJob, NlpJobResult, NlpResultPiece } from "./processNlpJob";
+export {
   analyzeSplitParagraphPieces,
   splitParagraphIntoThoughts,
 } from "./splitParagraph";

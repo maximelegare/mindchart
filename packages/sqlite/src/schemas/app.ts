@@ -79,6 +79,9 @@ export const ThoughtTable = sqliteTable(
     title: text("title"),
     semanticLabel: text("semantic_label"),
     categoryId: text("category_id").notNull().default("uncategorized"),
+    nlpSourceHash: text("nlp_source_hash"),
+    titleSource: text("title_source").notNull().default("generated"),
+    categorySource: text("category_source").notNull().default("generated"),
     position: integer("position").notNull().default(0),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)

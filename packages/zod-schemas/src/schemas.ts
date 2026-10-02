@@ -79,6 +79,12 @@ export type ThoughtType = (typeof THOUGHT_TYPES)[number];
 
 export const ThoughtTypeSchema = z.enum(THOUGHT_TYPES);
 
+export const NLP_METADATA_SOURCES = ["generated", "user"] as const;
+export type NlpMetadataSource = (typeof NLP_METADATA_SOURCES)[number];
+
+export const parseNlpMetadataSource = (value: unknown): NlpMetadataSource =>
+  value === "user" ? "user" : "generated";
+
 const ThoughtJoinFieldsSchema = z.object({
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
@@ -94,6 +100,12 @@ export const ThoughtBaseSchema = z
     title: z.string(),
     categoryId: z.string(),
     semanticLabel: z.string(),
+    nlpSourceHash: z.string().optional(),
+    titleSource: z.enum(NLP_METADATA_SOURCES).optional().default("generated"),
+    categorySource: z
+      .enum(NLP_METADATA_SOURCES)
+      .optional()
+      .default("generated"),
     createdAt: z.string().nullable(),
     position: z.number().int().optional(),
   })
@@ -178,6 +190,9 @@ export const assembleThought = (raw: LooseThoughtRecord): Thought => {
     title: asString(raw.title),
     categoryId: asString(raw.categoryId, "uncategorized") || "uncategorized",
     semanticLabel: asString(raw.semanticLabel),
+    nlpSourceHash: asString(raw.nlpSourceHash) || undefined,
+    titleSource: parseNlpMetadataSource(raw.titleSource),
+    categorySource: parseNlpMetadataSource(raw.categorySource),
     createdAt:
       raw.createdAt == null || raw.createdAt === ""
         ? null

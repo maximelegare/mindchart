@@ -17,6 +17,9 @@ const thoughtRow = (thought: Thought, position = 0) => ({
   contentId: thought.contentId,
   title: thought.title,
   semanticLabel: thought.semanticLabel,
+  nlpSourceHash: thought.nlpSourceHash ?? null,
+  titleSource: thought.titleSource === "user" ? "user" : "generated",
+  categorySource: thought.categorySource === "user" ? "user" : "generated",
   categoryId: thought.categoryId,
   position: thought.position ?? position,
   createdAt: thought.createdAt ?? new Date().toISOString(),
@@ -76,6 +79,10 @@ export const updateThoughtsQuery = async (
         .set({
           title: thought.title,
           semanticLabel: thought.semanticLabel,
+          nlpSourceHash: thought.nlpSourceHash ?? null,
+          titleSource: thought.titleSource === "user" ? "user" : "generated",
+          categorySource:
+            thought.categorySource === "user" ? "user" : "generated",
           categoryId: thought.categoryId,
           type: thought.type,
           contentId: thought.contentId,
@@ -123,18 +130,40 @@ export const updateThoughtCategoryQuery = async (
 ) => {
   await db
     .update(ThoughtTable)
-    .set({ categoryId: data.categoryId || "uncategorized" })
+    .set({
+      categoryId: data.categoryId || "uncategorized",
+      categorySource: "user",
+    })
     .where(eq(ThoughtTable.id, data.id));
 };
 
 export const updateThoughtNlpQuery = async (
   db: DB,
-  data: Array<{ id: string; semanticLabel?: string; categoryId?: string }>
+  data: Array<{
+    id: string;
+    semanticLabel?: string;
+    categoryId?: string;
+    title?: string;
+    nlpSourceHash?: string;
+    titleSource?: string;
+    categorySource?: string;
+  }>
 ) => {
   for (const row of data) {
-    const patch: { semanticLabel?: string; categoryId?: string } = {};
+    const patch: {
+      semanticLabel?: string;
+      categoryId?: string;
+      title?: string;
+      nlpSourceHash?: string | null;
+      titleSource?: string;
+      categorySource?: string;
+    } = {};
     if (row.semanticLabel != null) patch.semanticLabel = row.semanticLabel;
     if (row.categoryId != null) patch.categoryId = row.categoryId;
+    if (row.title != null) patch.title = row.title;
+    if (row.nlpSourceHash != null) patch.nlpSourceHash = row.nlpSourceHash;
+    if (row.titleSource != null) patch.titleSource = row.titleSource;
+    if (row.categorySource != null) patch.categorySource = row.categorySource;
     if (Object.keys(patch).length === 0) continue;
 
     await db.update(ThoughtTable).set(patch).where(eq(ThoughtTable.id, row.id));

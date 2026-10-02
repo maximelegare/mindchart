@@ -89,12 +89,8 @@ import {
   type ThoughtsToolbarMode,
 } from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
-import {
-  analyzeThought,
-  analyzeSplitParagraphPieces,
-  splitParagraphIntoThoughts,
-} from "@/lib/nlp";
 import { thoughtCapabilities } from "./thoughtCapabilities";
+import { useEditorNlp } from "@/features/nlp/useEditorNlp";
 import { useModal } from "@/components/ui/modal/modal";
 import { ThoughtTitleModalContent } from "./thoughtTitleModalContent";
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
@@ -355,6 +351,8 @@ export type ThoughtsEditorHandle = {
   titlesEnabled: () => boolean;
   /** Pull live WebView HTML into form state before save. */
   flushThoughts: () => Promise<ThoughtsFormValue[]>;
+  /** Run pending NLP for dirty thoughts without waiting for debounce. */
+  flushPendingNlp: () => void;
 };
 
 function ThoughtsEditorInner(
@@ -573,6 +571,19 @@ function ThoughtsEditorInner(
     if (!editorReadyRef.current) return;
     richRef.current?.injectJavascript(script);
   }, []);
+
+  const { flushPendingNlp, processThoughtNow } = useEditorNlp({
+    getValues,
+    setValue,
+    noteId,
+    readOnly,
+    thoughts,
+    injectIfReady,
+    applyParagraphSplitScript,
+    setThoughtCategoryScript,
+    setThoughtSemanticTitleScript,
+    categoryLabels,
+  });
 
   const focusSelectedThought = React.useCallback((atEnd: boolean) => {
     const index = selectedThoughtIndexRef.current;
@@ -957,6 +968,7 @@ function ThoughtsEditorInner(
       return;
     }
 
+    flushPendingNlp();
     setToolbarMode("details");
     applyEditorFlags(false);
     applySimplifiedMode(simplifiedRef.current);
@@ -987,6 +999,7 @@ function ThoughtsEditorInner(
     refreshCategoryTimers,
     thoughtPlaceholders,
     focusSelectedThought,
+    flushPendingNlp,
     scheduleScrollCaretIntoView,
   ]);
 
@@ -1297,90 +1310,6 @@ function ThoughtsEditorInner(
     injectIfReady(setMergeHighlightScript(mergeIndexes));
   }, [injectIfReady, mergeIndexes, merging]);
 
-  const applyParagraphSplit = React.useCallback(
-    (payload: {
-      index: number;
-      thoughtId?: string;
-      newThoughtId?: string;
-      text: string;
-    }) => {
-      const previous = getValues("thoughts");
-      const thoughtId = String(payload.thoughtId ?? "");
-      let sourceIndex = thoughtId
-        ? previous.findIndex(
-            (thought) =>
-              thought.id === thoughtId || thought.thoughtId === thoughtId
-          )
-        : -1;
-      if (sourceIndex < 0) sourceIndex = payload.index;
-      const source = previous[sourceIndex];
-      if (!source || source.type !== "text") {
-        injectIfReady(applyParagraphSplitScript(thoughtId, []));
-        return;
-      }
-
-      const parts = splitParagraphIntoThoughts(payload.text);
-      if (parts.length === 0) {
-        injectIfReady(applyParagraphSplitScript(thoughtId, []));
-        return;
-      }
-
-      const sourceDomId = thoughtId || source.id;
-      const analyzed = analyzeSplitParagraphPieces(parts, {
-        fallbackCategoryId: source.categoryId,
-      });
-      const existingTitle = stripHtml(source.title);
-      const pieces = analyzed.map((piece, index) => {
-        const base =
-          index === 0
-            ? { ...source, id: sourceDomId, thoughtId: sourceDomId }
-            : createEmptyThought(noteId, "text");
-        const title = index === 0 && existingTitle ? source.title : piece.title;
-        return setTextThoughtStyle(
-          setThoughtContentText(
-            {
-              ...base,
-              title,
-              semanticLabel: piece.semanticLabel,
-              categoryId: piece.categoryId,
-            },
-            piece.text
-          ),
-          index === 0 ? "block" : "inline"
-        );
-      });
-
-      const emptyId = String(payload.newThoughtId || generateID());
-      const empty = {
-        ...createEmptyThought(noteId, "text"),
-        id: emptyId,
-        thoughtId: emptyId,
-      };
-      const next = [
-        ...previous.slice(0, sourceIndex),
-        ...pieces,
-        empty,
-        ...previous.slice(sourceIndex + 1),
-      ];
-      pendingNlpByIndexRef.current.clear();
-      setValue("thoughts", next, { shouldDirty: true });
-      injectIfReady(
-        applyParagraphSplitScript(
-          sourceDomId,
-          pieces.map((thought) => ({
-            id: thought.id,
-            text: thought.content.text,
-            title: stripHtml(thought.title) || thought.semanticLabel,
-            categoryId: thought.categoryId || "uncategorized",
-            inline:
-              thought.type === "text" && thought.content.style === "inline",
-          }))
-        )
-      );
-    },
-    [getValues, injectIfReady, noteId, setValue]
-  );
-
   const applySplitThought = React.useCallback(
     (payload: {
       index: number;
@@ -1528,7 +1457,9 @@ function ThoughtsEditorInner(
             setValue(
               "thoughts",
               previous.map((thought, thoughtIndex) =>
-                thoughtIndex === index ? { ...thought, title } : thought
+                thoughtIndex === index
+                  ? { ...thought, title, titleSource: "user" as const }
+                  : thought
               ),
               { shouldDirty: true }
             );
@@ -1738,11 +1669,16 @@ function ThoughtsEditorInner(
           | undefined;
         const index = Number(payload?.index);
         if (!Number.isFinite(index) || index < 0) return;
-        applyParagraphSplit({
-          index,
-          thoughtId: String(payload?.thoughtId ?? ""),
-          newThoughtId: String(payload?.newThoughtId ?? ""),
-          text: String(payload?.text ?? ""),
+        const previous = getValues("thoughts");
+        const thoughtId = String(payload?.thoughtId ?? "");
+        const current =
+          previous.find(
+            (thought) =>
+              thought.id === thoughtId || thought.thoughtId === thoughtId
+          ) ?? previous[index];
+        if (!current || !thoughtCapabilities(current.type).nlp) return;
+        processThoughtNow(current, {
+          id: String(payload?.newThoughtId || generateID()),
         });
         return;
       }
@@ -1752,55 +1688,9 @@ function ThoughtsEditorInner(
           | undefined;
         const index = Number(payload?.index);
         if (!Number.isFinite(index) || index < 0) return;
-        const text = String(payload?.text ?? "");
-        const result = analyzeThought(text);
-        const previous = getValues("thoughts");
-        const current = previous[index];
-        if (current && !thoughtCapabilities(current.type).nlp) return;
-        const currentCategory = current?.categoryId || "uncategorized";
-        const nextCategory =
-          result.category &&
-          result.categoryConfidence >= 0.35 &&
-          currentCategory === "uncategorized"
-            ? result.category
-            : undefined;
-        const nextLabel = result.semanticLabel || undefined;
-        if (!nextCategory && !nextLabel) return;
-
-        pendingNlpByIndexRef.current.set(index, {
-          categoryId: nextCategory,
-          semanticLabel: nextLabel,
-        });
-
-        if (current) {
-          setValue(
-            "thoughts",
-            previous.map((thought, thoughtIndex) =>
-              thoughtIndex === index
-                ? {
-                    ...thought,
-                    categoryId: nextCategory ?? thought.categoryId,
-                    semanticLabel: nextLabel ?? thought.semanticLabel,
-                  }
-                : thought
-            ),
-            { shouldDirty: true }
-          );
-        }
-        if (nextLabel && readOnly) {
-          richRef.current?.injectJavascript(
-            setThoughtSemanticTitleScript(index, nextLabel)
-          );
-        }
-        if (nextCategory) {
-          richRef.current?.injectJavascript(
-            setThoughtCategoryScript(
-              index,
-              nextCategory,
-              categoryLabels.get(nextCategory)
-            )
-          );
-        }
+        const current = getValues("thoughts")[index];
+        if (!current || !thoughtCapabilities(current.type).nlp) return;
+        processThoughtNow(current);
         return;
       }
       if (message.type === "CONFIRM_SPLIT") {
@@ -1852,8 +1742,8 @@ function ThoughtsEditorInner(
     },
     [
       applyMergeTap,
-      applyParagraphSplit,
       applySplitThought,
+      processThoughtNow,
       categoryLabels,
       getValues,
       injectIfReady,
@@ -1884,7 +1774,11 @@ function ThoughtsEditorInner(
       const previous = getValues("thoughts");
       const next = previous.map((thought, index) =>
         index === categoryPickerIndex
-          ? { ...thought, categoryId: category.id }
+          ? {
+              ...thought,
+              categoryId: category.id,
+              categorySource: "user" as const,
+            }
           : thought
       );
       setValue("thoughts", next, { shouldDirty: !readOnly });
@@ -2011,8 +1905,9 @@ function ThoughtsEditorInner(
           };
           richRef.current?.injectJavascript(REQUEST_EDITOR_HTML_SCRIPT);
         }),
+      flushPendingNlp,
     }),
-    [getValues, syncThoughtsFromHtml, validationMessages]
+    [flushPendingNlp, getValues, syncThoughtsFromHtml, validationMessages]
   );
 
   return (
