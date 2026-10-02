@@ -240,6 +240,68 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
+    function requestParagraphSplit(li, newThoughtId) {
+      if (!li || !li.parentNode || !window.ReactNativeWebView) return false;
+      var text = fieldPlainText(li.querySelector(".thought-summary"));
+      if (!text) return false;
+      var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+      if (index < 0) return false;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "SPLIT_PARAGRAPH",
+          data: {
+            index: index,
+            thoughtId: ensureThoughtId(li),
+            newThoughtId: newThoughtId || "",
+            text: text,
+          },
+        })
+      );
+      return true;
+    }
+
+    function applyPieceToThought(li, piece) {
+      if (!li || !piece) return;
+      li.setAttribute("data-thought-id", piece.id || ensureThoughtId(li));
+      li.setAttribute("data-thought-type", "text");
+      li.setAttribute("data-category-id", piece.categoryId || "uncategorized");
+      li.classList.add("is-block");
+      if (piece.inline) {
+        li.classList.add("is-inline");
+        li.setAttribute("data-inline", "true");
+      } else {
+        li.classList.remove("is-inline");
+        li.removeAttribute("data-inline");
+      }
+      var summary = li.querySelector(".thought-summary");
+      if (summary) {
+        summary.textContent = piece.text || "";
+        if (piece.text) {
+          summary.classList.remove("is-placeholder");
+          summary.classList.remove("is-error-placeholder");
+        }
+      }
+      var fields = li.querySelector(".thought-fields") || li;
+      var titleEl = li.querySelector(".thought-title");
+      if (piece.title) {
+        if (!titleEl) {
+          titleEl = document.createElement("div");
+          titleEl.className = "thought-title";
+          titleEl.setAttribute("data-placeholder", mcPh("title", "Title"));
+          fields.insertBefore(titleEl, fields.firstChild);
+        }
+        titleEl.textContent = piece.title;
+        titleEl.classList.remove("is-placeholder");
+        titleEl.classList.remove("is-error-placeholder");
+        li.classList.add("has-entered-title");
+      }
+      var chip = li.querySelector(".thought-category");
+      if (chip) {
+        chip.setAttribute("data-category-id", piece.categoryId || "uncategorized");
+      }
+      ensureCategoryChrome(li);
+    }
+
     function createCheckButton() {
       var check = document.createElement("button");
       check.type = "button";
@@ -279,8 +341,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function ensureThoughtId(li) {
-      if (!li || li.getAttribute("data-thought-id")) return;
-      li.setAttribute("data-thought-id", newThoughtId());
+      if (!li) return "";
+      var id = li.getAttribute("data-thought-id");
+      if (id) return id;
+      id = newThoughtId();
+      li.setAttribute("data-thought-id", id);
+      return id;
     }
 
     function ensureCategoryChrome(li) {
@@ -703,6 +769,36 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } catch (e) {}
     }
 
+    window.__mcApplyParagraphSplit = function (sourceId, pieces) {
+      if (!sourceId || !pieces || !pieces.length) {
+        notifyChange();
+        return;
+      }
+      var source = content.querySelector(
+        '.thought-item[data-thought-id="' +
+          String(sourceId).replace(/"/g, "") +
+          '"]'
+      );
+      if (!source) {
+        notifyChange();
+        return;
+      }
+      applyPieceToThought(source, pieces[0]);
+      var insertBefore = source.nextSibling;
+      for (var i = 1; i < pieces.length; i++) {
+        var created = createThoughtShell("text");
+        applyPieceToThought(created, pieces[i]);
+        source.parentNode.insertBefore(created, insertBefore);
+      }
+      if (typeof window.__mcRefreshCategoryTimers === "function") {
+        window.__mcRefreshCategoryTimers();
+      }
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      notifyChange();
+    };
+
     function thoughtTypeOf(li) {
       var type = li && li.getAttribute("data-thought-type");
       if (type === "text" || type === "li" || type === "checkbox") return type;
@@ -718,8 +814,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (now - lastEnterAt < 80) return;
       lastEnterAt = now;
 
-      requestClassifyBullet(li);
-
       var inTitle = closestClass(anchor, "thought-title");
       if (inTitle) {
         var summary = li.querySelector(".thought-summary");
@@ -727,7 +821,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      var created = createThoughtShell(thoughtTypeOf(li));
+      var type = thoughtTypeOf(li);
+      var created = createThoughtShell(type);
       if (li.nextSibling) {
         li.parentNode.insertBefore(created, li.nextSibling);
       } else {
@@ -736,11 +831,85 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
       }
+
+      var splitPending = false;
+      if (type === "text") {
+        splitPending = requestParagraphSplit(
+          li,
+          created.getAttribute("data-thought-id")
+        );
+      } else {
+        requestClassifyBullet(li);
+      }
+
       var focusField = window.__mcShowTitles
         ? created.querySelector(".thought-title")
         : created.querySelector(".thought-summary");
       if (focusField) placeCaretAtStartSoon(focusField);
-      notifyChange();
+      if (!splitPending) notifyChange();
+    }
+
+    function isInlineThought(li) {
+      return !!(
+        li &&
+        (li.classList.contains("is-inline") ||
+          li.getAttribute("data-inline") === "true")
+      );
+    }
+
+    function setThoughtAsParagraph(li, inline) {
+      if (!li) return;
+      li.setAttribute("data-thought-type", "text");
+      li.setAttribute("data-completable", "false");
+      li.setAttribute("data-completed", "false");
+      li.classList.add("is-block");
+      li.classList.remove("is-checklist");
+      li.classList.remove("is-completed");
+      if (inline) {
+        li.classList.add("is-inline");
+        li.setAttribute("data-inline", "true");
+      } else {
+        li.classList.remove("is-inline");
+        li.removeAttribute("data-inline");
+      }
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      if (window.ReactNativeWebView && li.parentNode) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: "CARET_LIST_TYPE",
+            data: {
+              type: "text",
+              index: Array.prototype.indexOf.call(li.parentNode.children, li),
+            },
+          })
+        );
+      }
+    }
+
+    function handleLineStartBackspace(e, li, field) {
+      var type = thoughtTypeOf(li);
+      if (type === "li" || type === "checkbox") {
+        e.preventDefault();
+        e.stopPropagation();
+        setThoughtAsParagraph(li, false);
+        placeCaretAtStartSoon(field);
+        notifyChange();
+        return true;
+      }
+      if (type === "text" && !isInlineThought(li)) {
+        var prev = li.previousElementSibling;
+        if (isThought(prev)) {
+          e.preventDefault();
+          e.stopPropagation();
+          setThoughtAsParagraph(li, true);
+          placeCaretAtStartSoon(field);
+          notifyChange();
+          return true;
+        }
+      }
+      return false;
     }
 
     function removeThought(li) {
@@ -779,17 +948,18 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function handleBackspaceUntitled(e, li) {
       var summaryEl = li.querySelector(".thought-summary") || li;
 
-      if (isEmptyField(summaryEl) || isCaretAtStartOf(summaryEl)) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isEmptyField(summaryEl)) {
-          removeThought(li);
-          return;
-        }
-        var prev = li.previousElementSibling;
-        if (isThought(prev)) {
-          placeCaretAtEndSoon(prev.querySelector(".thought-summary") || prev);
-        }
+      if (!(isEmptyField(summaryEl) || isCaretAtStartOf(summaryEl))) return;
+      if (handleLineStartBackspace(e, li, summaryEl)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      if (isEmptyField(summaryEl)) {
+        removeThought(li);
+        return;
+      }
+      var prev = li.previousElementSibling;
+      if (isThought(prev)) {
+        placeCaretAtEndSoon(prev.querySelector(".thought-summary") || prev);
       }
     }
 
@@ -838,6 +1008,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       if (title && (isEmptyField(title) || isCaretAtStartOf(title))) {
+        if (handleLineStartBackspace(e, li, title)) return;
         e.preventDefault();
         e.stopPropagation();
 
@@ -987,6 +1158,37 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
   true;
 })();
 `;
+
+export function applyParagraphSplitScript(
+  sourceId: string,
+  pieces: Array<{
+    id: string;
+    text: string;
+    title: string;
+    categoryId: string;
+    inline?: boolean;
+  }>
+): string {
+  return `
+(function () {
+  if (typeof window.__mcApplyParagraphSplit === "function") {
+    window.__mcApplyParagraphSplit(
+      ${JSON.stringify(sourceId)},
+      ${JSON.stringify(pieces)}
+    );
+    return true;
+  }
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) {
+    try {
+      content.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch (e) {}
+  }
+  return true;
+})();
+`;
+}
 
 export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;

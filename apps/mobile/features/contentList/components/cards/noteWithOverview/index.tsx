@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { Fragment, memo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -173,6 +173,15 @@ function getItemGap(
     return 0;
   }
 
+  if (
+    current.type === "text" &&
+    next.type === "text" &&
+    current.style !== "inline" &&
+    next.style === "inline"
+  ) {
+    return 0;
+  }
+
   // Two paragraphs get the largest spacing.
   if (current.type === "text" && next.type === "text") {
     return PARAGRAPH_GAP;
@@ -239,43 +248,54 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
             <View className="mt-4 ml-2 flex-row flex-wrap" pointerEvents="none">
               {visibleItems.map((item, index) => {
                 const nextItem = visibleItems[index + 1];
+                const prevItem = visibleItems[index - 1];
                 const gap = getItemGap(item, nextItem);
                 const inline = isInlineParagraph(item);
+                const startsInlineRun =
+                  item.type === "text" &&
+                  item.style !== "inline" &&
+                  Boolean(nextItem && isInlineParagraph(nextItem));
+                const shareRow = inline || startsInlineRun;
+                const breakBefore =
+                  startsInlineRun &&
+                  Boolean(prevItem && isInlineParagraph(prevItem));
 
                 return (
-                  <View
-                    key={index}
-                    style={inline ? undefined : { width: "100%" }}
-                  >
-                    <ThoughtOverviewItem
-                      item={item}
-                      markerColor={markerColor}
-                    />
-
-                    {gap > 0 && <View style={{ height: gap }} />}
-
-                    {index === visibleItems.length - 1 && hasMore ? (
-                      <View className="mt-1 ml-1 flex-row items-center gap-1">
-                        <Typography
-                          variant="muted"
-                          padding={false}
-                          style={{
-                            fontSize: 13,
-                            opacity: 0.75,
-                          }}
-                        >
-                          See more
-                        </Typography>
-
-                        <Icon
-                          name="arrow-right"
-                          size={12}
-                          color="muted-foreground"
-                          style={{ marginTop: 2 }}
-                        />
-                      </View>
+                  <Fragment key={index}>
+                    {breakBefore ? (
+                      <View style={{ width: "100%", height: PARAGRAPH_GAP }} />
                     ) : null}
-                  </View>
+                    <View style={shareRow ? undefined : { width: "100%" }}>
+                      <ThoughtOverviewItem
+                        item={item}
+                        markerColor={markerColor}
+                      />
+
+                      {gap > 0 && <View style={{ height: gap }} />}
+
+                      {index === visibleItems.length - 1 && hasMore ? (
+                        <View className="mt-1 ml-1 flex-row items-center gap-1">
+                          <Typography
+                            variant="muted"
+                            padding={false}
+                            style={{
+                              fontSize: 13,
+                              opacity: 0.75,
+                            }}
+                          >
+                            See more
+                          </Typography>
+
+                          <Icon
+                            name="arrow-right"
+                            size={12}
+                            color="muted-foreground"
+                            style={{ marginTop: 2 }}
+                          />
+                        </View>
+                      ) : null}
+                    </View>
+                  </Fragment>
                 );
               })}
             </View>
