@@ -59,6 +59,10 @@ import {
   thoughtsEditorCategoryOpacityLabel,
   thoughtsEditorDetailsMoreOptionsAccessibilityLabel,
   thoughtsEditorDetailsTitleCategoryAccessibilityLabel,
+  thoughtsEditorTextTypeLabel,
+  thoughtsEditorBulletTypeLabel,
+  thoughtsEditorChecklistTypeLabel,
+  thoughtsEditorThoughtTypeMenuAccessibilityLabel,
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
@@ -68,6 +72,7 @@ export const TOOLBAR_HEIGHT_ANIMATION_MS = 260;
 const APPEAR_OPACITY_MS = 180;
 const OPACITY_POPUP_WIDTH = 220;
 const OPACITY_SLIDER_WIDTH = 196;
+const TYPE_POPUP_WIDTH = 188;
 const POPUP_IN_MS = 160;
 const POPUP_OUT_MS = 120;
 const HEIGHT_EASING = Easing.inOut(Easing.cubic);
@@ -142,16 +147,192 @@ function FormatButton({
   );
 }
 
+const THOUGHT_TYPE_OPTIONS: Array<{
+  type: ThoughtType;
+  icon: IconName;
+  label: () => string;
+  accessibilityLabel: () => string;
+}> = [
+  {
+    type: "text",
+    icon: "text-align-start",
+    label: thoughtsEditorTextTypeLabel,
+    accessibilityLabel: thoughtsEditorTextAccessibilityLabel,
+  },
+  {
+    type: "li",
+    icon: "list",
+    label: thoughtsEditorBulletTypeLabel,
+    accessibilityLabel: thoughtsEditorBulletAccessibilityLabel,
+  },
+  {
+    type: "checkbox",
+    icon: "square-check",
+    label: thoughtsEditorChecklistTypeLabel,
+    accessibilityLabel: thoughtsEditorChecklistAccessibilityLabel,
+  },
+];
+
+function ThoughtTypePopup({
+  visible,
+  anchor,
+  thoughtType,
+  onSelect,
+  onClose,
+  onExited,
+}: {
+  visible: boolean;
+  anchor: { x: number; y: number; width: number };
+  thoughtType: ThoughtType;
+  onSelect: (type: ThoughtType) => void;
+  onClose: () => void;
+  onExited: () => void;
+}) {
+  const { colorScheme } = useColorScheme();
+  const overlayRef = React.useRef<View>(null);
+  const [overlay, setOverlay] = React.useState({
+    x: 0,
+    y: 0,
+    height: 0,
+    width: 0,
+  });
+  const progress = useSharedValue(0);
+  const onExitedRef = React.useRef(onExited);
+  onExitedRef.current = onExited;
+  const popupWidth = Math.max(TYPE_POPUP_WIDTH, anchor.width);
+  const overlayWidth = overlay.width || Dimensions.get("window").width;
+  const left = Math.min(
+    Math.max(0, anchor.x - overlay.x),
+    Math.max(0, overlayWidth - popupWidth)
+  );
+  const bottom = Math.max(0, overlay.y + overlay.height - anchor.y + 4);
+
+  const measureOverlay = () => {
+    overlayRef.current?.measureInWindow((x, y, width, height) => {
+      setOverlay({ x, y, width, height });
+    });
+  };
+
+  React.useEffect(() => {
+    if (visible) {
+      progress.value = withTiming(1, {
+        duration: POPUP_IN_MS,
+        easing: Easing.out(Easing.cubic),
+      });
+      return;
+    }
+
+    const finishExit = () => onExitedRef.current();
+    progress.value = withTiming(
+      0,
+      { duration: POPUP_OUT_MS, easing: Easing.in(Easing.cubic) },
+      (finished) => {
+        if (finished) runOnJS(finishExit)();
+      }
+    );
+  }, [progress, visible]);
+
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ translateY: (1 - progress.value) * 10 }],
+  }));
+
+  return (
+    <Portal name="thoughts-editor-thought-type">
+      <View
+        ref={overlayRef}
+        onLayout={measureOverlay}
+        pointerEvents="box-none"
+        style={styles.screen}
+      >
+        <Pressable
+          accessibilityRole="button"
+          onPress={visible ? onClose : undefined}
+          style={StyleSheet.absoluteFill}
+        />
+        <Animated.View
+          style={[
+            styles.typePopup,
+            {
+              left,
+              bottom,
+              width: popupWidth,
+              backgroundColor: hsl("popover", colorScheme),
+              borderColor: hsl("border", colorScheme),
+            },
+            cardStyle,
+            overlay.height ? undefined : { opacity: 0 },
+          ]}
+        >
+          {THOUGHT_TYPE_OPTIONS.map((option) => {
+            const selected = thoughtType === option.type;
+            return (
+              <Pressable
+                key={option.type}
+                onPress={() => {
+                  onSelect(option.type);
+                  onClose();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={option.accessibilityLabel()}
+                accessibilityState={{ selected }}
+                style={[
+                  styles.typeOption,
+                  selected
+                    ? { backgroundColor: hsl("border", colorScheme) }
+                    : undefined,
+                ]}
+              >
+                <Icon
+                  name={option.icon}
+                  size={20}
+                  color={selected ? "primary" : "foreground"}
+                />
+                <Typography className="text-base" numberOfLines={1}>
+                  {option.label()}
+                </Typography>
+              </Pressable>
+            );
+          })}
+        </Animated.View>
+      </View>
+    </Portal>
+  );
+}
+
 function FormatToolbar({
   activeFormats,
   onFormat,
   thoughtType,
   onThoughtTypeChange,
+  enabled = true,
 }: Pick<
   ThoughtsEditorToolbarProps,
   "activeFormats" | "onFormat" | "thoughtType" | "onThoughtTypeChange"
->) {
+> & { enabled?: boolean }) {
   const { colorScheme } = useColorScheme();
+  const typeRef = React.useRef<View>(null);
+  const [typePopupAnchor, setTypePopupAnchor] = React.useState<{
+    x: number;
+    y: number;
+    width: number;
+  } | null>(null);
+  const [typePopupVisible, setTypePopupVisible] = React.useState(false);
+  const selectedType =
+    THOUGHT_TYPE_OPTIONS.find((option) => option.type === thoughtType) ??
+    THOUGHT_TYPE_OPTIONS[0];
+
+  React.useEffect(() => {
+    if (enabled) return;
+    setTypePopupVisible(false);
+  }, [enabled]);
+
+  const openTypePopup = () => {
+    typeRef.current?.measureInWindow((x, y, width) => {
+      setTypePopupAnchor({ x, y, width });
+      setTypePopupVisible(true);
+    });
+  };
 
   return (
     <View className="flex-row items-center" style={styles.content}>
@@ -181,24 +362,41 @@ function FormatToolbar({
           backgroundColor: hsl("input", colorScheme),
         }}
       />
-      <FormatButton
-        icon="text-align-start"
-        active={thoughtType === "text"}
-        label={thoughtsEditorTextAccessibilityLabel()}
-        onPress={() => onThoughtTypeChange("text")}
-      />
-      <FormatButton
-        icon="list"
-        active={thoughtType === "li"}
-        label={thoughtsEditorBulletAccessibilityLabel()}
-        onPress={() => onThoughtTypeChange("li")}
-      />
-      <FormatButton
-        icon="square-check"
-        active={thoughtType === "checkbox"}
-        label={thoughtsEditorChecklistAccessibilityLabel()}
-        onPress={() => onThoughtTypeChange("checkbox")}
-      />
+      <Pressable
+        ref={typeRef}
+        onPress={
+          typePopupVisible ? () => setTypePopupVisible(false) : openTypePopup
+        }
+        accessibilityRole="button"
+        accessibilityLabel={thoughtsEditorThoughtTypeMenuAccessibilityLabel()}
+        accessibilityState={{ expanded: typePopupVisible }}
+        style={[
+          styles.typeTrigger,
+          typePopupVisible
+            ? { backgroundColor: hsl("border", colorScheme) }
+            : undefined,
+        ]}
+      >
+        <Icon name={selectedType.icon} size={20} color="foreground" />
+        <Typography className="text-base" numberOfLines={1}>
+          {selectedType.label()}
+        </Typography>
+        <Icon
+          name={typePopupVisible ? "chevron-up" : "chevron-down"}
+          size={14}
+          color="muted-foreground"
+        />
+      </Pressable>
+      {typePopupAnchor ? (
+        <ThoughtTypePopup
+          visible={typePopupVisible}
+          anchor={typePopupAnchor}
+          thoughtType={thoughtType}
+          onSelect={onThoughtTypeChange}
+          onClose={() => setTypePopupVisible(false)}
+          onExited={() => setTypePopupAnchor(null)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -925,7 +1123,7 @@ function ToolbarContent({
         pointerEvents={mode === "format" ? "auto" : "none"}
         style={[styles.contentLayer, formatStyle]}
       >
-        <FormatToolbar {...props} />
+        <FormatToolbar {...props} enabled={mode === "format"} />
       </Animated.View>
       <Animated.View
         pointerEvents={mode === "details" ? "auto" : "none"}
@@ -1199,6 +1397,36 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 8,
     gap: 6,
+  },
+  typeTrigger: {
+    height: 40,
+    paddingHorizontal: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 6,
+    gap: 6,
+  },
+  typePopup: {
+    position: "absolute",
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: "hidden",
+    padding: 6,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    gap: 2,
+  },
+  typeOption: {
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    gap: 10,
   },
   opacityPopup: {
     position: "absolute",

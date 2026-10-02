@@ -48,6 +48,25 @@ export function thoughtsEditorChecklistAccessibilityLabel() {
   );
 }
 
+export function thoughtsEditorTextTypeLabel() {
+  return fbs("Text", "Thought type menu label for a paragraph");
+}
+
+export function thoughtsEditorBulletTypeLabel() {
+  return fbs("Bullet", "Thought type menu label for a bullet");
+}
+
+export function thoughtsEditorChecklistTypeLabel() {
+  return fbs("Checklist", "Thought type menu label for a checklist");
+}
+
+export function thoughtsEditorThoughtTypeMenuAccessibilityLabel() {
+  return fbs(
+    "Thought type",
+    "Accessibility label for the thought type menu in the formatting toolbar"
+  );
+}
+
 export function thoughtsEditorDetailsToolbarAccessibilityLabel() {
   return fbs(
     "Title and category toolbar",
