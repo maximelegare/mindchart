@@ -165,7 +165,7 @@ export const ManualNoteForm = ({
       )
       .map((thought) => {
         const title = thought.title.trim();
-        const text = getThoughtPlainText(thought).trim() || title;
+        const text = getThoughtPlainText(thought) || title;
         const next =
           thought.type === "checkbox"
             ? {

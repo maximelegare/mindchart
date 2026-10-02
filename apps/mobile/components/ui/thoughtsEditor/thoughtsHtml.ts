@@ -48,9 +48,7 @@ export function stripHtml(html: string): string {
       .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
       .replace(/<[^>]+>/g, "")
       .replace(/\u00a0/g, " ")
-  )
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  ).replace(/\n{3,}/g, "\n\n");
 }
 
 const isFallbackSemanticLabel = (

@@ -238,7 +238,7 @@ function NoteDetailsContent({
         )
         .map((thought, index) => {
           const thoughtTitle = stripHtml(thought.title);
-          const text = stripHtml(getThoughtPlainText(thought)) || thoughtTitle;
+          const text = getThoughtPlainText(thought) || thoughtTitle;
           const semanticLabel =
             stripHtml(thought.semanticLabel) || thoughtTitle || text;
           const withText =

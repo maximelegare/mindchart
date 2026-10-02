@@ -38,7 +38,7 @@ export const useSaveNewNote = () => {
 
       const thoughtsToInsert: Thought[] = thoughts.map((thought, index) => {
         const title = asText(thought.title);
-        const text = asText(getThoughtPlainText(thought));
+        const text = getThoughtPlainText(thought);
         const semanticLabel = asText(thought.semanticLabel) || title || text;
         const next =
           thought.type === "checkbox"
