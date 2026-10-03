@@ -131,12 +131,37 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function isCaretAtStartOf(el) {
       var sel = window.getSelection();
       if (!sel || !sel.rangeCount || !el) return false;
-      var range = sel.getRangeAt(0);
-      if (!range.collapsed) return false;
-      var probe = range.cloneRange();
-      probe.selectNodeContents(el);
-      probe.setEnd(range.startContainer, range.startOffset);
-      return probe.toString().replace(/\\u00a0/g, " ").trim().length === 0;
+      try {
+        var range = sel.getRangeAt(0);
+        if (!range.collapsed) return false;
+        var node = range.startContainer;
+        if (el !== node && !(el.contains && el.contains(node))) return false;
+        var probe = range.cloneRange();
+        probe.selectNodeContents(el);
+        probe.setEnd(node, range.startOffset);
+        return probe
+          .toString()
+          .replace(/\\u00a0/g, " ")
+          .replace(/\\n/g, "")
+          .trim().length === 0;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function isLineStartBackspace(li, field) {
+      if (!field) return true;
+      if (isEmptyField(field) || isCaretAtStartOf(field)) return true;
+      var sel = window.getSelection();
+      var node =
+        sel &&
+        (sel.anchorNode ||
+          (sel.rangeCount && sel.getRangeAt(0).startContainer));
+      if (!node || !li || !li.contains(node)) return false;
+      if (field === node || field.contains(node)) return false;
+      var title = li.querySelector(".thought-title");
+      if (title && (title === node || title.contains(node))) return false;
+      return true;
     }
 
     function isCaretAtEndOf(el) {
@@ -408,9 +433,28 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function summaryPlaceholder(li) {
-      return window.__mcShowTitles || (li && li.querySelector(".thought-title"))
+      if (
+        isHeadingType(thoughtTypeOf(li)) ||
+        (li && li.classList.contains("in-heading"))
+      ) {
+        return mcPh("bullet", "Write Something...");
+      }
+      return window.__mcShowTitles && li && li.querySelector(".thought-title")
         ? mcPh("summary", "Summary")
         : mcPh("bullet", "Write Something...");
+    }
+
+    function forceUntitledSummary(li) {
+      if (!li) return;
+      var title = li.querySelector(".thought-title");
+      if (title && title.parentNode) title.parentNode.removeChild(title);
+      var summary = li.querySelector(".thought-summary");
+      if (!summary) return;
+      summary.setAttribute(
+        "data-placeholder",
+        mcPh("bullet", "Write Something...")
+      );
+      if (isEmptyField(summary)) summary.classList.add("is-placeholder");
     }
 
     function newThoughtId() {
@@ -570,7 +614,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       created.setAttribute("data-category-id", "uncategorized");
       created.setAttribute("data-completable", completable ? "true" : "false");
       created.setAttribute("data-completed", "false");
-      created.innerHTML = emptyLiHtml("uncategorized");
+      created.innerHTML = isHeadingType(thoughtType)
+        ? thoughtItemInnerHtml("uncategorized", emptyUntitledFieldHtml())
+        : emptyLiHtml("uncategorized");
       return created;
     }
 
@@ -791,8 +837,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       for (var i = 0; i < lis.length; i++) {
         var li = lis[i];
         ensureCategoryChrome(li);
-        if (isHeadingType(thoughtTypeOf(li))) {
+        if (
+          isHeadingType(thoughtTypeOf(li)) ||
+          li.classList.contains("in-heading")
+        ) {
           stripHeadingTitle(li);
+          forceUntitledSummary(li);
           if (!li.querySelector(".thought-summary")) {
             var headingSummary = document.createElement("div");
             headingSummary.className = "thought-summary is-placeholder";
@@ -1108,6 +1158,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       created.classList.remove("is-inline");
       created.classList.remove("is-run-start");
       created.removeAttribute("data-inline");
+      forceUntitledSummary(created);
     }
 
     function promoteThoughtToBlock(li) {
@@ -1209,6 +1260,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       li.classList.add("is-text-like");
       li.classList.remove("is-checklist");
       li.classList.remove("is-completed");
+      if (inline && isInHeadingSection(li)) inline = false;
       if (inline) {
         li.classList.add("is-inline");
         li.setAttribute("data-inline", "true");
@@ -1253,41 +1305,40 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function handleLineStartBackspace(e, li, field) {
       var type = thoughtTypeOf(li);
       var underHeading = isInHeadingSection(li);
-      if (
-        !thoughtHasContent(li) &&
-        !(underHeading && (type === "li" || type === "checkbox"))
-      ) {
-        return false;
-      }
       var prev = li.previousElementSibling;
-      if (
-        !underHeading &&
-        isThought(prev) &&
-        (li.getAttribute("data-caret-split") === "true" || isInlineThought(li))
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        mergeCurrentIntoPrevious(li);
-        return true;
-      }
+      var prevIsHeading = isThought(prev) && isHeadingType(thoughtTypeOf(prev));
       if (type === "li" || type === "checkbox") {
+        if (!thoughtHasContent(li) && !underHeading) return false;
         e.preventDefault();
         e.stopPropagation();
         setThoughtAsParagraph(li, false);
+        forceUntitledSummary(li);
         placeCaretAtStartSoon(field);
         notifyChange();
         return true;
       }
       if (
         isTextLikeType(type) &&
-        !isInlineThought(li) &&
         isThought(prev) &&
-        !underHeading &&
-        !isHeadingType(thoughtTypeOf(prev))
+        !prevIsHeading
       ) {
         e.preventDefault();
         e.stopPropagation();
+        if (
+          underHeading ||
+          isInHeadingSection(prev) ||
+          isInlineThought(li) ||
+          li.getAttribute("data-caret-split") === "true"
+        ) {
+          if (!mergeCurrentIntoPrevious(li)) {
+            placeCaretAtEndSoon(
+              prev.querySelector(".thought-summary") || prev
+            );
+          }
+          return true;
+        }
         setThoughtAsParagraph(li, true);
+        forceUntitledSummary(li);
         placeCaretAtStartSoon(field);
         notifyChange();
         return true;
@@ -1331,7 +1382,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function handleBackspaceUntitled(e, li) {
       var summaryEl = li.querySelector(".thought-summary") || li;
 
-      if (!(isEmptyField(summaryEl) || isCaretAtStartOf(summaryEl))) return;
+      if (!isLineStartBackspace(li, summaryEl)) return;
       if (handleLineStartBackspace(e, li, summaryEl)) return;
 
       e.preventDefault();
@@ -1357,7 +1408,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function handleBackspace(e, li, anchor) {
-      if (!window.__mcShowTitles && !li.querySelector(".thought-title")) {
+      if (!window.__mcShowTitles || !li.querySelector(".thought-title")) {
         handleBackspaceUntitled(e, li);
         return;
       }
@@ -1377,7 +1428,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         if (summaryText.length === 1 && window.getSelection().isCollapsed) {
           e.preventDefault();
           e.stopPropagation();
-          clearField(summary, mcPh("summary", "Summary"));
+          clearField(summary, summaryPlaceholder(li));
           placeCaretAtStartSoon(summary);
           notifyChange();
           return;
@@ -1387,7 +1438,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           e.preventDefault();
           e.stopPropagation();
           if (isEmptyField(summary)) {
-            clearField(summary, mcPh("summary", "Summary"));
+            clearField(summary, summaryPlaceholder(li));
             if (isEmptyField(titleEl)) {
               removeThought(li);
               return;
@@ -1421,7 +1472,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         }
 
         repairEmptyField(title, mcPh("title", "Title"));
-        repairEmptyField(summaryEl, mcPh("summary", "Summary"));
+        repairEmptyField(summaryEl, summaryPlaceholder(li));
         placeCaretAtStartSoon(title);
       }
     }
@@ -1475,7 +1526,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       "keydown",
       function (e) {
         var isEnter = e.key === "Enter" || e.keyCode === 13 || e.which === 13;
-        var isBackspace = e.key === "Backspace" || e.keyCode === 8;
+        var isBackspace =
+          e.key === "Backspace" || e.keyCode === 8 || e.which === 8;
         if (!isEnter && !isBackspace) return;
 
         ensureThoughts();
@@ -1515,12 +1567,24 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     content.addEventListener(
       "beforeinput",
       function (e) {
-        if (e.inputType !== "insertParagraph") return;
+        var inputType = e.inputType || "";
         var sel = window.getSelection();
         var anchor = sel && sel.anchorNode;
-        var li = closestThought(anchor);
+        var li = closestThought(anchor) || closestThought(e.target);
+        if (inputType === "insertParagraph") {
+          if (!li) return;
+          handleEnter(e, li, anchor || e.target);
+          return;
+        }
+        if (
+          inputType !== "deleteContentBackward" &&
+          inputType !== "deleteSoftLineBackward" &&
+          inputType !== "deleteWordBackward"
+        ) {
+          return;
+        }
         if (!li) return;
-        handleEnter(e, li, anchor);
+        handleBackspace(e, li, anchor || e.target);
       },
       true
     );
@@ -2543,10 +2607,10 @@ export const CHECKLIST_SCRIPT = `
       li.style.setProperty("--heading-indent", px);
     }
     li.classList.toggle("in-heading", next > 0);
-    if (next > 0 && !isBlockHeading(li)) {
+    if (next > 0) {
       li.classList.remove("is-inline");
-      li.removeAttribute("data-inline");
       li.classList.remove("is-run-start");
+      li.removeAttribute("data-inline");
     }
   }
 

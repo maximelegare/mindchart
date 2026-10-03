@@ -2611,7 +2611,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-item.is-inline:not(.is-heading):not(.in-heading),
                   .thought-item.is-run-start:not(.is-heading):not(.in-heading),
-                  .thought-item.is-text-like:not(.is-heading):not(.in-heading):not(.is-inline):has(+ .thought-item.is-inline:not(.in-heading)) {
+                  .thought-item.is-text-like:not(.is-heading):not(.in-heading):not(.is-inline):has(+ .thought-item.is-inline) {
                     display: inline;
                     padding-left: 0;
                     padding-right: 0;
