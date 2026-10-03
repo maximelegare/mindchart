@@ -30,6 +30,7 @@ import { Portal } from "@/components/primitives/portal";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import type { ThoughtType } from "@repo/zod-schemas";
+import { thoughtCapabilities } from "./thoughtCapabilities";
 import {
   thoughtsEditorBoldAccessibilityLabel,
   thoughtsEditorItalicAccessibilityLabel,
@@ -833,6 +834,7 @@ function MergeToolButton({
 }
 
 function DetailsToolbar({
+  thoughtType,
   selectedTitle,
   selectedCategoryLabel,
   selectedCategoryColor,
@@ -856,6 +858,7 @@ function DetailsToolbar({
   onCancelMerge,
 }: Pick<
   ThoughtsEditorToolbarProps,
+  | "thoughtType"
   | "selectedTitle"
   | "selectedCategoryLabel"
   | "selectedCategoryColor"
@@ -910,6 +913,7 @@ function DetailsToolbar({
   };
 
   const inToolSession = Boolean(splitSide) || merging;
+  const capabilities = thoughtCapabilities(thoughtType);
 
   React.useEffect(() => {
     if (inToolSession) return;
@@ -967,72 +971,82 @@ function DetailsToolbar({
                 pageWidth ? { width: pageWidth } : null,
               ]}
             >
-              <Pressable
-                onPress={onEditTitle}
-                disabled={!hasSelectedThought}
-                accessibilityRole="button"
-                accessibilityLabel={thoughtsEditorEditTitleAccessibilityLabel()}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: chipBackground,
-                    opacity: hasSelectedThought ? 1 : 0.5,
-                  },
-                ]}
-              >
-                <Typography
-                  className="min-w-0 flex-1 text-base"
-                  numberOfLines={1}
-                  style={
-                    selectedTitle
-                      ? undefined
-                      : { color: hsl("muted-foreground", colorScheme) }
-                  }
+              {capabilities.title ? (
+                <Pressable
+                  onPress={onEditTitle}
+                  disabled={!hasSelectedThought}
+                  accessibilityRole="button"
+                  accessibilityLabel={thoughtsEditorEditTitleAccessibilityLabel()}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: chipBackground,
+                      opacity: hasSelectedThought ? 1 : 0.5,
+                    },
+                  ]}
                 >
-                  {selectedTitle || placeholder}
-                </Typography>
-                <Icon name="pencil" size={16} color="foreground" />
-              </Pressable>
-              <Pressable
-                onPress={onOpenCategory}
-                disabled={!hasSelectedThought}
-                accessibilityRole="button"
-                accessibilityLabel={thoughtsEditorCategoryAccessibilityLabel()}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: chipBackground,
-                    opacity: hasSelectedThought ? 1 : 0.5,
-                  },
-                ]}
-              >
-                <View
-                  className="h-3 w-3 rounded-full"
+                  <Typography
+                    className="min-w-0 flex-1 text-base"
+                    numberOfLines={1}
+                    style={
+                      selectedTitle
+                        ? undefined
+                        : { color: hsl("muted-foreground", colorScheme) }
+                    }
+                  >
+                    {selectedTitle || placeholder}
+                  </Typography>
+                  <Icon name="pencil" size={16} color="foreground" />
+                </Pressable>
+              ) : null}
+              {capabilities.categoryHighlight ? (
+                <Pressable
+                  onPress={onOpenCategory}
+                  disabled={!hasSelectedThought}
+                  accessibilityRole="button"
+                  accessibilityLabel={thoughtsEditorCategoryAccessibilityLabel()}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: chipBackground,
+                      opacity: hasSelectedThought ? 1 : 0.5,
+                    },
+                  ]}
+                >
+                  <View
+                    className="h-3 w-3 rounded-full"
+                    style={{
+                      backgroundColor:
+                        selectedCategoryColor ?? hsl("muted", colorScheme),
+                    }}
+                  />
+                  <Typography
+                    className="min-w-0 flex-1 text-base"
+                    numberOfLines={1}
+                  >
+                    {selectedCategoryLabel}
+                  </Typography>
+                  <Icon
+                    name="chevron-down"
+                    size={16}
+                    color="muted-foreground"
+                  />
+                </Pressable>
+              ) : null}
+              {capabilities.graph ? (
+                <Pressable
+                  onPress={onOpenGraph}
+                  disabled={!hasSelectedThought}
+                  accessibilityRole="button"
+                  accessibilityLabel={thoughtsEditorGraphAccessibilityLabel()}
+                  className="h-10 w-10 items-center justify-center rounded-md"
                   style={{
-                    backgroundColor:
-                      selectedCategoryColor ?? hsl("muted", colorScheme),
+                    opacity: hasSelectedThought ? 1 : 0.5,
                   }}
-                />
-                <Typography
-                  className="min-w-0 flex-1 text-base"
-                  numberOfLines={1}
                 >
-                  {selectedCategoryLabel}
-                </Typography>
-                <Icon name="chevron-down" size={16} color="muted-foreground" />
-              </Pressable>
-              <Pressable
-                onPress={onOpenGraph}
-                disabled={!hasSelectedThought}
-                accessibilityRole="button"
-                accessibilityLabel={thoughtsEditorGraphAccessibilityLabel()}
-                className="h-10 w-10 items-center justify-center rounded-md"
-                style={{
-                  opacity: hasSelectedThought ? 1 : 0.5,
-                }}
-              >
-                <Icon name="graph" size={20} color="foreground" />
-              </Pressable>
+                  <Icon name="graph" size={20} color="foreground" />
+                </Pressable>
+              ) : null}
             </View>
             <View
               style={[

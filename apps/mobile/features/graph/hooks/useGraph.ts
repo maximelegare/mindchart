@@ -6,7 +6,12 @@ import {
   GRAPH_CACHE_VERSION,
   stripEmbeddingsFromCache,
 } from "../utils/parseGraphData";
-import { Folder, Note, getThoughtPlainText } from "@repo/zod-schemas";
+import {
+  Folder,
+  Note,
+  getThoughtPlainText,
+  isHeadingType,
+} from "@repo/zod-schemas";
 import {
   noteShowsThoughtTitles,
   type ThoughtGraphRow,
@@ -104,6 +109,10 @@ export const useGraph = () => {
     () => (thoughts ?? []) as ThoughtGraphRow[],
     [thoughts]
   );
+  const graphThoughts = useMemo(
+    () => typedThoughts.filter((thought) => !isHeadingType(thought.type)),
+    [typedThoughts]
+  );
   const notes = useMemo(() => {
     const fromQuery = normalizeNotesFromQuery(notesData);
     if (fromQuery) return fromQuery;
@@ -117,8 +126,8 @@ export const useGraph = () => {
     (state) => state.categoryFolderMergeDepth
   );
   const thoughtIdsByNoteId = useMemo(
-    () => thoughtIdsByNoteIdFrom(typedThoughts),
-    [typedThoughts]
+    () => thoughtIdsByNoteIdFrom(graphThoughts),
+    [graphThoughts]
   );
 
   const hierarchies: GraphDataCache | null = useMemo(() => {
@@ -134,7 +143,7 @@ export const useGraph = () => {
 
     return {
       version: GRAPH_CACHE_VERSION,
-      category: buildGraphByCategoryFolders(folderList, typedThoughts, {
+      category: buildGraphByCategoryFolders(folderList, graphThoughts, {
         maxFolderDepth: categoryFolderMergeDepth,
       }) as NodeDatum,
       folder: buildGraphByFolder(folderList, notes, {
@@ -148,6 +157,7 @@ export const useGraph = () => {
     folderList,
     notes,
     typedThoughts,
+    graphThoughts,
     thoughtIdsByNoteId,
     categoryFolderMergeDepth,
   ]);
@@ -163,7 +173,7 @@ export const useGraph = () => {
         .map((n) => `${n.id}:${n.folderId ?? ""}`)
         .sort()
         .join(","),
-      typedThoughts
+      graphThoughts
         .map((t) => {
           const showTitles = noteShowsThoughtTitles(t.showTitles);
           return `${t.thoughtId}:${t.folderId ?? ""}:${t.categoryId ?? ""}:${t.folderPath ?? ""}:${t.title}:${t.semanticLabel ?? ""}:${showTitles}`;
@@ -190,7 +200,7 @@ export const useGraph = () => {
     hierarchies,
     activeWorkspaceId,
     notes,
-    typedThoughts,
+    graphThoughts,
     folderList,
     mutateGraph,
     categoryFolderMergeDepth,

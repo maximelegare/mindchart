@@ -1,5 +1,6 @@
 import {
   assembleThought,
+  isHeadingType,
   isTextLikeThought,
   isTextLikeType,
   parseTextContentStyle,
@@ -53,6 +54,19 @@ export const convertThoughtType = (
     const style = isTextLikeThought(thought)
       ? parseTextContentStyle(thought.content.style)
       : "block";
+    if (isHeadingType(type)) {
+      return {
+        ...thought,
+        type,
+        contentId,
+        title: "",
+        semanticLabel: "",
+        categoryId: "uncategorized",
+        titleSource: "generated",
+        categorySource: "generated",
+        content: { text, style },
+      };
+    }
     return {
       ...thought,
       type,

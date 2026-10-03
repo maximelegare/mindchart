@@ -402,6 +402,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         node.classList.contains("thought-body") ||
         node.classList.contains("thought-graph") ||
         node.classList.contains("thought-expand") ||
+        node.classList.contains("thought-fold") ||
         node.classList.contains("mc-thoughts")
       );
     }
@@ -562,6 +563,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       created.className =
         "thought-item" +
         (isTextLikeType(thoughtType) ? " is-block is-text-like" : "") +
+        (isHeadingType(thoughtType) ? " is-heading" : "") +
         (completable ? " is-checklist" : "");
       created.setAttribute("data-thought-type", thoughtType);
       created.setAttribute("data-thought-id", newThoughtId());
@@ -778,12 +780,31 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       repairAllPlaceholderFields();
     }
 
+    function stripHeadingTitle(li) {
+      var title = li && li.querySelector(".thought-title");
+      if (title && title.parentNode) title.parentNode.removeChild(title);
+    }
+
     function normalizeTitledLis() {
       if (!window.__mcShowTitles) return;
       var lis = content.querySelectorAll(".thought-item");
       for (var i = 0; i < lis.length; i++) {
         var li = lis[i];
         ensureCategoryChrome(li);
+        if (isHeadingType(thoughtTypeOf(li))) {
+          stripHeadingTitle(li);
+          if (!li.querySelector(".thought-summary")) {
+            var headingSummary = document.createElement("div");
+            headingSummary.className = "thought-summary is-placeholder";
+            headingSummary.setAttribute(
+              "data-placeholder",
+              mcPh("bullet", "Write Something...")
+            );
+            headingSummary.innerHTML = "<br>";
+            getFieldsContainer(li).appendChild(headingSummary);
+          }
+          continue;
+        }
 
         if (li.querySelector(".thought-title")) {
           if (!li.querySelector(".thought-summary")) {
@@ -946,7 +967,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           }
           return false;
         }
-        var blank = createThoughtShell(type);
+        var blank = createThoughtShell(
+          isHeadingType(type) ? "text" : type
+        );
+        applyOutlineToCreated(li, blank);
         li.parentNode.insertBefore(blank, li);
         ensureCategoryChrome(blank);
         if (typeof window.__mcSyncChecklistLayouts === "function") {
@@ -961,13 +985,15 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       applySummaryHtml(summary, leftHtml);
       stripSplitChrome(summary, "end");
 
-      var created = createThoughtShell(type);
+      var createdType = isHeadingType(type) ? "text" : type;
+      var created = createThoughtShell(createdType);
       created.setAttribute("data-caret-split", "true");
-      if (isTextLikeType(type)) {
+      if (isTextLikeType(createdType)) {
         created.classList.add("is-block");
         created.classList.remove("is-inline");
         created.removeAttribute("data-inline");
       }
+      applyOutlineToCreated(li, created);
       var createdSummary = created.querySelector(".thought-summary");
       applySummaryHtml(createdSummary, rightHtml);
       stripSplitChrome(createdSummary, "start");
@@ -978,6 +1004,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         li.parentNode.appendChild(created);
       }
       ensureCategoryChrome(created);
+      if (isHeadingType(type)) li.classList.remove("is-section-collapsed");
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
       }
@@ -1004,6 +1031,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       var type = thoughtTypeOf(li);
+      var nextType = isHeadingType(type) ? "text" : type;
       var summary = li.querySelector(".thought-summary") || li;
       if (!isCaretAtEndOf(summary)) {
         if (splitThoughtAtCaret(li, summary, type)) return;
@@ -1011,7 +1039,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       var next = li.nextElementSibling;
-      if (isThought(next) && isInlineThought(next)) {
+      if (isThought(next) && isInlineThought(next) && !isHeadingType(type)) {
         promoteThoughtToBlock(next);
         var nextSummary = next.querySelector(".thought-summary");
         if (nextSummary) placeCaretAtStartSoon(nextSummary);
@@ -1022,27 +1050,30 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      var created = createThoughtShell(type);
-      if (isTextLikeType(type)) {
+      var created = createThoughtShell(nextType);
+      if (isTextLikeType(nextType)) {
         created.classList.add("is-block");
         created.classList.remove("is-inline");
         created.classList.remove("is-run-start");
         created.removeAttribute("data-inline");
       }
+      applyOutlineToCreated(li, created);
       if (li.nextSibling) {
         li.parentNode.insertBefore(created, li.nextSibling);
       } else {
         li.parentNode.appendChild(created);
       }
+      if (isHeadingType(type)) li.classList.remove("is-section-collapsed");
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
       }
 
       requestClassifyBullet(li);
 
-      var focusField = window.__mcShowTitles
-        ? created.querySelector(".thought-title")
-        : created.querySelector(".thought-summary");
+      var focusField =
+        window.__mcShowTitles && !isHeadingType(type)
+          ? created.querySelector(".thought-title")
+          : created.querySelector(".thought-summary");
       if (focusField) placeCaretAtStartSoon(focusField);
       notifyChange();
     }
@@ -1053,6 +1084,30 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         (li.classList.contains("is-inline") ||
           li.getAttribute("data-inline") === "true")
       );
+    }
+
+    function headingIndentPx(li) {
+      return parseInt(li && li.style.getPropertyValue("--heading-indent"), 10) || 0;
+    }
+
+    function isInHeadingSection(li) {
+      return !!(
+        li &&
+        (li.classList.contains("in-heading") || headingIndentPx(li) > 0)
+      );
+    }
+
+    function applyOutlineToCreated(from, created) {
+      if (!from || !created) return;
+      var base = headingIndentPx(from);
+      var next = isHeadingType(thoughtTypeOf(from)) ? base + 8 : base;
+      if (next <= 0) return;
+      created.style.setProperty("--heading-indent", next + "px");
+      created.classList.add("in-heading");
+      created.classList.add("is-block");
+      created.classList.remove("is-inline");
+      created.classList.remove("is-run-start");
+      created.removeAttribute("data-inline");
     }
 
     function promoteThoughtToBlock(li) {
@@ -1196,10 +1251,17 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function handleLineStartBackspace(e, li, field) {
-      if (!thoughtHasContent(li)) return false;
       var type = thoughtTypeOf(li);
+      var underHeading = isInHeadingSection(li);
+      if (
+        !thoughtHasContent(li) &&
+        !(underHeading && (type === "li" || type === "checkbox"))
+      ) {
+        return false;
+      }
       var prev = li.previousElementSibling;
       if (
+        !underHeading &&
         isThought(prev) &&
         (li.getAttribute("data-caret-split") === "true" || isInlineThought(li))
       ) {
@@ -1216,7 +1278,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         notifyChange();
         return true;
       }
-      if (isTextLikeType(type) && !isInlineThought(li) && isThought(prev)) {
+      if (
+        isTextLikeType(type) &&
+        !isInlineThought(li) &&
+        isThought(prev) &&
+        !underHeading &&
+        !isHeadingType(thoughtTypeOf(prev))
+      ) {
         e.preventDefault();
         e.stopPropagation();
         setThoughtAsParagraph(li, true);
@@ -1269,6 +1337,16 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       e.preventDefault();
       e.stopPropagation();
       if (isEmptyField(summaryEl)) {
+        var emptyType = thoughtTypeOf(li);
+        if (
+          isInHeadingSection(li) &&
+          (emptyType === "li" || emptyType === "checkbox")
+        ) {
+          setThoughtAsParagraph(li, false);
+          placeCaretAtStartSoon(summaryEl);
+          notifyChange();
+          return;
+        }
         removeThought(li);
         return;
       }
@@ -1368,6 +1446,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function onCategoryChromePointer(e) {
       if (window.__mcSimplified) return;
       if (closestClass(e.target, "thought-check")) return;
+      if (closestClass(e.target, "thought-fold")) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
       var chip = closestClass(e.target, "thought-category");
@@ -2159,6 +2238,9 @@ export function setThoughtTextEditableScript(editable: boolean): string {
       content.blur();
     } catch (err) {}
   }
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
+  }
   true;
 })();
 `;
@@ -2317,7 +2399,14 @@ export const CHECKLIST_SCRIPT = `
     }
     li.classList.toggle("is-block", isTextLikeType(type));
     li.classList.toggle("is-text-like", isTextLikeType(type));
+    li.classList.toggle("is-heading", isHeadingType(type));
     li.classList.toggle("is-checklist", completable);
+    if (isHeadingType(type)) {
+      var headingTitle = li.querySelector(".thought-title");
+      if (headingTitle && headingTitle.parentNode) {
+        headingTitle.parentNode.removeChild(headingTitle);
+      }
+    }
     if (!isTextLikeType(type) || becomingTextLike) {
       li.classList.remove("is-inline");
       li.removeAttribute("data-inline");
@@ -2386,6 +2475,159 @@ export const CHECKLIST_SCRIPT = `
     check.style.top = "";
   }
 
+  function headingLevel(type) {
+    if (type === "h1") return 1;
+    if (type === "h2") return 2;
+    if (type === "h3") return 3;
+    if (type === "h4") return 4;
+    if (type === "h5") return 5;
+    if (type === "h6") return 6;
+    return 0;
+  }
+
+  function isBlockHeading(li) {
+    return (
+      headingLevel(thoughtTypeOf(li)) > 0 &&
+      !li.classList.contains("is-inline") &&
+      li.getAttribute("data-inline") !== "true"
+    );
+  }
+
+  function foldButtonOf(li) {
+    var kids = li.children;
+    for (var i = 0; i < kids.length; i++) {
+      if (kids[i].classList && kids[i].classList.contains("thought-fold")) {
+        return kids[i];
+      }
+    }
+    return null;
+  }
+
+  function ensureFoldButton(li) {
+    var btn = foldButtonOf(li);
+    if (btn) return btn;
+    btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "thought-fold";
+    btn.setAttribute("contenteditable", "false");
+    btn.setAttribute("tabindex", "-1");
+    btn.setAttribute("aria-label", "Collapse section");
+    btn.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+    var body = li.querySelector(".thought-body");
+    if (body) li.insertBefore(btn, body);
+    else li.appendChild(btn);
+    return btn;
+  }
+
+  function removeFoldButton(li) {
+    var btn = foldButtonOf(li);
+    if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
+  }
+
+  function sectionExclusiveEnd(items, start) {
+    var level = headingLevel(thoughtTypeOf(items[start]));
+    if (!level) return start + 1;
+    var i = start + 1;
+    for (; i < items.length; i++) {
+      var next = headingLevel(thoughtTypeOf(items[i]));
+      if (next && next <= level) break;
+    }
+    return i;
+  }
+
+  function setHeadingIndent(li, depth) {
+    var next = Math.max(0, depth);
+    var px = next * 8 + "px";
+    if (li.style.getPropertyValue("--heading-indent") !== px) {
+      li.style.setProperty("--heading-indent", px);
+    }
+    li.classList.toggle("in-heading", next > 0);
+    if (next > 0 && !isBlockHeading(li)) {
+      li.classList.remove("is-inline");
+      li.removeAttribute("data-inline");
+      li.classList.remove("is-run-start");
+    }
+  }
+
+  function revealFocusedHidden() {
+    var sel = window.getSelection();
+    var focused = closestThought(sel && sel.anchorNode);
+    if (!focused || !focused.classList.contains("is-section-hidden")) return;
+    var root = focused.parentNode;
+    if (!root) return;
+    var items = root.querySelectorAll(".thought-item");
+    var index = -1;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i] === focused) {
+        index = i;
+        break;
+      }
+    }
+    if (index < 0) return;
+    for (var i = index - 1; i >= 0; i--) {
+      if (!isBlockHeading(items[i])) continue;
+      if (sectionExclusiveEnd(items, i) > index) {
+        items[i].classList.remove("is-section-collapsed");
+      }
+    }
+  }
+
+  function syncHeadingFolds() {
+    var root =
+      document.querySelector(".pell-content") || document.getElementById("editor");
+    if (!root) return;
+    revealFocusedHidden();
+    var items = root.querySelectorAll(".thought-item");
+    var hide = [];
+    var stack = [];
+    for (var i = 0; i < items.length; i++) hide[i] = false;
+    for (var i = 0; i < items.length; i++) {
+      var li = items[i];
+      var level = headingLevel(thoughtTypeOf(li));
+      var heading = isBlockHeading(li);
+      li.classList.toggle("is-heading", level > 0);
+      if (heading) {
+        while (stack.length && stack[stack.length - 1] >= level) stack.pop();
+        setHeadingIndent(li, stack.length);
+        stack.push(level);
+      } else {
+        setHeadingIndent(li, stack.length);
+        li.classList.remove("can-fold");
+        li.classList.remove("is-section-collapsed");
+        removeFoldButton(li);
+        continue;
+      }
+      var end = sectionExclusiveEnd(items, i);
+      var canFold = end > i + 1;
+      li.classList.toggle("can-fold", canFold);
+      if (!canFold) li.classList.remove("is-section-collapsed");
+      var btn = ensureFoldButton(li);
+      var collapsed = canFold && li.classList.contains("is-section-collapsed");
+      btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      btn.setAttribute(
+        "aria-label",
+        collapsed ? "Expand section" : "Collapse section"
+      );
+      if (collapsed) {
+        for (var j = i + 1; j < end; j++) hide[j] = true;
+      }
+    }
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle("is-section-hidden", !!hide[i]);
+    }
+  }
+
+  function isCategoryMode() {
+    return document.documentElement.classList.contains("mc-details-lock");
+  }
+
+  function toggleHeadingFold(li) {
+    if (!li || !isBlockHeading(li)) return;
+    li.classList.toggle("is-section-collapsed");
+    syncHeadingFolds();
+  }
+
   function syncAll() {
     var root =
       document.querySelector(".pell-content") || document.getElementById("editor");
@@ -2394,6 +2636,7 @@ export const CHECKLIST_SCRIPT = `
     for (var i = 0; i < lis.length; i++) {
       syncChecklistLayout(lis[i]);
     }
+    syncHeadingFolds();
   }
 
   function postCaretType(li) {
@@ -2452,6 +2695,21 @@ export const CHECKLIST_SCRIPT = `
     if (!li) return true;
     applyThoughtType(li, type);
     syncChecklistLayout(li);
+    syncHeadingFolds();
+    if (isHeadingType(type)) {
+      var field =
+        li.querySelector(".thought-summary") || li.querySelector(".thought-title");
+      if (field) {
+        var range = document.createRange();
+        range.selectNodeContents(field);
+        range.collapse(true);
+        var nextSel = window.getSelection();
+        if (nextSel) {
+          nextSel.removeAllRanges();
+          nextSel.addRange(range);
+        }
+      }
+    }
     try {
       content.dispatchEvent(new Event("input", { bubbles: true }));
     } catch (err) {}
@@ -2503,8 +2761,56 @@ export const CHECKLIST_SCRIPT = `
       if (li) toggleCompleted(li);
     }
 
+    function blurEditorAfterFold() {
+      try {
+        var sel = window.getSelection();
+        if (sel && sel.removeAllRanges) sel.removeAllRanges();
+        var root = editorRoot();
+        if (root) root.blur();
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+      } catch (err) {}
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "DISMISS_KEYBOARD" })
+        );
+      }
+    }
+
+    function onFoldPointerDown(e) {
+      if (!eventInEditor(e)) return;
+      if (!closestClass(e.target, "thought-fold")) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function onFoldPointer(e) {
+      if (!eventInEditor(e)) return;
+      if (closestClass(e.target, "thought-check")) return;
+      if (closestClass(e.target, "thought-graph")) return;
+      var li = closestThought(e.target);
+      if (!li || !isBlockHeading(li)) return;
+      var onFold = closestClass(e.target, "thought-fold");
+      if (!onFold && !isCategoryMode()) return;
+      if (onFold) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      var now = Date.now();
+      if (window.__mcFoldAt && now - window.__mcFoldAt < 400) return;
+      window.__mcFoldAt = now;
+      toggleHeadingFold(li);
+      if (onFold) blurEditorAfterFold();
+    }
+
     document.addEventListener("click", onChecklistPointer, true);
     document.addEventListener("touchend", onChecklistPointer, true);
+    document.addEventListener("mousedown", onFoldPointerDown, true);
+    document.addEventListener("touchstart", onFoldPointerDown, true);
+    document.addEventListener("pointerdown", onFoldPointerDown, true);
+    document.addEventListener("click", onFoldPointer, true);
+    document.addEventListener("touchend", onFoldPointer, true);
 
     function closestGraph(node) {
       return closestClass(node, "thought-graph");
@@ -2640,7 +2946,10 @@ export const CHECKLIST_SCRIPT = `
           window.__mcPressThought = null;
           return;
         }
-        if (closestClass(e.target, "thought-check")) {
+        if (
+          closestClass(e.target, "thought-check") ||
+          closestClass(e.target, "thought-fold")
+        ) {
           window.__mcPressThought = null;
           return;
         }
@@ -2662,6 +2971,7 @@ export const CHECKLIST_SCRIPT = `
         window.__mcPressThought = null;
         if (!press) return;
         if (closestClass(e.target, "thought-check")) return;
+        if (closestClass(e.target, "thought-fold")) return;
         var t = e.changedTouches && e.changedTouches[0];
         if (
           t &&
@@ -2683,6 +2993,7 @@ export const CHECKLIST_SCRIPT = `
       function (e) {
         if (!eventInEditor(e)) return;
         if (closestClass(e.target, "thought-check")) return;
+        if (closestClass(e.target, "thought-fold")) return;
         if (window.__mcSelectAt && Date.now() - window.__mcSelectAt < 450) {
           return;
         }

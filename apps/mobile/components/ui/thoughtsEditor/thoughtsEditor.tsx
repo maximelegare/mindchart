@@ -153,8 +153,8 @@ function buildCategoryColorCss(categories: Category[]): string {
   return categories
     .map(
       (category) => `
-      html.mc-show-categories .thought-item[data-category-id="${category.id}"] .thought-summary:not(.is-placeholder),
-      html.mc-show-categories .thought-item[data-category-id="${category.id}"] .thought-title:not(.is-placeholder) {
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"] .thought-summary:not(.is-placeholder),
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"] .thought-title:not(.is-placeholder) {
         background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash, 18%), transparent);
         padding: 0;
         margin: 0;
@@ -162,8 +162,8 @@ function buildCategoryColorCss(categories: Category[]): string {
         border-radius: 0;
         line-height: inherit;
       }
-      html.mc-show-categories .thought-item[data-category-id="${category.id}"].is-selected .thought-summary:not(.is-placeholder),
-      html.mc-show-categories .thought-item[data-category-id="${category.id}"].is-selected .thought-title:not(.is-placeholder) {
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"].is-selected .thought-summary:not(.is-placeholder),
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"].is-selected .thought-title:not(.is-placeholder) {
         background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash-selected, 34%), transparent);
         padding: 0;
         margin: 0;
@@ -219,7 +219,8 @@ function buildEditorThemeCss(colors: {
       color: ${colors.graphButtonColor};
       background: transparent;
     }
-    .thought-expand {
+    .thought-expand,
+    .thought-fold {
       color: ${colors.mutedFg};
     }
     .thought-category {
@@ -1437,13 +1438,15 @@ function ThoughtsEditorInner(
       setMergeCategoryPicking(true);
       return;
     }
+    if (!thoughtCapabilities(caretThoughtType).categoryHighlight) return;
     if (selectedThoughtIndex < 0) return;
     richRef.current?.dismissKeyboard();
     Keyboard.dismiss();
     setCategoryPickerIndex(selectedThoughtIndex);
-  }, [merging, selectedThoughtIndex, splitSide]);
+  }, [caretThoughtType, merging, selectedThoughtIndex, splitSide]);
 
   const handleOpenSelectedGraph = React.useCallback(() => {
+    if (!thoughtCapabilities(caretThoughtType).graph) return;
     const thought = getValues("thoughts")?.[selectedThoughtIndex];
     const thoughtId = thought?.thoughtId || thought?.id;
     if (!thoughtId) return;
@@ -1456,11 +1459,12 @@ function ThoughtsEditorInner(
         _t: Date.now(),
       },
     });
-  }, [getValues, push, selectedThoughtIndex]);
+  }, [caretThoughtType, getValues, push, selectedThoughtIndex]);
 
   const handleEditTitle = React.useCallback(() => {
     const index = selectedThoughtIndex;
     if (index < 0) return;
+    if (!thoughtCapabilities(caretThoughtType).title) return;
     const currentTitle = getValues("thoughts")?.[index]?.title ?? "";
     openModal({
       customContent: () => (
@@ -1487,6 +1491,7 @@ function ThoughtsEditorInner(
       ),
     });
   }, [
+    caretThoughtType,
     getValues,
     onRequestEdit,
     openModal,
@@ -2019,15 +2024,22 @@ function ThoughtsEditorInner(
                     position: relative;
                     margin-top: var(--mc-gap-compact);
                     margin-bottom: 0;
-                    padding-left: var(--mc-list-pad);
+                    padding-left: calc(
+                      var(--mc-list-pad) + var(--heading-indent, 0px) +
+                        var(--fold-gutter, 0px)
+                    );
                     padding-right: 0;
                     overflow: visible;
                     box-sizing: border-box;
                     --category-stack: 0px;
                     --dot-size: 8px;
+                    --heading-indent: 0px;
+                    --fold-gutter: 0px;
                   }
                   .thought-item.is-block {
-                    padding-left: 10px;
+                    padding-left: calc(
+                      10px + var(--heading-indent, 0px) + var(--fold-gutter, 0px)
+                    );
                   }
                   .thought-item.is-block .thought-rail {
                     display: none;
@@ -2041,7 +2053,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-rail {
                     position: absolute;
-                    left: var(--mc-list-indent);
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
                     top: 0;
                     bottom: 0;
                     width: 22px;
@@ -2054,7 +2066,7 @@ function ThoughtsEditorInner(
                     display: none;
                     position: absolute;
                     z-index: 4;
-                    left: var(--mc-list-indent);
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
                     width: 22px;
                     height: 22px;
                     padding: 0;
@@ -2080,7 +2092,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-item.is-checklist .thought-check {
                     display: flex;
-                    left: var(--mc-list-indent);
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
                     top: calc(var(--check-nudge, 2px));
                   }
                   .thought-check-box {
@@ -2192,6 +2204,53 @@ function ThoughtsEditorInner(
                   }
                   .thought-item:not(.is-collapsed) .thought-expand svg {
                     transform: rotate(180deg);
+                  }
+                  .thought-fold {
+                    display: none;
+                    position: absolute;
+                    left: var(--heading-indent, 0px);
+                    top: 5px;
+                    width: 22px;
+                    height: 22px;
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    background: transparent;
+                    color: ${mutedFg};
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0.55;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    z-index: 4;
+                  }
+                  .thought-item.is-heading {
+                    --fold-gutter: 22px;
+                  }
+                  .thought-item.is-heading > .thought-fold {
+                    display: flex;
+                  }
+                  .thought-item[data-thought-type="h1"] > .thought-fold {
+                    top: 9px;
+                  }
+                  .thought-item[data-thought-type="h2"] > .thought-fold {
+                    top: 7px;
+                  }
+                  .thought-fold svg {
+                    display: block;
+                    pointer-events: none;
+                    transition: transform 0.18s ease;
+                  }
+                  .thought-item.is-section-collapsed > .thought-fold svg {
+                    transform: rotate(-90deg);
+                  }
+                  .thought-item.is-heading.is-inline > .thought-fold,
+                  .thought-item.is-heading.is-run-start > .thought-fold {
+                    display: none !important;
+                  }
+                  .thought-item.is-section-hidden {
+                    display: none !important;
                   }
                   .thought-graph {
                     position: absolute;
@@ -2348,13 +2407,13 @@ function ThoughtsEditorInner(
                     --mc-cat-wash-plain: 6%;
                     --mc-cat-wash-plain-selected: 16%;
                   }
-                  html.mc-show-categories .thought-title,
-                  html.mc-show-categories .thought-summary {
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-title,
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-summary {
                     -webkit-box-decoration-break: slice;
                     box-decoration-break: slice;
                   }
-                  html.mc-show-categories .thought-title:not(.is-placeholder),
-                  html.mc-show-categories .thought-summary:not(.is-placeholder) {
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-title:not(.is-placeholder),
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-summary:not(.is-placeholder) {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain, 6%), transparent);
                     padding: 0;
                     margin: 0;
@@ -2495,9 +2554,14 @@ function ThoughtsEditorInner(
                     -webkit-user-select: none;
                   }
                   .thought-item {
-                    padding-left: var(--mc-list-pad);
+                    padding-left: calc(
+                      var(--mc-list-pad) + var(--heading-indent, 0px) +
+                        var(--fold-gutter, 0px)
+                    );
                     padding-right: 8px;
                     --category-stack: 0px;
+                    --heading-indent: 0px;
+                    --fold-gutter: 0px;
                   }
                   .thought-body,
                   .thought-item.has-graph .thought-body,
@@ -2506,7 +2570,12 @@ function ThoughtsEditorInner(
                     padding-right: 0 !important;
                   }
                   .thought-item.is-block {
-                    padding-left: 8px;
+                    padding-left: calc(
+                      8px + var(--heading-indent, 0px) + var(--fold-gutter, 0px)
+                    );
+                  }
+                  .thought-item.is-heading {
+                    --fold-gutter: 22px;
                   }
                   .thought-item.is-block .thought-rail,
                   .thought-item.is-block .thought-dot,
@@ -2518,13 +2587,15 @@ function ThoughtsEditorInner(
                     padding-left: 0;
                   }
                   .thought-item.is-checklist {
-                    padding-left: var(--mc-list-pad);
+                    padding-left: calc(
+                      var(--mc-list-pad) + var(--heading-indent, 0px)
+                    );
                   }
                   .thought-item.is-checklist .thought-dot {
                     display: none !important;
                   }
                   .thought-item.is-checklist .thought-check {
-                    left: var(--mc-list-indent);
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
                     top: calc(var(--check-nudge, 2px));
                   }
                   .thought-fields {
@@ -2538,9 +2609,9 @@ function ThoughtsEditorInner(
                   .thought-fields:has(.is-error-placeholder) {
                     width: 100%;
                   }
-                  .thought-item.is-inline,
-                  .thought-item.is-run-start,
-                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) {
+                  .thought-item.is-inline:not(.is-heading):not(.in-heading),
+                  .thought-item.is-run-start:not(.is-heading):not(.in-heading),
+                  .thought-item.is-text-like:not(.is-heading):not(.in-heading):not(.is-inline):has(+ .thought-item.is-inline:not(.in-heading)) {
                     display: inline;
                     padding-left: 0;
                     padding-right: 0;
@@ -2550,6 +2621,14 @@ function ThoughtsEditorInner(
                     margin-right: 0;
                     vertical-align: baseline;
                     font-size: 0;
+                  }
+                  .thought-item.is-heading,
+                  .thought-item.in-heading {
+                    display: block;
+                    font-size: 16px;
+                  }
+                  .thought-item.is-section-hidden {
+                    display: none !important;
                   }
                   .thought-item.is-inline + .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline)::before {
                     content: "\\A";
@@ -2631,8 +2710,8 @@ function ThoughtsEditorInner(
                     padding: 0;
                     font-size: 16px;
                   }
-                  html.mc-show-categories .thought-item.is-selected .thought-summary:not(.is-placeholder),
-                  html.mc-show-categories .thought-item.is-selected .thought-title:not(.is-placeholder) {
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-summary:not(.is-placeholder),
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-title:not(.is-placeholder) {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
                     padding: 0;
                     margin: 0;
@@ -2640,8 +2719,8 @@ function ThoughtsEditorInner(
                     border-radius: 0;
                     line-height: inherit;
                   }
-                  html.mc-show-categories .thought-item.is-selected .thought-summary.is-placeholder,
-                  html.mc-show-categories .thought-item.is-selected .thought-title.is-placeholder {
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-summary.is-placeholder,
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-title.is-placeholder {
                     background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
                     padding: 0;
                     margin: 0;

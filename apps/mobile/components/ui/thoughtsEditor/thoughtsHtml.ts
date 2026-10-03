@@ -1,6 +1,7 @@
 import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
 import {
   getThoughtPlainText,
+  isHeadingType,
   isTextLikeThought,
   isTextLikeType,
   parseTextContentStyle,
@@ -151,6 +152,10 @@ function stripChrome(liHtml: string): string {
     )
     .replace(
       /<button\b[^>]*class=["'][^"']*\bthought-expand\b[^"']*["'][^>]*>[\s\S]*?<\/button>/i,
+      ""
+    )
+    .replace(
+      /<button\b[^>]*class=["'][^"']*\bthought-fold\b[^"']*["'][^>]*>[\s\S]*?<\/button>/i,
       ""
     )
     .replace(
@@ -483,6 +488,19 @@ function thoughtCheckHtml(): string {
   );
 }
 
+const FOLD_ICON_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">` +
+  `<path d="M6 9l6 6 6-6"/>` +
+  `</svg>`;
+
+function thoughtFoldHtml(): string {
+  return (
+    '<button type="button" class="thought-fold" contenteditable="false" tabindex="-1" aria-label="Collapse section">' +
+    FOLD_ICON_SVG +
+    "</button>"
+  );
+}
+
 type ThoughtItemOptions = {
   thoughtId?: string;
   showGraphButton?: boolean;
@@ -511,6 +529,7 @@ function thoughtItemHtml(
     classNames.push("is-block");
     classNames.push("is-text-like");
   }
+  if (isHeadingType(type)) classNames.push("is-heading");
   if (isCheckbox) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
   if (options.hasEnteredTitle) classNames.push("has-entered-title");
@@ -518,7 +537,7 @@ function thoughtItemHtml(
   const inlineAttr =
     isTextLikeType(type) && options.inline ? ` data-inline="true"` : "";
   const graph =
-    options.showGraphButton && options.thoughtId
+    options.showGraphButton && options.thoughtId && !isHeadingType(type)
       ? graphButtonHtml(options.thoughtId)
       : "";
   return (
@@ -528,6 +547,7 @@ function thoughtItemHtml(
     `<div class="thought-dot"></div>` +
     `</div>` +
     thoughtCheckHtml() +
+    (isHeadingType(type) ? thoughtFoldHtml() : "") +
     `<div class="thought-body">` +
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
@@ -555,8 +575,12 @@ function liToHtml(
   labels?: Record<string, string>,
   _viewMode = false
 ) {
-  const categoryId = thought.categoryId || "uncategorized";
-  const enteredTitle = stripHtml(thought.title);
+  const categoryId = isHeadingType(thought.type)
+    ? "uncategorized"
+    : thought.categoryId || "uncategorized";
+  const enteredTitle = isHeadingType(thought.type)
+    ? ""
+    : stripHtml(thought.title);
   const semanticTitle = compactSemanticLabel(thought);
   const titleValue = enteredTitle
     ? thought.title
@@ -674,6 +698,20 @@ function withParsedFields(
     };
   }
   if (isTextLikeThought(thought)) {
+    if (isHeadingType(thought.type)) {
+      return {
+        ...thought,
+        title: "",
+        semanticLabel: "",
+        categoryId: "uncategorized",
+        titleSource: "generated",
+        categorySource: "generated",
+        content: {
+          text: fields.text,
+          style: parseTextContentStyle(thought.content.style),
+        },
+      };
+    }
     return {
       ...thought,
       title: fields.title ?? thought.title,
