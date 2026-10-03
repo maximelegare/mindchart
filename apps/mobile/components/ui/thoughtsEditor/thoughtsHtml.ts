@@ -1,7 +1,10 @@
 import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
 import {
   getThoughtPlainText,
+  isTextLikeThought,
+  isTextLikeType,
   parseTextContentStyle,
+  parseThoughtType,
   type ThoughtType,
 } from "@repo/zod-schemas";
 import {
@@ -179,17 +182,20 @@ function itemFromAttrs(attrs: string, innerHtml: string): ThoughtItemRecord {
     categoryId: categoryMatch?.[1] ?? null,
     thoughtId: thoughtIdMatch?.[1] ?? null,
     innerHtml,
-    type: parseThoughtType(attrs),
+    type: parseThoughtTypeFromAttrs(attrs),
     checked: parseDataBool(attrs, "completed"),
     inline:
       /\bis-inline\b/.test(attrs) || parseDataBool(attrs, "inline") === true,
   };
 }
 
-function parseThoughtType(attrs: string): ThoughtType | null {
+function parseThoughtTypeFromAttrs(attrs: string): ThoughtType | null {
   const match = attrs.match(/data-thought-type=["']([^"']+)["']/i);
   const value = match?.[1]?.toLowerCase();
-  if (value === "text" || value === "li" || value === "checkbox") return value;
+  if (value) {
+    const type = parseThoughtType(value);
+    if (type !== "li" || value === "li") return type;
+  }
   if (parseDataBool(attrs, "completable")) return "checkbox";
   return null;
 }
@@ -501,13 +507,16 @@ function thoughtItemHtml(
   const isCheckbox = type === "checkbox";
   const completed = isCheckbox && Boolean(options.checked);
   const classNames = ["thought-item"];
-  if (type === "text") classNames.push("is-block");
+  if (isTextLikeType(type)) {
+    classNames.push("is-block");
+    classNames.push("is-text-like");
+  }
   if (isCheckbox) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
   if (options.hasEnteredTitle) classNames.push("has-entered-title");
-  if (type === "text" && options.inline) classNames.push("is-inline");
+  if (isTextLikeType(type) && options.inline) classNames.push("is-inline");
   const inlineAttr =
-    type === "text" && options.inline ? ` data-inline="true"` : "";
+    isTextLikeType(type) && options.inline ? ` data-inline="true"` : "";
   const graph =
     options.showGraphButton && options.thoughtId
       ? graphButtonHtml(options.thoughtId)
@@ -562,7 +571,7 @@ function liToHtml(
     type: thought.type,
     checked: thought.type === "checkbox" ? thought.content.checked : false,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
-    inline: thought.type === "text" && thought.content.style === "inline",
+    inline: isTextLikeThought(thought) && thought.content.style === "inline",
   };
 
   if (showTitleField) {
@@ -664,7 +673,7 @@ function withParsedFields(
       },
     };
   }
-  if (thought.type === "text") {
+  if (isTextLikeThought(thought)) {
     return {
       ...thought,
       title: fields.title ?? thought.title,
@@ -744,7 +753,7 @@ export function htmlToThoughts(
         thought.type === nextType
           ? thought
           : convertThoughtType(thought, nextType);
-      if (nextType !== "text") return next;
+      if (!isTextLikeType(nextType)) return next;
       return setTextThoughtStyle(next, item.inline ? "inline" : "block");
     };
 

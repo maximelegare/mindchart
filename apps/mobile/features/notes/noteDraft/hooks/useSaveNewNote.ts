@@ -3,6 +3,7 @@ import {
   Note,
   Thought,
   getThoughtPlainText,
+  isTextLikeThought,
   parseTextContentStyle,
 } from "@repo/zod-schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -46,7 +47,7 @@ export const useSaveNewNote = () => {
                 ...thought,
                 content: { text, checked: thought.content.checked },
               }
-            : thought.type === "text"
+            : isTextLikeThought(thought)
               ? {
                   ...thought,
                   content: {

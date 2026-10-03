@@ -26,6 +26,42 @@ export const THOUGHT_CAPABILITIES: Record<ThoughtType, ThoughtCapabilities> = {
     categoryHighlight: true,
     nlp: true,
   },
+  h1: {
+    textSelection: true,
+    boundaryHandles: true,
+    categoryHighlight: true,
+    nlp: true,
+  },
+  h2: {
+    textSelection: true,
+    boundaryHandles: true,
+    categoryHighlight: true,
+    nlp: true,
+  },
+  h3: {
+    textSelection: true,
+    boundaryHandles: true,
+    categoryHighlight: true,
+    nlp: true,
+  },
+  h4: {
+    textSelection: true,
+    boundaryHandles: true,
+    categoryHighlight: true,
+    nlp: true,
+  },
+  h5: {
+    textSelection: true,
+    boundaryHandles: true,
+    categoryHighlight: true,
+    nlp: true,
+  },
+  h6: {
+    textSelection: true,
+    boundaryHandles: true,
+    categoryHighlight: true,
+    nlp: true,
+  },
 };
 
 export const thoughtCapabilities = (type: ThoughtType): ThoughtCapabilities =>

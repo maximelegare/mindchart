@@ -67,6 +67,30 @@ export function thoughtsEditorThoughtTypeMenuAccessibilityLabel() {
   );
 }
 
+export function thoughtsEditorHeading1TypeLabel() {
+  return fbs("Heading 1", "Thought type menu label for heading 1");
+}
+
+export function thoughtsEditorHeading2TypeLabel() {
+  return fbs("Heading 2", "Thought type menu label for heading 2");
+}
+
+export function thoughtsEditorHeading3TypeLabel() {
+  return fbs("Heading 3", "Thought type menu label for heading 3");
+}
+
+export function thoughtsEditorHeading4TypeLabel() {
+  return fbs("Heading 4", "Thought type menu label for heading 4");
+}
+
+export function thoughtsEditorHeading5TypeLabel() {
+  return fbs("Heading 5", "Thought type menu label for heading 5");
+}
+
+export function thoughtsEditorHeading6TypeLabel() {
+  return fbs("Heading 6", "Thought type menu label for heading 6");
+}
+
 export function thoughtsEditorDetailsToolbarAccessibilityLabel() {
   return fbs(
     "Title and category toolbar",

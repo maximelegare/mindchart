@@ -1,5 +1,6 @@
 import {
   getThoughtPlainText,
+  isTextLikeThought,
   type Thought,
   type ThoughtType,
 } from "@repo/zod-schemas";
@@ -29,7 +30,7 @@ export const applyEditorNlpResult = (
 
   const pieces = result.pieces.map((piece, pieceIndex) => {
     const type: ThoughtType =
-      source.type === "text" || result.pieces.length > 1 ? "text" : source.type;
+      result.pieces.length > 1 && source.type === "text" ? "text" : source.type;
     const base = pieceIndex === 0 ? source : createEmptyThought(noteId, type);
     const withText = setThoughtContentText(
       {
@@ -48,10 +49,9 @@ export const applyEditorNlpResult = (
       },
       piece.text
     );
-    const styled =
-      withText.type === "text"
-        ? setTextThoughtStyle(withText, piece.style)
-        : withText;
+    const styled = isTextLikeThought(withText)
+      ? setTextThoughtStyle(withText, piece.style)
+      : withText;
     return {
       ...styled,
       nlpSourceHash: thoughtNlpSourceHash(styled),
@@ -67,5 +67,5 @@ export const nlpPiecesForEditor = (thoughts: Thought[]) =>
     text: getThoughtPlainText(thought),
     title: stripHtml(thought.title) || thought.semanticLabel,
     categoryId: thought.categoryId || "uncategorized",
-    inline: thought.type === "text" && thought.content.style === "inline",
+    inline: isTextLikeThought(thought) && thought.content.style === "inline",
   }));

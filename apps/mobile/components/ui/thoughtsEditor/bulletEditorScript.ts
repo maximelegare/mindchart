@@ -1,3 +1,5 @@
+import type { ThoughtType } from "@repo/zod-schemas";
+
 /** Injected into the pell WebView to keep thoughts as independent items. */
 export const BULLET_EDITOR_GUARD_SCRIPT = `
 (function () {
@@ -15,6 +17,28 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
   function mcPh(key, fallback) {
     var p = window.__mcPlaceholders;
     return (p && p[key]) || fallback;
+  }
+
+  function isHeadingType(type) {
+    return (
+      type === "h1" ||
+      type === "h2" ||
+      type === "h3" ||
+      type === "h4" ||
+      type === "h5" ||
+      type === "h6"
+    );
+  }
+
+  function isTextLikeType(type) {
+    return type === "text" || isHeadingType(type);
+  }
+
+  function parseThoughtType(type) {
+    if (type === "text" || type === "li" || type === "checkbox" || isHeadingType(type)) {
+      return type;
+    }
+    return "li";
   }
 
   if (!window.__mcBulletGuardInstalled) {
@@ -321,6 +345,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       li.setAttribute("data-thought-type", "text");
       li.setAttribute("data-category-id", piece.categoryId || "uncategorized");
       li.classList.add("is-block");
+      li.classList.add("is-text-like");
       if (piece.inline) {
         li.classList.add("is-inline");
         li.setAttribute("data-inline", "true");
@@ -531,13 +556,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     }
 
     function createThoughtShell(type) {
-      var thoughtType =
-        type === "text" || type === "li" || type === "checkbox" ? type : "li";
+      var thoughtType = parseThoughtType(type);
       var completable = thoughtType === "checkbox";
       var created = document.createElement("div");
       created.className =
         "thought-item" +
-        (thoughtType === "text" ? " is-block" : "") +
+        (isTextLikeType(thoughtType) ? " is-block is-text-like" : "") +
         (completable ? " is-checklist" : "");
       created.setAttribute("data-thought-type", thoughtType);
       created.setAttribute("data-thought-id", newThoughtId());
@@ -880,7 +904,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function thoughtTypeOf(li) {
       var type = li && li.getAttribute("data-thought-type");
-      if (type === "text" || type === "li" || type === "checkbox") return type;
+      if (isTextLikeType(type) || type === "li" || type === "checkbox") return type;
       if (li && li.getAttribute("data-completable") === "true") return "checkbox";
       return "li";
     }
@@ -939,7 +963,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
       var created = createThoughtShell(type);
       created.setAttribute("data-caret-split", "true");
-      if (type === "text") {
+      if (isTextLikeType(type)) {
         created.classList.add("is-block");
         created.classList.remove("is-inline");
         created.removeAttribute("data-inline");
@@ -999,7 +1023,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       var created = createThoughtShell(type);
-      if (type === "text") {
+      if (isTextLikeType(type)) {
         created.classList.add("is-block");
         created.classList.remove("is-inline");
         created.classList.remove("is-run-start");
@@ -1033,10 +1057,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function promoteThoughtToBlock(li) {
       if (!li) return;
-      li.setAttribute("data-thought-type", "text");
+      if (!isTextLikeType(thoughtTypeOf(li))) {
+        li.setAttribute("data-thought-type", "text");
+      }
       li.setAttribute("data-completable", "false");
       li.setAttribute("data-completed", "false");
       li.classList.add("is-block");
+      li.classList.add("is-text-like");
       li.classList.remove("is-inline");
       li.classList.remove("is-checklist");
       li.removeAttribute("data-inline");
@@ -1124,13 +1151,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       li.setAttribute("data-completable", "false");
       li.setAttribute("data-completed", "false");
       li.classList.add("is-block");
+      li.classList.add("is-text-like");
       li.classList.remove("is-checklist");
       li.classList.remove("is-completed");
       if (inline) {
         li.classList.add("is-inline");
         li.setAttribute("data-inline", "true");
         var prevRun = li.previousElementSibling;
-        if (isThought(prevRun) && thoughtTypeOf(prevRun) === "text") {
+        if (isThought(prevRun) && isTextLikeType(thoughtTypeOf(prevRun))) {
           prevRun.classList.add("is-run-start");
         }
       } else {
@@ -1188,7 +1216,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         notifyChange();
         return true;
       }
-      if (type === "text" && !isInlineThought(li) && isThought(prev)) {
+      if (isTextLikeType(type) && !isInlineThought(li) && isThought(prev)) {
         e.preventDefault();
         e.stopPropagation();
         setThoughtAsParagraph(li, true);
@@ -1814,7 +1842,7 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
 })();
 `;
 
-export function setThoughtTypeScript(type: "text" | "li" | "checkbox"): string {
+export function setThoughtTypeScript(type: ThoughtType): string {
   return `
 (function () {
   if (typeof window.__mcSetThoughtType === "function") {
@@ -2164,6 +2192,21 @@ export const CHECKLIST_SCRIPT = `
       .trim();
   }
 
+  function isHeadingType(type) {
+    return (
+      type === "h1" ||
+      type === "h2" ||
+      type === "h3" ||
+      type === "h4" ||
+      type === "h5" ||
+      type === "h6"
+    );
+  }
+
+  function isTextLikeType(type) {
+    return type === "text" || isHeadingType(type);
+  }
+
   window.__mcAnimateTitle = function (li) {
     if (!li) return;
     var title = li.querySelector(".thought-title");
@@ -2254,30 +2297,32 @@ export const CHECKLIST_SCRIPT = `
 
   function thoughtTypeOf(li) {
     var type = li && li.getAttribute("data-thought-type");
-    if (type === "text" || type === "li" || type === "checkbox") return type;
+    if (isTextLikeType(type) || type === "li" || type === "checkbox") return type;
     if (isTrueAttr(li, "data-completable")) return "checkbox";
     return "li";
   }
 
   function applyThoughtType(li, type) {
     if (!li) return;
-    if (type !== "text" && type !== "li" && type !== "checkbox") type = "li";
+    if (!isTextLikeType(type) && type !== "li" && type !== "checkbox") type = "li";
     var previousType = thoughtTypeOf(li);
     var completable = type === "checkbox";
-    var becomingParagraph =
-      type === "text" && (previousType === "li" || previousType === "checkbox");
+    var becomingTextLike =
+      isTextLikeType(type) &&
+      (previousType === "li" || previousType === "checkbox");
     li.setAttribute("data-thought-type", type);
     li.setAttribute("data-completable", completable ? "true" : "false");
     if (!completable) {
       li.setAttribute("data-completed", "false");
     }
-    li.classList.toggle("is-block", type === "text");
+    li.classList.toggle("is-block", isTextLikeType(type));
+    li.classList.toggle("is-text-like", isTextLikeType(type));
     li.classList.toggle("is-checklist", completable);
-    if (type !== "text" || becomingParagraph) {
+    if (!isTextLikeType(type) || becomingTextLike) {
       li.classList.remove("is-inline");
       li.removeAttribute("data-inline");
     }
-    if (becomingParagraph) {
+    if (becomingTextLike) {
       li.classList.remove("is-run-start");
       var next = li.nextElementSibling;
       if (
@@ -3113,7 +3158,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
     if (state.side === "right") {
       setSummaryHtml(thought, parts.left);
       setSummaryHtml(clone, parts.right);
-      if (thought.getAttribute("data-thought-type") === "text") {
+      if (isTextLikeType(thought.getAttribute("data-thought-type"))) {
         setParagraphStyle(thought, wasInline);
         setParagraphStyle(clone, true);
       }
@@ -3121,7 +3166,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
     } else {
       setSummaryHtml(clone, parts.left);
       setSummaryHtml(thought, parts.right);
-      if (thought.getAttribute("data-thought-type") === "text") {
+      if (isTextLikeType(thought.getAttribute("data-thought-type"))) {
         setParagraphStyle(clone, wasInline);
         setParagraphStyle(thought, true);
       }

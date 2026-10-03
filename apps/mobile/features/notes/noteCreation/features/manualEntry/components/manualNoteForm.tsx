@@ -5,6 +5,7 @@ import {
   Thought,
   assembleThought,
   getThoughtPlainText,
+  isTextLikeThought,
   parseTextContentStyle,
 } from "@repo/zod-schemas";
 
@@ -172,7 +173,7 @@ export const ManualNoteForm = ({
                 ...thought,
                 content: { text, checked: thought.content.checked },
               }
-            : thought.type === "text"
+            : isTextLikeThought(thought)
               ? {
                   ...thought,
                   content: {

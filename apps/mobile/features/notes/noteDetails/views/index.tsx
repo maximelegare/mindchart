@@ -14,6 +14,7 @@ import {
 import {
   assembleThought,
   getThoughtPlainText,
+  isTextLikeThought,
   parseTextContentStyle,
   type FeelingValue,
   Person,
@@ -247,7 +248,7 @@ function NoteDetailsContent({
                   ...thought,
                   content: { text, checked: thought.content.checked },
                 }
-              : thought.type === "text"
+              : isTextLikeThought(thought)
                 ? {
                     ...thought,
                     content: {

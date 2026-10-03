@@ -1,4 +1,8 @@
-import { getThoughtPlainText, type Thought } from "@repo/zod-schemas";
+import {
+  getThoughtPlainText,
+  isTextLikeThought,
+  type Thought,
+} from "@repo/zod-schemas";
 
 const stripForHash = (value: string) =>
   value
@@ -25,7 +29,7 @@ export const hashNlpSource = (input: {
 export const thoughtNlpSourceHash = (thought: Thought): string =>
   hashNlpSource({
     type: thought.type,
-    style: thought.type === "text" ? thought.content.style : undefined,
+    style: isTextLikeThought(thought) ? thought.content.style : undefined,
     text: getThoughtPlainText(thought),
   });
 

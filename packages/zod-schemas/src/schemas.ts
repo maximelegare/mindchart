@@ -74,10 +74,47 @@ const sqliteBoolean = z.preprocess(
   z.boolean()
 );
 
-export const THOUGHT_TYPES = ["text", "li", "checkbox"] as const;
+export const HEADING_TYPES = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+export type HeadingType = (typeof HEADING_TYPES)[number];
+
+export const THOUGHT_TYPES = [
+  "text",
+  "li",
+  "checkbox",
+  ...HEADING_TYPES,
+] as const;
 export type ThoughtType = (typeof THOUGHT_TYPES)[number];
 
 export const ThoughtTypeSchema = z.enum(THOUGHT_TYPES);
+
+export const isHeadingType = (type: unknown): type is HeadingType =>
+  type === "h1" ||
+  type === "h2" ||
+  type === "h3" ||
+  type === "h4" ||
+  type === "h5" ||
+  type === "h6";
+
+export const isTextLikeType = (type: unknown): type is "text" | HeadingType =>
+  type === "text" || isHeadingType(type);
+
+export type TextLikeThought = Extract<Thought, { type: "text" | HeadingType }>;
+
+export const isTextLikeThought = (
+  thought: Thought
+): thought is TextLikeThought => isTextLikeType(thought.type);
+
+export const parseThoughtType = (value: unknown): ThoughtType => {
+  if (
+    value === "text" ||
+    value === "li" ||
+    value === "checkbox" ||
+    isHeadingType(value)
+  ) {
+    return value;
+  }
+  return "li";
+};
 
 export const NLP_METADATA_SOURCES = ["generated", "user"] as const;
 export type NlpMetadataSource = (typeof NLP_METADATA_SOURCES)[number];
@@ -146,10 +183,41 @@ export const CheckboxThoughtSchema = ThoughtBaseSchema.extend({
   content: CheckboxThoughtContentSchema,
 });
 
+export const H1ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h1"),
+  content: TextThoughtContentSchema,
+});
+export const H2ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h2"),
+  content: TextThoughtContentSchema,
+});
+export const H3ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h3"),
+  content: TextThoughtContentSchema,
+});
+export const H4ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h4"),
+  content: TextThoughtContentSchema,
+});
+export const H5ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h5"),
+  content: TextThoughtContentSchema,
+});
+export const H6ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h6"),
+  content: TextThoughtContentSchema,
+});
+
 export const ThoughtSchema = z.discriminatedUnion("type", [
   TextThoughtSchema,
   ListItemThoughtSchema,
   CheckboxThoughtSchema,
+  H1ThoughtSchema,
+  H2ThoughtSchema,
+  H3ThoughtSchema,
+  H4ThoughtSchema,
+  H5ThoughtSchema,
+  H6ThoughtSchema,
 ]);
 
 export type TextThought = z.infer<typeof TextThoughtSchema>;
@@ -174,12 +242,9 @@ const asString = (value: unknown, fallback = ""): string =>
 export const assembleThought = (raw: LooseThoughtRecord): Thought => {
   const nested =
     raw.content && typeof raw.content === "object" ? raw.content : {};
-  const type: ThoughtType =
-    raw.type === "text" || raw.type === "li" || raw.type === "checkbox"
-      ? raw.type
-      : raw.isCompletable
-        ? "checkbox"
-        : "li";
+  const type: ThoughtType = raw.isCompletable
+    ? "checkbox"
+    : parseThoughtType(raw.type);
   const text = asString(nested.text ?? raw.contentText ?? raw.summary ?? "");
   const id = asString(raw.id ?? raw.thoughtId);
   const base = {
@@ -222,7 +287,7 @@ export const assembleThought = (raw: LooseThoughtRecord): Thought => {
     };
   }
 
-  if (type === "text") {
+  if (isTextLikeType(type)) {
     const style = parseTextContentStyle(
       nested.style ?? raw.contentStyle ?? raw.style
     );

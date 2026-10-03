@@ -4,6 +4,7 @@ import {
   LocalAIResThought,
   Note,
   Thought,
+  isTextLikeType,
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 import { classifyCategory } from "@/features/categories/utils/classifyCategory";
@@ -37,10 +38,10 @@ const thoughtFromLocalAi = (t: LocalAIResThought, noteId: string): Thought => {
     };
   }
 
-  if (type === "text") {
+  if (isTextLikeType(type)) {
     return {
       ...base,
-      type: "text",
+      type,
       content: { text: thoughtText, style: "block" },
     };
   }

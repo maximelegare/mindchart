@@ -1,6 +1,8 @@
 import {
   Category,
   getThoughtPlainText,
+  isTextLikeThought,
+  parseThoughtType,
   type ThoughtType,
 } from "@repo/zod-schemas";
 import React from "react";
@@ -1340,13 +1342,13 @@ function ThoughtsEditorInner(
       const keptText = payload.newSide === "left" ? rightText : leftText;
       const created = createEmptyThought(noteId, source.type);
       const sourceStyle =
-        source.type === "text" && source.content.style === "inline"
+        isTextLikeThought(source) && source.content.style === "inline"
           ? "inline"
           : "block";
       const styleForSide = (side: "left" | "right") =>
         side === "right" ? "inline" : sourceStyle;
       const newThought = setThoughtContentText(
-        source.type === "text"
+        isTextLikeThought(source)
           ? setTextThoughtStyle(
               {
                 ...created,
@@ -1365,7 +1367,7 @@ function ThoughtsEditorInner(
         newText
       );
       const kept = setThoughtContentText(
-        source.type === "text"
+        isTextLikeThought(source)
           ? setTextThoughtStyle(
               source,
               styleForSide(payload.newSide === "left" ? "right" : "left")
@@ -1570,14 +1572,9 @@ function ThoughtsEditorInner(
         const payload = message.data as
           | { type?: ThoughtType; completable?: boolean; index?: number }
           | undefined;
-        const nextType: ThoughtType =
-          payload?.type === "text" ||
-          payload?.type === "li" ||
-          payload?.type === "checkbox"
-            ? payload.type
-            : payload?.completable
-              ? "checkbox"
-              : "li";
+        const nextType: ThoughtType = payload?.completable
+          ? "checkbox"
+          : parseThoughtType(payload?.type);
         setCaretThoughtType(nextType);
         const index = Number(payload?.index);
         if (Number.isFinite(index) && index >= 0) {
@@ -1598,14 +1595,9 @@ function ThoughtsEditorInner(
           | { index?: number; type?: ThoughtType; completable?: boolean }
           | undefined;
         const index = Number(payload?.index);
-        const nextType: ThoughtType =
-          payload?.type === "text" ||
-          payload?.type === "li" ||
-          payload?.type === "checkbox"
-            ? payload.type
-            : payload?.completable
-              ? "checkbox"
-              : "li";
+        const nextType: ThoughtType = payload?.completable
+          ? "checkbox"
+          : parseThoughtType(payload?.type);
         if (!Number.isFinite(index) || index < 0) return;
         setCaretThoughtType(nextType);
         setSelectedThoughtIndex(index);
@@ -2402,6 +2394,36 @@ function ThoughtsEditorInner(
                     font-weight: 400;
                     opacity: 0.92;
                   }
+                  .thought-item[data-thought-type="h1"] .thought-summary {
+                    font-size: 28px;
+                    font-weight: 700;
+                    line-height: 1.25;
+                  }
+                  .thought-item[data-thought-type="h2"] .thought-summary {
+                    font-size: 24px;
+                    font-weight: 700;
+                    line-height: 1.3;
+                  }
+                  .thought-item[data-thought-type="h3"] .thought-summary {
+                    font-size: 20px;
+                    font-weight: 700;
+                    line-height: 1.35;
+                  }
+                  .thought-item[data-thought-type="h4"] .thought-summary {
+                    font-size: 18px;
+                    font-weight: 700;
+                    line-height: 1.4;
+                  }
+                  .thought-item[data-thought-type="h5"] .thought-summary {
+                    font-size: 16px;
+                    font-weight: 700;
+                    line-height: 1.4;
+                  }
+                  .thought-item[data-thought-type="h6"] .thought-summary {
+                    font-size: 14px;
+                    font-weight: 700;
+                    line-height: 1.45;
+                  }
                   .thought-title b,
                   .thought-title strong,
                   .thought-summary b,
@@ -2518,7 +2540,7 @@ function ThoughtsEditorInner(
                   }
                   .thought-item.is-inline,
                   .thought-item.is-run-start,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) {
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) {
                     display: inline;
                     padding-left: 0;
                     padding-right: 0;
@@ -2529,18 +2551,18 @@ function ThoughtsEditorInner(
                     vertical-align: baseline;
                     font-size: 0;
                   }
-                  .thought-item.is-inline + .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline)::before {
+                  .thought-item.is-inline + .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline)::before {
                     content: "\\A";
                     white-space: pre;
                   }
-                  .thought-item:not(.is-inline):has(+ .thought-item[data-thought-type="text"]:not(.is-inline) + .thought-item.is-inline) {
+                  .thought-item:not(.is-inline):has(+ .thought-item.is-text-like:not(.is-inline) + .thought-item.is-inline) {
                     margin-bottom: var(--mc-gap-block);
                   }
                   .thought-item.is-block:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)),
-                  .thought-item[data-thought-type="text"]:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)) {
+                  .thought-item.is-text-like:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)) {
                     margin-top: var(--mc-gap-block);
                   }
-                  .thought-item[data-thought-type="text"]:not(.is-inline)
+                  .thought-item.is-text-like:not(.is-inline)
                     + .thought-item:not(.is-inline) {
                     margin-top: var(--mc-gap-block);
                   }
@@ -2548,8 +2570,8 @@ function ThoughtsEditorInner(
                   .thought-item.is-checklist + .thought-item[data-thought-type="li"] {
                     margin-top: var(--mc-gap-type);
                   }
-                  .thought-item.is-checklist:has(+ .thought-item[data-thought-type="text"]),
-                  .thought-item[data-thought-type="li"]:has(+ .thought-item[data-thought-type="text"]) {
+                  .thought-item.is-checklist:has(+ .thought-item.is-text-like),
+                  .thought-item[data-thought-type="li"]:has(+ .thought-item.is-text-like) {
                     margin-bottom: var(--mc-gap-block);
                   }
                   .thought-item.is-inline + .thought-item:not(.is-inline) {
@@ -2567,8 +2589,8 @@ function ThoughtsEditorInner(
                   .thought-item.is-run-start .thought-category,
                   .thought-item.is-inline .thought-graph,
                   .thought-item.is-run-start .thought-graph,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-category,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-graph {
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-category,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-graph {
                     display: none !important;
                   }
                   .thought-item.is-inline .thought-rail,
@@ -2577,17 +2599,17 @@ function ThoughtsEditorInner(
                   .thought-item.is-run-start .thought-rail,
                   .thought-item.is-run-start .thought-dot,
                   .thought-item.is-run-start .thought-check,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-rail,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-dot,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-check {
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-rail,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-dot,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-check {
                     display: none !important;
                   }
                   .thought-item.is-inline .thought-body,
                   .thought-item.is-inline .thought-fields,
                   .thought-item.is-run-start .thought-body,
                   .thought-item.is-run-start .thought-fields,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-body,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-fields {
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-body,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-fields {
                     display: inline;
                     width: auto;
                     max-width: none;
@@ -2601,8 +2623,8 @@ function ThoughtsEditorInner(
                   .thought-item.is-inline .thought-title,
                   .thought-item.is-run-start .thought-summary,
                   .thought-item.is-run-start .thought-title,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-summary,
-                  .thought-item[data-thought-type="text"]:not(.is-inline):has(+ .thought-item.is-inline) .thought-title {
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-summary,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-title {
                     display: inline;
                     overflow: visible;
                     margin: 0;

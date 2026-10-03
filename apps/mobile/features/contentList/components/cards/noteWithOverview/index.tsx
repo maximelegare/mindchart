@@ -10,7 +10,12 @@ import {
   CHECKBOX_MARK_SIZE,
   StaticCheckboxMark,
 } from "../shared/staticCheckboxMark";
-import { getThoughtPlainText, parseTextContentStyle } from "@repo/zod-schemas";
+import {
+  getThoughtPlainText,
+  isTextLikeType,
+  parseTextContentStyle,
+  type ThoughtType,
+} from "@repo/zod-schemas";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
@@ -24,8 +29,6 @@ const TEXT_LINE_HEIGHT = 18;
 const COMPACT_GAP = 4;
 const TYPE_CHANGE_GAP = 8;
 const PARAGRAPH_GAP = 14;
-
-type ThoughtType = "text" | "li" | "checkbox";
 
 export type NoteOverviewItem = {
   type: ThoughtType;
@@ -67,10 +70,9 @@ export function thoughtToOverviewItem(thought: {
   return {
     type,
     text,
-    style:
-      type === "text"
-        ? parseTextContentStyle(thought.content?.style)
-        : undefined,
+    style: isTextLikeType(type)
+      ? parseTextContentStyle(thought.content?.style)
+      : undefined,
     isCompleted,
   };
 }
@@ -82,7 +84,7 @@ type ThoughtOverviewItemProps = {
 
 const ThoughtOverviewItem = memo(
   ({ item, markerColor }: ThoughtOverviewItemProps) => {
-    const isParagraph = item.type === "text";
+    const isParagraph = isTextLikeType(item.type);
     const isCheckbox = item.type === "checkbox";
     const isCompleted = isCheckbox && Boolean(item.isCompleted);
 
@@ -158,7 +160,7 @@ type ListItemProps = {
 };
 
 function isInlineParagraph(item: NoteOverviewItem): boolean {
-  return item.type === "text" && item.style === "inline";
+  return isTextLikeType(item.type) && item.style === "inline";
 }
 
 function getItemGap(
@@ -174,8 +176,8 @@ function getItemGap(
   }
 
   if (
-    current.type === "text" &&
-    next.type === "text" &&
+    isTextLikeType(current.type) &&
+    isTextLikeType(next.type) &&
     current.style !== "inline" &&
     next.style === "inline"
   ) {
@@ -183,7 +185,7 @@ function getItemGap(
   }
 
   // Two paragraphs get the largest spacing.
-  if (current.type === "text" && next.type === "text") {
+  if (isTextLikeType(current.type) && isTextLikeType(next.type)) {
     return PARAGRAPH_GAP;
   }
 
@@ -252,7 +254,7 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
                 const gap = getItemGap(item, nextItem);
                 const inline = isInlineParagraph(item);
                 const startsInlineRun =
-                  item.type === "text" &&
+                  isTextLikeType(item.type) &&
                   item.style !== "inline" &&
                   Boolean(nextItem && isInlineParagraph(nextItem));
                 const shareRow = inline || startsInlineRun;

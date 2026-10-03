@@ -63,6 +63,12 @@ import {
   thoughtsEditorBulletTypeLabel,
   thoughtsEditorChecklistTypeLabel,
   thoughtsEditorThoughtTypeMenuAccessibilityLabel,
+  thoughtsEditorHeading1TypeLabel,
+  thoughtsEditorHeading2TypeLabel,
+  thoughtsEditorHeading3TypeLabel,
+  thoughtsEditorHeading4TypeLabel,
+  thoughtsEditorHeading5TypeLabel,
+  thoughtsEditorHeading6TypeLabel,
 } from "./thoughtsEditorLabels";
 
 export const THOUGHTS_EDITOR_TOOLBAR_HEIGHT = 44;
@@ -171,6 +177,42 @@ const THOUGHT_TYPE_OPTIONS: Array<{
     label: thoughtsEditorChecklistTypeLabel,
     accessibilityLabel: thoughtsEditorChecklistAccessibilityLabel,
   },
+  {
+    type: "h1",
+    icon: "heading-1",
+    label: thoughtsEditorHeading1TypeLabel,
+    accessibilityLabel: thoughtsEditorHeading1TypeLabel,
+  },
+  {
+    type: "h2",
+    icon: "heading-2",
+    label: thoughtsEditorHeading2TypeLabel,
+    accessibilityLabel: thoughtsEditorHeading2TypeLabel,
+  },
+  {
+    type: "h3",
+    icon: "heading-3",
+    label: thoughtsEditorHeading3TypeLabel,
+    accessibilityLabel: thoughtsEditorHeading3TypeLabel,
+  },
+  {
+    type: "h4",
+    icon: "heading-4",
+    label: thoughtsEditorHeading4TypeLabel,
+    accessibilityLabel: thoughtsEditorHeading4TypeLabel,
+  },
+  {
+    type: "h5",
+    icon: "heading-5",
+    label: thoughtsEditorHeading5TypeLabel,
+    accessibilityLabel: thoughtsEditorHeading5TypeLabel,
+  },
+  {
+    type: "h6",
+    icon: "heading-6",
+    label: thoughtsEditorHeading6TypeLabel,
+    accessibilityLabel: thoughtsEditorHeading6TypeLabel,
+  },
 ];
 
 function ThoughtTypePopup({
@@ -201,6 +243,11 @@ function ThoughtTypePopup({
   onExitedRef.current = onExited;
   const popupWidth = Math.max(TYPE_POPUP_WIDTH, anchor.width);
   const overlayWidth = overlay.width || Dimensions.get("window").width;
+  const maxPopupHeight = Math.max(
+    160,
+    (overlay.height ? anchor.y - overlay.y : Dimensions.get("window").height) -
+      12
+  );
   const left = Math.min(
     Math.max(0, anchor.x - overlay.x),
     Math.max(0, overlayWidth - popupWidth)
@@ -257,6 +304,7 @@ function ThoughtTypePopup({
               left,
               bottom,
               width: popupWidth,
+              maxHeight: maxPopupHeight,
               backgroundColor: hsl("popover", colorScheme),
               borderColor: hsl("border", colorScheme),
             },
@@ -264,36 +312,42 @@ function ThoughtTypePopup({
             overlay.height ? undefined : { opacity: 0 },
           ]}
         >
-          {THOUGHT_TYPE_OPTIONS.map((option) => {
-            const selected = thoughtType === option.type;
-            return (
-              <Pressable
-                key={option.type}
-                onPress={() => {
-                  onSelect(option.type);
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={option.accessibilityLabel()}
-                accessibilityState={{ selected }}
-                style={[
-                  styles.typeOption,
-                  selected
-                    ? { backgroundColor: hsl("border", colorScheme) }
-                    : undefined,
-                ]}
-              >
-                <Icon
-                  name={option.icon}
-                  size={20}
-                  color={selected ? "primary" : "foreground"}
-                />
-                <Typography className="text-base" numberOfLines={1}>
-                  {option.label()}
-                </Typography>
-              </Pressable>
-            );
-          })}
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+          >
+            {THOUGHT_TYPE_OPTIONS.map((option) => {
+              const selected = thoughtType === option.type;
+              return (
+                <Pressable
+                  key={option.type}
+                  onPress={() => {
+                    onSelect(option.type);
+                    onClose();
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={option.accessibilityLabel()}
+                  accessibilityState={{ selected }}
+                  style={[
+                    styles.typeOption,
+                    selected
+                      ? { backgroundColor: hsl("border", colorScheme) }
+                      : undefined,
+                  ]}
+                >
+                  <Icon
+                    name={option.icon}
+                    size={20}
+                    color={selected ? "primary" : "foreground"}
+                  />
+                  <Typography className="text-base" numberOfLines={1}>
+                    {option.label()}
+                  </Typography>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </Animated.View>
       </View>
     </Portal>

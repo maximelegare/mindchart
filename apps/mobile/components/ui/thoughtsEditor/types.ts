@@ -1,5 +1,7 @@
 import {
   assembleThought,
+  isTextLikeThought,
+  isTextLikeType,
   parseTextContentStyle,
   type Thought,
   type ThoughtType,
@@ -47,12 +49,15 @@ export const convertThoughtType = (
       content: { text, checked: false },
     };
   }
-  if (type === "text") {
+  if (isTextLikeType(type)) {
+    const style = isTextLikeThought(thought)
+      ? parseTextContentStyle(thought.content.style)
+      : "block";
     return {
       ...thought,
       type,
       contentId,
-      content: { text, style: "block" },
+      content: { text, style },
     };
   }
   return {
@@ -70,7 +75,7 @@ export const setThoughtContentText = (
   if (thought.type === "checkbox") {
     return { ...thought, content: { text, checked: thought.content.checked } };
   }
-  if (thought.type === "text") {
+  if (isTextLikeThought(thought)) {
     return {
       ...thought,
       content: { text, style: parseTextContentStyle(thought.content.style) },
@@ -83,6 +88,6 @@ export const setTextThoughtStyle = (
   thought: ThoughtsFormValue,
   style: "block" | "inline"
 ): ThoughtsFormValue => {
-  if (thought.type !== "text") return thought;
+  if (!isTextLikeThought(thought)) return thought;
   return { ...thought, content: { ...thought.content, style } };
 };

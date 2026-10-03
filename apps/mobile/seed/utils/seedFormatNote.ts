@@ -4,6 +4,7 @@ import {
   LocalAIResThought,
   Note,
   Thought,
+  isTextLikeType,
 } from "@repo/zod-schemas";
 import { CATEGORIES_DEFINITIONS, type CategoryKey } from "@repo/sqlite";
 import { generateID } from "@/utils/genrateID";
@@ -54,10 +55,10 @@ const thoughtFromSeed = (t: LocalAIResThought, noteId: string): Thought => {
     };
   }
 
-  if (type === "text") {
+  if (isTextLikeType(type)) {
     return {
       ...base,
-      type: "text",
+      type,
       content: { text: thoughtText, style: "block" },
     };
   }

@@ -1,5 +1,6 @@
 import {
   getThoughtPlainText,
+  isTextLikeThought,
   type NlpMetadataSource,
   type Thought,
   type ThoughtType,
@@ -47,7 +48,7 @@ export const createNlpJob = (thought: Thought): NlpJob => ({
   thoughtId: thought.id,
   type: thought.type,
   content: getThoughtPlainText(thought),
-  style: thought.type === "text" ? thought.content.style : undefined,
+  style: isTextLikeThought(thought) ? thought.content.style : undefined,
   sourceHash: thoughtNlpSourceHash(thought),
   fallbackCategoryId: thought.categoryId,
   titleSource: thought.titleSource === "user" ? "user" : "generated",
