@@ -224,6 +224,13 @@ function buildEditorThemeCss(colors: {
     .thought-fold {
       color: ${colors.mutedFg};
     }
+    .thought-item.is-heading .thought-body {
+      background: color-mix(in srgb, ${colors.mutedFg} 12%, transparent);
+    }
+    .thought-item.is-heading .thought-fold {
+      background: color-mix(in srgb, ${colors.mutedFg} 18%, transparent);
+      color: ${colors.mutedFg};
+    }
     .thought-category {
       color: ${colors.mutedFg};
     }
@@ -2214,46 +2221,106 @@ function ThoughtsEditorInner(
                   }
                   .thought-fold {
                     display: none;
-                    position: absolute;
-                    left: var(--heading-indent, 0px);
-                    top: 5px;
-                    width: 22px;
-                    height: 22px;
+                    position: relative;
+                    flex-shrink: 0;
+                    order: -1;
+                    align-self: center;
+                    width: 1.55em;
+                    height: 1.55em;
+                    min-width: 24px;
+                    min-height: 24px;
                     padding: 0;
                     margin: 0;
                     border: none;
-                    background: transparent;
+                    border-radius: 50%;
+                    background: color-mix(in srgb, ${mutedFg} 18%, transparent);
                     color: ${mutedFg};
                     align-items: center;
                     justify-content: center;
-                    opacity: 0.55;
+                    opacity: 1;
                     cursor: pointer;
                     user-select: none;
                     -webkit-user-select: none;
                     z-index: 4;
+                    -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+                    -webkit-transform-origin: center center;
+                    transform-origin: center center;
+                    -webkit-transition: -webkit-transform 0.38s
+                      cubic-bezier(0.22, 0.8, 0.32, 1);
+                    transition: transform 0.38s cubic-bezier(0.22, 0.8, 0.32, 1);
+                    will-change: transform;
                   }
                   .thought-item.is-heading {
-                    --fold-gutter: 22px;
+                    --fold-gutter: 0px;
+                    --heading-pill-pad: 3px;
+                    padding-left: 2px;
                   }
-                  .thought-item.is-heading > .thought-fold {
+                  .thought-item.is-heading .thought-body {
+                    display: inline-flex;
+                    flex-direction: row;
+                    align-items: center;
+                    width: fit-content;
+                    max-width: 100%;
+                    gap: 0;
+                    padding: var(--heading-pill-pad);
+                    border-radius: 999px;
+                    background: color-mix(in srgb, ${mutedFg} 12%, transparent);
+                  }
+                  .thought-item.is-heading .thought-fields {
+                    display: flex;
+                    align-items: center;
+                    width: auto;
+                    max-width: 100%;
+                    min-width: min-content;
+                    flex: 0 1 auto;
+                    margin: 0 10px 0 8px;
+                  }
+                  .thought-item.is-heading .thought-summary,
+                  .thought-item.is-heading .thought-summary.is-placeholder,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder {
+                    display: inline-block;
+                    width: auto;
+                    min-width: 0;
+                    min-height: 0;
+                    line-height: 1.2;
+                  }
+                  .thought-item.is-heading .thought-summary.is-placeholder,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder {
+                    width: max-content;
+                    max-width: 100%;
+                    min-height: 1.2em;
+                    overflow: hidden;
+                  }
+                  .thought-item.is-heading .thought-fold {
                     display: flex;
                   }
-                  .thought-item[data-thought-type="h1"] > .thought-fold {
-                    top: 9px;
+                  .thought-item[data-thought-type="h1"] .thought-fold {
+                    width: 32px;
+                    height: 32px;
                   }
-                  .thought-item[data-thought-type="h2"] > .thought-fold {
-                    top: 7px;
+                  .thought-item[data-thought-type="h2"] .thought-fold {
+                    width: 28px;
+                    height: 28px;
+                  }
+                  .thought-item[data-thought-type="h3"] .thought-fold {
+                    width: 26px;
+                    height: 26px;
                   }
                   .thought-fold svg {
                     display: block;
+                    width: 0.86em;
+                    height: 0.86em;
+                    min-width: 16px;
+                    min-height: 16px;
                     pointer-events: none;
-                    transition: transform 0.18s ease;
                   }
-                  .thought-item.is-section-collapsed > .thought-fold svg {
+                  .thought-item.is-section-collapsed .thought-fold {
+                    -webkit-transform: rotate(-90deg);
                     transform: rotate(-90deg);
                   }
-                  .thought-item.is-heading.is-inline > .thought-fold,
-                  .thought-item.is-heading.is-run-start > .thought-fold {
+                  .thought-item.is-heading.is-inline .thought-fold,
+                  .thought-item.is-heading.is-run-start .thought-fold {
                     display: none !important;
                   }
                   .thought-item.is-section-hidden {
@@ -2521,6 +2588,20 @@ function ThoughtsEditorInner(
                     font-family: inherit;
                     font-weight: inherit;
                   }
+                  .thought-item.is-heading .thought-summary.is-placeholder::before,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder::before {
+                    position: static;
+                    display: inline;
+                    left: auto;
+                    top: auto;
+                    width: auto;
+                    max-width: none;
+                    white-space: nowrap;
+                  }
+                  .thought-item.is-heading .thought-summary.is-placeholder br,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder br {
+                    display: none;
+                  }
                   .thought-title.is-error-placeholder::before,
                   .thought-summary.is-error-placeholder::before {
                     content: attr(data-placeholder);
@@ -2534,6 +2615,14 @@ function ThoughtsEditorInner(
                     pointer-events: none;
                     font-family: inherit;
                     font-weight: inherit;
+                  }
+                  .thought-item.is-heading .thought-summary.is-error-placeholder::before {
+                    position: static;
+                    display: inline;
+                    left: auto;
+                    top: auto;
+                    width: auto;
+                    max-width: none;
                   }
                   .thought-stripe,
                   .thought-category,
@@ -2582,7 +2671,8 @@ function ThoughtsEditorInner(
                     );
                   }
                   .thought-item.is-heading {
-                    --fold-gutter: 22px;
+                    --fold-gutter: 0px;
+                    padding-left: 2px;
                   }
                   .thought-item.is-block .thought-rail,
                   .thought-item.is-block .thought-dot,
@@ -2612,8 +2702,8 @@ function ThoughtsEditorInner(
                     min-width: 0;
                     vertical-align: top;
                   }
-                  .thought-fields:has(.is-placeholder),
-                  .thought-fields:has(.is-error-placeholder) {
+                  .thought-item:not(.is-heading) .thought-fields:has(.is-placeholder),
+                  .thought-item:not(.is-heading) .thought-fields:has(.is-error-placeholder) {
                     width: 100%;
                   }
                   .thought-item.is-inline:not(.is-heading),
@@ -2693,8 +2783,8 @@ function ThoughtsEditorInner(
                   .thought-item.is-inline .thought-fields,
                   .thought-item.is-run-start .thought-body,
                   .thought-item.is-run-start .thought-fields,
-                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-body,
-                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-fields {
+                  .thought-item.is-text-like:not(.is-heading):not(.is-inline):has(+ .thought-item.is-inline) .thought-body,
+                  .thought-item.is-text-like:not(.is-heading):not(.is-inline):has(+ .thought-item.is-inline) .thought-fields {
                     display: inline;
                     width: auto;
                     max-width: none;
@@ -2703,6 +2793,14 @@ function ThoughtsEditorInner(
                     border-left: none;
                     padding-left: 0;
                     padding-right: 0;
+                  }
+                  .thought-item.is-heading .thought-body {
+                    display: inline-flex;
+                    align-items: center;
+                    width: fit-content;
+                    max-width: 100%;
+                    gap: 0;
+                    padding: var(--heading-pill-pad);
                   }
                   .thought-item.is-inline .thought-summary,
                   .thought-item.is-inline .thought-title,

@@ -2632,29 +2632,33 @@ export const CHECKLIST_SCRIPT = `
   }
 
   function foldButtonOf(li) {
-    var kids = li.children;
-    for (var i = 0; i < kids.length; i++) {
-      if (kids[i].classList && kids[i].classList.contains("thought-fold")) {
-        return kids[i];
-      }
-    }
-    return null;
+    return li ? li.querySelector(".thought-fold") : null;
   }
 
   function ensureFoldButton(li) {
     var btn = foldButtonOf(li);
-    if (btn) return btn;
-    btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "thought-fold";
-    btn.setAttribute("contenteditable", "false");
-    btn.setAttribute("tabindex", "-1");
-    btn.setAttribute("aria-label", "Collapse section");
-    btn.innerHTML =
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
     var body = li.querySelector(".thought-body");
-    if (body) li.insertBefore(btn, body);
-    else li.appendChild(btn);
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "thought-fold";
+      btn.setAttribute("contenteditable", "false");
+      btn.setAttribute("tabindex", "-1");
+      btn.setAttribute("aria-label", "Collapse section");
+      btn.innerHTML =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+    }
+    if (body) {
+      var fields = body.querySelector(".thought-fields");
+      var needsMove =
+        btn.parentNode !== body || (fields && btn.nextSibling !== fields);
+      if (needsMove) {
+        if (fields) body.insertBefore(btn, fields);
+        else body.insertBefore(btn, body.firstChild);
+      }
+    } else if (!btn.parentNode) {
+      li.appendChild(btn);
+    }
     return btn;
   }
 
@@ -2752,9 +2756,59 @@ export const CHECKLIST_SCRIPT = `
     return document.documentElement.classList.contains("mc-details-lock");
   }
 
+  function foldRotationDeg(btn) {
+    if (!btn) return 0;
+    var t = window.getComputedStyle(btn).transform;
+    if (!t || t === "none") return 0;
+    var m = t.match(/matrix\(([^)]+)\)/);
+    if (!m) return 0;
+    var parts = m[1].split(",");
+    return Math.round(
+      Math.atan2(parseFloat(parts[1]), parseFloat(parts[0])) * (180 / Math.PI)
+    );
+  }
+
+  function rotateFoldCaret(btn, collapsed) {
+    if (!btn) return;
+    var from = foldRotationDeg(btn);
+    var to = collapsed ? -90 : 0;
+    if (from === to) {
+      btn.style.transform = "rotate(" + to + "deg)";
+      return;
+    }
+    var easing = "cubic-bezier(0.22, 0.8, 0.32, 1)";
+    if (typeof btn.animate === "function") {
+      try {
+        var anim = btn.animate(
+          [
+            { transform: "rotate(" + from + "deg)" },
+            { transform: "rotate(" + to + "deg)" },
+          ],
+          { duration: 380, easing: easing, fill: "forwards" }
+        );
+        if (anim && anim.finished) {
+          anim.finished
+            .then(function () {
+              btn.style.transform = "rotate(" + to + "deg)";
+              if (anim.cancel) anim.cancel();
+            })
+            .catch(function () {});
+        }
+        return;
+      } catch (err) {}
+    }
+    btn.style.webkitTransition =
+      "-webkit-transform 0.38s " + easing;
+    btn.style.transition = "transform 0.38s " + easing;
+    btn.style.webkitTransform = "rotate(" + to + "deg)";
+    btn.style.transform = "rotate(" + to + "deg)";
+  }
+
   function toggleHeadingFold(li) {
     if (!li || !isBlockHeading(li)) return;
+    var btn = foldButtonOf(li) || ensureFoldButton(li);
     li.classList.toggle("is-section-collapsed");
+    rotateFoldCaret(btn, li.classList.contains("is-section-collapsed"));
     syncHeadingFolds();
   }
 
@@ -2908,11 +2962,24 @@ export const CHECKLIST_SCRIPT = `
       }
     }
 
+    function headingFoldTarget(li, target) {
+      if (!li || !target) return null;
+      if (closestClass(target, "thought-fold")) return "fold";
+      var body = li.querySelector(".thought-body");
+      if (body && body.contains(target)) return "title";
+      return null;
+    }
+
     function onFoldPointerDown(e) {
       if (!eventInEditor(e)) return;
-      if (!closestClass(e.target, "thought-fold")) return;
-      e.preventDefault();
-      e.stopPropagation();
+      var li = closestThought(e.target);
+      if (!li || !isBlockHeading(li)) return;
+      var hit = headingFoldTarget(li, e.target);
+      if (!hit) return;
+      if (hit === "fold" || isCategoryMode()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     }
 
     function onFoldPointer(e) {
@@ -2921,17 +2988,16 @@ export const CHECKLIST_SCRIPT = `
       if (closestClass(e.target, "thought-graph")) return;
       var li = closestThought(e.target);
       if (!li || !isBlockHeading(li)) return;
-      var onFold = closestClass(e.target, "thought-fold");
-      if (!onFold && !isCategoryMode()) return;
-      if (onFold) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+      var hit = headingFoldTarget(li, e.target);
+      if (!hit) return;
+      if (hit !== "fold" && !isCategoryMode()) return;
+      e.preventDefault();
+      e.stopPropagation();
       var now = Date.now();
       if (window.__mcFoldAt && now - window.__mcFoldAt < 400) return;
       window.__mcFoldAt = now;
       toggleHeadingFold(li);
-      if (onFold) blurEditorAfterFold();
+      if (hit === "fold" || isCategoryMode()) blurEditorAfterFold();
     }
 
     document.addEventListener("click", onChecklistPointer, true);

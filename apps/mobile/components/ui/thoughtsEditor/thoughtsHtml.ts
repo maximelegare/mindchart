@@ -547,8 +547,8 @@ function thoughtItemHtml(
     `<div class="thought-dot"></div>` +
     `</div>` +
     thoughtCheckHtml() +
-    (isHeadingType(type) ? thoughtFoldHtml() : "") +
     `<div class="thought-body">` +
+    (isHeadingType(type) ? thoughtFoldHtml() : "") +
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
     graph +
