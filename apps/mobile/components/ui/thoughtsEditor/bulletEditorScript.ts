@@ -1149,10 +1149,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function applyOutlineToCreated(from, created) {
       if (!from || !created) return;
-      var base = headingIndentPx(from);
-      var next = isHeadingType(thoughtTypeOf(from)) ? base + 8 : base;
-      if (next <= 0) return;
-      created.style.setProperty("--heading-indent", next + "px");
+      if (
+        !isHeadingType(thoughtTypeOf(from)) &&
+        !isInHeadingSection(from)
+      ) {
+        return;
+      }
+      created.style.setProperty("--heading-indent", "0px");
       created.classList.add("in-heading");
       created.classList.add("is-block");
       created.classList.remove("is-inline");
@@ -1188,69 +1191,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
     }
 
-    function placeCaretAtTextOffset(el, offset) {
-      var sel = window.getSelection();
-      if (!el || !sel) return;
-      try {
-        el.focus();
-      } catch (err) {}
-      var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-      var remaining = Math.max(0, offset);
-      var node;
-      while ((node = walker.nextNode())) {
-        var len = (node.nodeValue || "").length;
-        if (remaining <= len) {
-          var range = document.createRange();
-          range.setStart(node, remaining);
-          range.collapse(true);
-          sel.removeAllRanges();
-          sel.addRange(range);
-          return;
-        }
-        remaining -= len;
-      }
-      placeCaretAtEnd(el);
-    }
-
-    function joinSummaryHtml(leftEl, rightEl) {
-      var leftHtml = leftEl.innerHTML || "";
-      var rightHtml = rightEl.innerHTML || "";
-      var leftText = (leftEl.textContent || "")
-        .replace(/\\u00a0/g, " ")
-        .replace(/\\n/g, "");
-      var rightText = (rightEl.textContent || "")
-        .replace(/\\u00a0/g, " ")
-        .replace(/\\n/g, "");
-      if (leftText.length === 0) return rightHtml;
-      if (rightText.length === 0) return leftHtml;
-      return leftHtml + rightHtml;
-    }
-
-    function mergeCurrentIntoPrevious(li) {
-      var prev = li.previousElementSibling;
-      if (!isThought(prev)) return false;
-      var prevSummary = prev.querySelector(".thought-summary");
-      var summary = li.querySelector(".thought-summary");
-      if (!prevSummary || !summary) return false;
-      stripSplitChrome(prevSummary, "end");
-      stripSplitChrome(summary, "start");
-      var joinAt = (prevSummary.textContent || "").length;
-      prevSummary.innerHTML = joinSummaryHtml(prevSummary, summary);
-      prevSummary.classList.remove("is-placeholder");
-      prevSummary.classList.remove("is-error-placeholder");
-      prev.classList.remove("is-run-start");
-      if (li.parentNode) li.parentNode.removeChild(li);
-      if (typeof window.__mcSyncChecklistLayouts === "function") {
-        window.__mcSyncChecklistLayouts();
-      }
-      placeCaretAtTextOffset(prevSummary, joinAt);
-      setTimeout(function () {
-        placeCaretAtTextOffset(prevSummary, joinAt);
-      }, 0);
-      notifyChange();
-      return true;
-    }
-
     function setThoughtAsParagraph(li, inline) {
       if (!li) return;
       li.setAttribute("data-thought-type", "text");
@@ -1260,7 +1200,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       li.classList.add("is-text-like");
       li.classList.remove("is-checklist");
       li.classList.remove("is-completed");
-      if (inline && isInHeadingSection(li)) inline = false;
       if (inline) {
         li.classList.add("is-inline");
         li.setAttribute("data-inline", "true");
@@ -1324,19 +1263,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       ) {
         e.preventDefault();
         e.stopPropagation();
-        if (
-          underHeading ||
-          isInHeadingSection(prev) ||
-          isInlineThought(li) ||
-          li.getAttribute("data-caret-split") === "true"
-        ) {
-          if (!mergeCurrentIntoPrevious(li)) {
-            placeCaretAtEndSoon(
-              prev.querySelector(".thought-summary") || prev
-            );
-          }
-          return true;
-        }
         setThoughtAsParagraph(li, true);
         forceUntitledSummary(li);
         placeCaretAtStartSoon(field);
@@ -2602,10 +2528,7 @@ export const CHECKLIST_SCRIPT = `
 
   function setHeadingIndent(li, depth) {
     var next = Math.max(0, depth);
-    var px = next * 8 + "px";
-    if (li.style.getPropertyValue("--heading-indent") !== px) {
-      li.style.setProperty("--heading-indent", px);
-    }
+    li.style.setProperty("--heading-indent", "0px");
     li.classList.toggle("in-heading", next > 0);
   }
 

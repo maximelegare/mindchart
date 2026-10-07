@@ -2012,6 +2012,14 @@ function ThoughtsEditorInner(
                     margin-left: -8px;
                     margin-right: -8px;
                   }
+                  .thought-item.in-heading {
+                    --heading-indent: 0px;
+                    margin-left: -8px;
+                  }
+                  .thought-item.in-heading.is-inline,
+                  .thought-item.in-heading.is-run-start {
+                    margin-left: 0;
+                  }
                   .pell-content ul,
                   .pell-content ol {
                     margin: 0;
