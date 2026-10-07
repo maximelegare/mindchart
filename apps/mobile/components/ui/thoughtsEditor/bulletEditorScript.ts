@@ -1115,29 +1115,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (!htmlHasText(rightHtml)) return false;
 
       if (!htmlHasText(leftHtml)) {
-        var prev = li.previousElementSibling;
-        if (isThought(prev)) {
-          if (isInlineThought(li)) {
-            promoteThoughtToBlock(li);
-            placeCaretAtStartSoon(summary);
-            notifyChange();
-            return true;
-          }
-          return false;
-        }
-        var blank = createThoughtShell(
-          isHeadingType(type) ? "text" : type
-        );
-        applyOutlineToCreated(li, blank);
-        li.parentNode.insertBefore(blank, li);
-        ensureCategoryChrome(blank);
-        if (typeof window.__mcSyncChecklistLayouts === "function") {
-          window.__mcSyncChecklistLayouts();
-        }
-        var blankSummary = blank.querySelector(".thought-summary");
-        if (blankSummary) placeCaretAtStartSoon(blankSummary);
-        notifyChange();
-        return true;
+        if (isHeadingType(type)) return false;
+        return moveContentToNewLine(li, type);
       }
 
       applySummaryHtml(summary, leftHtml);
@@ -1203,6 +1182,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         }
         return;
       }
+      if (isCaretAtStartOf(summary) && !isHeadingType(type)) {
+        moveContentToNewLine(li, type);
+        return;
+      }
       if (!isCaretAtEndOf(summary)) {
         if (splitThoughtAtCaret(li, summary, type)) return;
         return;
@@ -1236,7 +1219,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         window.__mcSyncChecklistLayouts();
       }
 
-      requestClassifyBullet(li);
+      if (type === "li" || type === "checkbox") {
+        requestClassifyBullet(li);
+      }
 
       var focusField =
         window.__mcShowTitles && !isHeadingType(type)
@@ -1262,6 +1247,51 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         next = next.nextElementSibling;
       }
       return end;
+    }
+
+    function moveContentToNewLine(li, type) {
+      if (!li) return false;
+      var createdType =
+        type === "li" || type === "checkbox" || type === "text" ? type : "text";
+      var summary = li.querySelector(".thought-summary");
+      if (!summary || isEmptyField(summary)) return false;
+      var html = summary.innerHTML;
+      if (isInlineThought(li) && isTextLikeType(type)) {
+        promoteThoughtToBlock(li);
+      }
+      var created = createThoughtShell(createdType);
+      created.setAttribute(
+        "data-category-id",
+        li.getAttribute("data-category-id") || "uncategorized"
+      );
+      if (isTextLikeType(createdType)) {
+        created.classList.add("is-block");
+        created.classList.remove("is-inline");
+        created.removeAttribute("data-inline");
+      }
+      applyOutlineToCreated(li, created);
+      var createdSummary = created.querySelector(".thought-summary");
+      applySummaryHtml(createdSummary, html);
+      clearField(summary, summaryPlaceholder(li));
+      li.classList.remove("is-run-start");
+      if (li.nextSibling) {
+        li.parentNode.insertBefore(created, li.nextSibling);
+      } else {
+        li.parentNode.appendChild(created);
+      }
+      var following = created.nextElementSibling;
+      if (isThought(following) && isInlineThought(following)) {
+        created.classList.add("is-run-start");
+      } else {
+        created.classList.remove("is-run-start");
+      }
+      ensureCategoryChrome(created);
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      placeCaretAtStartSoon(summary);
+      notifyChange();
+      return true;
     }
 
     function headingIndentPx(li) {
@@ -1375,6 +1405,64 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       return !isEmptyField(title) || !isEmptyField(summary);
     }
 
+    function joinFieldHtml(leftEl, rightEl) {
+      if (!leftEl) return rightEl ? rightEl.innerHTML : "";
+      if (!rightEl || isEmptyField(rightEl)) return leftEl.innerHTML || "";
+      if (isEmptyField(leftEl)) return rightEl.innerHTML || "";
+      var leftHtml = leftEl.innerHTML || "";
+      var rightHtml = rightEl.innerHTML || "";
+      var leftText = (leftEl.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .replace(/\\s+$/g, "");
+      var rightText = (rightEl.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .replace(/^\\s+/g, "");
+      if (
+        leftText &&
+        rightText &&
+        !/\\s$/.test(leftText) &&
+        !/^\\s/.test(rightText)
+      ) {
+        return leftHtml + " " + rightHtml;
+      }
+      return leftHtml + rightHtml;
+    }
+
+    function mergeCurrentIntoPrevious(li) {
+      var prev = li.previousElementSibling;
+      if (!isThought(prev) || isHeadingType(thoughtTypeOf(prev))) return false;
+      if (!isTextLikeType(thoughtTypeOf(prev))) return false;
+      var prevSummary = prev.querySelector(".thought-summary") || prev;
+      var summary = li.querySelector(".thought-summary") || li;
+      var joined = joinFieldHtml(prevSummary, summary);
+      if (isInlineThought(prev)) promoteThoughtToBlock(prev);
+      applySummaryHtml(prevSummary, joined);
+      var next = li.nextElementSibling;
+      if (li.parentNode) li.parentNode.removeChild(li);
+      prev.classList.remove("is-inline");
+      prev.removeAttribute("data-inline");
+      prev.classList.add("is-block");
+      if (isThought(next) && isInlineThought(next)) {
+        prev.classList.add("is-run-start");
+      } else {
+        prev.classList.remove("is-run-start");
+      }
+      var prevPrev = prev.previousElementSibling;
+      if (
+        isThought(prevPrev) &&
+        prevPrev.classList.contains("is-run-start") &&
+        !(isThought(prev) && isInlineThought(prev))
+      ) {
+        prevPrev.classList.remove("is-run-start");
+      }
+      placeCaretAtEndSoon(prevSummary);
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      notifyChange();
+      return true;
+    }
+
     function handleLineStartBackspace(e, li, field) {
       var type = thoughtTypeOf(li);
       var underHeading = isInHeadingSection(li);
@@ -1400,20 +1488,18 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         notifyChange();
         return true;
       }
-      if (empty) return false;
       if (
         isTextLikeType(type) &&
         isThought(prev) &&
-        !prevIsHeading
+        !prevIsHeading &&
+        isTextLikeType(thoughtTypeOf(prev))
       ) {
         e.preventDefault();
         e.stopPropagation();
-        setThoughtAsParagraph(li, true);
-        forceUntitledSummary(li);
-        placeCaretAtStartSoon(field);
-        notifyChange();
+        mergeCurrentIntoPrevious(li);
         return true;
       }
+      if (empty) return false;
       return false;
     }
 
