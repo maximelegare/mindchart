@@ -1,4 +1,5 @@
 import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
+import { thoughtNlpSourceHash } from "@/lib/nlp/contentHash";
 import {
   getThoughtPlainText,
   isHeadingType,
@@ -37,6 +38,8 @@ function escapeHtml(value: string): string {
 function decodeHtml(value: string): string {
   return value
     .replace(/&nbsp;/gi, " ")
+    .replace(/&#32;/g, " ")
+    .replace(/&#x20;/gi, " ")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, "<")
@@ -454,9 +457,10 @@ function titledFieldHtml(
   value: string
 ): string {
   const withBreaks = value.replace(/\n/g, "<br>");
-  const body = /<[a-z]/i.test(withBreaks)
+  let body = /<[a-z]/i.test(withBreaks)
     ? sanitizeInlineHtml(withBreaks)
     : escapeHtml(withBreaks);
+  if (body.startsWith(" ")) body = `&#32;${body.slice(1)}`;
   const empty = !stripHtml(body);
   const classes = empty ? `${className} is-placeholder` : className;
   return `<div class="${classes}" data-placeholder="${placeholder}">${empty ? "<br>" : body}</div>`;
@@ -509,6 +513,7 @@ type ThoughtItemOptions = {
   startCollapsed?: boolean;
   hasEnteredTitle?: boolean;
   inline?: boolean;
+  runStart?: boolean;
 };
 
 function thoughtItemHtml(
@@ -534,6 +539,7 @@ function thoughtItemHtml(
   if (completed) classNames.push("is-completed");
   if (options.hasEnteredTitle) classNames.push("has-entered-title");
   if (isTextLikeType(type) && options.inline) classNames.push("is-inline");
+  if (isTextLikeType(type) && options.runStart) classNames.push("is-run-start");
   const inlineAttr =
     isTextLikeType(type) && options.inline ? ` data-inline="true"` : "";
   const graph =
@@ -573,7 +579,8 @@ function liToHtml(
   showGraphButton: boolean,
   placeholders: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">,
   labels?: Record<string, string>,
-  _viewMode = false
+  _viewMode = false,
+  runStart = false
 ) {
   const categoryId = isHeadingType(thought.type)
     ? "uncategorized"
@@ -596,6 +603,7 @@ function liToHtml(
     checked: thought.type === "checkbox" ? thought.content.checked : false,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
     inline: isTextLikeThought(thought) && thought.content.style === "inline",
+    runStart,
   };
 
   if (showTitleField) {
@@ -657,16 +665,24 @@ export function thoughtsToHtml(
 
   return thoughtsRootHtml(
     thoughts
-      .map((thought) =>
-        liToHtml(
+      .map((thought, index) => {
+        const next = thoughts[index + 1];
+        const runStart =
+          isTextLikeThought(thought) &&
+          thought.content.style !== "inline" &&
+          Boolean(
+            next && isTextLikeThought(next) && next.content.style === "inline"
+          );
+        return liToHtml(
           thought,
           showTitles,
           showGraphButtons,
           placeholders,
           labels,
-          viewMode
-        )
-      )
+          viewMode,
+          runStart
+        );
+      })
       .join("")
   );
 }
@@ -837,7 +853,12 @@ export function htmlToThoughts(
     });
   });
 
-  return next.length > 0 ? next : [createEmptyThought(noteId)];
+  const resolved = next.length > 0 ? next : [createEmptyThought(noteId)];
+  return resolved.map((thought) => {
+    if (!thought.nlpSourceHash) return thought;
+    if (thoughtNlpSourceHash(thought) === thought.nlpSourceHash) return thought;
+    return { ...thought, nlpSourceHash: undefined };
+  });
 }
 
 /** Build a JS snippet that updates one thought's category chrome in the editor. */

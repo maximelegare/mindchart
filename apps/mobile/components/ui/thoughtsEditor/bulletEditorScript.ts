@@ -380,7 +380,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
       var summary = li.querySelector(".thought-summary");
       if (summary) {
-        summary.textContent = piece.text || "";
+        var raw = piece.text || "";
+        var body = raw.replace(/^[\\s\\u00a0]+/, "");
+        summary.textContent = "";
+        if (piece.inline && body) {
+          summary.appendChild(document.createTextNode(" "));
+        }
+        if (body) summary.appendChild(document.createTextNode(body));
+        else if (raw) summary.appendChild(document.createTextNode(raw));
         if (piece.text) {
           summary.classList.remove("is-placeholder");
           summary.classList.remove("is-error-placeholder");
@@ -1069,6 +1076,11 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         applyPieceToThought(created, pieces[i]);
         source.parentNode.insertBefore(created, insertBefore);
       }
+      if (pieces.length > 1 && !pieces[0].inline) {
+        source.classList.add("is-run-start");
+      } else {
+        source.classList.remove("is-run-start");
+      }
       if (typeof window.__mcRefreshCategoryTimers === "function") {
         window.__mcRefreshCategoryTimers();
       }
@@ -1405,27 +1417,82 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       return !isEmptyField(title) || !isEmptyField(summary);
     }
 
-    function joinFieldHtml(leftEl, rightEl) {
-      if (!leftEl) return rightEl ? rightEl.innerHTML : "";
-      if (!rightEl || isEmptyField(rightEl)) return leftEl.innerHTML || "";
-      if (isEmptyField(leftEl)) return rightEl.innerHTML || "";
-      var leftHtml = leftEl.innerHTML || "";
-      var rightHtml = rightEl.innerHTML || "";
-      var leftText = (leftEl.textContent || "")
-        .replace(/\\u00a0/g, " ")
-        .replace(/\\s+$/g, "");
-      var rightText = (rightEl.textContent || "")
-        .replace(/\\u00a0/g, " ")
-        .replace(/^\\s+/g, "");
-      if (
-        leftText &&
-        rightText &&
-        !/\\s$/.test(leftText) &&
-        !/^\\s/.test(rightText)
-      ) {
-        return leftHtml + " " + rightHtml;
+    function flattenSummaryHtml(html) {
+      var root = document.createElement("div");
+      root.innerHTML = html || "";
+      var blocks = root.querySelectorAll("div, p");
+      for (var i = 0; i < blocks.length; i++) {
+        var el = blocks[i];
+        var parent = el.parentNode;
+        if (!parent) continue;
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        if (el.parentNode) el.parentNode.removeChild(el);
       }
-      return leftHtml + rightHtml;
+      return root;
+    }
+
+    function trimNodeEdge(root, edge) {
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      var nodes = [];
+      var node;
+      while ((node = walker.nextNode())) nodes.push(node);
+      if (edge === "end") {
+        for (var i = nodes.length - 1; i >= 0; i--) {
+          var endValue = (nodes[i].nodeValue || "").replace(
+            /[\\s\\u00a0]+$/g,
+            ""
+          );
+          if (endValue) {
+            nodes[i].nodeValue = endValue;
+            break;
+          }
+          if (nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+        }
+        while (root.lastChild && root.lastChild.nodeName === "BR") {
+          root.removeChild(root.lastChild);
+        }
+        return;
+      }
+      for (var j = 0; j < nodes.length; j++) {
+        var startValue = (nodes[j].nodeValue || "").replace(
+          /^[\\s\\u00a0]+/g,
+          ""
+        );
+        if (startValue) {
+          nodes[j].nodeValue = startValue;
+          break;
+        }
+        if (nodes[j].parentNode) nodes[j].parentNode.removeChild(nodes[j]);
+      }
+      while (root.firstChild && root.firstChild.nodeName === "BR") {
+        root.removeChild(root.firstChild);
+      }
+    }
+
+    function joinHtmlPieces(leftHtml, rightHtml) {
+      var left = flattenSummaryHtml(leftHtml);
+      var right = flattenSummaryHtml(rightHtml);
+      trimNodeEdge(left, "end");
+      trimNodeEdge(right, "start");
+      var leftText = (left.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .trim();
+      var rightText = (right.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .trim();
+      if (!leftText) return right.innerHTML;
+      if (!rightText) return left.innerHTML;
+      var textWalker = document.createTreeWalker(left, NodeFilter.SHOW_TEXT);
+      var lastText = null;
+      var textNode;
+      while ((textNode = textWalker.nextNode())) lastText = textNode;
+      if (lastText) {
+        lastText.nodeValue = (lastText.nodeValue || "") + " ";
+      } else {
+        left.appendChild(document.createTextNode(" "));
+      }
+      while (right.firstChild) left.appendChild(right.firstChild);
+      return left.innerHTML;
     }
 
     function mergeCurrentIntoPrevious(li) {
@@ -1433,25 +1500,28 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       if (!isThought(prev) || isHeadingType(thoughtTypeOf(prev))) return false;
       if (!isTextLikeType(thoughtTypeOf(prev))) return false;
       var prevSummary = prev.querySelector(".thought-summary") || prev;
-      var summary = li.querySelector(".thought-summary") || li;
-      var joined = joinFieldHtml(prevSummary, summary);
       if (isInlineThought(prev)) promoteThoughtToBlock(prev);
+      var joined = prevSummary.innerHTML || "";
+      var cursor = li;
+      while (isThought(cursor) && (cursor === li || isInlineThought(cursor))) {
+        var piece = cursor.querySelector(".thought-summary") || cursor;
+        if (!isEmptyField(piece)) {
+          joined = joinHtmlPieces(joined, piece.innerHTML || "");
+        }
+        var next = cursor.nextElementSibling;
+        if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
+        cursor = next;
+      }
       applySummaryHtml(prevSummary, joined);
-      var next = li.nextElementSibling;
-      if (li.parentNode) li.parentNode.removeChild(li);
       prev.classList.remove("is-inline");
       prev.removeAttribute("data-inline");
       prev.classList.add("is-block");
-      if (isThought(next) && isInlineThought(next)) {
-        prev.classList.add("is-run-start");
-      } else {
-        prev.classList.remove("is-run-start");
-      }
+      prev.classList.remove("is-run-start");
       var prevPrev = prev.previousElementSibling;
       if (
         isThought(prevPrev) &&
         prevPrev.classList.contains("is-run-start") &&
-        !(isThought(prev) && isInlineThought(prev))
+        !isInlineThought(prev)
       ) {
         prevPrev.classList.remove("is-run-start");
       }

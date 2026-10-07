@@ -57,11 +57,18 @@ export const createNlpJob = (thought: Thought): NlpJob => ({
 });
 
 const processStructure = (job: NlpJob): string[] => {
-  if (job.type === "text" && job.style !== "inline") {
+  if (job.type === "text") {
     const pieces = splitParagraphIntoThoughts(job.content);
     return pieces.length > 0 ? pieces : [job.content];
   }
   return [job.content];
+};
+
+const ensureLeadingSpace = (text: string, needed: boolean): string => {
+  const body = text.replace(/^[\s\u00a0]+/, "");
+  if (!body) return text;
+  if (!needed) return body;
+  return ` ${body}`;
 };
 
 const processMetadata = (job: NlpJob, texts: string[]): NlpResultPiece[] =>
@@ -84,13 +91,14 @@ const processMetadata = (job: NlpJob, texts: string[]): NlpResultPiece[] =>
         (index === 0
           ? job.fallbackCategoryId || "uncategorized"
           : "uncategorized"));
+    const style =
+      index === 0 ? (job.style === "inline" ? "inline" : "block") : "inline";
     return {
-      text,
+      text: ensureLeadingSpace(text, index > 0 || style === "inline"),
       title: keepUserTitle ? (job.currentTitle ?? "") : generatedTitle,
       semanticLabel: nlp.semanticLabel ?? generatedTitle,
       categoryId,
-      style:
-        index === 0 ? (job.style === "inline" ? "inline" : "block") : "inline",
+      style,
     };
   });
 

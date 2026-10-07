@@ -1,14 +1,12 @@
 import React from "react";
 import type { UseFormGetValues, UseFormSetValue } from "react-hook-form";
 import {
-  NLP_DEBOUNCE_MS,
   createNlpJob,
   needsNlp,
   processNlpJob,
   thoughtNlpSourceHash,
   type NlpJobResult,
 } from "@/lib/nlp";
-import { enqueueNlpJob } from "./nlpQueue";
 import {
   applyEditorNlpResult,
   nlpPiecesForEditor,
@@ -45,17 +43,12 @@ export const useEditorNlp = ({
   getValues,
   setValue,
   noteId,
-  readOnly,
-  thoughts,
   injectIfReady,
   applyParagraphSplitScript,
   setThoughtCategoryScript,
   setThoughtSemanticTitleScript,
   categoryLabels,
 }: UseEditorNlpOptions) => {
-  const timersRef = React.useRef(
-    new Map<string, ReturnType<typeof setTimeout>>()
-  );
   const applyingRef = React.useRef(false);
   const latestRef = React.useRef({
     getValues,
@@ -148,87 +141,21 @@ export const useEditorNlp = ({
     []
   );
 
-  const cancelTimer = React.useCallback((id: string) => {
-    const timer = timersRef.current.get(id);
-    if (timer) clearTimeout(timer);
-    timersRef.current.delete(id);
-  }, []);
-
-  const scheduleThought = React.useCallback(
-    (thought: ThoughtsFormValue) => {
-      if (readOnly || applyingRef.current) return;
-      if (!needsNlp(thought)) {
-        cancelTimer(thought.id);
-        return;
-      }
-      cancelTimer(thought.id);
-      const timer = setTimeout(() => {
-        timersRef.current.delete(thought.id);
-        const current = latestRef.current
-          .getValues("thoughts")
-          ?.find((item) => item.id === thought.id);
-        if (!current || !needsNlp(current)) return;
-        enqueueNlpJob(createNlpJob(current), (result) => applyResult(result));
-      }, NLP_DEBOUNCE_MS);
-      timersRef.current.set(thought.id, timer);
-    },
-    [applyResult, cancelTimer, readOnly]
-  );
-
-  const processThoughtNow = React.useCallback(
-    (thought: ThoughtsFormValue, insertEmptyAfter?: { id: string }) => {
-      cancelTimer(thought.id);
-      if (needsNlp(thought)) {
-        applyResult(processNlpJob(createNlpJob(thought)), insertEmptyAfter);
-        return;
-      }
-      if (!insertEmptyAfter) return;
-      const ctx = latestRef.current;
-      const previous = ctx.getValues("thoughts") ?? [];
-      if (previous.some((item) => item.id === insertEmptyAfter.id)) return;
-      const index = previous.findIndex((item) => item.id === thought.id);
-      if (index < 0) return;
-      const empty = {
-        ...createEmptyThought(ctx.noteId, "text"),
-        id: insertEmptyAfter.id,
-        thoughtId: insertEmptyAfter.id,
-      };
-      ctx.setValue(
-        "thoughts",
-        [...previous.slice(0, index + 1), empty, ...previous.slice(index + 1)],
-        { shouldDirty: true }
-      );
-    },
-    [applyResult, cancelTimer]
-  );
-
   const flushPendingNlp = React.useCallback(() => {
-    for (const timer of timersRef.current.values()) clearTimeout(timer);
-    timersRef.current.clear();
-    const current = latestRef.current.getValues("thoughts") ?? [];
-    for (const thought of current) {
-      if (!needsNlp(thought)) continue;
+    if (applyingRef.current) return;
+    const processed = new Set<string>();
+    for (;;) {
+      const current = latestRef.current.getValues("thoughts") ?? [];
+      const thought = current.find(
+        (item) => !processed.has(item.id) && needsNlp(item)
+      );
+      if (!thought) break;
+      processed.add(thought.id);
       applyResult(processNlpJob(createNlpJob(thought)));
     }
   }, [applyResult]);
 
-  React.useEffect(() => {
-    if (readOnly || applyingRef.current) return;
-    for (const thought of thoughts ?? []) {
-      scheduleThought(thought);
-    }
-  }, [readOnly, scheduleThought, thoughts]);
-
-  React.useEffect(
-    () => () => {
-      for (const timer of timersRef.current.values()) clearTimeout(timer);
-      timersRef.current.clear();
-    },
-    []
-  );
-
   return {
     flushPendingNlp,
-    processThoughtNow,
   };
 };

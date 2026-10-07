@@ -593,7 +593,7 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(script);
   }, []);
 
-  const { flushPendingNlp, processThoughtNow } = useEditorNlp({
+  const { flushPendingNlp } = useEditorNlp({
     getValues,
     setValue,
     noteId,
@@ -1123,6 +1123,7 @@ function ThoughtsEditorInner(
         setMergeCategoryPicking(false);
         injectIfReady(setMergeHighlightScript([]));
       } else {
+        flushPendingNlp();
         if (hideCategoriesRef.current) {
           useNoteDetailsViewStore.getState().setSimplified(false);
         }
@@ -1133,12 +1134,13 @@ function ThoughtsEditorInner(
       }
       setToolbarMode(mode);
     },
-    [injectIfReady, onRequestEdit, readOnly]
+    [flushPendingNlp, injectIfReady, onRequestEdit, readOnly]
   );
 
   const handleToggleCategories = React.useCallback(() => {
+    if (hideCategoriesRef.current) flushPendingNlp();
     toggleHideCategories();
-  }, [toggleHideCategories]);
+  }, [flushPendingNlp, toggleHideCategories]);
 
   const handleCategoryOpacityChange = React.useCallback(
     (opacity: number) => {
@@ -1661,41 +1663,6 @@ function ThoughtsEditorInner(
         }
         return;
       }
-      if (message.type === "SPLIT_PARAGRAPH") {
-        const payload = message.data as
-          | {
-              index?: number;
-              thoughtId?: string;
-              newThoughtId?: string;
-              text?: string;
-            }
-          | undefined;
-        const index = Number(payload?.index);
-        if (!Number.isFinite(index) || index < 0) return;
-        const previous = getValues("thoughts");
-        const thoughtId = String(payload?.thoughtId ?? "");
-        const current =
-          previous.find(
-            (thought) =>
-              thought.id === thoughtId || thought.thoughtId === thoughtId
-          ) ?? previous[index];
-        if (!current || !thoughtCapabilities(current.type).nlp) return;
-        processThoughtNow(current, {
-          id: String(payload?.newThoughtId || generateID()),
-        });
-        return;
-      }
-      if (message.type === "CLASSIFY_BULLET") {
-        const payload = message.data as
-          | { index?: number; text?: string }
-          | undefined;
-        const index = Number(payload?.index);
-        if (!Number.isFinite(index) || index < 0) return;
-        const current = getValues("thoughts")[index];
-        if (!current || !thoughtCapabilities(current.type).nlp) return;
-        processThoughtNow(current);
-        return;
-      }
       if (message.type === "CONFIRM_SPLIT") {
         injectIfReady(confirmThoughtSplitScript(generateID()));
         return;
@@ -1746,7 +1713,6 @@ function ThoughtsEditorInner(
     [
       applyMergeTap,
       applySplitThought,
-      processThoughtNow,
       categoryLabels,
       getValues,
       injectIfReady,
@@ -2726,12 +2692,15 @@ function ThoughtsEditorInner(
                   .thought-item.is-section-hidden {
                     display: none !important;
                   }
-                  .thought-item.is-inline + .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline)::before {
-                    content: "\\A";
-                    white-space: pre;
-                  }
+                  .thought-item:not(.is-inline):has(+ .thought-item.is-run-start),
                   .thought-item:not(.is-inline):has(+ .thought-item.is-text-like:not(.is-inline) + .thought-item.is-inline) {
-                    margin-bottom: var(--mc-gap-block);
+                    padding-bottom: var(--mc-gap-block);
+                  }
+                  .thought-item.is-inline + .thought-item.is-run-start:not(.is-heading)::before,
+                  .thought-item.is-inline + .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline)::before {
+                    content: "";
+                    display: block;
+                    height: var(--mc-gap-block);
                   }
                   .thought-item.is-block:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)),
                   .thought-item.is-text-like:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)) {
@@ -2823,6 +2792,7 @@ function ThoughtsEditorInner(
                     margin: 0;
                     padding: 0;
                     font-size: 16px;
+                    white-space: pre-wrap;
                   }
                   html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-summary:not(.is-placeholder),
                   html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-title:not(.is-placeholder) {

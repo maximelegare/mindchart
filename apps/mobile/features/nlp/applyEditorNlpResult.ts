@@ -32,6 +32,13 @@ export const applyEditorNlpResult = (
     const type: ThoughtType =
       result.pieces.length > 1 && source.type === "text" ? "text" : source.type;
     const base = pieceIndex === 0 ? source : createEmptyThought(noteId, type);
+    const text = (() => {
+      const raw = piece.text ?? "";
+      const body = raw.replace(/^[\s\u00a0]+/, "");
+      if (!body) return raw;
+      const needsSpace = pieceIndex > 0 || piece.style === "inline";
+      return needsSpace ? ` ${body}` : body;
+    })();
     const withText = setThoughtContentText(
       {
         ...base,
@@ -47,7 +54,7 @@ export const applyEditorNlpResult = (
             ? "user"
             : "generated",
       },
-      piece.text
+      text
     );
     const styled = isTextLikeThought(withText)
       ? setTextThoughtStyle(withText, piece.style)

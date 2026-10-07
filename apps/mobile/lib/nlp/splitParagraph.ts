@@ -28,7 +28,7 @@ export type SplitParagraphPiece = {
 
 const fallbackSplit = (text: string): string[] => {
   const parts = text
-    .split(/(?<=[.!?])\s+|\n+/)
+    .split(/(?<=[.!?])(?:\s+|(?=[A-ZÀ-ÖØ-Þ]))|\n+/)
     .map((part) => part.trim())
     .filter((part) => part.length >= MIN_SENTENCE_CHARS);
   return parts.length > 0 ? parts : [text];
@@ -70,8 +70,9 @@ export const splitParagraphIntoThoughts = (htmlOrText: string): string[] => {
       .map((sentence) => restorePunctuation(sentence.raw, cleaned))
       .filter((sentence) => sentence.length >= MIN_SENTENCE_CHARS);
 
+    const fallback = fallbackSplit(cleaned);
     if (sentences.length <= 1) {
-      return [cleaned];
+      return fallback.length > 0 ? fallback : [cleaned];
     }
 
     const config = new AbsoluteSummarizerConfig(
@@ -88,7 +89,9 @@ export const splitParagraphIntoThoughts = (htmlOrText: string): string[] => {
       .map((sentence) => sentence.trim())
       .filter((sentence) => sentence.length >= MIN_SENTENCE_CHARS);
 
-    return ranked.length > 0 ? ranked : sentences;
+    const result = ranked.length > 0 ? ranked : sentences;
+    if (result.length <= 1 && fallback.length > 1) return fallback;
+    return result.length > 0 ? result : fallback;
   } catch {
     return fallbackSplit(cleaned);
   }
