@@ -1,6 +1,7 @@
 import {
   Category,
   getThoughtPlainText,
+  isHeadingType,
   isTextLikeThought,
   parseThoughtType,
   type ThoughtType,
@@ -1341,15 +1342,16 @@ function ThoughtsEditorInner(
       const rightText = sanitizeInlineHtml(payload.rightHtml);
       const newText = payload.newSide === "left" ? leftText : rightText;
       const keptText = payload.newSide === "left" ? rightText : leftText;
-      const created = createEmptyThought(noteId, source.type);
+      const created = createEmptyThought(
+        noteId,
+        isHeadingType(source.type) ? "text" : source.type
+      );
       const sourceStyle =
         isTextLikeThought(source) && source.content.style === "inline"
           ? "inline"
           : "block";
-      const styleForSide = (side: "left" | "right") =>
-        side === "right" ? "inline" : sourceStyle;
       const newThought = setThoughtContentText(
-        isTextLikeThought(source)
+        isTextLikeThought(created)
           ? setTextThoughtStyle(
               {
                 ...created,
@@ -1357,7 +1359,7 @@ function ThoughtsEditorInner(
                 thoughtId: payload.newThoughtId,
                 categoryId: splitCategoryId ?? "uncategorized",
               },
-              styleForSide(payload.newSide)
+              "inline"
             )
           : {
               ...created,
@@ -1369,10 +1371,7 @@ function ThoughtsEditorInner(
       );
       const kept = setThoughtContentText(
         isTextLikeThought(source)
-          ? setTextThoughtStyle(
-              source,
-              styleForSide(payload.newSide === "left" ? "right" : "left")
-            )
+          ? setTextThoughtStyle(source, sourceStyle)
           : source,
         keptText
       );
@@ -2609,9 +2608,9 @@ function ThoughtsEditorInner(
                   .thought-fields:has(.is-error-placeholder) {
                     width: 100%;
                   }
-                  .thought-item.is-inline:not(.is-heading):not(.in-heading),
-                  .thought-item.is-run-start:not(.is-heading):not(.in-heading),
-                  .thought-item.is-text-like:not(.is-heading):not(.in-heading):not(.is-inline):has(+ .thought-item.is-inline) {
+                  .thought-item.is-inline:not(.is-heading),
+                  .thought-item.is-run-start:not(.is-heading),
+                  .thought-item.is-text-like:not(.is-heading):not(.is-inline):has(+ .thought-item.is-inline) {
                     display: inline;
                     padding-left: 0;
                     padding-right: 0;
@@ -2622,8 +2621,7 @@ function ThoughtsEditorInner(
                     vertical-align: baseline;
                     font-size: 0;
                   }
-                  .thought-item.is-heading,
-                  .thought-item.in-heading {
+                  .thought-item.is-heading {
                     display: block;
                     font-size: 16px;
                   }

@@ -2607,11 +2607,6 @@ export const CHECKLIST_SCRIPT = `
       li.style.setProperty("--heading-indent", px);
     }
     li.classList.toggle("in-heading", next > 0);
-    if (next > 0) {
-      li.classList.remove("is-inline");
-      li.classList.remove("is-run-start");
-      li.removeAttribute("data-inline");
-    }
   }
 
   function revealFocusedHidden() {
@@ -3120,6 +3115,29 @@ export const THOUGHT_SPLIT_SCRIPT = `
     });
   }
 
+  function isHeadingType(type) {
+    return (
+      type === "h1" ||
+      type === "h2" ||
+      type === "h3" ||
+      type === "h4" ||
+      type === "h5" ||
+      type === "h6"
+    );
+  }
+
+  function isTextLikeType(type) {
+    return type === "text" || isHeadingType(type);
+  }
+
+  function thoughtIndexOf(li) {
+    var root = editorRoot();
+    if (!root || !li) return -1;
+    var items = root.querySelectorAll(".thought-item");
+    for (var i = 0; i < items.length; i++) if (items[i] === li) return i;
+    return -1;
+  }
+
   function fieldOf(thought) {
     if (!thought) return null;
     return (
@@ -3506,16 +3524,32 @@ export const THOUGHT_SPLIT_SCRIPT = `
     if (!state || !state.range || !state.thought || !state.field) return false;
     var thought = state.thought;
     if (!thought.parentNode) return false;
-    var index = Array.prototype.indexOf.call(thought.parentNode.children, thought);
+    var index = thoughtIndexOf(thought);
     if (index < 0) return false;
+    var sourceType = thought.getAttribute("data-thought-type");
     var parts = splitHtml(state.field, state.range);
     var clone = thought.cloneNode(true);
     clone.classList.remove("is-selected");
+    clone.classList.remove("is-section-hidden");
+    clone.classList.remove("is-section-collapsed");
     clone.setAttribute("data-thought-id", newThoughtId);
     clone.setAttribute("data-completed", "false");
     clone.classList.remove("is-completed");
     clone.setAttribute("data-category-id", "uncategorized");
     clearTitle(clone);
+    var fold = clone.querySelector(".thought-fold");
+    if (fold && fold.parentNode) fold.parentNode.removeChild(fold);
+    if (isHeadingType(sourceType)) {
+      clone.setAttribute("data-thought-type", "text");
+      clone.classList.remove("is-heading");
+      clone.classList.add("is-block");
+      clone.classList.add("is-text-like");
+      clone.classList.add("in-heading");
+      thought.classList.remove("is-section-collapsed");
+    }
+    if (thought.classList.contains("in-heading")) {
+      clone.classList.add("in-heading");
+    }
     var wasInline =
       thought.classList.contains("is-inline") ||
       thought.getAttribute("data-inline") === "true";
@@ -3523,29 +3557,24 @@ export const THOUGHT_SPLIT_SCRIPT = `
       if (inline) {
         el.classList.add("is-inline");
         el.setAttribute("data-inline", "true");
+        el.classList.remove("is-run-start");
         return;
       }
       el.classList.remove("is-inline");
       el.removeAttribute("data-inline");
       el.classList.add("is-block");
     }
-    var created = clone;
+    setParagraphStyle(clone, true);
     if (state.side === "right") {
       setSummaryHtml(thought, parts.left);
       setSummaryHtml(clone, parts.right);
-      if (isTextLikeType(thought.getAttribute("data-thought-type"))) {
-        setParagraphStyle(thought, wasInline);
-        setParagraphStyle(clone, true);
-      }
       thought.parentNode.insertBefore(clone, thought.nextSibling);
+      if (!wasInline) thought.classList.add("is-run-start");
     } else {
       setSummaryHtml(clone, parts.left);
       setSummaryHtml(thought, parts.right);
-      if (isTextLikeType(thought.getAttribute("data-thought-type"))) {
-        setParagraphStyle(clone, wasInline);
-        setParagraphStyle(thought, true);
-      }
       thought.parentNode.insertBefore(clone, thought);
+      clone.classList.add("is-run-start");
     }
     if (typeof window.__mcSyncChecklistLayouts === "function") {
       window.__mcSyncChecklistLayouts();
@@ -3568,7 +3597,6 @@ export const THOUGHT_SPLIT_SCRIPT = `
         })
       );
     }
-    void created;
     return true;
   };
 
