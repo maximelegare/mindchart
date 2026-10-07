@@ -2752,6 +2752,16 @@ function ThoughtsEditorInner(
                   .thought-item.is-inline + .thought-item:not(.is-inline) {
                     margin-top: var(--mc-gap-block);
                   }
+                  .mc-thoughts
+                    > .thought-item.is-inline
+                    + .thought-item.is-block:not(.is-inline):not(.is-run-start),
+                  .mc-thoughts
+                    > .thought-item.is-run-start
+                    + .thought-item.is-inline
+                    + .thought-item.is-block:not(.is-inline):not(.is-run-start) {
+                    margin-top: 0;
+                    padding-top: var(--mc-gap-block);
+                  }
                   .mc-thoughts > .thought-item:first-child {
                     margin-top: 0;
                   }

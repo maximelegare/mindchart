@@ -1208,25 +1208,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      if (isInlineThought(li) && isTextLikeType(type)) {
-        promoteThoughtToBlock(li);
-      }
-
-      var next = li.nextElementSibling;
-      if (isThought(next) && !thoughtHasContent(next)) {
+      var insertAfter = lastThoughtInInlineRun(li);
+      var next = insertAfter.nextElementSibling;
+      if (isThought(next) && !thoughtHasContent(next) && !isInlineThought(next)) {
         var emptyNext = next.querySelector(".thought-summary") ||
           next.querySelector(".thought-title");
         if (emptyNext) placeCaretAtStartSoon(emptyNext);
-        notifyChange();
-        return;
-      }
-      if (isThought(next) && isInlineThought(next) && !isHeadingType(type)) {
-        promoteThoughtToBlock(next);
-        var nextSummary = next.querySelector(".thought-summary");
-        if (nextSummary) placeCaretAtStartSoon(nextSummary);
-        if (typeof window.__mcSyncChecklistLayouts === "function") {
-          window.__mcSyncChecklistLayouts();
-        }
         notifyChange();
         return;
       }
@@ -1239,10 +1226,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         created.removeAttribute("data-inline");
       }
       applyOutlineToCreated(li, created);
-      if (li.nextSibling) {
-        li.parentNode.insertBefore(created, li.nextSibling);
+      if (insertAfter.nextSibling) {
+        insertAfter.parentNode.insertBefore(created, insertAfter.nextSibling);
       } else {
-        li.parentNode.appendChild(created);
+        insertAfter.parentNode.appendChild(created);
       }
       if (isHeadingType(type)) li.classList.remove("is-section-collapsed");
       if (typeof window.__mcSyncChecklistLayouts === "function") {
@@ -1265,6 +1252,16 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         (li.classList.contains("is-inline") ||
           li.getAttribute("data-inline") === "true")
       );
+    }
+
+    function lastThoughtInInlineRun(li) {
+      var end = li;
+      var next = li && li.nextElementSibling;
+      while (isThought(next) && isInlineThought(next)) {
+        end = next;
+        next = next.nextElementSibling;
+      }
+      return end;
     }
 
     function headingIndentPx(li) {
@@ -2760,7 +2757,7 @@ export const CHECKLIST_SCRIPT = `
     if (!btn) return 0;
     var t = window.getComputedStyle(btn).transform;
     if (!t || t === "none") return 0;
-    var m = t.match(/matrix\(([^)]+)\)/);
+    var m = t.match(/matrix\\(([^)]+)\\)/);
     if (!m) return 0;
     var parts = m[1].split(",");
     return Math.round(
