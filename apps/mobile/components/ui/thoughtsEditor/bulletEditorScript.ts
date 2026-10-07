@@ -1191,8 +1191,19 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var type = thoughtTypeOf(li);
       var nextType = isHeadingType(type) ? "text" : type;
       var summary = li.querySelector(".thought-summary") || li;
-      var emptySummary = isEmptyField(summary);
-      if (!emptySummary && !isCaretAtEndOf(summary)) {
+      if (!thoughtHasContent(li) && !isHeadingType(type)) {
+        if (type === "li" || type === "checkbox") {
+          setThoughtAsParagraph(li, false);
+          forceUntitledSummary(li);
+          placeCaretAtStartSoon(summary);
+          if (typeof window.__mcSyncChecklistLayouts === "function") {
+            window.__mcSyncChecklistLayouts();
+          }
+          notifyChange();
+        }
+        return;
+      }
+      if (!isCaretAtEndOf(summary)) {
         if (splitThoughtAtCaret(li, summary, type)) return;
         return;
       }
@@ -1202,6 +1213,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       var next = li.nextElementSibling;
+      if (isThought(next) && !thoughtHasContent(next)) {
+        var emptyNext = next.querySelector(".thought-summary") ||
+          next.querySelector(".thought-title");
+        if (emptyNext) placeCaretAtStartSoon(emptyNext);
+        notifyChange();
+        return;
+      }
       if (isThought(next) && isInlineThought(next) && !isHeadingType(type)) {
         promoteThoughtToBlock(next);
         var nextSummary = next.querySelector(".thought-summary");
