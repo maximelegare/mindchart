@@ -232,8 +232,8 @@ export type ThoughtContent =
   | z.infer<typeof CheckboxThoughtContentSchema>;
 
 export const getThoughtPlainText = (thought: {
-  content: { text?: string };
-}): string => thought.content.text ?? "";
+  content?: { text?: string } | null;
+}): string => thought.content?.text ?? "";
 
 type LooseThoughtRecord = Record<string, unknown> & {
   content?: { text?: unknown; checked?: unknown; style?: unknown } | null;

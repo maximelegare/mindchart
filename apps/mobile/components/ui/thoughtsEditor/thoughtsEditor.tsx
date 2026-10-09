@@ -608,24 +608,6 @@ function ThoughtsEditorInner(
     [embed, embeddingsReady]
   );
 
-  const attachStructureAnchor = React.useCallback(
-    async (thoughtId: string, text: string) => {
-      const vector = await embedStructureText(text);
-      if (!vector) return;
-      const current = getValues("thoughts") ?? [];
-      setValue(
-        "thoughts",
-        current.map((thought) =>
-          thought.id === thoughtId || thought.thoughtId === thoughtId
-            ? { ...thought, nlpStructureAnchor: vector }
-            : thought
-        ),
-        { shouldDirty: true }
-      );
-    },
-    [embedStructureText, getValues, setValue]
-  );
-
   const { flushPendingNlp } = useEditorNlp({
     getValues,
     setValue,
@@ -1343,7 +1325,6 @@ function ThoughtsEditorInner(
       ...previous.slice(end + 1),
     ];
     setValue("thoughts", nextThoughts, { shouldDirty: true });
-    void attachStructureAnchor(merged.id, getThoughtPlainText(merged));
     mergeIndexesRef.current = [];
     setMerging(false);
     setMergeIndexes([]);
@@ -1367,7 +1348,6 @@ function ThoughtsEditorInner(
     mergeCategoryId,
     mergeIndexes,
     refreshCategoryTimers,
-    attachStructureAnchor,
     setValue,
   ]);
 
@@ -1387,97 +1367,100 @@ function ThoughtsEditorInner(
       leftHtml: string;
       rightHtml: string;
     }) => {
-      const previous = getValues("thoughts");
-      const source = previous[payload.index];
-      if (!source) return;
-      const leftText = sanitizeInlineHtml(payload.leftHtml);
-      const rightText = sanitizeInlineHtml(payload.rightHtml);
-      const newText = payload.newSide === "left" ? leftText : rightText;
-      const keptText = payload.newSide === "left" ? rightText : leftText;
-      const created = createEmptyThought(
-        noteId,
-        isHeadingType(source.type) ? "text" : source.type
-      );
-      const sourceStyle =
-        isTextLikeThought(source) && source.content.style === "inline"
-          ? "inline"
-          : "block";
-      const newThought = setThoughtContentText(
-        isTextLikeThought(created)
-          ? setTextThoughtStyle(
-              {
+      try {
+        const previous = getValues("thoughts");
+        const source = previous[payload.index];
+        if (!source) return;
+        const leftText = sanitizeInlineHtml(payload.leftHtml);
+        const rightText = sanitizeInlineHtml(payload.rightHtml);
+        const newText = payload.newSide === "left" ? leftText : rightText;
+        const keptText = payload.newSide === "left" ? rightText : leftText;
+        const created = createEmptyThought(
+          noteId,
+          isHeadingType(source.type) ? "text" : source.type
+        );
+        const sourceStyle =
+          isTextLikeThought(source) && source.content.style === "inline"
+            ? "inline"
+            : "block";
+        const newThought = setThoughtContentText(
+          isTextLikeThought(created)
+            ? setTextThoughtStyle(
+                {
+                  ...created,
+                  id: payload.newThoughtId,
+                  thoughtId: payload.newThoughtId,
+                  categoryId: splitCategoryId ?? "uncategorized",
+                },
+                "inline"
+              )
+            : {
                 ...created,
                 id: payload.newThoughtId,
                 thoughtId: payload.newThoughtId,
                 categoryId: splitCategoryId ?? "uncategorized",
               },
-              "inline"
-            )
-          : {
-              ...created,
-              id: payload.newThoughtId,
-              thoughtId: payload.newThoughtId,
-              categoryId: splitCategoryId ?? "uncategorized",
-            },
-        newText
-      );
-      const lockOptions = splitCategoryId
-        ? { categorySource: "user" as const }
-        : undefined;
-      const kept = lockThoughtStructure(
-        setThoughtContentText(
-          isTextLikeThought(source)
-            ? setTextThoughtStyle(source, sourceStyle)
-            : source,
-          keptText
-        ),
-        lockOptions
-      );
-      const lockedNew = lockThoughtStructure(newThought, lockOptions);
-      const next =
-        payload.newSide === "right"
-          ? [
-              ...previous.slice(0, payload.index),
-              kept,
-              lockedNew,
-              ...previous.slice(payload.index + 1),
-            ]
-          : [
-              ...previous.slice(0, payload.index),
-              lockedNew,
-              kept,
-              ...previous.slice(payload.index + 1),
-            ];
-      const pickerIndex =
-        payload.newSide === "right" ? payload.index + 1 : payload.index;
-      setValue("thoughts", next, { shouldDirty: true });
-      void attachStructureAnchor(kept.id, getThoughtPlainText(kept));
-      void attachStructureAnchor(lockedNew.id, getThoughtPlainText(lockedNew));
-      setSelectedThoughtIndex(pickerIndex);
-      setSplitSide(null);
-      injectIfReady(setSelectedThoughtScript(pickerIndex));
-      injectIfReady(SYNC_CHECKLIST_LAYOUT_SCRIPT);
-      if (splitCategoryId && splitCategoryId !== "uncategorized") {
-        injectIfReady(
-          setThoughtCategoryScript(
-            pickerIndex,
-            splitCategoryId,
-            categoryLabels.get(splitCategoryId)
-          )
+          newText
         );
-      }
-      const pickedCategory = splitCategoryId;
-      setSplitCategoryId(null);
-      setSplitCategoryPicking(false);
-      richRef.current?.dismissKeyboard();
-      Keyboard.dismiss();
-      if (!pickedCategory) {
-        setCategoryPickerIndex(pickerIndex);
+        const lockOptions = splitCategoryId
+          ? { categorySource: "user" as const }
+          : undefined;
+        const kept = lockThoughtStructure(
+          setThoughtContentText(
+            isTextLikeThought(source)
+              ? setTextThoughtStyle(source, sourceStyle)
+              : source,
+            keptText
+          ),
+          lockOptions
+        );
+        const lockedNew = lockThoughtStructure(newThought, lockOptions);
+        const next =
+          payload.newSide === "right"
+            ? [
+                ...previous.slice(0, payload.index),
+                kept,
+                lockedNew,
+                ...previous.slice(payload.index + 1),
+              ]
+            : [
+                ...previous.slice(0, payload.index),
+                lockedNew,
+                kept,
+                ...previous.slice(payload.index + 1),
+              ];
+        const pickerIndex =
+          payload.newSide === "right" ? payload.index + 1 : payload.index;
+        setValue("thoughts", next, { shouldDirty: true });
+        setSelectedThoughtIndex(pickerIndex);
+        setSplitSide(null);
+        injectIfReady(setSelectedThoughtScript(pickerIndex));
+        injectIfReady(SYNC_CHECKLIST_LAYOUT_SCRIPT);
+        if (splitCategoryId && splitCategoryId !== "uncategorized") {
+          injectIfReady(
+            setThoughtCategoryScript(
+              pickerIndex,
+              splitCategoryId,
+              categoryLabels.get(splitCategoryId)
+            )
+          );
+        }
+        const pickedCategory = splitCategoryId;
+        setSplitCategoryId(null);
+        setSplitCategoryPicking(false);
+        richRef.current?.dismissKeyboard();
+        Keyboard.dismiss();
+        if (!pickedCategory) {
+          setCategoryPickerIndex(pickerIndex);
+        }
+      } catch (error) {
+        console.warn("Manual thought split failed:", error);
+        setSplitSide(null);
+        setSplitCategoryPicking(false);
       }
     },
     [
       categoryLabels,
-      attachStructureAnchor,
       getValues,
       injectIfReady,
       noteId,

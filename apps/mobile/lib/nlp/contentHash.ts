@@ -30,7 +30,7 @@ export const thoughtNlpSourceHash = (thought: Thought): string =>
   hashNlpSource({
     type: thought.type,
     style: isTextLikeThought(thought) ? thought.content.style : undefined,
-    text: getThoughtPlainText(thought),
+    text: getThoughtPlainText(thought) || "",
   });
 
 export const thoughtHasNlpText = (thought: Thought): boolean =>

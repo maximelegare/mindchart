@@ -8,7 +8,7 @@ export const lockThoughtStructure = (
   ...thought,
   nlpStructureLocked: true,
   nlpStructureSourceHash: thoughtNlpSourceHash(thought),
-  nlpStructureAnchor: thought.nlpStructureAnchor ?? undefined,
+  nlpStructureAnchor: undefined,
   categorySource: options.categorySource ?? thought.categorySource,
 });
 

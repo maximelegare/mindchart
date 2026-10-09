@@ -18,6 +18,7 @@ import type {
   ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor/types";
 import { createEmptyThought } from "@/components/ui/thoughtsEditor/types";
+import { getThoughtPlainText } from "@repo/zod-schemas";
 
 type Inject = (script: string) => void;
 
@@ -162,9 +163,29 @@ export const useEditorNlp = ({
       );
       if (!thought) break;
       processed.add(thought.id);
-      const resolved = thought.nlpStructureLocked
-        ? await resolveStructureLock(thought, ctx.embed)
-        : thought;
+      let working = thought;
+      if (
+        working.nlpStructureLocked &&
+        !working.nlpStructureAnchor &&
+        ctx.embed
+      ) {
+        try {
+          const vector = await ctx.embed(getThoughtPlainText(working) || "");
+          if (vector) {
+            working = { ...working, nlpStructureAnchor: vector };
+            ctx.setValue(
+              "thoughts",
+              current.map((item) => (item.id === thought.id ? working : item)),
+              { shouldDirty: true }
+            );
+          }
+        } catch {
+          /* embeddings are optional for the lock */
+        }
+      }
+      const resolved = working.nlpStructureLocked
+        ? await resolveStructureLock(working, ctx.embed)
+        : working;
       if (resolved !== thought) {
         ctx.setValue(
           "thoughts",
