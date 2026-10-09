@@ -4,7 +4,9 @@ import {
   createNlpJob,
   needsNlp,
   processNlpJob,
+  resolveStructureLock,
   thoughtNlpSourceHash,
+  type EmbedStructureText,
   type NlpJobResult,
 } from "@/lib/nlp";
 import {
@@ -37,6 +39,7 @@ type UseEditorNlpOptions = {
   ) => string;
   setThoughtSemanticTitleScript: (index: number, title: string) => string;
   categoryLabels: Map<string, string>;
+  embed?: EmbedStructureText;
 };
 
 export const useEditorNlp = ({
@@ -48,6 +51,7 @@ export const useEditorNlp = ({
   setThoughtCategoryScript,
   setThoughtSemanticTitleScript,
   categoryLabels,
+  embed,
 }: UseEditorNlpOptions) => {
   const applyingRef = React.useRef(false);
   const latestRef = React.useRef({
@@ -59,6 +63,7 @@ export const useEditorNlp = ({
     setThoughtCategoryScript,
     setThoughtSemanticTitleScript,
     categoryLabels,
+    embed,
   });
   latestRef.current = {
     getValues,
@@ -69,6 +74,7 @@ export const useEditorNlp = ({
     setThoughtCategoryScript,
     setThoughtSemanticTitleScript,
     categoryLabels,
+    embed,
   };
 
   const applyResult = React.useCallback(
@@ -108,7 +114,11 @@ export const useEditorNlp = ({
           thought.thoughtId === result.thoughtId
       );
       const applied = next.slice(start, start + result.pieces.length);
-      if (result.pieces.length > 1 && source.type === "text") {
+      if (
+        result.pieces.length > 1 &&
+        source.type === "text" &&
+        !source.nlpStructureLocked
+      ) {
         ctx.injectIfReady(
           ctx.applyParagraphSplitScript(
             result.thoughtId,
@@ -141,17 +151,28 @@ export const useEditorNlp = ({
     []
   );
 
-  const flushPendingNlp = React.useCallback(() => {
+  const flushPendingNlp = React.useCallback(async () => {
     if (applyingRef.current) return;
     const processed = new Set<string>();
     for (;;) {
-      const current = latestRef.current.getValues("thoughts") ?? [];
+      const ctx = latestRef.current;
+      const current = ctx.getValues("thoughts") ?? [];
       const thought = current.find(
         (item) => !processed.has(item.id) && needsNlp(item)
       );
       if (!thought) break;
       processed.add(thought.id);
-      applyResult(processNlpJob(createNlpJob(thought)));
+      const resolved = thought.nlpStructureLocked
+        ? await resolveStructureLock(thought, ctx.embed)
+        : thought;
+      if (resolved !== thought) {
+        ctx.setValue(
+          "thoughts",
+          current.map((item) => (item.id === thought.id ? resolved : item)),
+          { shouldDirty: true }
+        );
+      }
+      applyResult(processNlpJob(createNlpJob(resolved)));
     }
   }, [applyResult]);
 

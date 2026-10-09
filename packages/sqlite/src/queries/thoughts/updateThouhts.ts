@@ -20,6 +20,9 @@ const thoughtRow = (thought: Thought, position = 0) => ({
   nlpSourceHash: thought.nlpSourceHash ?? null,
   titleSource: thought.titleSource === "user" ? "user" : "generated",
   categorySource: thought.categorySource === "user" ? "user" : "generated",
+  nlpStructureLocked: Boolean(thought.nlpStructureLocked),
+  nlpStructureSourceHash: thought.nlpStructureSourceHash ?? null,
+  nlpStructureAnchor: thought.nlpStructureAnchor ?? null,
   categoryId: thought.categoryId,
   position: thought.position ?? position,
   createdAt: thought.createdAt ?? new Date().toISOString(),
@@ -83,6 +86,9 @@ export const updateThoughtsQuery = async (
           titleSource: thought.titleSource === "user" ? "user" : "generated",
           categorySource:
             thought.categorySource === "user" ? "user" : "generated",
+          nlpStructureLocked: Boolean(thought.nlpStructureLocked),
+          nlpStructureSourceHash: thought.nlpStructureSourceHash ?? null,
+          nlpStructureAnchor: thought.nlpStructureAnchor ?? null,
           categoryId: thought.categoryId,
           type: thought.type,
           contentId: thought.contentId,
@@ -147,6 +153,9 @@ export const updateThoughtNlpQuery = async (
     nlpSourceHash?: string;
     titleSource?: string;
     categorySource?: string;
+    nlpStructureLocked?: boolean;
+    nlpStructureSourceHash?: string | null;
+    nlpStructureAnchor?: Float32Array | null;
   }>
 ) => {
   for (const row of data) {
@@ -157,6 +166,9 @@ export const updateThoughtNlpQuery = async (
       nlpSourceHash?: string | null;
       titleSource?: string;
       categorySource?: string;
+      nlpStructureLocked?: boolean;
+      nlpStructureSourceHash?: string | null;
+      nlpStructureAnchor?: Float32Array | null;
     } = {};
     if (row.semanticLabel != null) patch.semanticLabel = row.semanticLabel;
     if (row.categoryId != null) patch.categoryId = row.categoryId;
@@ -164,6 +176,15 @@ export const updateThoughtNlpQuery = async (
     if (row.nlpSourceHash != null) patch.nlpSourceHash = row.nlpSourceHash;
     if (row.titleSource != null) patch.titleSource = row.titleSource;
     if (row.categorySource != null) patch.categorySource = row.categorySource;
+    if (row.nlpStructureLocked != null) {
+      patch.nlpStructureLocked = row.nlpStructureLocked;
+    }
+    if (row.nlpStructureSourceHash !== undefined) {
+      patch.nlpStructureSourceHash = row.nlpStructureSourceHash;
+    }
+    if (row.nlpStructureAnchor !== undefined) {
+      patch.nlpStructureAnchor = row.nlpStructureAnchor;
+    }
     if (Object.keys(patch).length === 0) continue;
 
     await db.update(ThoughtTable).set(patch).where(eq(ThoughtTable.id, row.id));

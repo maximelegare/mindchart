@@ -143,6 +143,9 @@ export const ThoughtBaseSchema = z
       .enum(NLP_METADATA_SOURCES)
       .optional()
       .default("generated"),
+    nlpStructureLocked: sqliteBoolean.optional().default(false),
+    nlpStructureSourceHash: z.string().optional(),
+    nlpStructureAnchor: z.custom<Float32Array>().optional().nullable(),
     createdAt: z.string().nullable(),
     position: z.number().int().optional(),
   })
@@ -239,6 +242,44 @@ type LooseThoughtRecord = Record<string, unknown> & {
 const asString = (value: unknown, fallback = ""): string =>
   typeof value === "string" ? value : value == null ? fallback : String(value);
 
+const parseNlpStructureLocked = (value: unknown): boolean =>
+  value === true || value === 1 || value === "1" || value === "true";
+
+const parseNlpStructureAnchor = (value: unknown): Float32Array | undefined => {
+  if (value == null || value === "") return undefined;
+  if (value instanceof Float32Array) {
+    return value.length > 0 ? value : undefined;
+  }
+  if (value instanceof Uint8Array) {
+    if (value.byteLength < 4) return undefined;
+    return new Float32Array(
+      value.buffer,
+      value.byteOffset,
+      Math.floor(value.byteLength / 4)
+    );
+  }
+  if (Array.isArray(value) && value.every((item) => typeof item === "number")) {
+    return value.length > 0 ? new Float32Array(value) : undefined;
+  }
+  if (typeof value === "string") {
+    const hex = value.trim();
+    if (!hex || hex.length % 2 !== 0) return undefined;
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let index = 0; index < bytes.length; index += 1) {
+      const next = Number.parseInt(hex.slice(index * 2, index * 2 + 2), 16);
+      if (!Number.isFinite(next)) return undefined;
+      bytes[index] = next;
+    }
+    if (bytes.byteLength < 4) return undefined;
+    return new Float32Array(
+      bytes.buffer,
+      bytes.byteOffset,
+      Math.floor(bytes.byteLength / 4)
+    );
+  }
+  return undefined;
+};
+
 export const assembleThought = (raw: LooseThoughtRecord): Thought => {
   const nested =
     raw.content && typeof raw.content === "object" ? raw.content : {};
@@ -258,6 +299,9 @@ export const assembleThought = (raw: LooseThoughtRecord): Thought => {
     nlpSourceHash: asString(raw.nlpSourceHash) || undefined,
     titleSource: parseNlpMetadataSource(raw.titleSource),
     categorySource: parseNlpMetadataSource(raw.categorySource),
+    nlpStructureLocked: parseNlpStructureLocked(raw.nlpStructureLocked),
+    nlpStructureSourceHash: asString(raw.nlpStructureSourceHash) || undefined,
+    nlpStructureAnchor: parseNlpStructureAnchor(raw.nlpStructureAnchor),
     createdAt:
       raw.createdAt == null || raw.createdAt === ""
         ? null

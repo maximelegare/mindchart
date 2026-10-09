@@ -94,6 +94,8 @@ import {
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { thoughtCapabilities } from "./thoughtCapabilities";
 import { useEditorNlp } from "@/features/nlp/useEditorNlp";
+import { lockThoughtStructure } from "@/lib/nlp";
+import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
 import { useModal } from "@/components/ui/modal/modal";
 import { ThoughtTitleModalContent } from "./thoughtTitleModalContent";
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
@@ -372,8 +374,8 @@ export type ThoughtsEditorHandle = {
   titlesEnabled: () => boolean;
   /** Pull live WebView HTML into form state before save. */
   flushThoughts: () => Promise<ThoughtsFormValue[]>;
-  /** Run pending NLP for dirty thoughts without waiting for debounce. */
-  flushPendingNlp: () => void;
+  /** Run pending NLP for dirty thoughts. Resolves after metadata/structure apply. */
+  flushPendingNlp: () => Promise<void>;
 };
 
 function ThoughtsEditorInner(
@@ -593,6 +595,37 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(script);
   }, []);
 
+  const { embed, isReady: embeddingsReady } = useLlamaEmbeddings();
+  const embedStructureText = React.useCallback(
+    async (text: string) => {
+      if (!embeddingsReady) return null;
+      try {
+        return await embed(text, "document");
+      } catch {
+        return null;
+      }
+    },
+    [embed, embeddingsReady]
+  );
+
+  const attachStructureAnchor = React.useCallback(
+    async (thoughtId: string, text: string) => {
+      const vector = await embedStructureText(text);
+      if (!vector) return;
+      const current = getValues("thoughts") ?? [];
+      setValue(
+        "thoughts",
+        current.map((thought) =>
+          thought.id === thoughtId || thought.thoughtId === thoughtId
+            ? { ...thought, nlpStructureAnchor: vector }
+            : thought
+        ),
+        { shouldDirty: true }
+      );
+    },
+    [embedStructureText, getValues, setValue]
+  );
+
   const { flushPendingNlp } = useEditorNlp({
     getValues,
     setValue,
@@ -604,6 +637,7 @@ function ThoughtsEditorInner(
     setThoughtCategoryScript,
     setThoughtSemanticTitleScript,
     categoryLabels,
+    embed: embedStructureText,
   });
 
   const focusSelectedThought = React.useCallback((atEnd: boolean) => {
@@ -989,26 +1023,28 @@ function ThoughtsEditorInner(
       return;
     }
 
-    flushPendingNlp();
-    setToolbarMode("details");
-    applyEditorFlags(false);
-    applySimplifiedMode(simplifiedRef.current);
-    const nextThoughts = getValues("thoughts");
-    setCaretThoughtType(nextThoughts?.[0]?.type ?? "li");
-    richRef.current?.setContentHTML(
-      thoughtsToHtml(nextThoughts, false, htmlOptions)
-    );
-    applyCategoryColors(categoryColorsCssRef.current);
-    refreshCategoryTimers();
-    requestAnimationFrame(() => {
-      richRef.current?.injectJavascript(
-        setSelectedThoughtScript(selectedThoughtIndex)
+    void (async () => {
+      await flushPendingNlp();
+      setToolbarMode("details");
+      applyEditorFlags(false);
+      applySimplifiedMode(simplifiedRef.current);
+      const nextThoughts = getValues("thoughts");
+      setCaretThoughtType(nextThoughts?.[0]?.type ?? "li");
+      richRef.current?.setContentHTML(
+        thoughtsToHtml(nextThoughts, false, htmlOptions)
       );
-      richRef.current?.injectJavascript(setThoughtTextEditableScript(false));
-      richRef.current?.injectJavascript(
-        setShowCategoryColorsScript(!hideCategoriesRef.current)
-      );
-    });
+      applyCategoryColors(categoryColorsCssRef.current);
+      refreshCategoryTimers();
+      requestAnimationFrame(() => {
+        richRef.current?.injectJavascript(
+          setSelectedThoughtScript(selectedThoughtIndex)
+        );
+        richRef.current?.injectJavascript(setThoughtTextEditableScript(false));
+        richRef.current?.injectJavascript(
+          setShowCategoryColorsScript(!hideCategoriesRef.current)
+        );
+      });
+    })();
   }, [
     applyCategoryColors,
     applyEditorFlags,
@@ -1123,11 +1159,13 @@ function ThoughtsEditorInner(
         setMergeCategoryPicking(false);
         injectIfReady(setMergeHighlightScript([]));
       } else {
-        flushPendingNlp();
-        if (hideCategoriesRef.current) {
-          useNoteDetailsViewStore.getState().setSimplified(false);
-        }
-        injectIfReady(setShowCategoryColorsScript(true));
+        void (async () => {
+          await flushPendingNlp();
+          if (hideCategoriesRef.current) {
+            useNoteDetailsViewStore.getState().setSimplified(false);
+          }
+          injectIfReady(setShowCategoryColorsScript(true));
+        })();
       }
       if (mode === "format" && readOnly) {
         onRequestEdit?.();
@@ -1138,7 +1176,7 @@ function ThoughtsEditorInner(
   );
 
   const handleToggleCategories = React.useCallback(() => {
-    if (hideCategoriesRef.current) flushPendingNlp();
+    if (hideCategoriesRef.current) void flushPendingNlp();
     toggleHideCategories();
   }, [flushPendingNlp, toggleHideCategories]);
 
@@ -1289,12 +1327,15 @@ function ThoughtsEditorInner(
           : joinMergedThoughtHtml(html, thought.content.text),
       ""
     );
-    const merged = setThoughtContentText(
-      {
-        ...first,
-        categoryId: mergeCategoryId ?? first.categoryId,
-      },
-      joined
+    const merged = lockThoughtStructure(
+      setThoughtContentText(
+        {
+          ...first,
+          categoryId: mergeCategoryId ?? first.categoryId,
+        },
+        joined
+      ),
+      { categorySource: mergeCategoryId ? "user" : first.categorySource }
     );
     const nextThoughts = [
       ...previous.slice(0, start),
@@ -1302,6 +1343,7 @@ function ThoughtsEditorInner(
       ...previous.slice(end + 1),
     ];
     setValue("thoughts", nextThoughts, { shouldDirty: true });
+    void attachStructureAnchor(merged.id, getThoughtPlainText(merged));
     mergeIndexesRef.current = [];
     setMerging(false);
     setMergeIndexes([]);
@@ -1325,6 +1367,7 @@ function ThoughtsEditorInner(
     mergeCategoryId,
     mergeIndexes,
     refreshCategoryTimers,
+    attachStructureAnchor,
     setValue,
   ]);
 
@@ -1378,29 +1421,38 @@ function ThoughtsEditorInner(
             },
         newText
       );
-      const kept = setThoughtContentText(
-        isTextLikeThought(source)
-          ? setTextThoughtStyle(source, sourceStyle)
-          : source,
-        keptText
+      const lockOptions = splitCategoryId
+        ? { categorySource: "user" as const }
+        : undefined;
+      const kept = lockThoughtStructure(
+        setThoughtContentText(
+          isTextLikeThought(source)
+            ? setTextThoughtStyle(source, sourceStyle)
+            : source,
+          keptText
+        ),
+        lockOptions
       );
+      const lockedNew = lockThoughtStructure(newThought, lockOptions);
       const next =
         payload.newSide === "right"
           ? [
               ...previous.slice(0, payload.index),
               kept,
-              newThought,
+              lockedNew,
               ...previous.slice(payload.index + 1),
             ]
           : [
               ...previous.slice(0, payload.index),
-              newThought,
+              lockedNew,
               kept,
               ...previous.slice(payload.index + 1),
             ];
       const pickerIndex =
         payload.newSide === "right" ? payload.index + 1 : payload.index;
       setValue("thoughts", next, { shouldDirty: true });
+      void attachStructureAnchor(kept.id, getThoughtPlainText(kept));
+      void attachStructureAnchor(lockedNew.id, getThoughtPlainText(lockedNew));
       setSelectedThoughtIndex(pickerIndex);
       setSplitSide(null);
       injectIfReady(setSelectedThoughtScript(pickerIndex));
@@ -1425,6 +1477,7 @@ function ThoughtsEditorInner(
     },
     [
       categoryLabels,
+      attachStructureAnchor,
       getValues,
       injectIfReady,
       noteId,

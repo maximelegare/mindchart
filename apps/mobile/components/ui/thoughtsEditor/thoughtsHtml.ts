@@ -186,6 +186,7 @@ type ThoughtItemRecord = {
   type: ThoughtType | null;
   checked: boolean | null;
   inline: boolean;
+  structureLocked: boolean;
 };
 
 function itemFromAttrs(attrs: string, innerHtml: string): ThoughtItemRecord {
@@ -199,6 +200,7 @@ function itemFromAttrs(attrs: string, innerHtml: string): ThoughtItemRecord {
     checked: parseDataBool(attrs, "completed"),
     inline:
       /\bis-inline\b/.test(attrs) || parseDataBool(attrs, "inline") === true,
+    structureLocked: parseDataBool(attrs, "nlp-structure-locked") === true,
   };
 }
 
@@ -519,6 +521,7 @@ type ThoughtItemOptions = {
   hasEnteredTitle?: boolean;
   inline?: boolean;
   runStart?: boolean;
+  structureLocked?: boolean;
 };
 
 function thoughtItemHtml(
@@ -547,12 +550,15 @@ function thoughtItemHtml(
   if (isTextLikeType(type) && options.runStart) classNames.push("is-run-start");
   const inlineAttr =
     isTextLikeType(type) && options.inline ? ` data-inline="true"` : "";
+  const structureLockedAttr = options.structureLocked
+    ? ` data-nlp-structure-locked="true"`
+    : "";
   const graph =
     options.showGraphButton && options.thoughtId && !isHeadingType(type)
       ? graphButtonHtml(options.thoughtId)
       : "";
   return (
-    `<div class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}${inlineAttr}>` +
+    `<div class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}${inlineAttr}${structureLockedAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
     `<div class="thought-dot"></div>` +
@@ -609,6 +615,7 @@ function liToHtml(
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
     inline: isTextLikeThought(thought) && thought.content.style === "inline",
     runStart,
+    structureLocked: Boolean(thought.nlpStructureLocked),
   };
 
   if (showTitleField) {
@@ -859,10 +866,22 @@ export function htmlToThoughts(
   });
 
   const resolved = next.length > 0 ? next : [createEmptyThought(noteId)];
-  return resolved.map((thought) => {
-    if (!thought.nlpSourceHash) return thought;
-    if (thoughtNlpSourceHash(thought) === thought.nlpSourceHash) return thought;
-    return { ...thought, nlpSourceHash: undefined };
+  return resolved.map((thought, index) => {
+    const item = liItems[index];
+    const locked = Boolean(item?.structureLocked);
+    const withLock = {
+      ...thought,
+      nlpStructureLocked: locked,
+      nlpStructureSourceHash: locked
+        ? thought.nlpStructureSourceHash
+        : undefined,
+      nlpStructureAnchor: locked ? thought.nlpStructureAnchor : undefined,
+    };
+    if (!withLock.nlpSourceHash) return withLock;
+    if (thoughtNlpSourceHash(withLock) === withLock.nlpSourceHash) {
+      return withLock;
+    }
+    return { ...withLock, nlpSourceHash: undefined };
   });
 }
 

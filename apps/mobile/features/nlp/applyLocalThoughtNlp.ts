@@ -3,6 +3,7 @@ import { getOPDatabase, updateThoughtNlpQuery } from "@repo/sqlite";
 import { thoughtNlpSourceHash } from "@/lib/nlp/contentHash";
 import { needsNlp } from "@/lib/nlp/needsNlp";
 import { createNlpJob, processNlpJob } from "@/lib/nlp/processNlpJob";
+import { resolveStructureLock } from "@/lib/nlp/resolveStructureLock";
 
 export const applyLocalThoughtNlp = async (thoughts: Thought[]) => {
   const patches: Array<{
@@ -13,16 +14,22 @@ export const applyLocalThoughtNlp = async (thoughts: Thought[]) => {
     nlpSourceHash?: string;
     titleSource?: string;
     categorySource?: string;
+    nlpStructureLocked?: boolean;
+    nlpStructureSourceHash?: string | null;
+    nlpStructureAnchor?: Float32Array | null;
   }> = [];
 
   for (const thought of thoughts) {
     if (!needsNlp(thought)) continue;
 
     try {
-      const job = createNlpJob(thought);
-      if (thoughtNlpSourceHash(thought) !== job.sourceHash) continue;
+      const resolved = thought.nlpStructureLocked
+        ? await resolveStructureLock(thought)
+        : thought;
+      const job = createNlpJob(resolved);
+      if (thoughtNlpSourceHash(resolved) !== job.sourceHash) continue;
       const result = processNlpJob(job);
-      if (thoughtNlpSourceHash(thought) !== result.sourceHash) continue;
+      if (thoughtNlpSourceHash(resolved) !== result.sourceHash) continue;
 
       const piece = result.pieces[0];
       if (!piece) continue;
@@ -31,15 +38,20 @@ export const applyLocalThoughtNlp = async (thoughts: Thought[]) => {
         id: thought.id,
         nlpSourceHash: result.sourceHash,
       };
-      if (thought.titleSource !== "user") {
+      if (resolved.titleSource !== "user") {
         patch.title = piece.title;
         patch.titleSource = "generated";
       }
-      if (thought.categorySource !== "user") {
+      if (resolved.categorySource !== "user") {
         patch.categoryId = piece.categoryId;
         patch.categorySource = "generated";
       }
       patch.semanticLabel = piece.semanticLabel;
+      if (resolved.nlpStructureLocked !== thought.nlpStructureLocked) {
+        patch.nlpStructureLocked = Boolean(resolved.nlpStructureLocked);
+        patch.nlpStructureSourceHash = resolved.nlpStructureSourceHash ?? null;
+        patch.nlpStructureAnchor = resolved.nlpStructureAnchor ?? null;
+      }
       patches.push(patch);
     } catch (error) {
       console.warn("Local thought NLP failed:", error);

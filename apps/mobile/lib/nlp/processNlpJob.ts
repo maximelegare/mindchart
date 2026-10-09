@@ -21,6 +21,7 @@ export type NlpJob = {
   titleSource?: NlpMetadataSource;
   categorySource?: NlpMetadataSource;
   currentTitle?: string;
+  structureLocked?: boolean;
 };
 
 export type NlpResultPiece = {
@@ -54,9 +55,13 @@ export const createNlpJob = (thought: Thought): NlpJob => ({
   titleSource: thought.titleSource === "user" ? "user" : "generated",
   categorySource: thought.categorySource === "user" ? "user" : "generated",
   currentTitle: thought.title,
+  structureLocked: Boolean(thought.nlpStructureLocked),
 });
 
 const processStructure = (job: NlpJob): string[] => {
+  if (job.structureLocked) {
+    return [job.content];
+  }
   if (job.type === "text") {
     const pieces = splitParagraphIntoThoughts(job.content);
     return pieces.length > 0 ? pieces : [job.content];

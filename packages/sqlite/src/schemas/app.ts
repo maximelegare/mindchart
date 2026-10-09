@@ -82,6 +82,13 @@ export const ThoughtTable = sqliteTable(
     nlpSourceHash: text("nlp_source_hash"),
     titleSource: text("title_source").notNull().default("generated"),
     categorySource: text("category_source").notNull().default("generated"),
+    nlpStructureLocked: integer("nlp_structure_locked", {
+      mode: "boolean",
+    })
+      .notNull()
+      .default(false),
+    nlpStructureSourceHash: text("nlp_structure_source_hash"),
+    nlpStructureAnchor: float32ArrayBlob("nlp_structure_anchor"),
     position: integer("position").notNull().default(0),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)

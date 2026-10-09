@@ -28,9 +28,14 @@ export const applyEditorNlpResult = (
   if (!source) return null;
   if (thoughtNlpSourceHash(source) !== result.sourceHash) return null;
 
-  const pieces = result.pieces.map((piece, pieceIndex) => {
+  const resultPieces =
+    source.nlpStructureLocked && result.pieces.length > 1
+      ? result.pieces.slice(0, 1)
+      : result.pieces;
+
+  const pieces = resultPieces.map((piece, pieceIndex) => {
     const type: ThoughtType =
-      result.pieces.length > 1 && source.type === "text" ? "text" : source.type;
+      resultPieces.length > 1 && source.type === "text" ? "text" : source.type;
     const base = pieceIndex === 0 ? source : createEmptyThought(noteId, type);
     const text = (() => {
       const raw = piece.text ?? "";

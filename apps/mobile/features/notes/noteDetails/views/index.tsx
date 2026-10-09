@@ -198,7 +198,7 @@ function NoteDetailsContent({
     setValue("title", title, { shouldDirty: true });
 
     await thoughtsEditorRef.current?.flushThoughts();
-    thoughtsEditorRef.current?.flushPendingNlp();
+    await thoughtsEditorRef.current?.flushPendingNlp();
 
     let hasError = false;
 
