@@ -29,7 +29,7 @@ import type { IconName } from "@/components/ui/icons/icon-registry";
 import { Portal } from "@/components/primitives/portal";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
-import type { ThoughtType } from "@repo/zod-schemas";
+import { isHeadingType, type ThoughtType } from "@repo/zod-schemas";
 import { thoughtCapabilities } from "./thoughtCapabilities";
 import {
   thoughtsEditorBoldAccessibilityLabel,
@@ -42,6 +42,8 @@ import {
   thoughtsEditorFormatToolbarAccessibilityLabel,
   thoughtsEditorEditTitleAccessibilityLabel,
   thoughtsEditorNoTitleYet,
+  thoughtsEditorNoThoughtSelected,
+  thoughtsEditorCategoryUnavailable,
   thoughtsEditorCategoryAccessibilityLabel,
   thoughtsEditorGraphAccessibilityLabel,
   thoughtsEditorSplitAccessibilityLabel,
@@ -914,6 +916,8 @@ function DetailsToolbar({
 
   const inToolSession = Boolean(splitSide) || merging;
   const capabilities = thoughtCapabilities(thoughtType);
+  const headingSelected = isHeadingType(thoughtType);
+  const mutedChipColor = hsl("muted-foreground", colorScheme);
 
   React.useEffect(() => {
     if (inToolSession) return;
@@ -971,7 +975,21 @@ function DetailsToolbar({
                 pageWidth ? { width: pageWidth } : null,
               ]}
             >
-              {capabilities.title ? (
+              {headingSelected ? (
+                <View
+                  accessibilityRole="text"
+                  accessibilityLabel={thoughtsEditorNoThoughtSelected()}
+                  style={[styles.chip, { backgroundColor: chipBackground }]}
+                >
+                  <Typography
+                    className="min-w-0 flex-1 text-base"
+                    numberOfLines={1}
+                    style={{ color: mutedChipColor }}
+                  >
+                    {thoughtsEditorNoThoughtSelected()}
+                  </Typography>
+                </View>
+              ) : capabilities.title ? (
                 <Pressable
                   onPress={onEditTitle}
                   disabled={!hasSelectedThought}
@@ -989,9 +1007,7 @@ function DetailsToolbar({
                     className="min-w-0 flex-1 text-base"
                     numberOfLines={1}
                     style={
-                      selectedTitle
-                        ? undefined
-                        : { color: hsl("muted-foreground", colorScheme) }
+                      selectedTitle ? undefined : { color: mutedChipColor }
                     }
                   >
                     {selectedTitle || placeholder}
@@ -999,7 +1015,25 @@ function DetailsToolbar({
                   <Icon name="pencil" size={16} color="foreground" />
                 </Pressable>
               ) : null}
-              {capabilities.categoryHighlight ? (
+              {headingSelected ? (
+                <View
+                  accessibilityRole="text"
+                  accessibilityLabel={thoughtsEditorCategoryUnavailable()}
+                  style={[styles.chip, { backgroundColor: chipBackground }]}
+                >
+                  <View
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: hsl("muted", colorScheme) }}
+                  />
+                  <Typography
+                    className="min-w-0 flex-1 text-base"
+                    numberOfLines={1}
+                    style={{ color: mutedChipColor }}
+                  >
+                    {thoughtsEditorCategoryUnavailable()}
+                  </Typography>
+                </View>
+              ) : capabilities.categoryHighlight ? (
                 <Pressable
                   onPress={onOpenCategory}
                   disabled={!hasSelectedThought}
@@ -1095,14 +1129,18 @@ function DetailsToolbar({
                   color={categoriesShowing ? "primary" : "muted-foreground"}
                 />
               </Pressable>
-              <SplitToolButton
-                disabled={!hasSelectedThought}
-                onPress={onSplit}
-              />
-              <MergeToolButton
-                disabled={!hasSelectedThought}
-                onPress={onMerge}
-              />
+              {headingSelected ? null : (
+                <>
+                  <SplitToolButton
+                    disabled={!hasSelectedThought}
+                    onPress={onSplit}
+                  />
+                  <MergeToolButton
+                    disabled={!hasSelectedThought}
+                    onPress={onMerge}
+                  />
+                </>
+              )}
             </View>
           </ScrollView>
           <Pressable

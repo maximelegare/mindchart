@@ -124,6 +124,20 @@ export function thoughtsEditorNoTitleYet() {
   return fbs("No title yet", "Thought editor empty title placeholder");
 }
 
+export function thoughtsEditorNoThoughtSelected() {
+  return fbs(
+    "No thought selected",
+    "Thought editor toolbar placeholder when a heading is selected"
+  );
+}
+
+export function thoughtsEditorCategoryUnavailable() {
+  return fbs(
+    "NA",
+    "Thought editor category placeholder when a heading is selected"
+  );
+}
+
 export function ThoughtsEditorTitleModalTitle() {
   return <fbt desc="Thought title modal heading">Title</fbt>;
 }

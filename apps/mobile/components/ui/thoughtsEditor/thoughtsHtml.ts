@@ -504,9 +504,12 @@ const FOLD_ICON_SVG =
   `<path d="M6 9l6 6 6-6"/>` +
   `</svg>`;
 
+const FOLD_BUTTON_STYLE =
+  "appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;min-height:24px;padding:0;margin:0;border:none;border-radius:50%;flex:0 0 auto;background:transparent;";
+
 function thoughtFoldHtml(): string {
   return (
-    '<button type="button" class="thought-fold" contenteditable="false" tabindex="-1" aria-label="Collapse section">' +
+    `<button type="button" class="thought-fold" contenteditable="false" tabindex="-1" aria-label="Collapse section" style="${FOLD_BUTTON_STYLE}">` +
     FOLD_ICON_SVG +
     "</button>"
   );

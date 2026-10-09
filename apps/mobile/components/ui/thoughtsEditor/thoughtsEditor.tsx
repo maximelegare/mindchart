@@ -255,9 +255,11 @@ function buildEditorThemeCss(colors: {
       color: ${colors.mutedFg};
     }
     .thought-item.is-heading .thought-body {
+      background: hsla(0, 0%, 50%, 0.12);
       background: color-mix(in srgb, ${colors.mutedFg} 12%, transparent);
     }
     .thought-item.is-heading .thought-fold {
+      background: hsla(0, 0%, 50%, 0.18);
       background: color-mix(in srgb, ${colors.mutedFg} 18%, transparent);
       color: ${colors.mutedFg};
     }
@@ -1087,6 +1089,9 @@ function ThoughtsEditorInner(
       richRef.current?.injectJavascript(
         setCategoryOpacityScript(categoryOpacity)
       );
+      if (embedInPageScroll) {
+        requestAnimationFrame(() => setPageEditorVisible(true));
+      }
     });
   }, [
     applyEditorFlags,
@@ -1388,6 +1393,7 @@ function ThoughtsEditorInner(
 
   const handleSplit = React.useCallback(() => {
     if (selectedThoughtIndex < 0) return;
+    if (isHeadingType(caretThoughtType)) return;
     if (readOnly) {
       keepDetailsToolbarOnEditRef.current = true;
       onRequestEdit?.();
@@ -1408,6 +1414,7 @@ function ThoughtsEditorInner(
     injectIfReady,
     onRequestEdit,
     readOnly,
+    caretThoughtType,
     selectedThoughtIndex,
     splitSide,
   ]);
@@ -1468,6 +1475,7 @@ function ThoughtsEditorInner(
 
   const handleMerge = React.useCallback(() => {
     if (selectedThoughtIndex < 0) return;
+    if (isHeadingType(caretThoughtType)) return;
     if (merging) return;
     if (readOnly) {
       keepDetailsToolbarOnEditRef.current = true;
@@ -1489,6 +1497,7 @@ function ThoughtsEditorInner(
     richRef.current?.dismissKeyboard();
     Keyboard.dismiss();
   }, [
+    caretThoughtType,
     getValues,
     injectIfReady,
     merging,
@@ -2226,7 +2235,11 @@ function ThoughtsEditorInner(
               placeholder=""
               editorInitializedCallback={handleEditorInitialized}
               onHeightChange={
-                embedInPageScroll ? () => setPageEditorVisible(true) : undefined
+                embedInPageScroll
+                  ? () => {
+                      if (editorReadyRef.current) setPageEditorVisible(true);
+                    }
+                  : undefined
               }
               originWhitelist={["*"]}
               editorStyle={{
@@ -2507,21 +2520,29 @@ function ThoughtsEditorInner(
                   .thought-fold {
                     display: none;
                     position: relative;
+                    appearance: none;
+                    -webkit-appearance: none;
+                    flex: 0 0 auto;
                     flex-shrink: 0;
                     order: -1;
                     align-self: center;
-                    width: 1.55em;
-                    height: 1.55em;
+                    width: 24px;
+                    height: 24px;
                     min-width: 24px;
                     min-height: 24px;
+                    max-width: 32px;
+                    max-height: 32px;
                     padding: 0;
                     margin: 0;
                     border: none;
                     border-radius: 50%;
+                    background: hsla(0, 0%, 50%, 0.18);
                     background: color-mix(in srgb, ${mutedFg} 18%, transparent);
                     color: ${mutedFg};
                     align-items: center;
                     justify-content: center;
+                    overflow: hidden;
+                    box-sizing: border-box;
                     opacity: 1;
                     cursor: pointer;
                     user-select: none;
@@ -2550,6 +2571,7 @@ function ThoughtsEditorInner(
                     gap: 0;
                     padding: var(--heading-pill-pad);
                     border-radius: 999px;
+                    background: hsla(0, 0%, 50%, 0.12);
                     background: color-mix(in srgb, ${mutedFg} 12%, transparent);
                   }
                   .thought-item.is-heading .thought-fields {
@@ -2557,8 +2579,8 @@ function ThoughtsEditorInner(
                     align-items: center;
                     width: auto;
                     max-width: 100%;
-                    min-width: min-content;
-                    flex: 0 1 auto;
+                    min-width: 0;
+                    flex: 1 1 auto;
                     margin: 0 10px 0 8px;
                   }
                   .thought-item.is-heading .thought-summary,
@@ -2593,12 +2615,19 @@ function ThoughtsEditorInner(
                     height: 26px;
                   }
                   .thought-fold svg {
-                    display: block;
-                    width: 0.86em;
-                    height: 0.86em;
-                    min-width: 16px;
-                    min-height: 16px;
+                    display: none;
                     pointer-events: none;
+                  }
+                  .thought-fold::after {
+                    content: "";
+                    display: block;
+                    width: 7px;
+                    height: 7px;
+                    box-sizing: border-box;
+                    border-right: 2px solid currentColor;
+                    border-bottom: 2px solid currentColor;
+                    transform: rotate(45deg) translateY(-1px);
+                    flex-shrink: 0;
                   }
                   .thought-item.is-section-collapsed .thought-fold {
                     -webkit-transform: rotate(-90deg);
@@ -2812,6 +2841,9 @@ function ThoughtsEditorInner(
                   .thought-summary {
                     font-weight: 400;
                     opacity: 0.92;
+                  }
+                  .thought-item.is-heading .thought-summary {
+                    font-family: "QuicksandBold", "QuicksandRegular", sans-serif;
                   }
                   .thought-item[data-thought-type="h1"] .thought-summary {
                     font-size: 28px;

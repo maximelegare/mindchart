@@ -2853,6 +2853,10 @@ export const CHECKLIST_SCRIPT = `
     return li ? li.querySelector(".thought-fold") : null;
   }
 
+  function foldIconSvg() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  }
+
   function ensureFoldButton(li) {
     var btn = foldButtonOf(li);
     var body = li.querySelector(".thought-body");
@@ -2863,8 +2867,9 @@ export const CHECKLIST_SCRIPT = `
       btn.setAttribute("contenteditable", "false");
       btn.setAttribute("tabindex", "-1");
       btn.setAttribute("aria-label", "Collapse section");
-      btn.innerHTML =
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+    }
+    if (!btn.querySelector("svg")) {
+      btn.innerHTML = foldIconSvg();
     }
     if (body) {
       var fields = body.querySelector(".thought-fields");
