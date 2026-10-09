@@ -7,7 +7,14 @@ import {
   type ThoughtType,
 } from "@repo/zod-schemas";
 import React from "react";
-import { Keyboard, Platform, Pressable, ScrollView, View } from "react-native";
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   runOnJS,
@@ -96,6 +103,7 @@ import { thoughtCapabilities } from "./thoughtCapabilities";
 import { useEditorNlp } from "@/features/nlp/useEditorNlp";
 import { lockThoughtStructure } from "@/lib/nlp";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
+import { usePageScroll } from "@/components/layout/page/pageContainer";
 import { useModal } from "@/components/ui/modal/modal";
 import { ThoughtTitleModalContent } from "./thoughtTitleModalContent";
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
@@ -107,7 +115,10 @@ export { createEmptyThought, convertThoughtType } from "./types";
 /** Gap between the caret and the keyboard / format bar. */
 const CARET_BOTTOM_MARGIN = 15;
 
-const scrollCaretIntoViewScript = (bottomMargin: number) => `
+const scrollCaretIntoViewScript = (
+  bottomMargin: number,
+  pageScroll = false
+) => `
 (function () {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
@@ -125,6 +136,14 @@ const scrollCaretIntoViewScript = (bottomMargin: number) => `
     if (thought) rect = thought.getBoundingClientRect();
   }
   if (!rect || (rect.height === 0 && rect.width === 0)) return true;
+
+  if (${pageScroll ? "true" : "false"}) {
+    window.ReactNativeWebView.postMessage(JSON.stringify({
+      type: "CARET_RECT",
+      data: { top: rect.top, bottom: rect.bottom }
+    }));
+    return true;
+  }
 
   var contentRect = content.getBoundingClientRect();
   var layoutBottom = contentRect.top + content.clientHeight;
@@ -354,6 +373,8 @@ type ThoughtsEditorProps = {
    * Ignored while editing (`readOnly={false}`).
    */
   simplified?: boolean;
+  /** Grow with content and let the page ScrollView scroll (note details). */
+  embedInPageScroll?: boolean;
   /** Dock the format toolbar to the keyboard (note details). */
   dockToolbarToKeyboard?: boolean;
   /** Enter edit mode when the format toolbar is requested from view. */
@@ -384,6 +405,7 @@ function ThoughtsEditorInner(
     categories,
     readOnly = false,
     plain = false,
+    embedInPageScroll = false,
     dockToolbarToKeyboard = false,
     onToggleCompleted,
     onChangeCategory,
@@ -394,6 +416,8 @@ function ThoughtsEditorInner(
 ) {
   const { colorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const { scrollTo, getScrollOffset } = usePageScroll();
   const categoryLabels = useCategoryLabelsMap();
   const { push } = useRouter();
   const { openModal } = useModal();
@@ -443,9 +467,14 @@ function ThoughtsEditorInner(
     null
   );
   const [mergeCategoryPicking, setMergeCategoryPicking] = React.useState(false);
+  const [pageEditorVisible, setPageEditorVisible] =
+    React.useState(!embedInPageScroll);
 
   const richRef = React.useRef<RichEditor>(null);
+  const editorBoxRef = React.useRef<View>(null);
   const editorReadyRef = React.useRef(false);
+  const embedInPageScrollRef = React.useRef(embedInPageScroll);
+  embedInPageScrollRef.current = embedInPageScroll;
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const keyboardHeightRef = React.useRef(0);
@@ -635,8 +664,44 @@ function ThoughtsEditorInner(
 
   const scrollCaretIntoView = React.useCallback(() => {
     const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 15;
-    richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
+    richRef.current?.injectJavascript(
+      scrollCaretIntoViewScript(margin, embedInPageScrollRef.current)
+    );
   }, []);
+
+  const applyCaretRectToPage = React.useCallback(
+    (rect: { top: number; bottom: number }) => {
+      if (!embedInPageScroll) return;
+      editorBoxRef.current?.measureInWindow((_x, y) => {
+        const caretTop = y + rect.top;
+        const caretBottom = y + rect.bottom;
+        const toolbar = dockToolbarToKeyboard
+          ? getThoughtsEditorToolbarHeight(toolbarModeRef.current) +
+            THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2
+          : 0;
+        const reserved =
+          (keyboardOpenRef.current ? keyboardHeightRef.current : 0) +
+          toolbar +
+          CARET_BOTTOM_MARGIN;
+        const limitBottom = windowHeight - reserved;
+        const limitTop = insets.top + 12;
+        const offset = getScrollOffset();
+        if (caretBottom > limitBottom) {
+          scrollTo(offset + (caretBottom - limitBottom));
+        } else if (caretTop < limitTop) {
+          scrollTo(Math.max(0, offset + (caretTop - limitTop)));
+        }
+      });
+    },
+    [
+      dockToolbarToKeyboard,
+      embedInPageScroll,
+      getScrollOffset,
+      insets.top,
+      scrollTo,
+      windowHeight,
+    ]
+  );
 
   const scheduleScrollCaretIntoView = React.useCallback(() => {
     if (scrollCaretFrameRef.current != null) return;
@@ -874,6 +939,22 @@ function ThoughtsEditorInner(
     }
     richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
     richRef.current?.injectJavascript(THOUGHT_SPLIT_SCRIPT);
+    if (embedInPageScroll) {
+      richRef.current?.injectJavascript(`
+(function () {
+  var style = document.getElementById("mc-hide-scrollbars");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "mc-hide-scrollbars";
+    style.textContent =
+      "html,body,.pell,.pell-content,.content{overflow:hidden!important;overflow-y:hidden!important;scrollbar-width:none}" +
+      "*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}";
+    document.head.appendChild(style);
+  }
+  true;
+})();
+`);
+    }
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
@@ -897,6 +978,7 @@ function ThoughtsEditorInner(
     applyEditorTheme,
     applyPendingFormat,
     categoryLabelsRecord,
+    embedInPageScroll,
     readOnly,
     thoughtPlaceholders,
     toolbarMode,
@@ -1590,6 +1672,17 @@ function ThoughtsEditorInner(
 
   const handleEditorMessage = React.useCallback(
     (message: { type: string; data?: unknown }) => {
+      if (message.type === "CARET_RECT") {
+        const payload = message.data as
+          | { top?: number; bottom?: number }
+          | undefined;
+        const top = Number(payload?.top);
+        const bottom = Number(payload?.bottom);
+        if (Number.isFinite(top) && Number.isFinite(bottom)) {
+          applyCaretRectToPage({ top, bottom });
+        }
+        return;
+      }
       if (message.type === "DISMISS_KEYBOARD") {
         richRef.current?.dismissKeyboard();
         Keyboard.dismiss();
@@ -1747,6 +1840,7 @@ function ThoughtsEditorInner(
       setCategoryPickerIndex(index);
     },
     [
+      applyCaretRectToPage,
       applyMergeTap,
       applySplitThought,
       categoryLabels,
@@ -1916,7 +2010,7 @@ function ThoughtsEditorInner(
   );
 
   return (
-    <BottomSheet className="flex-1 min-h-0">
+    <BottomSheet className={embedInPageScroll ? undefined : "flex-1 min-h-0"}>
       <CategorySheetPresenter
         open={
           categoryPickerIndex != null ||
@@ -1924,7 +2018,13 @@ function ThoughtsEditorInner(
           mergeCategoryPicking
         }
       />
-      <View className="relative flex-col flex-1 min-h-0">
+      <View
+        className={
+          embedInPageScroll
+            ? "relative flex-col w-full"
+            : "relative flex-col flex-1 min-h-0"
+        }
+      >
         {!readOnly && !plain ? (
           <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
             <ThoughtsEditorContentLabel />
@@ -1933,27 +2033,37 @@ function ThoughtsEditorInner(
 
         {/* Android: clipping/rounding a WebView parent overflows HWUI while drawing. */}
         <View
+          ref={editorBoxRef}
           className={
-            plain
-              ? "relative flex-1 min-h-0"
-              : Platform.OS === "android"
-                ? "relative flex-1 min-h-0 border border-input"
-                : "relative flex-1 min-h-0 rounded-lg border border-input"
+            embedInPageScroll
+              ? plain
+                ? "relative w-full"
+                : Platform.OS === "android"
+                  ? "relative w-full border border-input"
+                  : "relative w-full rounded-lg border border-input"
+              : plain
+                ? "relative flex-1 min-h-0"
+                : Platform.OS === "android"
+                  ? "relative flex-1 min-h-0 border border-input"
+                  : "relative flex-1 min-h-0 rounded-lg border border-input"
           }
-          style={
+          style={[
             plain
               ? { backgroundColor: "transparent", overflow: "visible" }
               : {
                   backgroundColor: hsl("card", colorScheme),
                   overflow: "visible",
-                }
-          }
+                },
+            embedInPageScroll && !pageEditorVisible ? { opacity: 0 } : null,
+          ]}
         >
           <Animated.View
             className={
-              Platform.OS === "android"
-                ? "flex-1 min-h-0"
-                : "flex-1 min-h-0 overflow-hidden"
+              embedInPageScroll
+                ? "w-full"
+                : Platform.OS === "android"
+                  ? "flex-1 min-h-0"
+                  : "flex-1 min-h-0 overflow-hidden"
             }
             style={
               showToolbar && dockToolbarToKeyboard ? editorPadStyle : undefined
@@ -1968,21 +2078,44 @@ function ThoughtsEditorInner(
             {/* Don't load Quicksand via @font-face — Android SIGBUS in FreeType. */}
             <RichEditor
               ref={richRef}
-              style={{ flex: 1 }}
-              useContainer={false}
-              scrollEnabled
-              nestedScrollEnabled
+              style={embedInPageScroll ? { width: "100%" } : { flex: 1 }}
+              useContainer={embedInPageScroll}
+              initialHeight={embedInPageScroll ? 160 : 0}
+              {...(embedInPageScroll
+                ? {
+                    showsVerticalScrollIndicator: false,
+                    showsHorizontalScrollIndicator: false,
+                    overScrollMode: "never" as const,
+                  }
+                : { scrollEnabled: true, nestedScrollEnabled: true })}
               disabled={false}
               pasteAsPlainText
               initialContentHTML={initialHtmlRef.current}
               placeholder=""
               editorInitializedCallback={handleEditorInitialized}
+              onHeightChange={
+                embedInPageScroll ? () => setPageEditorVisible(true) : undefined
+              }
               originWhitelist={["*"]}
               editorStyle={{
                 backgroundColor,
                 color: textColor,
                 caretColor,
                 placeholderColor,
+                initialCSSText: embedInPageScroll
+                  ? `
+                    html, body, .pell, .pell-content, .content {
+                      overflow: hidden !important;
+                      overflow-y: hidden !important;
+                      scrollbar-width: none;
+                    }
+                    *::-webkit-scrollbar {
+                      display: none !important;
+                      width: 0 !important;
+                      height: 0 !important;
+                    }
+                  `
+                  : undefined,
                 contentCSSText: `
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
@@ -1999,10 +2132,28 @@ function ThoughtsEditorInner(
                           THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2
                         : 12
                   }px;
-                  min-height: 100%;
+                  ${
+                    embedInPageScroll
+                      ? "min-height: 0; height: auto; overflow-y: hidden !important;"
+                      : "min-height: 100%;"
+                  }
                   box-sizing: border-box;
                 `,
                 cssText: `
+                  ${
+                    embedInPageScroll
+                      ? `
+                  html, body, .pell {
+                    height: auto !important;
+                    overflow: hidden !important;
+                  }
+                  .pell-content {
+                    height: auto !important;
+                    overflow-y: hidden !important;
+                  }
+                  `
+                      : ""
+                  }
                   .mc-thoughts {
                     --mc-gap-compact: 4px;
                     --mc-gap-block: 14px;

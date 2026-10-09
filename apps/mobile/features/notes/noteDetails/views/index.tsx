@@ -1,5 +1,6 @@
 import React from "react";
 import { Keyboard, TextInput, View } from "react-native";
+import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { useNavigation } from "@react-navigation/native";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Typography } from "@/components/ui/typography";
@@ -364,10 +365,7 @@ function NoteDetailsContent({
 
   return (
     <FormProvider {...form}>
-      <View
-        style={{ marginTop: 10 }}
-        className="flex-col flex-1 min-h-0 w-full gap-4"
-      >
+      <View style={{ marginTop: 10 }} className="flex-col w-full gap-4">
         <View className="w-full shrink-0 px-1">
           {isEditing ? (
             <Controller
@@ -434,7 +432,6 @@ function NoteDetailsContent({
         </View>
 
         <View
-          className="flex-1 min-h-0"
           style={{
             marginLeft: -(gutter("md").marginLeft ?? 8),
             marginRight: -(gutter("md").marginRight ?? 8),
@@ -449,6 +446,7 @@ function NoteDetailsContent({
             readOnly={!isEditing}
             plain
             simplified={simplified}
+            embedInPageScroll
             dockToolbarToKeyboard
             onRequestEdit={() => onEditingChange(true)}
             onToggleCompleted={({ id, isCompleted }) => {
@@ -462,6 +460,7 @@ function NoteDetailsContent({
             onToolSessionChange={onToolSessionChange}
           />
         </View>
+        <SpaceFiller sizes={{ height: ["HEADER_OVERLAP", 24] }} />
       </View>
     </FormProvider>
   );
@@ -521,7 +520,7 @@ export function NoteDetailsFeature({
   const willMountEditor = surfaceReady && !isPending && Boolean(noteRow);
 
   if (!willMountEditor || !noteRow) {
-    return <View className="flex-1" collapsable={false} />;
+    return <View collapsable={false} />;
   }
 
   return (

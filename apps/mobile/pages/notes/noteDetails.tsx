@@ -351,7 +351,7 @@ export const NoteDetailsPage = () => {
           : undefined
       }
       hideTabBar
-      noScrollView
+      collapsingHeader
       optionsHeader={
         <NoteDetailsOptionsHeader
           folder={headerFolder}

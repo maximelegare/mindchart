@@ -41,10 +41,14 @@ export type ScrollToTopOptions = {
 type PageScrollApi = {
   /** Returns true when the page was scrolled away from the top. */
   scrollToTop: (options?: ScrollToTopOptions) => boolean;
+  scrollTo: (y: number, options?: ScrollToTopOptions) => void;
+  getScrollOffset: () => number;
 };
 
 const PageScrollContext = React.createContext<PageScrollApi>({
   scrollToTop: () => false,
+  scrollTo: () => {},
+  getScrollOffset: () => 0,
 });
 
 export const usePageScroll = () => React.useContext(PageScrollContext);
@@ -186,7 +190,25 @@ export const PageContainer = ({
     [filteredScroll, previousScrollY, scrollY]
   );
 
-  const pageScrollApi = React.useMemo(() => ({ scrollToTop }), [scrollToTop]);
+  const scrollTo = React.useCallback(
+    (y: number, options?: ScrollToTopOptions) => {
+      const animated = options?.animated ?? false;
+      const next = Math.max(0, y);
+      animatedScrollRef.current?.scrollTo({ y: next, animated });
+      staticScrollRef.current?.scrollTo({ y: next, animated });
+    },
+    []
+  );
+
+  const getScrollOffset = React.useCallback(
+    () => Math.max(scrollY.value, staticScrollOffsetRef.current),
+    [scrollY]
+  );
+
+  const pageScrollApi = React.useMemo(
+    () => ({ scrollToTop, scrollTo, getScrollOffset }),
+    [getScrollOffset, scrollTo, scrollToTop]
+  );
 
   // Calculate filtered scroll directly inside the scroll handler to guarantee zero-frame lag
   const scrollHandler = useAnimatedScrollHandler({
@@ -341,6 +363,7 @@ export const PageContainer = ({
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
                 scrollEventThrottle={16}
                 onScroll={(event) => {
                   staticScrollOffsetRef.current =
@@ -380,6 +403,7 @@ export const PageContainer = ({
             scrollEventThrottle={16} // Guarantees 60fps/120fps tracking updates
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.scrollContent}
           >
             {/* Reserve space for headers to sit over */}
