@@ -686,6 +686,8 @@ function ThoughtsEditorInner(
         const limitBottom = windowHeight - reserved;
         const limitTop = insets.top + 12;
         const offset = getScrollOffset();
+        // Don't pull the page off the top just to chase the caret (edit/keyboard).
+        if (offset <= 16) return;
         if (caretBottom > limitBottom) {
           scrollTo(offset + (caretBottom - limitBottom));
         } else if (caretTop < limitTop) {
@@ -1079,8 +1081,11 @@ function ThoughtsEditorInner(
       }
       if (!stayOnDetails) {
         requestAnimationFrame(() => {
-          focusSelectedThought(true);
-          scheduleScrollCaretIntoView();
+          const atTop = getScrollOffset() <= 16;
+          if (!atTop) {
+            focusSelectedThought(true);
+            scheduleScrollCaretIntoView();
+          }
           enteringEditFocusRef.current = false;
         });
       }
@@ -1121,6 +1126,7 @@ function ThoughtsEditorInner(
     thoughtPlaceholders,
     focusSelectedThought,
     flushPendingNlp,
+    getScrollOffset,
     scheduleScrollCaretIntoView,
   ]);
 

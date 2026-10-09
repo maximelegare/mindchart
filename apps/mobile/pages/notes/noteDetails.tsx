@@ -353,6 +353,7 @@ export const NoteDetailsPage = () => {
       hideTabBar
       collapsingHeader
       transparentHeader
+      restoreScrollToken={isEditing ? "editing" : "viewing"}
       optionsHeader={
         <NoteDetailsOptionsHeader
           folder={headerFolder}

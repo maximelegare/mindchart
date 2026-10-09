@@ -99,6 +99,11 @@ type PageContainerProps = {
   hideTabBar?: boolean;
   /** Top corner radius of the page sheet under the header. */
   pageTopRadius?: number;
+  /**
+   * When this value changes, keep the current scroll offset through the
+   * following layout (edit/save, keyboard, editor height).
+   */
+  restoreScrollToken?: React.Key;
 };
 
 export const PageContainer = ({
@@ -118,6 +123,7 @@ export const PageContainer = ({
   optionsHeader,
   hideTabBar = false,
   pageTopRadius = PAGE_TOP_RADIUS,
+  restoreScrollToken,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -186,6 +192,9 @@ export const PageContainer = ({
   const scrollY = useSharedValue(0);
   const previousScrollY = useSharedValue(0);
   const filteredScroll = useSharedValue(0);
+  const lastUserScroll = useSharedValue(0);
+  const isRestoringScroll = useSharedValue(false);
+  const userDraggingScroll = useSharedValue(false);
   const transparentHeaderProgress = useSharedValue(0);
   const transparentHeaderTranslate = useSharedValue(0);
   const transparentHeaderVisible = useSharedValue(false);
@@ -226,11 +235,73 @@ export const PageContainer = ({
     [getScrollOffset, scrollTo, scrollToTop]
   );
 
+  const prevRestoreTokenRef = React.useRef(restoreScrollToken);
+  React.useLayoutEffect(() => {
+    if (restoreScrollToken === undefined) return;
+    if (prevRestoreTokenRef.current === restoreScrollToken) return;
+    prevRestoreTokenRef.current = restoreScrollToken;
+    const currentY = Math.max(scrollY.value, staticScrollOffsetRef.current);
+    const y = lastUserScroll.value;
+    // Stay put when already at the top (edit/save must not invent a scroll).
+    if (currentY <= 16 || y <= 16 || filteredScroll.value <= 8) return;
+    isRestoringScroll.value = true;
+    const collapsed = Math.min(y, chromeHeight);
+    const apply = () => {
+      animatedScrollRef.current?.scrollTo({ y, animated: false });
+      staticScrollRef.current?.scrollTo({ y, animated: false });
+      scrollY.value = y;
+      previousScrollY.value = y;
+      filteredScroll.value = collapsed;
+      if (useTransparentHeader && collapsed > 4) {
+        transparentHeaderVisible.value = true;
+        transparentHeaderTranslate.value = 0;
+        transparentHeaderProgress.value = 1;
+      }
+    };
+    apply();
+    const frame = requestAnimationFrame(apply);
+    const later = setTimeout(apply, 80);
+    const late = setTimeout(apply, 240);
+    const done = setTimeout(() => {
+      apply();
+      isRestoringScroll.value = false;
+      lastUserScroll.value = y;
+      if (useTransparentHeader && collapsed > 4) {
+        setTransparentHeaderActive(true);
+      }
+    }, 480);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(later);
+      clearTimeout(late);
+      clearTimeout(done);
+      isRestoringScroll.value = false;
+    };
+  }, [
+    chromeHeight,
+    filteredScroll,
+    isRestoringScroll,
+    lastUserScroll,
+    previousScrollY,
+    restoreScrollToken,
+    scrollY,
+    transparentHeaderProgress,
+    transparentHeaderTranslate,
+    transparentHeaderVisible,
+    useTransparentHeader,
+  ]);
+
   // Calculate filtered scroll directly inside the scroll handler to guarantee zero-frame lag
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y;
       scrollY.value = y;
+      if (!isRestoringScroll.value) {
+        lastUserScroll.value = y;
+      } else {
+        previousScrollY.value = y;
+        return;
+      }
 
       if (y <= 0) {
         filteredScroll.value = 0;
@@ -246,7 +317,14 @@ export const PageContainer = ({
       previousScrollY.value = y;
     },
     onBeginDrag: (event) => {
+      userDraggingScroll.value = true;
       previousScrollY.value = event.contentOffset.y;
+    },
+    onEndDrag: () => {
+      userDraggingScroll.value = false;
+    },
+    onMomentumEnd: () => {
+      userDraggingScroll.value = false;
     },
   });
 
@@ -298,6 +376,7 @@ export const PageContainer = ({
   useAnimatedReaction(
     () => filteredScroll.value,
     (y) => {
+      if (isRestoringScroll.value) return;
       if (!useTransparentHeader) {
         if (transparentHeaderVisible.value) {
           transparentHeaderVisible.value = false;
@@ -307,7 +386,11 @@ export const PageContainer = ({
       }
       const showAt = Math.min(22, Math.max(14, headerHeight * 0.2));
       const hideAt = 4;
-      if (!transparentHeaderVisible.value && y >= showAt) {
+      if (
+        !transparentHeaderVisible.value &&
+        y >= showAt &&
+        userDraggingScroll.value
+      ) {
         transparentHeaderVisible.value = true;
         runOnJS(showTransparentHeader)();
       } else if (transparentHeaderVisible.value && y <= hideAt) {
@@ -472,6 +555,8 @@ export const PageContainer = ({
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
+                automaticallyAdjustKeyboardInsets={false}
+                automaticallyAdjustContentInsets={false}
                 scrollEventThrottle={16}
                 onScroll={(event) => {
                   staticScrollOffsetRef.current =
@@ -512,6 +597,8 @@ export const PageContainer = ({
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets={false}
+            automaticallyAdjustContentInsets={false}
             contentContainerStyle={styles.scrollContent}
           >
             {/* Reserve space for headers to sit over */}
@@ -637,6 +724,7 @@ const styles = StyleSheet.create({
   headerBar: {
     height: HEADER_HEIGHT,
     justifyContent: "center",
+    overflow: "hidden",
   },
   optionsOverlap: {
     zIndex: 1,

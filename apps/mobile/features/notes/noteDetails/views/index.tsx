@@ -134,7 +134,6 @@ function NoteDetailsContent({
   const titleDraftRef = React.useRef(note.title ?? "");
   const keepDraftOnExitRef = React.useRef(false);
   const wasEditingRef = React.useRef(isEditing);
-  const [editorGeneration, setEditorGeneration] = React.useState(0);
 
   const originalThoughtIds = React.useMemo(
     () => new Set(note.thoughts.map((thought) => thought.id)),
@@ -172,7 +171,6 @@ function NoteDetailsContent({
     if (isEditing || !wasEditing) return;
     if (keepDraftOnExitRef.current) return;
     restoreOriginalNote();
-    setEditorGeneration((generation) => generation + 1);
   }, [isEditing, restoreOriginalNote]);
 
   // Keep form in sync when note data refreshes in view mode.
@@ -439,7 +437,7 @@ function NoteDetailsContent({
         >
           <ThoughtsEditor
             ref={thoughtsEditorRef}
-            key={`${note.id}-${editorGeneration}`}
+            key={note.id}
             noteId={note.id}
             categories={categoriesData ?? []}
             defaultShowTitles={showTitles}
