@@ -2416,6 +2416,7 @@ function ThoughtsEditorInner(
                     border-radius: 2px;
                     overflow-wrap: anywhere;
                     word-break: break-word;
+                    white-space: pre-wrap;
                     -webkit-box-decoration-break: clone;
                     box-decoration-break: clone;
                   }

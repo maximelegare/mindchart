@@ -92,9 +92,14 @@ const preservedSemanticLabel = (
 export function joinMergedThoughtHtml(left: string, right: string): string {
   const a = sanitizeInlineHtml(left).replace(/(<br\s*\/?>)+$/gi, "");
   const b = sanitizeInlineHtml(right).replace(/^(<br\s*\/?>)+/gi, "");
-  if (!a) return b;
-  if (!b) return a;
-  return a + b;
+  if (!stripHtml(a)) return b;
+  if (!stripHtml(b)) return a;
+  const leftPlain = stripHtml(a);
+  const rightPlain = stripHtml(b);
+  const leftEndsSpace = /[\s\u00a0]$/.test(leftPlain);
+  const rightStartsSpace = /^[\s\u00a0]/.test(rightPlain);
+  const gap = leftEndsSpace || rightStartsSpace ? "" : " ";
+  return `${a}${gap}${b}`;
 }
 
 /** Keep only inline bold/italic/underline markup for editor round-trips. */
