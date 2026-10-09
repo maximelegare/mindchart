@@ -2354,11 +2354,16 @@ export function setShowCategoryColorsScript(show: boolean): string {
 `;
 }
 
-export function focusThoughtScript(index: number, atEnd: boolean): string {
+export function focusThoughtScript(
+  index: number,
+  atEnd: boolean,
+  force = false
+): string {
   return `
 (function () {
   var index = ${Math.max(0, Math.floor(index))};
   var atEnd = ${atEnd ? "true" : "false"};
+  var force = ${force ? "true" : "false"};
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
@@ -2378,9 +2383,52 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
     return null;
   }
 
+  function firstTextNode(el) {
+    if (!el) return null;
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue && node.nodeValue.length) return node;
+    }
+    return null;
+  }
+
+  function placeCaretAtStart(el) {
+    var sel = window.getSelection();
+    if (!el || !sel) return;
+    try {
+      el.focus({ preventScroll: true });
+    } catch (err) {
+      try { el.focus(); } catch (err2) {}
+    }
+    var range = document.createRange();
+    var text = firstTextNode(el);
+    if (text) {
+      range.setStart(text, 0);
+    } else if (
+      el.childNodes.length === 1 &&
+      el.firstChild &&
+      el.firstChild.nodeName === "BR"
+    ) {
+      range.setStart(el, 0);
+    } else if (el.firstChild) {
+      range.setStartBefore(el.firstChild);
+    } else {
+      range.setStart(el, 0);
+    }
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
   function placeCaretAtEnd(el) {
     var sel = window.getSelection();
     if (!el || !sel) return;
+    try {
+      el.focus({ preventScroll: true });
+    } catch (err) {
+      try { el.focus(); } catch (err2) {}
+    }
     var range = document.createRange();
     if (
       el.childNodes.length === 1 &&
@@ -2397,17 +2445,29 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
     sel.addRange(range);
   }
 
+  function placeCaretSoon(el, toEnd) {
+    var apply = function () {
+      if (toEnd) placeCaretAtEnd(el);
+      else placeCaretAtStart(el);
+    };
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 0);
+    setTimeout(apply, 60);
+  }
+
   var sel = window.getSelection();
   var current = closestThought(sel && sel.anchorNode);
   var currentField = fieldOf(current);
   var keepCaret =
+    !force &&
     !atEnd &&
     currentField &&
     sel &&
     sel.rangeCount > 0 &&
     currentField.contains(sel.anchorNode);
 
-  if (!keepCaret && !atEnd && window.__mcSavedRange && sel) {
+  if (!keepCaret && !force && !atEnd && window.__mcSavedRange && sel) {
     try {
       var saved = window.__mcSavedRange;
       var savedNode =
@@ -2430,15 +2490,17 @@ export function focusThoughtScript(index: number, atEnd: boolean): string {
 
   if (!keepCaret) {
     var field = fieldOf(li);
-    if (field) placeCaretAtEnd(field);
-  }
-
-  try {
-    content.focus({ preventScroll: true });
-  } catch (err) {
+    if (field) {
+      placeCaretSoon(field, atEnd);
+    }
+  } else {
     try {
-      content.focus();
-    } catch (err2) {}
+      content.focus({ preventScroll: true });
+    } catch (err) {
+      try {
+        content.focus();
+      } catch (err2) {}
+    }
   }
   true;
 })();
@@ -3285,11 +3347,39 @@ export const CHECKLIST_SCRIPT = `
       return null;
     }
 
+    function blurViewSelection() {
+      if (window.__mcEditing) return;
+      try {
+        var sel = window.getSelection();
+        if (sel && sel.removeAllRanges) sel.removeAllRanges();
+        var active = document.activeElement;
+        if (active && active.blur) active.blur();
+        content.blur();
+      } catch (err) {}
+    }
+
     function selectThought(li) {
       if (!li || window.__mcSplitting) return;
       window.__mcSelectAt = Date.now();
       postCaretType(li);
+      blurViewSelection();
     }
+
+    document.addEventListener(
+      "mousedown",
+      function (e) {
+        if (window.__mcEditing || !eventInEditor(e)) return;
+        if (
+          closestClass(e.target, "thought-check") ||
+          closestClass(e.target, "thought-fold") ||
+          closestClass(e.target, "thought-graph")
+        ) {
+          return;
+        }
+        if (e.cancelable) e.preventDefault();
+      },
+      true
+    );
 
     document.addEventListener(
       "touchstart",
@@ -3336,6 +3426,7 @@ export const CHECKLIST_SCRIPT = `
           press.li ||
             thoughtAtPoint(t ? t.clientX : press.x, t ? t.clientY : press.y)
         );
+        if (!window.__mcEditing && e.cancelable) e.preventDefault();
       },
       true
     );

@@ -115,6 +115,15 @@ export { createEmptyThought, convertThoughtType } from "./types";
 /** Gap between the caret and the keyboard / format bar. */
 const CARET_BOTTOM_MARGIN = 15;
 
+/** First body thought, skipping headings (titles) that hide the section. */
+function firstVisibleThoughtIndex(
+  thoughts: { type?: string }[] | undefined
+): number {
+  if (!thoughts?.length) return 0;
+  const index = thoughts.findIndex((thought) => !isHeadingType(thought.type));
+  return index >= 0 ? index : 0;
+}
+
 const scrollCaretIntoViewScript = (
   bottomMargin: number,
   pageScroll = false
@@ -443,14 +452,22 @@ function ThoughtsEditorInner(
     underline: false,
   });
   const [caretThoughtType, setCaretThoughtType] = React.useState<ThoughtType>(
-    () => getValues("thoughts")?.[0]?.type ?? "li"
+    () => {
+      const initialThoughts = getValues("thoughts");
+      return (
+        initialThoughts?.[firstVisibleThoughtIndex(initialThoughts)]?.type ??
+        "li"
+      );
+    }
   );
   const [toolbarMode, setToolbarMode] = React.useState<ThoughtsToolbarMode>(
     () => (readOnly ? "details" : "format")
   );
   const showCategoryColors =
     (readOnly || toolbarMode === "details") && !hideCategories;
-  const [selectedThoughtIndex, setSelectedThoughtIndex] = React.useState(0);
+  const [selectedThoughtIndex, setSelectedThoughtIndex] = React.useState(() =>
+    firstVisibleThoughtIndex(getValues("thoughts"))
+  );
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
   >(null);
@@ -475,6 +492,8 @@ function ThoughtsEditorInner(
   const editorReadyRef = React.useRef(false);
   const embedInPageScrollRef = React.useRef(embedInPageScroll);
   embedInPageScrollRef.current = embedInPageScroll;
+  const readOnlyRef = React.useRef(readOnly);
+  readOnlyRef.current = readOnly;
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const keyboardHeightRef = React.useRef(0);
@@ -494,6 +513,13 @@ function ThoughtsEditorInner(
   const activeFormatsRef = React.useRef(activeFormats);
   activeFormatsRef.current = activeFormats;
   const enteringEditFocusRef = React.useRef(false);
+  const enterEditScrollActiveRef = React.useRef(false);
+  const enterEditScrollForceRef = React.useRef(false);
+  const enterEditScrollTimeoutRef = React.useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const didInitSelectionRef = React.useRef(false);
+  const userPickedThoughtRef = React.useRef(false);
   const preserveFormatsRef = React.useRef(false);
   const showTitlesRef = React.useRef(false);
   showTitlesRef.current = false;
@@ -624,6 +650,17 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(script);
   }, []);
 
+  React.useEffect(() => {
+    if (didInitSelectionRef.current || userPickedThoughtRef.current) return;
+    if (!thoughts?.length) return;
+    didInitSelectionRef.current = true;
+    const next = firstVisibleThoughtIndex(thoughts);
+    selectedThoughtIndexRef.current = next;
+    setSelectedThoughtIndex(next);
+    setCaretThoughtType(thoughts[next]?.type ?? "li");
+    injectIfReady(setSelectedThoughtScript(next));
+  }, [injectIfReady, thoughts]);
+
   const { embed, isReady: embeddingsReady } = useLlamaEmbeddings();
   const embedStructureText = React.useCallback(
     async (text: string) => {
@@ -651,16 +688,19 @@ function ThoughtsEditorInner(
     embed: embedStructureText,
   });
 
-  const focusSelectedThought = React.useCallback((atEnd: boolean) => {
-    const index = selectedThoughtIndexRef.current;
-    const editor = richRef.current as
-      | (RichEditor & { showAndroidKeyboard?: () => void })
-      | null;
-    if (!editorReadyRef.current || !editor) return;
-    editor.injectJavascript(focusThoughtScript(index, atEnd));
-    editor.showAndroidKeyboard?.();
-    editor.focusContentEditor();
-  }, []);
+  const focusSelectedThought = React.useCallback(
+    (atEnd: boolean, force = false) => {
+      const index = selectedThoughtIndexRef.current;
+      const editor = richRef.current as
+        | (RichEditor & { showAndroidKeyboard?: () => void })
+        | null;
+      if (!editorReadyRef.current || !editor) return;
+      editor.showAndroidKeyboard?.();
+      editor.focusContentEditor();
+      editor.injectJavascript(focusThoughtScript(index, atEnd, force));
+    },
+    []
+  );
 
   const scrollCaretIntoView = React.useCallback(() => {
     const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 15;
@@ -669,9 +709,47 @@ function ThoughtsEditorInner(
     );
   }, []);
 
+  const smoothCaretScrollRef = React.useRef(false);
+
+  const beginEnterEditScroll = React.useCallback(() => {
+    enterEditScrollActiveRef.current = true;
+    enterEditScrollForceRef.current = false;
+    smoothCaretScrollRef.current = true;
+    if (enterEditScrollTimeoutRef.current != null) {
+      clearTimeout(enterEditScrollTimeoutRef.current);
+    }
+    enterEditScrollTimeoutRef.current = setTimeout(() => {
+      enterEditScrollTimeoutRef.current = null;
+      if (!enterEditScrollActiveRef.current) return;
+      enterEditScrollForceRef.current = true;
+      smoothCaretScrollRef.current = true;
+      scrollCaretIntoView();
+    }, 1200);
+  }, [scrollCaretIntoView]);
+
+  const holdPageScroll = React.useCallback(() => {
+    const offset = getScrollOffset();
+    requestAnimationFrame(() => {
+      if (Math.abs(getScrollOffset() - offset) > 1) {
+        scrollTo(offset, { animated: false });
+      }
+      requestAnimationFrame(() => {
+        if (Math.abs(getScrollOffset() - offset) > 1) {
+          scrollTo(offset, { animated: false });
+        }
+      });
+    });
+  }, [getScrollOffset, scrollTo]);
+
   const applyCaretRectToPage = React.useCallback(
     (rect: { top: number; bottom: number }) => {
-      if (!embedInPageScroll) return;
+      if (!embedInPageScroll || readOnlyRef.current) return;
+      if (
+        !enterEditScrollActiveRef.current &&
+        !enterEditScrollForceRef.current
+      ) {
+        return;
+      }
       editorBoxRef.current?.measureInWindow((_x, y) => {
         const caretTop = y + rect.top;
         const caretBottom = y + rect.bottom;
@@ -679,20 +757,36 @@ function ThoughtsEditorInner(
           ? getThoughtsEditorToolbarHeight(toolbarModeRef.current) +
             THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2
           : 0;
-        const reserved =
-          (keyboardOpenRef.current ? keyboardHeightRef.current : 0) +
-          toolbar +
-          CARET_BOTTOM_MARGIN;
+        const keyboard = keyboardOpenRef.current
+          ? keyboardHeightRef.current
+          : 0;
+        const reserved = keyboard + toolbar + CARET_BOTTOM_MARGIN + 28;
         const limitBottom = windowHeight - reserved;
         const limitTop = insets.top + 12;
-        const offset = getScrollOffset();
-        // Don't pull the page off the top just to chase the caret (edit/keyboard).
-        if (offset <= 16) return;
-        if (caretBottom > limitBottom) {
-          scrollTo(offset + (caretBottom - limitBottom));
-        } else if (caretTop < limitTop) {
-          scrollTo(Math.max(0, offset + (caretTop - limitTop)));
+        const keyboardReady = keyboard > 0;
+        if (
+          !keyboardReady &&
+          !enterEditScrollForceRef.current &&
+          caretTop >= limitTop
+        ) {
+          return;
         }
+        const offset = getScrollOffset();
+        let next = offset;
+        if (caretBottom > limitBottom) {
+          next = offset + (caretBottom - limitBottom);
+        } else if (caretTop < limitTop) {
+          next = Math.max(0, offset + (caretTop - limitTop));
+        }
+        if (keyboardReady || enterEditScrollForceRef.current) {
+          enterEditScrollActiveRef.current = false;
+          enterEditScrollForceRef.current = false;
+        }
+        if (Math.abs(next - offset) < 2) return;
+        const animated =
+          smoothCaretScrollRef.current || Math.abs(next - offset) > 24;
+        smoothCaretScrollRef.current = false;
+        scrollTo(next, { animated });
       });
     },
     [
@@ -754,16 +848,28 @@ function ThoughtsEditorInner(
 
     const refreshCaret = () => {
       tryApplyPendingFormat();
+      if (!enterEditScrollActiveRef.current) return;
+      richRef.current?.injectJavascript(
+        focusThoughtScript(selectedThoughtIndexRef.current, false, true)
+      );
       scrollCaretIntoView();
     };
 
     const showSub = Keyboard.addListener("keyboardDidShow", (event) => {
       applyKeyboardOpen(event.endCoordinates.height);
+      if (!enterEditScrollActiveRef.current) {
+        tryApplyPendingFormat();
+        return;
+      }
+      smoothCaretScrollRef.current = true;
       requestAnimationFrame(() => {
         requestAnimationFrame(refreshCaret);
       });
-      setTimeout(refreshCaret, 100);
-      setTimeout(refreshCaret, 280);
+      setTimeout(() => {
+        if (!enterEditScrollActiveRef.current) return;
+        smoothCaretScrollRef.current = true;
+        refreshCaret();
+      }, 220);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       applyKeyboardClosed();
@@ -776,6 +882,10 @@ function ThoughtsEditorInner(
         cancelAnimationFrame(scrollCaretFrameRef.current);
         scrollCaretFrameRef.current = null;
       }
+      if (enterEditScrollTimeoutRef.current != null) {
+        clearTimeout(enterEditScrollTimeoutRef.current);
+        enterEditScrollTimeoutRef.current = null;
+      }
     };
   }, [
     applyKeyboardClosed,
@@ -787,10 +897,15 @@ function ThoughtsEditorInner(
 
   React.useEffect(() => {
     if (readOnly || keyboardHeight <= 0) return;
+    if (!enterEditScrollActiveRef.current) return;
+    smoothCaretScrollRef.current = true;
     const frame = requestAnimationFrame(() => {
+      if (!enterEditScrollActiveRef.current) return;
       scrollCaretIntoView();
     });
     const later = setTimeout(() => {
+      if (!enterEditScrollActiveRef.current) return;
+      smoothCaretScrollRef.current = true;
       scrollCaretIntoView();
     }, 160);
     return () => {
@@ -813,12 +928,10 @@ function ThoughtsEditorInner(
   true;
 })();
 `);
-    scrollCaretIntoView();
   }, [
     keyboardOpen,
     readOnly,
     dockToolbarToKeyboard,
-    scrollCaretIntoView,
     injectIfReady,
     toolbarMode,
   ]);
@@ -960,7 +1073,9 @@ function ThoughtsEditorInner(
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
-      richRef.current?.injectJavascript(setSelectedThoughtScript(0));
+      richRef.current?.injectJavascript(
+        setSelectedThoughtScript(selectedThoughtIndexRef.current)
+      );
       richRef.current?.injectJavascript(
         setThoughtTextEditableScript(!readOnly && toolbarMode === "format")
       );
@@ -1081,15 +1196,25 @@ function ThoughtsEditorInner(
       }
       if (!stayOnDetails) {
         requestAnimationFrame(() => {
-          const atTop = getScrollOffset() <= 16;
-          if (!atTop) {
-            focusSelectedThought(true);
-            scheduleScrollCaretIntoView();
-          }
-          enteringEditFocusRef.current = false;
+          beginEnterEditScroll();
+          focusSelectedThought(false, true);
+          scheduleScrollCaretIntoView();
+          setTimeout(() => {
+            richRef.current?.injectJavascript(
+              focusThoughtScript(selectedThoughtIndexRef.current, false, true)
+            );
+            enteringEditFocusRef.current = false;
+          }, 80);
         });
       }
       return;
+    }
+
+    enterEditScrollActiveRef.current = false;
+    enterEditScrollForceRef.current = false;
+    if (enterEditScrollTimeoutRef.current != null) {
+      clearTimeout(enterEditScrollTimeoutRef.current);
+      enterEditScrollTimeoutRef.current = null;
     }
 
     void (async () => {
@@ -1124,9 +1249,9 @@ function ThoughtsEditorInner(
     readOnly,
     refreshCategoryTimers,
     thoughtPlaceholders,
+    beginEnterEditScroll,
     focusSelectedThought,
     flushPendingNlp,
-    getScrollOffset,
     scheduleScrollCaretIntoView,
   ]);
 
@@ -1729,11 +1854,11 @@ function ThoughtsEditorInner(
           if (mergingRef.current) {
             applyMergeTap(index);
           } else {
+            userPickedThoughtRef.current = true;
+            didInitSelectionRef.current = true;
             setSelectedThoughtIndex(index);
+            if (readOnly) holdPageScroll();
           }
-        }
-        if (keyboardOpenRef.current) {
-          scheduleScrollCaretIntoView();
         }
         return;
       }
@@ -1747,6 +1872,8 @@ function ThoughtsEditorInner(
           ? "checkbox"
           : parseThoughtType(payload?.type);
         if (!Number.isFinite(index) || index < 0) return;
+        userPickedThoughtRef.current = true;
+        didInitSelectionRef.current = true;
         setCaretThoughtType(nextType);
         setSelectedThoughtIndex(index);
         const previous = getValues("thoughts");
@@ -1851,11 +1978,11 @@ function ThoughtsEditorInner(
       applySplitThought,
       categoryLabels,
       getValues,
+      holdPageScroll,
       injectIfReady,
       onToggleCompleted,
       push,
       readOnly,
-      scheduleScrollCaretIntoView,
       setValue,
       syncThoughtsFromHtml,
     ]
@@ -2076,9 +2203,6 @@ function ThoughtsEditorInner(
             }
             onLayout={(event) => {
               scrollViewHeightRef.current = event.nativeEvent.layout.height;
-              if (keyboardOpenRef.current) {
-                scrollCaretIntoView();
-              }
             }}
           >
             {/* Don't load Quicksand via @font-face — Android SIGBUS in FreeType. */}
@@ -2089,6 +2213,8 @@ function ThoughtsEditorInner(
               initialHeight={embedInPageScroll ? 160 : 0}
               {...(embedInPageScroll
                 ? {
+                    scrollEnabled: false,
+                    nestedScrollEnabled: false,
                     showsVerticalScrollIndicator: false,
                     showsHorizontalScrollIndicator: false,
                     overScrollMode: "never" as const,
@@ -3024,18 +3150,10 @@ function ThoughtsEditorInner(
                   ? undefined
                   : (html) => {
                       syncThoughtsFromHtml(html);
-                      if (keyboardOpenRef.current) {
-                        scrollCaretIntoView();
-                      }
                     }
               }
               onCursorPosition={
-                readOnly || merging
-                  ? undefined
-                  : () => {
-                      tryApplyPendingFormat();
-                      scrollCaretIntoView();
-                    }
+                readOnly || merging ? undefined : tryApplyPendingFormat
               }
               onMessage={handleEditorMessage}
             />
