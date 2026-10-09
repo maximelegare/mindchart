@@ -12,6 +12,7 @@ import {
 } from "../shared/staticCheckboxMark";
 import {
   getThoughtPlainText,
+  isHeadingType,
   isTextLikeType,
   parseTextContentStyle,
   type ThoughtType,
@@ -25,10 +26,12 @@ const MAX_VISIBLE_BULLETS = 4;
 
 const BULLET_SIZE = 6;
 const TEXT_LINE_HEIGHT = 18;
+const HEADING_FONT_SIZE = 18;
+const HEADING_LINE_HEIGHT = 22;
 
 const COMPACT_GAP = 4;
 const TYPE_CHANGE_GAP = 8;
-const PARAGRAPH_GAP = 14;
+const PARAGRAPH_GAP = 6;
 
 export type NoteOverviewItem = {
   type: ThoughtType;
@@ -85,6 +88,7 @@ type ThoughtOverviewItemProps = {
 const ThoughtOverviewItem = memo(
   ({ item, markerColor }: ThoughtOverviewItemProps) => {
     const isParagraph = isTextLikeType(item.type);
+    const isHeading = isHeadingType(item.type);
     const isCheckbox = item.type === "checkbox";
     const isCompleted = isCheckbox && Boolean(item.isCompleted);
 
@@ -125,8 +129,14 @@ const ThoughtOverviewItem = memo(
             variant="p"
             padding={false}
             style={{
-              lineHeight: TEXT_LINE_HEIGHT,
+              lineHeight: isHeading ? HEADING_LINE_HEIGHT : TEXT_LINE_HEIGHT,
               includeFontPadding: false,
+              ...(isHeading
+                ? {
+                    fontFamily: "QuicksandBold",
+                    fontSize: HEADING_FONT_SIZE,
+                  }
+                : null),
               ...(isCompleted
                 ? {
                     textDecorationLine: "line-through",
