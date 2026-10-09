@@ -23,7 +23,7 @@ export function NoteEditorHeaderActions({
   denyVariant = "discard",
 }: NoteEditorHeaderActionsProps) {
   return (
-    <View className="flex-row items-center gap-2 ml-2">
+    <View className="flex-row items-center gap-2 ml-2" collapsable={false}>
       <Button
         variant="ghost"
         size="icon"

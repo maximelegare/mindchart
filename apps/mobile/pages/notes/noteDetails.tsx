@@ -352,6 +352,7 @@ export const NoteDetailsPage = () => {
       }
       hideTabBar
       collapsingHeader
+      transparentHeader
       optionsHeader={
         <NoteDetailsOptionsHeader
           folder={headerFolder}

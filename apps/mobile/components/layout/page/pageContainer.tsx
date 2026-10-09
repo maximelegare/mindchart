@@ -13,9 +13,13 @@ import {
 } from "@react-navigation/native";
 import Animated, {
   clamp,
+  Easing,
+  runOnJS,
+  useAnimatedReaction,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import { Gradient } from "@/components/ui/gradient";
@@ -73,6 +77,11 @@ type PageContainerProps = {
   children: React.ReactNode;
   noScrollView?: boolean;
   collapsingHeader?: boolean;
+  /**
+   * When the collapsing header leaves the viewport, show a see-through
+   * copy of the header actions (not the page options bar).
+   */
+  transparentHeader?: boolean;
   moreOptionsMenu?: {
     state: { open: boolean; setOpen: (open: boolean) => void };
     links: MoreOptionsMenuProps["links"];
@@ -104,6 +113,7 @@ export const PageContainer = ({
   children,
   noScrollView = false,
   collapsingHeader = false,
+  transparentHeader = false,
   moreOptionsMenu,
   optionsHeader,
   hideTabBar = false,
@@ -161,6 +171,9 @@ export const PageContainer = ({
   );
   const fixedGradientHeight = headerHeight + HEADER_OVERLAP;
   const useCollapsingHeader = collapsingHeader && showHeader && !noScrollView;
+  const useTransparentHeader = useCollapsingHeader && transparentHeader;
+  const [transparentHeaderActive, setTransparentHeaderActive] =
+    React.useState(false);
 
   const onOptionsHeaderLayout = React.useCallback((height: number) => {
     const next = Math.round(height);
@@ -173,6 +186,9 @@ export const PageContainer = ({
   const scrollY = useSharedValue(0);
   const previousScrollY = useSharedValue(0);
   const filteredScroll = useSharedValue(0);
+  const transparentHeaderProgress = useSharedValue(0);
+  const transparentHeaderTranslate = useSharedValue(0);
+  const transparentHeaderVisible = useSharedValue(false);
 
   const scrollToTop = React.useCallback(
     (options?: ScrollToTopOptions) => {
@@ -241,6 +257,72 @@ export const PageContainer = ({
     };
   });
 
+  const transparentHeaderStyle = useAnimatedStyle(() => {
+    return {
+      opacity: transparentHeaderProgress.value,
+      transform: [{ translateY: transparentHeaderTranslate.value }],
+    };
+  });
+
+  const showTransparentHeader = React.useCallback(() => {
+    setTransparentHeaderActive(true);
+    requestAnimationFrame(() => {
+      transparentHeaderTranslate.value = -16;
+      transparentHeaderTranslate.value = withTiming(0, {
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+      });
+      transparentHeaderProgress.value = withTiming(1, {
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+  }, [transparentHeaderProgress, transparentHeaderTranslate]);
+
+  const hideTransparentHeader = React.useCallback(() => {
+    transparentHeaderTranslate.value = 0;
+    transparentHeaderProgress.value = withTiming(
+      0,
+      {
+        duration: 180,
+        easing: Easing.out(Easing.quad),
+      },
+      (finished) => {
+        if (finished) {
+          runOnJS(setTransparentHeaderActive)(false);
+        }
+      }
+    );
+  }, [transparentHeaderProgress, transparentHeaderTranslate]);
+
+  useAnimatedReaction(
+    () => filteredScroll.value,
+    (y) => {
+      if (!useTransparentHeader) {
+        if (transparentHeaderVisible.value) {
+          transparentHeaderVisible.value = false;
+          runOnJS(hideTransparentHeader)();
+        }
+        return;
+      }
+      const showAt = Math.min(22, Math.max(14, headerHeight * 0.2));
+      const hideAt = 4;
+      if (!transparentHeaderVisible.value && y >= showAt) {
+        transparentHeaderVisible.value = true;
+        runOnJS(showTransparentHeader)();
+      } else if (transparentHeaderVisible.value && y <= hideAt) {
+        transparentHeaderVisible.value = false;
+        runOnJS(hideTransparentHeader)();
+      }
+    },
+    [
+      headerHeight,
+      hideTransparentHeader,
+      showTransparentHeader,
+      useTransparentHeader,
+    ]
+  );
+
   const fullWidthGradientStyle = {
     width: windowWidth,
     marginLeft: -SIDE_GUTTER,
@@ -266,6 +348,43 @@ export const PageContainer = ({
   // Without optionsHeader, round the page sheet so fixedGradient shows in the corners.
   const pageNeedsTopRadius = showHeader && !optionsHeader;
 
+  const cloneHeaderActions = (
+    nodes: React.ReactNode[] | undefined,
+    slot: string
+  ) =>
+    nodes?.map((node, index) =>
+      React.isValidElement(node) ? (
+        <React.Fragment key={`${slot}-${index}`}>
+          {React.cloneElement(node)}
+        </React.Fragment>
+      ) : (
+        node
+      )
+    );
+
+  const [overlayMenuOpen, setOverlayMenuOpen] = React.useState(false);
+  const overlayMoreOptionsMenu = moreOptionsMenu
+    ? {
+        ...moreOptionsMenu,
+        state: { open: overlayMenuOpen, setOpen: setOverlayMenuOpen },
+      }
+    : undefined;
+
+  const renderHeaderContent = (slot: "main" | "overlay") => (
+    <HeaderContent
+      title={displayTitle}
+      subtitle={subtitle}
+      subtitleContent={subtitleContent}
+      showLogo={showLogo}
+      hideBackButton={hideBackButton || headerVariant === "stack" || !canGoBack}
+      leftButtons={cloneHeaderActions(leftButtons, `${slot}-left`)}
+      buttons={cloneHeaderActions(buttons, `${slot}-right`)}
+      moreOptionsMenu={
+        slot === "overlay" ? overlayMoreOptionsMenu : moreOptionsMenu
+      }
+    />
+  );
+
   const headerBlock = (
     <Gradient
       type="linear"
@@ -281,18 +400,7 @@ export const PageContainer = ({
       ]}
     >
       <View style={[styles.headerBar, { paddingHorizontal: SIDE_GUTTER }]}>
-        <HeaderContent
-          title={displayTitle}
-          subtitle={subtitle}
-          subtitleContent={subtitleContent}
-          showLogo={showLogo}
-          hideBackButton={
-            hideBackButton || headerVariant === "stack" || !canGoBack
-          }
-          leftButtons={leftButtons}
-          buttons={buttons}
-          moreOptionsMenu={moreOptionsMenu}
-        />
+        {renderHeaderContent("main")}
       </View>
     </Gradient>
   );
@@ -441,10 +549,56 @@ export const PageContainer = ({
             {optionsHeader}
           </Animated.View>
         ) : null}
+
+        {useTransparentHeader ? (
+          <Animated.View
+            pointerEvents={transparentHeaderActive ? "box-none" : "none"}
+            collapsable={false}
+            shouldRasterizeIOS
+            renderToHardwareTextureAndroid
+            style={[styles.transparentChrome, transparentHeaderStyle]}
+          >
+            <View
+              style={[
+                styles.transparentBar,
+                {
+                  paddingTop: insets.top,
+                  paddingBottom: 16,
+                  backgroundColor: withAlpha(chromeBackdrop, 0.82),
+                  borderBottomColor:
+                    colorScheme === "dark"
+                      ? "hsl(0, 0%, 32%)"
+                      : "hsl(0, 0%, 66%)",
+                },
+              ]}
+            >
+              <View style={{ marginHorizontal: SIDE_GUTTER }}>
+                <View
+                  style={[
+                    styles.headerBar,
+                    fullWidthGradientStyle,
+                    { paddingHorizontal: SIDE_GUTTER },
+                  ]}
+                >
+                  {renderHeaderContent("overlay")}
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        ) : null}
       </View>
     </PageScrollContext.Provider>
   );
 };
+
+function withAlpha(color: string, alpha: number): string {
+  const clamped = Math.min(1, Math.max(0, alpha));
+  if (color.startsWith("hsla(")) return color;
+  if (color.startsWith("hsl(")) {
+    return color.replace(/^hsl\(/, "hsla(").replace(/\)$/, `, ${clamped})`);
+  }
+  return `hsla(${color}, ${clamped})`;
+}
 
 const styles = StyleSheet.create({
   root: {
@@ -469,6 +623,16 @@ const styles = StyleSheet.create({
     left: SIDE_GUTTER,
     right: SIDE_GUTTER,
     zIndex: 21,
+  },
+  transparentChrome: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 30,
+  },
+  transparentBar: {
+    borderBottomWidth: 1,
   },
   headerBar: {
     height: HEADER_HEIGHT,
