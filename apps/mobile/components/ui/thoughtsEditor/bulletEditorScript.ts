@@ -3584,14 +3584,17 @@ export const THOUGHT_SPLIT_SCRIPT = `
       "px;bottom:" +
       ARROW_H +
       "px;width:2px;margin-left:-1px;background:currentColor;border-radius:1px;}" +
-      ".mc-split-arrow{position:absolute;left:0;width:14px;height:14px;}" +
-      ".mc-split-arrow svg{display:none;width:14px;height:14px;overflow:visible;}" +
+      ".mc-split-arrow{position:absolute;left:0;display:flex;align-items:center;justify-content:center;width:36px;height:14px;}" +
+      ".mc-split-arrow svg{display:none;width:14px;height:14px;overflow:visible;flex-shrink:0;}" +
+      ".mc-split-swatch{width:8px;height:8px;border-radius:2px;flex-shrink:0;box-sizing:border-box;}" +
+      ".mc-split-swatch-left{background:var(--mc-split-left,currentColor);margin-right:2px;}" +
+      ".mc-split-swatch-right{background:var(--mc-split-right,currentColor);margin-left:2px;}" +
       ".mc-split-arrow-top{top:4px;}" +
       ".mc-split-arrow-bottom{bottom:4px;}" +
       ".mc-split-caret[data-side=\\"left\\"] .mc-arrow-left{display:block;}" +
       ".mc-split-caret[data-side=\\"right\\"] .mc-arrow-right{display:block;}" +
-      ".mc-split-caret[data-side=\\"left\\"] .mc-split-arrow{margin-left:-12px;}" +
-      ".mc-split-caret[data-side=\\"right\\"] .mc-split-arrow{margin-left:-2px;}";
+      ".mc-split-caret[data-side=\\"left\\"] .mc-split-arrow{margin-left:-28px;}" +
+      ".mc-split-caret[data-side=\\"right\\"] .mc-split-arrow{margin-left:-8px;}";
   }
 
   function caretEl() {
@@ -3606,13 +3609,31 @@ export const THOUGHT_SPLIT_SCRIPT = `
     }
     el.innerHTML =
       '<span class="mc-split-arrow mc-split-arrow-top">' +
+      '<span class="mc-split-swatch mc-split-swatch-left"></span>' +
       ARROW_SVG +
+      '<span class="mc-split-swatch mc-split-swatch-right"></span>' +
       "</span>" +
       '<span class="mc-split-line"></span>' +
       '<span class="mc-split-arrow mc-split-arrow-bottom">' +
+      '<span class="mc-split-swatch mc-split-swatch-left"></span>' +
       ARROW_SVG +
+      '<span class="mc-split-swatch mc-split-swatch-right"></span>' +
       "</span>";
     return el;
+  }
+
+  function applySplitPreview(el, side, currentColor, newColor) {
+    if (!el) return;
+    var current = currentColor || "";
+    var next = newColor || current || "";
+    var left = side === "left" ? next : current;
+    var right = side === "right" ? next : current;
+    el.setAttribute("data-side", side === "left" ? "left" : "right");
+    if (next) el.style.color = next;
+    if (left) el.style.setProperty("--mc-split-left", left);
+    else el.style.removeProperty("--mc-split-left");
+    if (right) el.style.setProperty("--mc-split-right", right);
+    else el.style.removeProperty("--mc-split-right");
   }
 
   function rangeFromPoint(x, y) {
@@ -3883,7 +3904,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
     return true;
   };
 
-  window.__mcStartThoughtSplit = function (side, color) {
+  window.__mcStartThoughtSplit = function (side, color, currentColor, newColor) {
     var thought = selectedThought();
     var field = fieldOf(thought);
     if (!thought || !field) return false;
@@ -3895,8 +3916,8 @@ export const THOUGHT_SPLIT_SCRIPT = `
     var root = editorRoot();
     if (root) root.classList.add("mc-splitting");
     var el = caretEl();
-    el.setAttribute("data-side", side === "left" ? "left" : "right");
-    el.style.color = color || "#2563eb";
+    var nextSide = side === "left" ? "left" : "right";
+    applySplitPreview(el, nextSide, currentColor || color, newColor || color);
     var sel = window.getSelection();
     var range = null;
     if (sel && sel.rangeCount && field.contains(sel.anchorNode)) {
@@ -3906,7 +3927,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
       range = rangeAtOffset(field, Math.floor(fieldTextLength(field) / 2));
     }
     window.__mcSplit = {
-      side: side === "left" ? "left" : "right",
+      side: nextSide,
       thought: thought,
       field: field,
       range: range,
@@ -3915,12 +3936,26 @@ export const THOUGHT_SPLIT_SCRIPT = `
     return true;
   };
 
-  window.__mcSetThoughtSplitSide = function (side) {
-    if (!window.__mcSplit) return window.__mcStartThoughtSplit(side);
+  window.__mcSetThoughtSplitSide = function (side, currentColor, newColor) {
+    if (!window.__mcSplit) {
+      return window.__mcStartThoughtSplit(side, "", currentColor, newColor);
+    }
     window.__mcSplit.side = side === "left" ? "left" : "right";
     var el = caretEl();
-    el.setAttribute("data-side", window.__mcSplit.side);
+    applySplitPreview(
+      el,
+      window.__mcSplit.side,
+      currentColor,
+      newColor
+    );
     positionCaret();
+    return true;
+  };
+
+  window.__mcSetThoughtSplitPreview = function (currentColor, newColor) {
+    if (!window.__mcSplit) return false;
+    var el = document.getElementById("mc-split-caret");
+    applySplitPreview(el, window.__mcSplit.side, currentColor, newColor);
     return true;
   };
 
@@ -4116,23 +4151,55 @@ export const THOUGHT_SPLIT_SCRIPT = `
 
 export function startThoughtSplitScript(
   side: "left" | "right",
-  color: string
+  color: string,
+  currentColor?: string | null,
+  newColor?: string | null
 ): string {
   return `
 (function () {
   if (typeof window.__mcStartThoughtSplit === "function") {
-    window.__mcStartThoughtSplit(${JSON.stringify(side)}, ${JSON.stringify(color)});
+    window.__mcStartThoughtSplit(
+      ${JSON.stringify(side)},
+      ${JSON.stringify(cssColorToken(color))},
+      ${JSON.stringify(cssColorToken(currentColor))},
+      ${JSON.stringify(cssColorToken(newColor))}
+    );
   }
   true;
 })();
 `;
 }
 
-export function setThoughtSplitSideScript(side: "left" | "right"): string {
+export function setThoughtSplitSideScript(
+  side: "left" | "right",
+  currentColor?: string | null,
+  newColor?: string | null
+): string {
   return `
 (function () {
   if (typeof window.__mcSetThoughtSplitSide === "function") {
-    window.__mcSetThoughtSplitSide(${JSON.stringify(side)});
+    window.__mcSetThoughtSplitSide(
+      ${JSON.stringify(side)},
+      ${JSON.stringify(cssColorToken(currentColor))},
+      ${JSON.stringify(cssColorToken(newColor))}
+    );
+  }
+  true;
+})();
+`;
+}
+
+export function setThoughtSplitPreviewScript(
+  currentColor?: string | null,
+  newColor?: string | null
+): string {
+  return `
+(function () {
+  if (typeof window.__mcSetThoughtSplitPreview === "function") {
+    window.__mcSetThoughtSplitPreview(
+      ${JSON.stringify(cssColorToken(currentColor))},
+      ${JSON.stringify(cssColorToken(newColor))}
+    );
   }
   true;
 })();

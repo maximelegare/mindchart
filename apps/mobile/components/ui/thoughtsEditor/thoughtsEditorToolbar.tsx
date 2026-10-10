@@ -117,6 +117,8 @@ type ThoughtsEditorToolbarProps = {
   onToggleCategories: () => void;
   onCategoryOpacityChange: (opacity: number) => void;
   splitSide: "left" | "right" | null;
+  splitCurrentColor?: string | null;
+  splitNewColor?: string | null;
   onSplit: () => void;
   onSplitSide: (side: "left" | "right") => void;
   onConfirmSplit: () => void;
@@ -608,10 +610,26 @@ function CategoryOpacityPopup({
   );
 }
 
+function SplitColorSwatch({ color }: { color: string | null | undefined }) {
+  const { colorScheme } = useColorScheme();
+  return (
+    <View
+      style={{
+        width: 10,
+        height: 10,
+        borderRadius: 2,
+        backgroundColor: color ?? hsl("muted", colorScheme),
+      }}
+    />
+  );
+}
+
 function SplitSessionToolbar({
   splitSide,
   selectedCategoryLabel,
   selectedCategoryColor,
+  splitCurrentColor,
+  splitNewColor,
   onConfirmSplit,
   onCancelSplit,
   onSplitSide,
@@ -620,6 +638,8 @@ function SplitSessionToolbar({
   splitSide: "left" | "right";
   selectedCategoryLabel: string;
   selectedCategoryColor: string | null;
+  splitCurrentColor?: string | null;
+  splitNewColor?: string | null;
   onConfirmSplit: () => void;
   onCancelSplit: () => void;
   onSplitSide: (side: "left" | "right") => void;
@@ -655,7 +675,12 @@ function SplitSessionToolbar({
           />
         </Pressable>
       </View>
-      <SplitDirectionTool side={splitSide} onSplitSide={onSplitSide} />
+      <SplitDirectionTool
+        side={splitSide}
+        onSplitSide={onSplitSide}
+        currentColor={splitCurrentColor}
+        newColor={splitNewColor}
+      />
       <Pressable
         onPress={onOpenCategory}
         accessibilityRole="button"
@@ -748,28 +773,34 @@ function MergeSessionToolbar({
 function SplitDirectionTool({
   side,
   onSplitSide,
+  currentColor,
+  newColor,
 }: {
   side: "left" | "right";
   onSplitSide: (side: "left" | "right") => void;
+  currentColor?: string | null;
+  newColor?: string | null;
 }) {
   const { colorScheme } = useColorScheme();
+  const leftColor = side === "left" ? newColor : currentColor;
+  const rightColor = side === "right" ? newColor : currentColor;
   return (
     <View
-      className="h-10 flex-row items-center rounded-md px-0.5"
+      className="h-10 flex-row items-center rounded-md px-1"
       style={{ backgroundColor: hsl("border", colorScheme) }}
     >
+      <SplitColorSwatch color={leftColor} />
       <Pressable
         onPress={() => onSplitSide("left")}
         accessibilityRole="button"
         accessibilityLabel={thoughtsEditorSplitLeftAccessibilityLabel()}
         accessibilityState={{ selected: side === "left" }}
-        className="h-10 w-8 items-center justify-center"
+        className="h-10 w-7 items-center justify-center"
       >
         <Icon
           name="arrow-left"
           size={16}
           color={side === "left" ? "primary" : "muted-foreground"}
-          style={{ transform: [{ translateX: 4 }] }}
         />
       </Pressable>
       <Icon name="square-split-horizontal" size={18} color="primary" />
@@ -778,15 +809,15 @@ function SplitDirectionTool({
         accessibilityRole="button"
         accessibilityLabel={thoughtsEditorSplitRightAccessibilityLabel()}
         accessibilityState={{ selected: side === "right" }}
-        className="h-10 w-8 items-center justify-center"
+        className="h-10 w-7 items-center justify-center"
       >
         <Icon
           name="arrow-right"
           size={16}
           color={side === "right" ? "primary" : "muted-foreground"}
-          style={{ transform: [{ translateX: -4 }] }}
         />
       </Pressable>
+      <SplitColorSwatch color={rightColor} />
     </View>
   );
 }
@@ -849,6 +880,8 @@ function DetailsToolbar({
   onToggleCategories,
   onCategoryOpacityChange,
   splitSide,
+  splitCurrentColor,
+  splitNewColor,
   onSplit,
   onSplitSide,
   onConfirmSplit,
@@ -873,6 +906,8 @@ function DetailsToolbar({
   | "onToggleCategories"
   | "onCategoryOpacityChange"
   | "splitSide"
+  | "splitCurrentColor"
+  | "splitNewColor"
   | "onSplit"
   | "onSplitSide"
   | "onConfirmSplit"
@@ -935,6 +970,8 @@ function DetailsToolbar({
           splitSide={splitSide}
           selectedCategoryLabel={selectedCategoryLabel}
           selectedCategoryColor={selectedCategoryColor}
+          splitCurrentColor={splitCurrentColor}
+          splitNewColor={splitNewColor}
           onConfirmSplit={onConfirmSplit}
           onCancelSplit={onCancelSplit}
           onSplitSide={onSplitSide}

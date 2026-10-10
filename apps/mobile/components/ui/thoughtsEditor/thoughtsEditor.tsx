@@ -82,6 +82,7 @@ import {
   THOUGHT_SPLIT_SCRIPT,
   startThoughtSplitScript,
   setThoughtSplitSideScript,
+  setThoughtSplitPreviewScript,
   confirmThoughtSplitScript,
   cancelThoughtSplitScript,
   applyParagraphSplitScript,
@@ -647,6 +648,8 @@ function ThoughtsEditorInner(
     [categories, mutedFg]
   );
   const mergeHighlightColor = colorForCategoryId(mergeCategoryId);
+  const splitCurrentColor = colorForCategoryId(selectedThought?.categoryId);
+  const splitNewColor = colorForCategoryId(splitCategoryId);
   const mergeCanConfirm =
     mergeIndexes.length >= 2 &&
     Math.max(...mergeIndexes) - Math.min(...mergeIndexes) + 1 ===
@@ -1420,10 +1423,18 @@ function ThoughtsEditorInner(
     setSplitSide("right");
     setSplitCategoryId(null);
     injectIfReady(
-      startThoughtSplitScript("right", hsl("primary", colorScheme))
+      startThoughtSplitScript(
+        "right",
+        colorForCategoryId(null),
+        colorForCategoryId(
+          getValues("thoughts")?.[selectedThoughtIndex]?.categoryId
+        ),
+        colorForCategoryId(null)
+      )
     );
   }, [
-    colorScheme,
+    colorForCategoryId,
+    getValues,
     injectIfReady,
     onRequestEdit,
     readOnly,
@@ -1436,10 +1447,19 @@ function ThoughtsEditorInner(
     (side: "left" | "right") => {
       if (!splitSide || splitSide === side) return;
       setSplitSide(side);
-      injectIfReady(setThoughtSplitSideScript(side));
+      injectIfReady(
+        setThoughtSplitSideScript(side, splitCurrentColor, splitNewColor)
+      );
     },
-    [injectIfReady, splitSide]
+    [injectIfReady, splitCurrentColor, splitNewColor, splitSide]
   );
+
+  React.useEffect(() => {
+    if (!splitSide) return;
+    injectIfReady(
+      setThoughtSplitPreviewScript(splitCurrentColor, splitNewColor)
+    );
+  }, [injectIfReady, splitCurrentColor, splitNewColor, splitSide]);
 
   const handleConfirmSplit = React.useCallback(() => {
     if (!splitSide) return;
@@ -3247,6 +3267,8 @@ function ThoughtsEditorInner(
               onToggleCategories={handleToggleCategories}
               onCategoryOpacityChange={handleCategoryOpacityChange}
               splitSide={splitSide}
+              splitCurrentColor={splitCurrentColor}
+              splitNewColor={splitNewColor}
               onSplit={handleSplit}
               onSplitSide={handleSplitSide}
               onConfirmSplit={handleConfirmSplit}
@@ -3280,6 +3302,8 @@ function ThoughtsEditorInner(
             onToggleCategories={handleToggleCategories}
             onCategoryOpacityChange={handleCategoryOpacityChange}
             splitSide={splitSide}
+            splitCurrentColor={splitCurrentColor}
+            splitNewColor={splitNewColor}
             onSplit={handleSplit}
             onSplitSide={handleSplitSide}
             onConfirmSplit={handleConfirmSplit}
