@@ -58,9 +58,10 @@ export function NoteDetailsOptionsHeader({
               style={{ rowGap: 12, columnGap: 8 }}
             >
               <OptionChip
-                icon="eye"
+                icon={simplified ? "eye-off" : "eye"}
                 label={<NoteDetailsViewModeChipLabel simplified={simplified} />}
-                selected
+                selected={!simplified}
+                muted={simplified}
                 onPress={toggleSimplified}
               />
             </View>

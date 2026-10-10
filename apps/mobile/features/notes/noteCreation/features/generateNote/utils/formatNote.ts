@@ -4,9 +4,57 @@ import {
   LocalAIResThought,
   Note,
   Thought,
+  isTextLikeType,
 } from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 import { classifyCategory } from "@/features/categories/utils/classifyCategory";
+
+const thoughtFromLocalAi = (t: LocalAIResThought, noteId: string): Thought => {
+  const recordId = generateID();
+  const thoughtId = t.thoughtId ?? recordId;
+  const thoughtTitle = (t.title ?? "").trim();
+  const thoughtText = (t.content?.text ?? t.summary ?? "").trim();
+  const semanticLabel =
+    (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtText;
+  const type = t.type ?? "li";
+  const base = {
+    id: recordId,
+    thoughtId,
+    noteId,
+    contentId: generateID(),
+    title: thoughtTitle,
+    semanticLabel,
+    categoryId: classifyCategory(
+      `${thoughtTitle} ${thoughtText} ${semanticLabel}`
+    ),
+    titleSource: "generated" as const,
+    categorySource: "generated" as const,
+    nlpStructureLocked: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  if (type === "checkbox") {
+    return {
+      ...base,
+      type: "checkbox",
+      content: { text: thoughtText, checked: t.content?.checked ?? false },
+    };
+  }
+
+  if (isTextLikeType(type)) {
+    return {
+      ...base,
+      type,
+      content: { text: thoughtText, style: "block" },
+    };
+  }
+
+  return {
+    ...base,
+    type: "li",
+    content: { text: thoughtText },
+  };
+};
 
 export const formatNote = (
   data: LocalAIResNoteSchemaModel,
@@ -25,29 +73,7 @@ export const formatNote = (
     showTitles: thoughts.some((thought) => Boolean(thought.title?.trim())),
   };
 
-  const formatedToughts = thoughts.map((t: LocalAIResThought) => {
-    const recordId = generateID();
-    const thoughtId = t.thoughtId ?? recordId;
-    const thoughtTitle = (t.title ?? "").trim();
-    const thoughtSummary = (t.summary ?? "").trim();
-    const semanticLabel =
-      (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtSummary;
-
-    return {
-      id: recordId,
-      thoughtId,
-      noteId,
-      title: thoughtTitle,
-      summary: thoughtSummary,
-      semanticLabel,
-      categoryId: classifyCategory(
-        `${thoughtTitle} ${thoughtSummary} ${semanticLabel}`
-      ),
-      createdAt: new Date().toISOString(),
-      isCompletable: false,
-      isCompleted: false,
-    };
-  });
+  const formatedToughts = thoughts.map((t) => thoughtFromLocalAi(t, noteId));
 
   return { note: formatedNote, thoughts: formatedToughts };
 };

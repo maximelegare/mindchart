@@ -59,7 +59,11 @@ export const runRawSqliteTransaction = async <T>(
     rawSqlite.executeSync("COMMIT");
     return result;
   } catch (error) {
-    rawSqlite.executeSync("ROLLBACK");
+    try {
+      rawSqlite.executeSync("ROLLBACK");
+    } catch {
+      // Nested BEGIN/COMMIT already closed the transaction.
+    }
     throw error;
   }
 };

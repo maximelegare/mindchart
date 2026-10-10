@@ -48,6 +48,8 @@ export * from "./persons/setNotePersons";
 export * from "./persons/upsertPersonsFromContacts";
 export * from "./search/fts5/search";
 export * from "./settings/exportDatabase";
+export * from "./thoughtContent/thoughtJson";
+export * from "./thoughtContent/typedContent";
 export * from "./thoughts/deleteThoughById";
 export * from "./thoughts/deleteThoughtsByIds";
 export * from "./thoughts/getAllThoughts";

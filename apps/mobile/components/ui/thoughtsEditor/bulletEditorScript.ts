@@ -1,4 +1,6 @@
-/** Injected into the pell WebView to keep content as bullets and shape titled items. */
+import type { ThoughtType } from "@repo/zod-schemas";
+
+/** Injected into the pell WebView to keep thoughts as independent items. */
 export const BULLET_EDITOR_GUARD_SCRIPT = `
 (function () {
   var content =
@@ -17,14 +19,33 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     return (p && p[key]) || fallback;
   }
 
+  function isHeadingType(type) {
+    return (
+      type === "h1" ||
+      type === "h2" ||
+      type === "h3" ||
+      type === "h4" ||
+      type === "h5" ||
+      type === "h6"
+    );
+  }
+
+  function isTextLikeType(type) {
+    return type === "text" || isHeadingType(type);
+  }
+
+  function parseThoughtType(type) {
+    if (type === "text" || type === "li" || type === "checkbox" || isHeadingType(type)) {
+      return type;
+    }
+    return "li";
+  }
+
   if (!window.__mcBulletGuardInstalled) {
     window.__mcBulletGuardInstalled = true;
-    // Preserve a flag set by setShowTitlesScript; only default when unset.
     if (typeof window.__mcShowTitles !== "boolean") {
       window.__mcShowTitles = false;
     }
-    var CATEGORY_FADE_MS = 3000;
-    var COLLAPSE_TRANSITION_MS = 380;
 
     function emptyTitledFieldsHtml() {
       return (
@@ -40,22 +61,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function emptyUntitledFieldHtml() {
       return (
         '<div class="thought-summary is-placeholder" data-placeholder="' +
-        mcPh("bullet", "Enter a bullet point") +
+        mcPh("bullet", "Write Something...") +
         '"><br></div>'
-      );
-    }
-
-    function categoryLabelHtml(categoryId) {
-      var id = categoryId || "uncategorized";
-      var labels = window.__mcCategoryLabels;
-      var label =
-        (labels && labels[id]) || id.charAt(0).toUpperCase() + id.slice(1);
-      return (
-        '<div class="thought-category" contenteditable="false" data-category-id="' +
-        id +
-        '"><span class="thought-category-name">' +
-        label +
-        "</span></div>"
       );
     }
 
@@ -68,14 +75,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
-    function expandButtonHtml() {
-      return (
-        '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false">' +
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true">' +
-        '<path d="M6 9l6 6 6-6"/></svg></button>'
-      );
-    }
-
     function thoughtItemInnerHtml(categoryId, fieldsHtml) {
       return (
         '<div class="thought-rail" contenteditable="false">' +
@@ -83,19 +82,17 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         '<div class="thought-dot"></div></div>' +
         thoughtCheckHtml() +
         '<div class="thought-body">' +
-        categoryLabelHtml(categoryId) +
         '<div class="thought-fields">' +
         fieldsHtml +
-        "</div></div>" +
-        expandButtonHtml()
+        "</div></div>"
       );
     }
 
     function emptyLiHtml(categoryId) {
-      var fields = window.__mcShowTitles
-        ? emptyTitledFieldsHtml()
-        : emptyUntitledFieldHtml();
-      return thoughtItemInnerHtml(categoryId, fields);
+      return thoughtItemInnerHtml(
+        categoryId,
+        window.__mcShowTitles ? emptyTitledFieldsHtml() : emptyUntitledFieldHtml()
+      );
     }
 
     function closest(node, predicate) {
@@ -106,10 +103,14 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       return null;
     }
 
-    function closestLi(node) {
+    function closestThought(node) {
       return closest(node, function (n) {
-        return n.nodeName === "LI";
+        return n.classList && n.classList.contains("thought-item");
       });
+    }
+
+    function isThought(node) {
+      return !!(node && node.classList && node.classList.contains("thought-item"));
     }
 
     function closestClass(node, className) {
@@ -130,12 +131,92 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function isCaretAtStartOf(el) {
       var sel = window.getSelection();
       if (!sel || !sel.rangeCount || !el) return false;
+      try {
+        var range = sel.getRangeAt(0);
+        if (!range.collapsed) return false;
+        var node = range.startContainer;
+        if (el !== node && !(el.contains && el.contains(node))) return false;
+        var probe = range.cloneRange();
+        probe.selectNodeContents(el);
+        probe.setEnd(node, range.startOffset);
+        return probe
+          .toString()
+          .replace(/\\u00a0/g, " ")
+          .replace(/\\n/g, "")
+          .trim().length === 0;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    function isLineStartBackspace(li, field) {
+      if (!field) return true;
+      if (isEmptyField(field) || isCaretAtStartOf(field)) return true;
+      var sel = window.getSelection();
+      var node =
+        sel &&
+        (sel.anchorNode ||
+          (sel.rangeCount && sel.getRangeAt(0).startContainer));
+      if (!node || !li || !li.contains(node)) return false;
+      if (field === node || field.contains(node)) return false;
+      var title = li.querySelector(".thought-title");
+      if (title && (title === node || title.contains(node))) return false;
+      return true;
+    }
+
+    function isCaretAtEndOf(el) {
+      var sel = window.getSelection();
+      if (!sel || !sel.rangeCount || !el) return true;
       var range = sel.getRangeAt(0);
-      if (!range.collapsed) return false;
+      var node = range.endContainer;
+      if (el !== node && !(el.contains && el.contains(node))) return true;
       var probe = range.cloneRange();
       probe.selectNodeContents(el);
-      probe.setEnd(range.startContainer, range.startOffset);
+      probe.setStart(range.endContainer, range.endOffset);
       return probe.toString().replace(/\\u00a0/g, " ").trim().length === 0;
+    }
+
+    function htmlHasText(html) {
+      var probe = document.createElement("div");
+      probe.innerHTML = html || "";
+      return (
+        (probe.textContent || "")
+          .replace(/\\u00a0/g, " ")
+          .replace(/\\n/g, " ")
+          .trim().length > 0
+      );
+    }
+
+    function stripSplitChrome(el, edge) {
+      if (!el) return;
+      if (edge === "end") {
+        while (el.lastChild && el.lastChild.nodeName === "BR") {
+          el.removeChild(el.lastChild);
+        }
+        return;
+      }
+      while (el.firstChild && el.firstChild.nodeName === "BR") {
+        el.removeChild(el.firstChild);
+      }
+    }
+
+    function applySummaryHtml(summary, html) {
+      if (!summary) return;
+      var probe = document.createElement("div");
+      probe.innerHTML = html || "";
+      var text = (probe.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .replace(/\\n/g, " ")
+        .trim();
+      if (!text) {
+        summary.innerHTML = "<br>";
+        summary.classList.add("is-placeholder");
+        summary.classList.remove("is-error-placeholder");
+        return;
+      }
+      summary.innerHTML = html;
+      summary.classList.remove("is-placeholder");
+      summary.classList.remove("is-error-placeholder");
     }
 
     function placeCaretAtStart(el) {
@@ -263,182 +344,506 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
-    function clearCollapseTimer(li) {
-      if (li && li.__mcCollapseTimer) {
-        clearTimeout(li.__mcCollapseTimer);
-        li.__mcCollapseTimer = null;
-      }
-      if (li && li.__mcBounceTimer) {
-        clearTimeout(li.__mcBounceTimer);
-        li.__mcBounceTimer = null;
-      }
+    function requestParagraphSplit(li, newThoughtId) {
+      if (!li || !li.parentNode || !window.ReactNativeWebView) return false;
+      var text = fieldPlainText(li.querySelector(".thought-summary"));
+      if (!text) return false;
+      var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+      if (index < 0) return false;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "SPLIT_PARAGRAPH",
+          data: {
+            index: index,
+            thoughtId: ensureThoughtId(li),
+            newThoughtId: newThoughtId || "",
+            text: text,
+          },
+        })
+      );
+      return true;
     }
 
-    function bounceStripe(li) {
-      if (window.__mcSimplified) return;
-      if (li && li.classList.contains("is-checklist")) return;
-      var dot = li && li.querySelector(".thought-dot");
-      if (!dot) return;
-      dot.classList.remove("is-bouncing");
-      void dot.offsetWidth;
-      dot.classList.add("is-bouncing");
-      li.__mcBounceTimer = setTimeout(function () {
-        dot.classList.remove("is-bouncing");
-        li.__mcBounceTimer = null;
-      }, 1800);
-    }
-
-    function syncExpandButton(li) {
-      if (!li) return;
-      var btn = li.querySelector(".thought-expand");
-      if (btn) {
-        btn.setAttribute(
-          "aria-expanded",
-          li.classList.contains("is-collapsed") ? "false" : "true"
-        );
+    function applyPieceToThought(li, piece) {
+      if (!li || !piece) return;
+      li.setAttribute("data-thought-id", piece.id || ensureThoughtId(li));
+      li.setAttribute("data-thought-type", "text");
+      li.setAttribute("data-category-id", piece.categoryId || "uncategorized");
+      li.classList.add("is-block");
+      li.classList.add("is-text-like");
+      if (piece.inline) {
+        li.classList.add("is-inline");
+        li.setAttribute("data-inline", "true");
+      } else {
+        li.classList.remove("is-inline");
+        li.removeAttribute("data-inline");
       }
-    }
-
-    function collapseThoughtCategory(li) {
-      if (!li || window.__mcSimplified) return;
-      var title = li.querySelector(".thought-title");
-      if (title) title.__mcTitleH = title.scrollHeight;
-      li.classList.add("is-collapsed");
-      syncExpandButton(li);
-      if (typeof window.__mcAnimateTitle === "function") {
-        window.__mcAnimateTitle(li);
-      }
-      if (!window.__mcEditing) {
-        li.__mcBounceTimer = setTimeout(function () {
-          bounceStripe(li);
-        }, COLLAPSE_TRANSITION_MS);
-      }
-      if (typeof window.__mcSyncChecklistLayouts === "function") {
-        window.__mcSyncChecklistLayouts();
-      }
-    }
-
-    function expandThoughtCategory(li, reschedule) {
-      if (!li) return;
-      clearCollapseTimer(li);
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-      li.classList.remove("is-collapsed");
-      syncExpandButton(li);
-      if (typeof window.__mcAnimateTitle === "function") {
-        window.__mcAnimateTitle(li);
-      }
-      if (reschedule !== false && !window.__mcEditing) {
-        scheduleCollapse(li);
-      }
-      if (typeof window.__mcSyncChecklistLayouts === "function") {
-        window.__mcSyncChecklistLayouts();
-      }
-    }
-
-    function scheduleCollapse(li) {
-      if (!li || window.__mcSimplified || window.__mcEditing) return;
-      clearCollapseTimer(li);
-      li.classList.remove("is-collapsed");
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-      li.__mcCollapseTimer = setTimeout(function () {
-        collapseThoughtCategory(li);
-        li.__mcCollapseTimer = null;
-      }, CATEGORY_FADE_MS);
-    }
-
-    window.__mcExpandThoughtCategory = function (li) {
-      expandThoughtCategory(li, !window.__mcEditing);
-    };
-    window.__mcCollapseThoughtCategory = function (li) {
-      collapseThoughtCategory(li);
-    };
-
-    window.__mcRefreshCategoryTimers = function () {
-      if (window.__mcSimplified) return;
-      var lis = content.querySelectorAll("ul > li");
-      for (var i = 0; i < lis.length; i++) {
-        ensureCategoryChrome(lis[i]);
-        if (window.__mcEditing) {
-          if (!lis[i].querySelector(".thought-expand")) {
-            lis[i].insertAdjacentHTML("beforeend", expandButtonHtml());
-          }
-          syncExpandButton(lis[i]);
-        } else if (!lis[i].classList.contains("is-collapsed")) {
-          scheduleCollapse(lis[i]);
+      var summary = li.querySelector(".thought-summary");
+      if (summary) {
+        var raw = piece.text || "";
+        var body = raw.replace(/^[\\s\\u00a0]+/, "");
+        summary.textContent = "";
+        if (piece.inline && body) {
+          summary.appendChild(document.createTextNode(" "));
+        }
+        if (body) summary.appendChild(document.createTextNode(body));
+        else if (raw) summary.appendChild(document.createTextNode(raw));
+        if (piece.text) {
+          summary.classList.remove("is-placeholder");
+          summary.classList.remove("is-error-placeholder");
         }
       }
-    };
+      var fields = li.querySelector(".thought-fields") || li;
+      var titleEl = li.querySelector(".thought-title");
+      if (piece.title) {
+        if (!titleEl) {
+          titleEl = document.createElement("div");
+          titleEl.className = "thought-title";
+          titleEl.setAttribute("data-placeholder", mcPh("title", "Title"));
+          fields.insertBefore(titleEl, fields.firstChild);
+        }
+        titleEl.textContent = piece.title;
+        titleEl.classList.remove("is-placeholder");
+        titleEl.classList.remove("is-error-placeholder");
+        li.classList.add("has-entered-title");
+      }
+      var chip = li.querySelector(".thought-category");
+      if (chip) {
+        chip.setAttribute("data-category-id", piece.categoryId || "uncategorized");
+      }
+      ensureCategoryChrome(li);
+    }
+
+    function createCheckButton() {
+      var check = document.createElement("button");
+      check.type = "button";
+      check.className = "thought-check";
+      check.setAttribute("contenteditable", "false");
+      check.innerHTML =
+        '<span class="thought-check-box">' +
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.75" aria-hidden="true">' +
+        '<path d="M20 6L9 17l-5-5"/></svg></span>';
+      return check;
+    }
+
+    function isChromeNode(node) {
+      if (!node || !node.classList) return false;
+      return (
+        node.classList.contains("thought-rail") ||
+        node.classList.contains("thought-check") ||
+        node.classList.contains("thought-body") ||
+        node.classList.contains("thought-graph") ||
+        node.classList.contains("thought-expand") ||
+        node.classList.contains("thought-fold") ||
+        node.classList.contains("mc-thoughts")
+      );
+    }
+
+    function summaryPlaceholder(li) {
+      if (
+        isHeadingType(thoughtTypeOf(li)) ||
+        (li && li.classList.contains("in-heading"))
+      ) {
+        return mcPh("bullet", "Write Something...");
+      }
+      return window.__mcShowTitles && li && li.querySelector(".thought-title")
+        ? mcPh("summary", "Summary")
+        : mcPh("bullet", "Write Something...");
+    }
+
+    function forceUntitledSummary(li) {
+      if (!li) return;
+      var title = li.querySelector(".thought-title");
+      if (title && title.parentNode) title.parentNode.removeChild(title);
+      var summary = li.querySelector(".thought-summary");
+      if (!summary) return;
+      summary.setAttribute(
+        "data-placeholder",
+        mcPh("bullet", "Write Something...")
+      );
+      if (isEmptyField(summary)) summary.classList.add("is-placeholder");
+    }
+
+    function newThoughtId() {
+      return (
+        "t" +
+        Date.now().toString(36) +
+        Math.random().toString(36).slice(2, 10)
+      );
+    }
+
+    function ensureThoughtId(li) {
+      if (!li) return "";
+      var id = li.getAttribute("data-thought-id");
+      if (id) return id;
+      id = newThoughtId();
+      li.setAttribute("data-thought-id", id);
+      return id;
+    }
 
     function ensureCategoryChrome(li) {
       if (!li) return;
       var categoryId = liCategoryId(li);
       li.classList.add("thought-item");
+      ensureThoughtId(li);
       li.setAttribute("data-category-id", categoryId);
+      if (!li.getAttribute("data-thought-type")) {
+        li.setAttribute("data-thought-type", "li");
+        li.setAttribute("data-completable", "false");
+        li.setAttribute("data-completed", "false");
+      }
 
-      var rail = li.querySelector(".thought-rail");
-      var body = li.querySelector(".thought-body");
       var fields = li.querySelector(".thought-fields");
-      var chip = li.querySelector(".thought-category");
-
-      if (rail && body && fields && chip) {
-        chip.setAttribute("data-category-id", categoryId);
-        if (!li.querySelector(".thought-expand")) {
-          li.insertAdjacentHTML("beforeend", expandButtonHtml());
+      var body = li.querySelector(".thought-body");
+      var rail = li.querySelector(".thought-rail");
+      var check = li.querySelector(".thought-check");
+      if (rail && body && fields) {
+        if (!check) {
+          li.insertBefore(createCheckButton(), body);
         }
-        if (!li.__mcCollapseTimer && !li.classList.contains("is-collapsed")) {
-          scheduleCollapse(li);
-        }
-        syncExpandButton(li);
         return;
       }
 
-      // Rebuild chrome while preserving editable field content.
-      var title = li.querySelector(".thought-title");
-      var summary = li.querySelector(".thought-summary");
-      var fieldsHtml = "";
-      if (title || summary) {
-        if (title) fieldsHtml += title.outerHTML;
-        if (summary) fieldsHtml += summary.outerHTML;
-      } else {
-        var clone = li.cloneNode(true);
-        var stripSel = clone.querySelectorAll(
-          ".thought-rail, .thought-check, .thought-graph, .thought-expand, .thought-category, .thought-body, .thought-fields"
-        );
-        for (var s = 0; s < stripSel.length; s++) {
-          var node = stripSel[s];
-          if (node.parentNode) node.parentNode.removeChild(node);
+      var graph = li.querySelector(".thought-graph");
+      if (graph && graph.parentNode) graph.parentNode.removeChild(graph);
+
+      if (!fields) {
+        var title = li.querySelector(".thought-title");
+        var summary = li.querySelector(".thought-summary");
+        fields = document.createElement("div");
+        fields.className = "thought-fields";
+        if (title || summary) {
+          if (title) fields.appendChild(title);
+          if (summary) fields.appendChild(summary);
+        } else {
+          var leftovers = [];
+          while (li.firstChild) {
+            var child = li.firstChild;
+            li.removeChild(child);
+            if (isChromeNode(child)) continue;
+            leftovers.push(child);
+          }
+          for (var i = 0; i < leftovers.length; i++) {
+            fields.appendChild(leftovers[i]);
+          }
+          if (!fields.querySelector(".thought-summary") && !fields.querySelector(".thought-title")) {
+            var wrap = document.createElement("div");
+            wrap.className =
+              "thought-summary" + (isEmptyField(fields) ? " is-placeholder" : "");
+            wrap.setAttribute("data-placeholder", summaryPlaceholder(li));
+            while (fields.firstChild) wrap.appendChild(fields.firstChild);
+            if (!wrap.firstChild) wrap.innerHTML = "<br>";
+            fields.appendChild(wrap);
+          }
         }
-        var text = (clone.textContent || "").trim();
-        fieldsHtml = text
-          ? clone.innerHTML
-          : window.__mcShowTitles
-            ? emptyTitledFieldsHtml()
-            : emptyUntitledFieldHtml();
       }
 
-      var wasCollapsed = li.classList.contains("is-collapsed");
-      li.innerHTML = thoughtItemInnerHtml(categoryId, fieldsHtml);
-      if (wasCollapsed || (window.__mcEditing && !window.__mcSimplified)) {
-        li.classList.add("is-collapsed");
-        syncExpandButton(li);
-      } else {
-        scheduleCollapse(li);
+      if (!body) {
+        body = document.createElement("div");
+        body.className = "thought-body";
       }
-      if (typeof window.__mcSyncChecklistLayouts === "function") {
-        window.__mcSyncChecklistLayouts();
+      if (fields.parentNode !== body) body.appendChild(fields);
+
+      if (!rail) {
+        rail = document.createElement("div");
+        rail.className = "thought-rail";
+        rail.setAttribute("contenteditable", "false");
+        rail.innerHTML =
+          '<div class="thought-stripe"></div><div class="thought-dot"></div>';
+      }
+      if (!check) check = createCheckButton();
+
+      li.appendChild(rail);
+      li.appendChild(check);
+      li.appendChild(body);
+      if (graph) li.appendChild(graph);
+    }
+
+    function listItemToThought(li) {
+      if (!li) return null;
+      if (li.classList && li.classList.contains("thought-item") && li.nodeName !== "LI") {
+        return li;
+      }
+      var thought = document.createElement("div");
+      thought.className = li.className || "";
+      if (!thought.classList.contains("thought-item")) {
+        thought.classList.add("thought-item");
+      }
+      if (li.attributes) {
+        for (var a = 0; a < li.attributes.length; a++) {
+          var attr = li.attributes[a];
+          if (attr.name === "class") continue;
+          thought.setAttribute(attr.name, attr.value);
+        }
+      }
+      while (li.firstChild) thought.appendChild(li.firstChild);
+      return thought;
+    }
+
+    function unwrapLists() {
+      var lists = content.querySelectorAll("ul, ol");
+      for (var i = lists.length - 1; i >= 0; i--) {
+        var list = lists[i];
+        var parent = list.parentNode;
+        if (!parent) continue;
+        var host = closestThought(list);
+        var insertParent = host && host.parentNode ? host.parentNode : parent;
+        var insertBefore = host && host.parentNode ? host.nextSibling : list;
+        while (list.firstChild) {
+          var child = list.firstChild;
+          list.removeChild(child);
+          var thought =
+            child.nodeName === "LI"
+              ? listItemToThought(child)
+              : child.classList && child.classList.contains("thought-item")
+                ? child
+                : thoughtFromNode(child, "li");
+          if (thought) {
+            insertParent.insertBefore(thought, insertBefore);
+            ensureCategoryChrome(thought);
+          }
+        }
+        if (list.parentNode) list.parentNode.removeChild(list);
       }
     }
 
-    function ensureUl() {
-      if (content.querySelector("ul")) return;
-      content.innerHTML =
-        '<ul><li class="thought-item' +
-        (window.__mcEditing && !window.__mcSimplified ? " is-collapsed" : "") +
-        '" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
-        emptyLiHtml("uncategorized") +
-        "</li></ul>";
+    function createThoughtShell(type) {
+      var thoughtType = parseThoughtType(type);
+      var completable = thoughtType === "checkbox";
+      var created = document.createElement("div");
+      created.className =
+        "thought-item" +
+        (isTextLikeType(thoughtType) ? " is-block is-text-like" : "") +
+        (isHeadingType(thoughtType) ? " is-heading" : "") +
+        (completable ? " is-checklist" : "");
+      created.setAttribute("data-thought-type", thoughtType);
+      created.setAttribute("data-thought-id", newThoughtId());
+      created.setAttribute("data-category-id", "uncategorized");
+      created.setAttribute("data-completable", completable ? "true" : "false");
+      created.setAttribute("data-completed", "false");
+      created.innerHTML = isHeadingType(thoughtType)
+        ? thoughtItemInnerHtml("uncategorized", emptyUntitledFieldHtml())
+        : emptyLiHtml("uncategorized");
+      return created;
+    }
+
+    function fillThoughtSummary(created, node) {
+      var summary = created.querySelector(".thought-summary");
+      if (!summary) return created;
+      if (node.nodeType === 3) {
+        summary.textContent = node.textContent || "";
+      } else if (node.nodeName === "BR") {
+        summary.innerHTML = "<br>";
+      } else {
+        while (node.firstChild) summary.appendChild(node.firstChild);
+      }
+      if (isEmptyField(summary)) {
+        summary.innerHTML = "<br>";
+        summary.classList.add("is-placeholder");
+      } else {
+        summary.classList.remove("is-placeholder");
+        summary.classList.remove("is-error-placeholder");
+      }
+      return created;
+    }
+
+    function thoughtFromNode(node, type) {
+      if (!node) return null;
+      if (node.nodeType === 1 && node.classList && node.classList.contains("thought-item")) {
+        return node;
+      }
+      if (node.nodeType === 3 && !(node.textContent || "").trim()) return null;
+      var created = createThoughtShell(typeForStray(type));
+      fillThoughtSummary(created, node);
+      return created;
+    }
+
+    function typeForStray(type) {
+      var parsed = parseThoughtType(type);
+      if (isHeadingType(parsed)) return "text";
+      return parsed;
+    }
+
+    function isEmptyishNode(node) {
+      if (!node) return true;
+      if (node.nodeType === 3) {
+        return !(node.textContent || "")
+          .replace(/\\u00a0/g, " ")
+          .replace(/\\n/g, "")
+          .trim();
+      }
+      if (node.nodeName === "BR") return true;
+      if (node.nodeType !== 1) return true;
+      return isEmptyField(node);
+    }
+
+    function collapseExtraHeadingSummaries(li) {
+      var fields = (li && li.querySelector(".thought-fields")) || li;
+      if (!fields) return;
+      var keep = null;
+      var child = fields.firstChild;
+      while (child) {
+        var next = child.nextSibling;
+        if (
+          child.nodeType === 1 &&
+          child.classList &&
+          child.classList.contains("thought-summary")
+        ) {
+          if (!keep) {
+            keep = child;
+          } else {
+            if (isEmptyField(keep) && !isEmptyField(child)) {
+              keep.innerHTML = child.innerHTML;
+              keep.classList.remove("is-placeholder");
+            }
+            fields.removeChild(child);
+          }
+        }
+        child = next;
+      }
+    }
+
+    function dropEmptyHeadingClones() {
+      var root = content.querySelector(".mc-thoughts") || content;
+      var li = root.firstElementChild;
+      while (li) {
+        var next = li.nextElementSibling;
+        var sameHeadingClone =
+          isThought(li) &&
+          isHeadingType(thoughtTypeOf(li)) &&
+          isThought(next) &&
+          thoughtTypeOf(next) === thoughtTypeOf(li) &&
+          isEmptyField(next.querySelector(".thought-summary"));
+        var bothEmpty =
+          sameHeadingClone && isEmptyField(li.querySelector(".thought-summary"));
+        var copiedId =
+          sameHeadingClone &&
+          li.getAttribute("data-thought-id") &&
+          li.getAttribute("data-thought-id") ===
+            next.getAttribute("data-thought-id");
+        if (bothEmpty || copiedId) {
+          var sel = window.getSelection();
+          var caretNode = sel && sel.anchorNode;
+          var caretInNext =
+            next === caretNode || (caretNode && next.contains(caretNode));
+          next.parentNode.removeChild(next);
+          if (caretInNext) {
+            var summary = li.querySelector(".thought-summary");
+            if (summary) placeCaretAtStartSoon(summary);
+          }
+          next = li.nextElementSibling;
+          continue;
+        }
+        li = next;
+      }
+    }
+
+    function promoteStrayBlocks() {
+      var root = content.querySelector(".mc-thoughts") || content;
+      var node = root.firstChild;
+      while (node) {
+        var next = node.nextSibling;
+        if (node.nodeType === 1 && node.classList && node.classList.contains("thought-item")) {
+          var hostType = node.getAttribute("data-thought-type") || "li";
+          var hostIsHeading = isHeadingType(hostType);
+          if (hostIsHeading) collapseExtraHeadingSummaries(node);
+          var fields = node.querySelector(".thought-fields");
+          if (fields) {
+            var fieldChild = fields.firstChild;
+            var insertAfter = node;
+            while (fieldChild) {
+              var fieldNext = fieldChild.nextSibling;
+              var isKnown =
+                fieldChild.classList &&
+                (fieldChild.classList.contains("thought-summary") ||
+                  fieldChild.classList.contains("thought-title"));
+              if (isChromeNode(fieldChild)) {
+                fieldChild = fieldNext;
+                continue;
+              }
+              if (isKnown) {
+                fieldChild = fieldNext;
+                continue;
+              }
+              if (isEmptyishNode(fieldChild)) {
+                if (fieldChild.parentNode) fieldChild.parentNode.removeChild(fieldChild);
+                fieldChild = fieldNext;
+                continue;
+              }
+              if (
+                hostIsHeading &&
+                fieldChild.nodeType === 1 &&
+                fieldChild.classList &&
+                fieldChild.classList.contains("thought-item") &&
+                (isHeadingType(fieldChild.getAttribute("data-thought-type")) ||
+                  isEmptyishNode(fieldChild))
+              ) {
+                if (fieldChild.parentNode) fieldChild.parentNode.removeChild(fieldChild);
+                fieldChild = fieldNext;
+                continue;
+              }
+              var sibling = thoughtFromNode(fieldChild, typeForStray(hostType));
+              if (sibling) {
+                if (fieldChild.parentNode) fieldChild.parentNode.removeChild(fieldChild);
+                insertAfter.parentNode.insertBefore(sibling, insertAfter.nextSibling);
+                ensureCategoryChrome(sibling);
+                insertAfter = sibling;
+              }
+              fieldChild = fieldNext;
+            }
+          }
+          node = next;
+          continue;
+        }
+        if (isChromeNode(node)) {
+          node = next;
+          continue;
+        }
+        if (isEmptyishNode(node)) {
+          if (node.parentNode) node.parentNode.removeChild(node);
+          node = next;
+          continue;
+        }
+        var prev = node.previousElementSibling;
+        var type =
+          prev && prev.classList && prev.classList.contains("thought-item")
+            ? typeForStray(prev.getAttribute("data-thought-type"))
+            : "li";
+        var thought = thoughtFromNode(node, type);
+        if (thought) {
+          root.insertBefore(thought, node);
+          if (node.parentNode) node.parentNode.removeChild(node);
+          ensureCategoryChrome(thought);
+        } else if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
+        node = next;
+      }
+      dropEmptyHeadingClones();
+    }
+
+    function emptyThoughtHtml() {
+      return createThoughtShell("li").outerHTML;
+    }
+
+    function ensureThoughts() {
+      unwrapLists();
+      var root = content.querySelector(".mc-thoughts");
+      if (!root) {
+        root = document.createElement("div");
+        root.className = "mc-thoughts";
+        content.insertBefore(root, content.firstChild);
+      }
+      var child = content.firstChild;
+      while (child) {
+        var nextChild = child.nextSibling;
+        if (child !== root) root.appendChild(child);
+        child = nextChild;
+      }
+      promoteStrayBlocks();
+      if (!root.querySelector(".thought-item")) {
+        root.innerHTML = emptyThoughtHtml();
+      }
     }
 
     function clearField(el, placeholder) {
@@ -452,7 +857,6 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     function repairEmptyField(el, placeholder) {
       if (!el) return;
       if (isEmptyField(el)) {
-        // Keep validation error copy until the user types.
         if (!el.classList.contains("is-error-placeholder")) {
           el.setAttribute("data-placeholder", placeholder);
         }
@@ -484,16 +888,11 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       var titles = content.querySelectorAll(".thought-title");
       var summaries = content.querySelectorAll(".thought-summary");
       for (var t = 0; t < titles.length; t++) {
-        repairEmptyField(titles[t], "Title");
+        repairEmptyField(titles[t], mcPh("title", "Title"));
       }
       for (var s = 0; s < summaries.length; s++) {
         var summary = summaries[s];
-        var li = closestLi(summary);
-        var placeholder =
-          window.__mcShowTitles || (li && li.querySelector(".thought-title"))
-            ? "Summary"
-            : "Enter a bullet point";
-        repairEmptyField(summary, placeholder);
+        repairEmptyField(summary, summaryPlaceholder(closestThought(summary)));
       }
     }
 
@@ -503,46 +902,80 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
 
     function normalizeUntitledLis() {
       if (window.__mcShowTitles) return;
-      var lis = content.querySelectorAll("ul > li");
+      var lis = content.querySelectorAll(".thought-item");
       for (var i = 0; i < lis.length; i++) {
         var li = lis[i];
         ensureCategoryChrome(li);
 
         var title = li.querySelector(".thought-title");
-        if (title && !(title.textContent || "").replace(/\u00a0/g, " ").trim()) {
+        if (title && !(title.textContent || "").replace(/\\u00a0/g, " ").trim()) {
           if (title.parentNode) title.parentNode.removeChild(title);
         }
 
         var summary = li.querySelector(".thought-summary");
         if (summary) {
-          summary.setAttribute("data-placeholder", "Enter a bullet point");
+          if (!summary.classList.contains("is-error-placeholder")) {
+            summary.setAttribute(
+              "data-placeholder",
+              mcPh("bullet", "Write Something...")
+            );
+          }
           continue;
         }
 
         var fields = getFieldsContainer(li);
-        var text = (fields.textContent || "").trim();
-        fields.innerHTML =
-          '<div class="thought-summary' +
-          (text ? "" : " is-placeholder") +
-          '" data-placeholder="Enter a bullet point">' +
-          (text ? fields.innerHTML : "<br>") +
-          "</div>";
+        var wrap = document.createElement("div");
+        wrap.className =
+          "thought-summary" + (isEmptyField(fields) ? " is-placeholder" : "");
+        wrap.setAttribute(
+          "data-placeholder",
+          mcPh("bullet", "Write Something...")
+        );
+        while (fields.firstChild) wrap.appendChild(fields.firstChild);
+        if (!wrap.firstChild) wrap.innerHTML = "<br>";
+        fields.appendChild(wrap);
       }
       repairAllPlaceholderFields();
     }
 
+    function stripHeadingTitle(li) {
+      var title = li && li.querySelector(".thought-title");
+      if (title && title.parentNode) title.parentNode.removeChild(title);
+    }
+
     function normalizeTitledLis() {
       if (!window.__mcShowTitles) return;
-      var lis = content.querySelectorAll("ul > li");
+      var lis = content.querySelectorAll(".thought-item");
       for (var i = 0; i < lis.length; i++) {
         var li = lis[i];
         ensureCategoryChrome(li);
+        if (
+          isHeadingType(thoughtTypeOf(li)) ||
+          li.classList.contains("in-heading")
+        ) {
+          stripHeadingTitle(li);
+          if (isHeadingType(thoughtTypeOf(li))) {
+            collapseExtraHeadingSummaries(li);
+          }
+          forceUntitledSummary(li);
+          if (!li.querySelector(".thought-summary")) {
+            var headingSummary = document.createElement("div");
+            headingSummary.className = "thought-summary is-placeholder";
+            headingSummary.setAttribute(
+              "data-placeholder",
+              mcPh("bullet", "Write Something...")
+            );
+            headingSummary.innerHTML = "<br>";
+            getFieldsContainer(li).appendChild(headingSummary);
+          }
+          continue;
+        }
 
         if (li.querySelector(".thought-title")) {
           if (!li.querySelector(".thought-summary")) {
             var summary = document.createElement("div");
             summary.className = "thought-summary is-placeholder";
-            summary.setAttribute("data-placeholder", "Summary");
+            summary.setAttribute("data-placeholder", mcPh("summary", "Summary"));
             summary.innerHTML = "<br>";
             getFieldsContainer(li).appendChild(summary);
           }
@@ -556,29 +989,64 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           : (fields.textContent || "").trim();
 
         if (!text) {
-          var wasCollapsed = li.classList.contains("is-collapsed");
-          li.innerHTML = emptyLiHtml(liCategoryId(li));
-          if (wasCollapsed) li.classList.add("is-collapsed");
-          else scheduleCollapse(li);
-        } else {
-          var body = existingSummary
-            ? existingSummary.innerHTML
-            : fields.innerHTML;
-          fields.innerHTML =
-            '<div class="thought-title" data-placeholder="Title">' +
-            body +
-            '</div><div class="thought-summary is-placeholder" data-placeholder="Summary"><br></div>';
+          var titleEl = document.createElement("div");
+          titleEl.className = "thought-title is-placeholder";
+          titleEl.setAttribute("data-placeholder", mcPh("title", "Title"));
+          titleEl.innerHTML = "<br>";
+          var summaryEl = document.createElement("div");
+          summaryEl.className = "thought-summary is-placeholder";
+          summaryEl.setAttribute("data-placeholder", mcPh("summary", "Summary"));
+          summaryEl.innerHTML = "<br>";
+          while (fields.firstChild) fields.removeChild(fields.firstChild);
+          fields.appendChild(titleEl);
+          fields.appendChild(summaryEl);
+        } else if (existingSummary) {
+          var movedTitle = document.createElement("div");
+          movedTitle.className = "thought-title";
+          movedTitle.setAttribute("data-placeholder", mcPh("title", "Title"));
+          while (existingSummary.firstChild) {
+            movedTitle.appendChild(existingSummary.firstChild);
+          }
+          existingSummary.className = "thought-summary is-placeholder";
+          existingSummary.setAttribute(
+            "data-placeholder",
+            mcPh("summary", "Summary")
+          );
+          existingSummary.innerHTML = "<br>";
+          fields.insertBefore(movedTitle, existingSummary);
         }
       }
       repairAllPlaceholderFields();
     }
 
+    function stripThoughtSeparatorWhitespace(root) {
+      if (!root) return;
+      var node = root.firstChild;
+      while (node) {
+        var next = node.nextSibling;
+        if (node.nodeType === 3 && !/\\S/.test(node.nodeValue || "")) {
+          root.removeChild(node);
+        }
+        node = next;
+      }
+    }
+
+    window.__mcStripThoughtSeparatorWhitespace = function () {
+      stripThoughtSeparatorWhitespace(
+        content.querySelector(".mc-thoughts") || content
+      );
+    };
+
     function normalizeLis() {
+      unwrapLists();
       if (window.__mcShowTitles) {
         normalizeTitledLis();
       } else {
         normalizeUntitledLis();
       }
+      stripThoughtSeparatorWhitespace(
+        content.querySelector(".mc-thoughts") || content
+      );
     }
 
     function notifyChange() {
@@ -587,64 +1055,535 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       } catch (e) {}
     }
 
-    function handleEnter(e, li, anchor) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      requestClassifyBullet(li);
-
-      var inTitle = closestClass(anchor, "thought-title");
-      if (inTitle) {
-        var summary = li.querySelector(".thought-summary");
-        if (summary) placeCaretAtStartSoon(summary);
+    window.__mcApplyParagraphSplit = function (sourceId, pieces) {
+      if (!sourceId || !pieces || !pieces.length) {
+        notifyChange();
         return;
       }
-
-      if (window.__mcEditing && !window.__mcSimplified) {
-        collapseThoughtCategory(li);
+      var source = content.querySelector(
+        '.thought-item[data-thought-id="' +
+          String(sourceId).replace(/"/g, "") +
+          '"]'
+      );
+      if (!source) {
+        notifyChange();
+        return;
       }
-
-      var newLi = document.createElement("li");
-      var completable = li.getAttribute("data-completable") === "true";
-      newLi.className = completable ? "thought-item is-checklist" : "thought-item";
-      newLi.setAttribute("data-category-id", "uncategorized");
-      newLi.setAttribute("data-completable", completable ? "true" : "false");
-      newLi.setAttribute("data-completed", "false");
-      newLi.innerHTML = emptyLiHtml("uncategorized");
-      if (window.__mcEditing && !window.__mcSimplified) {
-        newLi.classList.add("is-collapsed");
+      applyPieceToThought(source, pieces[0]);
+      var insertBefore = source.nextSibling;
+      for (var i = 1; i < pieces.length; i++) {
+        var created = createThoughtShell("text");
+        applyPieceToThought(created, pieces[i]);
+        source.parentNode.insertBefore(created, insertBefore);
       }
-      if (li.nextSibling) {
-        li.parentNode.insertBefore(newLi, li.nextSibling);
+      if (pieces.length > 1 && !pieces[0].inline) {
+        source.classList.add("is-run-start");
       } else {
-        li.parentNode.appendChild(newLi);
+        source.classList.remove("is-run-start");
       }
-      scheduleCollapse(newLi);
+      if (typeof window.__mcRefreshCategoryTimers === "function") {
+        window.__mcRefreshCategoryTimers();
+      }
       if (typeof window.__mcSyncChecklistLayouts === "function") {
         window.__mcSyncChecklistLayouts();
       }
+      if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
+        window.__mcStripThoughtSeparatorWhitespace();
+      }
+      notifyChange();
+    };
+
+    function thoughtTypeOf(li) {
+      var type = li && li.getAttribute("data-thought-type");
+      if (isTextLikeType(type) || type === "li" || type === "checkbox") return type;
+      if (li && li.getAttribute("data-completable") === "true") return "checkbox";
+      return "li";
+    }
+
+    var lastEnterAt = 0;
+    function splitThoughtAtCaret(li, summary, type) {
+      var sel = window.getSelection();
+      if (!sel || !sel.rangeCount || !summary) return false;
+      var range = sel.getRangeAt(0);
+      var node = range.startContainer;
+      if (summary !== node && !(summary.contains && summary.contains(node))) {
+        return false;
+      }
+
+      var before = document.createRange();
+      before.selectNodeContents(summary);
+      before.setEnd(range.startContainer, range.startOffset);
+      var after = document.createRange();
+      after.selectNodeContents(summary);
+      after.setStart(range.startContainer, range.startOffset);
+
+      var leftHolder = document.createElement("div");
+      leftHolder.appendChild(before.cloneContents());
+      var rightHolder = document.createElement("div");
+      rightHolder.appendChild(after.cloneContents());
+      var leftHtml = leftHolder.innerHTML;
+      var rightHtml = rightHolder.innerHTML;
+
+      if (!htmlHasText(rightHtml)) return false;
+
+      if (!htmlHasText(leftHtml)) {
+        if (isHeadingType(type)) return false;
+        return moveContentToNewLine(li, type);
+      }
+
+      applySummaryHtml(summary, leftHtml);
+      stripSplitChrome(summary, "end");
+
+      var createdType = isHeadingType(type) ? "text" : type;
+      var created = createThoughtShell(createdType);
+      created.setAttribute("data-caret-split", "true");
+      if (isTextLikeType(createdType)) {
+        created.classList.add("is-block");
+        created.classList.remove("is-inline");
+        created.removeAttribute("data-inline");
+      }
+      applyOutlineToCreated(li, created);
+      var createdSummary = created.querySelector(".thought-summary");
+      applySummaryHtml(createdSummary, rightHtml);
+      stripSplitChrome(createdSummary, "start");
+
+      if (li.nextSibling) {
+        li.parentNode.insertBefore(created, li.nextSibling);
+      } else {
+        li.parentNode.appendChild(created);
+      }
+      ensureCategoryChrome(created);
+      if (isHeadingType(type)) li.classList.remove("is-section-collapsed");
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
+        window.__mcStripThoughtSeparatorWhitespace();
+      }
+      if (createdSummary) placeCaretAtStartSoon(createdSummary);
+      notifyChange();
+      return true;
+    }
+
+    function handleEnter(e, li, anchor) {
+      e.preventDefault();
+      e.stopPropagation();
+      var now = Date.now();
+      if (now - lastEnterAt < 80) return;
+      lastEnterAt = now;
+
+      var inTitle = closestClass(anchor, "thought-title");
+      if (inTitle) {
+        var titleSummary = li.querySelector(".thought-summary");
+        if (titleSummary) placeCaretAtStartSoon(titleSummary);
+        return;
+      }
+
+      var type = thoughtTypeOf(li);
+      var nextType = isHeadingType(type) ? "text" : type;
+      var summary = li.querySelector(".thought-summary") || li;
+      if (!thoughtHasContent(li) && !isHeadingType(type)) {
+        if (type === "li" || type === "checkbox") {
+          setThoughtAsParagraph(li, false);
+          forceUntitledSummary(li);
+          placeCaretAtStartSoon(summary);
+          if (typeof window.__mcSyncChecklistLayouts === "function") {
+            window.__mcSyncChecklistLayouts();
+          }
+          notifyChange();
+        }
+        return;
+      }
+      if (isCaretAtStartOf(summary) && !isHeadingType(type)) {
+        moveContentToNewLine(li, type);
+        return;
+      }
+      if (!isCaretAtEndOf(summary)) {
+        if (splitThoughtAtCaret(li, summary, type)) return;
+        return;
+      }
+
+      var insertAfter = lastThoughtInInlineRun(li);
+      var next = insertAfter.nextElementSibling;
+      if (isThought(next) && !thoughtHasContent(next) && !isInlineThought(next)) {
+        var emptyNext = next.querySelector(".thought-summary") ||
+          next.querySelector(".thought-title");
+        if (emptyNext) placeCaretAtStartSoon(emptyNext);
+        notifyChange();
+        return;
+      }
+
+      var created = createThoughtShell(nextType);
+      if (isTextLikeType(nextType)) {
+        created.classList.add("is-block");
+        created.classList.remove("is-inline");
+        created.classList.remove("is-run-start");
+        created.removeAttribute("data-inline");
+      }
+      applyOutlineToCreated(li, created);
+      if (insertAfter.nextSibling) {
+        insertAfter.parentNode.insertBefore(created, insertAfter.nextSibling);
+      } else {
+        insertAfter.parentNode.appendChild(created);
+      }
+      if (isHeadingType(type)) li.classList.remove("is-section-collapsed");
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+
+      if (type === "li" || type === "checkbox") {
+        requestClassifyBullet(li);
+      }
+
       var focusField =
-        window.__mcShowTitles && !newLi.classList.contains("is-collapsed")
-          ? newLi.querySelector(".thought-title")
-          : newLi.querySelector(".thought-summary");
+        window.__mcShowTitles && !isHeadingType(type)
+          ? created.querySelector(".thought-title")
+          : created.querySelector(".thought-summary");
       if (focusField) placeCaretAtStartSoon(focusField);
       notifyChange();
     }
 
-    function removeBullet(li) {
-      clearCollapseTimer(li);
+    function isInlineThought(li) {
+      return !!(
+        li &&
+        (li.classList.contains("is-inline") ||
+          li.getAttribute("data-inline") === "true")
+      );
+    }
+
+    function lastThoughtInInlineRun(li) {
+      var end = li;
+      var next = li && li.nextElementSibling;
+      while (isThought(next) && isInlineThought(next)) {
+        end = next;
+        next = next.nextElementSibling;
+      }
+      return end;
+    }
+
+    function moveContentToNewLine(li, type) {
+      if (!li) return false;
+      var createdType =
+        type === "li" || type === "checkbox" || type === "text" ? type : "text";
+      var summary = li.querySelector(".thought-summary");
+      if (!summary || isEmptyField(summary)) return false;
+      var html = summary.innerHTML;
+      if (isInlineThought(li) && isTextLikeType(type)) {
+        promoteThoughtToBlock(li);
+      }
+      var created = createThoughtShell(createdType);
+      created.setAttribute(
+        "data-category-id",
+        li.getAttribute("data-category-id") || "uncategorized"
+      );
+      if (isTextLikeType(createdType)) {
+        created.classList.add("is-block");
+        created.classList.remove("is-inline");
+        created.removeAttribute("data-inline");
+      }
+      applyOutlineToCreated(li, created);
+      var createdSummary = created.querySelector(".thought-summary");
+      applySummaryHtml(createdSummary, html);
+      clearField(summary, summaryPlaceholder(li));
+      li.classList.remove("is-run-start");
+      if (li.nextSibling) {
+        li.parentNode.insertBefore(created, li.nextSibling);
+      } else {
+        li.parentNode.appendChild(created);
+      }
+      var following = created.nextElementSibling;
+      if (isThought(following) && isInlineThought(following)) {
+        created.classList.add("is-run-start");
+      } else {
+        created.classList.remove("is-run-start");
+      }
+      ensureCategoryChrome(created);
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      placeCaretAtStartSoon(summary);
+      notifyChange();
+      return true;
+    }
+
+    function headingIndentPx(li) {
+      return parseInt(li && li.style.getPropertyValue("--heading-indent"), 10) || 0;
+    }
+
+    function isInHeadingSection(li) {
+      return !!(
+        li &&
+        (li.classList.contains("in-heading") || headingIndentPx(li) > 0)
+      );
+    }
+
+    function applyOutlineToCreated(from, created) {
+      if (!from || !created) return;
+      if (
+        !isHeadingType(thoughtTypeOf(from)) &&
+        !isInHeadingSection(from)
+      ) {
+        return;
+      }
+      created.style.setProperty("--heading-indent", "0px");
+      created.classList.add("in-heading");
+      created.classList.add("is-block");
+      created.classList.remove("is-inline");
+      created.classList.remove("is-run-start");
+      created.removeAttribute("data-inline");
+      forceUntitledSummary(created);
+    }
+
+    function promoteThoughtToBlock(li) {
+      if (!li) return;
+      if (!isTextLikeType(thoughtTypeOf(li))) {
+        li.setAttribute("data-thought-type", "text");
+      }
+      li.setAttribute("data-completable", "false");
+      li.setAttribute("data-completed", "false");
+      li.classList.add("is-block");
+      li.classList.add("is-text-like");
+      li.classList.remove("is-heading");
+      li.classList.remove("is-inline");
+      li.classList.remove("is-checklist");
+      li.removeAttribute("data-inline");
+      var following = li.nextElementSibling;
+      if (isThought(following) && isInlineThought(following)) {
+        li.classList.add("is-run-start");
+      } else {
+        li.classList.remove("is-run-start");
+      }
+      var previous = li.previousElementSibling;
+      if (isThought(previous) && previous.classList.contains("is-run-start")) {
+        var previousNext = previous.nextElementSibling;
+        if (!(isThought(previousNext) && isInlineThought(previousNext))) {
+          previous.classList.remove("is-run-start");
+        }
+      }
+    }
+
+    function setThoughtAsParagraph(li, inline) {
+      if (!li) return;
+      li.setAttribute("data-thought-type", "text");
+      li.setAttribute("data-completable", "false");
+      li.setAttribute("data-completed", "false");
+      li.classList.add("is-block");
+      li.classList.add("is-text-like");
+      li.classList.remove("is-heading");
+      li.classList.remove("is-checklist");
+      li.classList.remove("is-completed");
+      li.classList.remove("is-section-collapsed");
+      li.classList.remove("can-fold");
+      var fold = li.querySelector(".thought-fold");
+      if (fold && fold.parentNode) fold.parentNode.removeChild(fold);
+      if (inline) {
+        li.classList.add("is-inline");
+        li.setAttribute("data-inline", "true");
+        var prevRun = li.previousElementSibling;
+        if (isThought(prevRun) && isTextLikeType(thoughtTypeOf(prevRun))) {
+          prevRun.classList.add("is-run-start");
+        }
+      } else {
+        li.classList.remove("is-inline");
+        li.removeAttribute("data-inline");
+        li.classList.remove("is-run-start");
+        var next = li.nextElementSibling;
+        if (isThought(next) && isInlineThought(next)) {
+          next.classList.remove("is-inline");
+          next.removeAttribute("data-inline");
+          next.classList.add("is-block");
+        }
+      }
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      if (window.ReactNativeWebView && li.parentNode) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: "CARET_LIST_TYPE",
+            data: {
+              type: "text",
+              index: Array.prototype.indexOf.call(li.parentNode.children, li),
+            },
+          })
+        );
+      }
+    }
+
+    function thoughtHasContent(li) {
+      if (!li) return false;
+      var title = li.querySelector(".thought-title");
+      var summary = li.querySelector(".thought-summary");
+      return !isEmptyField(title) || !isEmptyField(summary);
+    }
+
+    function flattenSummaryHtml(html) {
+      var root = document.createElement("div");
+      root.innerHTML = html || "";
+      var blocks = root.querySelectorAll("div, p");
+      for (var i = 0; i < blocks.length; i++) {
+        var el = blocks[i];
+        var parent = el.parentNode;
+        if (!parent) continue;
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }
+      return root;
+    }
+
+    function trimNodeEdge(root, edge) {
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      var nodes = [];
+      var node;
+      while ((node = walker.nextNode())) nodes.push(node);
+      if (edge === "end") {
+        for (var i = nodes.length - 1; i >= 0; i--) {
+          var endValue = (nodes[i].nodeValue || "").replace(
+            /[\\s\\u00a0]+$/g,
+            ""
+          );
+          if (endValue) {
+            nodes[i].nodeValue = endValue;
+            break;
+          }
+          if (nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+        }
+        while (root.lastChild && root.lastChild.nodeName === "BR") {
+          root.removeChild(root.lastChild);
+        }
+        return;
+      }
+      for (var j = 0; j < nodes.length; j++) {
+        var startValue = (nodes[j].nodeValue || "").replace(
+          /^[\\s\\u00a0]+/g,
+          ""
+        );
+        if (startValue) {
+          nodes[j].nodeValue = startValue;
+          break;
+        }
+        if (nodes[j].parentNode) nodes[j].parentNode.removeChild(nodes[j]);
+      }
+      while (root.firstChild && root.firstChild.nodeName === "BR") {
+        root.removeChild(root.firstChild);
+      }
+    }
+
+    function joinHtmlPieces(leftHtml, rightHtml) {
+      var left = flattenSummaryHtml(leftHtml);
+      var right = flattenSummaryHtml(rightHtml);
+      trimNodeEdge(left, "end");
+      trimNodeEdge(right, "start");
+      var leftText = (left.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .trim();
+      var rightText = (right.textContent || "")
+        .replace(/\\u00a0/g, " ")
+        .trim();
+      if (!leftText) return right.innerHTML;
+      if (!rightText) return left.innerHTML;
+      var leftEndsSpace = /[\\s\\u00a0]$/.test(leftText);
+      var rightStartsSpace = /^[\\s\\u00a0]/.test(rightText);
+      if (!leftEndsSpace && !rightStartsSpace) {
+        left.appendChild(document.createTextNode(" "));
+      }
+      while (right.firstChild) left.appendChild(right.firstChild);
+      return left.innerHTML;
+    }
+
+    function previousCanReceiveMerge(prev) {
+      if (!isThought(prev) || isHeadingType(thoughtTypeOf(prev))) return false;
+      var prevType = thoughtTypeOf(prev);
+      return (
+        isTextLikeType(prevType) ||
+        prevType === "li" ||
+        prevType === "checkbox"
+      );
+    }
+
+    function mergeCurrentIntoPrevious(li) {
+      var prev = li.previousElementSibling;
+      if (!previousCanReceiveMerge(prev)) return false;
+      var prevSummary = prev.querySelector(".thought-summary") || prev;
+      if (isTextLikeType(thoughtTypeOf(prev)) && isInlineThought(prev)) {
+        promoteThoughtToBlock(prev);
+      }
+      var joined = prevSummary.innerHTML || "";
+      var cursor = li;
+      while (isThought(cursor) && (cursor === li || isInlineThought(cursor))) {
+        var piece = cursor.querySelector(".thought-summary") || cursor;
+        if (!isEmptyField(piece)) {
+          joined = joinHtmlPieces(joined, piece.innerHTML || "");
+        }
+        var next = cursor.nextElementSibling;
+        if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
+        cursor = next;
+      }
+      applySummaryHtml(prevSummary, joined);
+      if (isTextLikeType(thoughtTypeOf(prev))) {
+        prev.classList.remove("is-inline");
+        prev.removeAttribute("data-inline");
+        prev.classList.add("is-block");
+        prev.classList.remove("is-run-start");
+        var prevPrev = prev.previousElementSibling;
+        if (
+          isThought(prevPrev) &&
+          prevPrev.classList.contains("is-run-start") &&
+          !isInlineThought(prev)
+        ) {
+          prevPrev.classList.remove("is-run-start");
+        }
+      }
+      placeCaretAtEndSoon(prevSummary);
+      if (typeof window.__mcSyncChecklistLayouts === "function") {
+        window.__mcSyncChecklistLayouts();
+      }
+      notifyChange();
+      return true;
+    }
+
+    function handleLineStartBackspace(e, li, field) {
+      var type = thoughtTypeOf(li);
+      var underHeading = isInHeadingSection(li);
+      var prev = li.previousElementSibling;
+      var empty = !thoughtHasContent(li);
+      if (isHeadingType(type) && empty) {
+        e.preventDefault();
+        e.stopPropagation();
+        setThoughtAsParagraph(li, false);
+        forceUntitledSummary(li);
+        placeCaretAtStartSoon(field);
+        notifyChange();
+        return true;
+      }
+      if (type === "li" || type === "checkbox") {
+        if (empty && !underHeading) return false;
+        e.preventDefault();
+        e.stopPropagation();
+        setThoughtAsParagraph(li, false);
+        forceUntitledSummary(li);
+        placeCaretAtStartSoon(field);
+        notifyChange();
+        return true;
+      }
+      if (isTextLikeType(type) && isThought(prev) && previousCanReceiveMerge(prev)) {
+        e.preventDefault();
+        e.stopPropagation();
+        mergeCurrentIntoPrevious(li);
+        return true;
+      }
+      if (empty) return false;
+      return false;
+    }
+
+    function removeThought(li) {
       var parent = li.parentNode;
       var prev = li.previousElementSibling;
       var next = li.nextElementSibling;
       parent.removeChild(li);
 
-      if (!parent.querySelector("li")) {
-        parent.innerHTML =
-          '<li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
-          emptyLiHtml("uncategorized") +
-          "</li>";
-        var only = parent.querySelector("li");
-        scheduleCollapse(only);
+      if (!parent.querySelector(".thought-item")) {
+        parent.innerHTML = emptyThoughtHtml();
         repairAllPlaceholderFields();
         placeCaretAtStartSoon(
           parent.querySelector(".thought-title") ||
@@ -654,13 +1593,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         return;
       }
 
-      if (prev && prev.nodeName === "LI") {
+      if (isThought(prev)) {
         placeCaretAtEndSoon(
           prev.querySelector(".thought-summary") ||
             prev.querySelector(".thought-title") ||
             prev
         );
-      } else if (next && next.nodeName === "LI") {
+      } else if (isThought(next)) {
         placeCaretAtStartSoon(
           next.querySelector(".thought-title") ||
             next.querySelector(".thought-summary") ||
@@ -670,28 +1609,37 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       notifyChange();
     }
 
-    function handleBackspaceUntitled(e, li, anchor) {
+    function handleBackspaceUntitled(e, li) {
       var summaryEl = li.querySelector(".thought-summary") || li;
 
-      if (isEmptyField(summaryEl) || isCaretAtStartOf(summaryEl)) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isEmptyField(summaryEl)) {
-          removeBullet(li);
+      if (!isLineStartBackspace(li, summaryEl)) return;
+      if (handleLineStartBackspace(e, li, summaryEl)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      if (isEmptyField(summaryEl)) {
+        var emptyType = thoughtTypeOf(li);
+        if (
+          isInHeadingSection(li) &&
+          (emptyType === "li" || emptyType === "checkbox")
+        ) {
+          setThoughtAsParagraph(li, false);
+          placeCaretAtStartSoon(summaryEl);
+          notifyChange();
           return;
         }
-        var prev = li.previousElementSibling;
-        if (prev && prev.nodeName === "LI") {
-          placeCaretAtEndSoon(
-            prev.querySelector(".thought-summary") || prev
-          );
-        }
+        removeThought(li);
+        return;
+      }
+      var prev = li.previousElementSibling;
+      if (isThought(prev)) {
+        placeCaretAtEndSoon(prev.querySelector(".thought-summary") || prev);
       }
     }
 
     function handleBackspace(e, li, anchor) {
-      if (!window.__mcShowTitles && !li.querySelector(".thought-title")) {
-        handleBackspaceUntitled(e, li, anchor);
+      if (!window.__mcShowTitles || !li.querySelector(".thought-title")) {
+        handleBackspaceUntitled(e, li);
         return;
       }
 
@@ -710,7 +1658,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         if (summaryText.length === 1 && window.getSelection().isCollapsed) {
           e.preventDefault();
           e.stopPropagation();
-          clearField(summary, "Summary");
+          clearField(summary, summaryPlaceholder(li));
           placeCaretAtStartSoon(summary);
           notifyChange();
           return;
@@ -720,9 +1668,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           e.preventDefault();
           e.stopPropagation();
           if (isEmptyField(summary)) {
-            clearField(summary, "Summary");
+            clearField(summary, summaryPlaceholder(li));
             if (isEmptyField(titleEl)) {
-              removeBullet(li);
+              removeThought(li);
               return;
             }
           }
@@ -734,16 +1682,17 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       if (title && (isEmptyField(title) || isCaretAtStartOf(title))) {
+        if (handleLineStartBackspace(e, li, title)) return;
         e.preventDefault();
         e.stopPropagation();
 
         if (bothEmpty) {
-          removeBullet(li);
+          removeThought(li);
           return;
         }
 
         var prev = li.previousElementSibling;
-        if (prev && prev.nodeName === "LI") {
+        if (isThought(prev)) {
           placeCaretAtEndSoon(
             prev.querySelector(".thought-summary") ||
               prev.querySelector(".thought-title") ||
@@ -752,8 +1701,8 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           return;
         }
 
-        repairEmptyField(title, "Title");
-        repairEmptyField(summaryEl, "Summary");
+        repairEmptyField(title, mcPh("title", "Title"));
+        repairEmptyField(summaryEl, summaryPlaceholder(li));
         placeCaretAtStartSoon(title);
       }
     }
@@ -775,74 +1724,10 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     }
 
-    function onViewThoughtPointer(e) {
-      if (window.__mcEditing || window.__mcSimplified) return;
-      if (closestClass(e.target, "thought-check")) return;
-      if (closestClass(e.target, "thought-graph")) return;
-      if (closestClass(e.target, "thought-expand")) return;
-      var li = closestLi(e.target);
-      if (!li) return;
-      e.preventDefault();
-      e.stopPropagation();
-      var wantsPicker =
-        closestClass(e.target, "thought-category") ||
-        closestClass(e.target, "thought-stripe") ||
-        closestClass(e.target, "thought-rail");
-      if (wantsPicker && !li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, true);
-        openCategoryPicker(li);
-        return;
-      }
-      expandThoughtCategory(li, true);
-    }
-
-    function blurEditor() {
-      var active = document.activeElement;
-      if (active && active !== document.body && typeof active.blur === "function") {
-        try {
-          active.blur();
-        } catch (err) {}
-      }
-      try {
-        content.blur();
-      } catch (err) {}
-      if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: "DISMISS_KEYBOARD" })
-        );
-      }
-    }
-
-    function onExpandPointerDown(e) {
-      if (!closestClass(e.target, "thought-expand")) return;
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    function onExpandPointer(e) {
-      if (!window.__mcEditing || window.__mcSimplified) return;
-      var btn = closestClass(e.target, "thought-expand");
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      var now = Date.now();
-      if (window.__mcExpandAt && now - window.__mcExpandAt < 400) return;
-      window.__mcExpandAt = now;
-      var li = closestLi(btn);
-      if (!li) return;
-      if (li.classList.contains("is-collapsed")) {
-        expandThoughtCategory(li, false);
-      } else {
-        collapseThoughtCategory(li);
-      }
-      blurEditor();
-    }
-
     function onCategoryChromePointer(e) {
       if (window.__mcSimplified) return;
-      if (!window.__mcEditing) return;
       if (closestClass(e.target, "thought-check")) return;
-      if (closestClass(e.target, "thought-expand")) return;
+      if (closestClass(e.target, "thought-fold")) return;
       var rail = closestClass(e.target, "thought-rail");
       var stripe = closestClass(e.target, "thought-stripe");
       var chip = closestClass(e.target, "thought-category");
@@ -851,33 +1736,43 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       e.preventDefault();
       e.stopPropagation();
 
-      var li = closestLi(e.target);
+      var li = closestThought(e.target);
       if (!li) return;
-
-      // Expanded edit chrome opens the picker; collapsed thoughts use the arrow.
       openCategoryPicker(li);
     }
+
+    window.__mcExpandThoughtCategory = function () {};
+    window.__mcCollapseThoughtCategory = function () {};
+    window.__mcRefreshCategoryTimers = function () {
+      var lis = content.querySelectorAll(".thought-item");
+      for (var i = 0; i < lis.length; i++) {
+        ensureCategoryChrome(lis[i]);
+      }
+      unwrapLists();
+      repairAllPlaceholderFields();
+    };
 
     content.addEventListener(
       "keydown",
       function (e) {
         var isEnter = e.key === "Enter" || e.keyCode === 13 || e.which === 13;
-        var isBackspace = e.key === "Backspace" || e.keyCode === 8;
+        var isBackspace =
+          e.key === "Backspace" || e.keyCode === 8 || e.which === 8;
         if (!isEnter && !isBackspace) return;
 
-        ensureUl();
-        if (!content.querySelector("ul")) {
+        ensureThoughts();
+        if (!content.querySelector(".thought-item")) {
           e.preventDefault();
           return;
         }
 
         var sel = window.getSelection();
         var anchor = sel && sel.anchorNode;
-        var li = closestLi(anchor);
+        var li = closestThought(anchor);
 
         if (!li) {
           e.preventDefault();
-          ensureUl();
+          ensureThoughts();
           return;
         }
 
@@ -899,14 +1794,32 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       true
     );
 
-    content.addEventListener("click", onViewThoughtPointer, true);
-    content.addEventListener("touchend", onViewThoughtPointer, true);
-    content.addEventListener("touchstart", onExpandPointerDown, true);
-    content.addEventListener("mousedown", onExpandPointerDown, true);
-    content.addEventListener("click", onExpandPointer, true);
-    content.addEventListener("touchend", onExpandPointer, true);
+    content.addEventListener(
+      "beforeinput",
+      function (e) {
+        var inputType = e.inputType || "";
+        var sel = window.getSelection();
+        var anchor = sel && sel.anchorNode;
+        var li = closestThought(anchor) || closestThought(e.target);
+        if (inputType === "insertParagraph") {
+          if (!li) return;
+          handleEnter(e, li, anchor || e.target);
+          return;
+        }
+        if (
+          inputType !== "deleteContentBackward" &&
+          inputType !== "deleteSoftLineBackward" &&
+          inputType !== "deleteWordBackward"
+        ) {
+          return;
+        }
+        if (!li) return;
+        handleBackspace(e, li, anchor || e.target);
+      },
+      true
+    );
+
     content.addEventListener("click", onCategoryChromePointer, true);
-    // Android WebView often delivers contenteditable=false taps more reliably here.
     content.addEventListener(
       "touchend",
       function (e) {
@@ -920,12 +1833,12 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
     );
 
     content.addEventListener("input", function () {
-      ensureUl();
+      ensureThoughts();
       normalizeLis();
       repairAllPlaceholderFields();
     });
 
-    ensureUl();
+    ensureThoughts();
     normalizeLis();
     repairAllPlaceholderFields();
   }
@@ -933,6 +1846,37 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
   true;
 })();
 `;
+
+export function applyParagraphSplitScript(
+  sourceId: string,
+  pieces: Array<{
+    id: string;
+    text: string;
+    title: string;
+    categoryId: string;
+    inline?: boolean;
+  }>
+): string {
+  return `
+(function () {
+  if (typeof window.__mcApplyParagraphSplit === "function") {
+    window.__mcApplyParagraphSplit(
+      ${JSON.stringify(sourceId)},
+      ${JSON.stringify(pieces)}
+    );
+    return true;
+  }
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) {
+    try {
+      content.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch (e) {}
+  }
+  return true;
+})();
+`;
+}
 
 export function setShowTitlesScript(showTitles: boolean): string {
   return `window.__mcShowTitles = ${showTitles ? "true" : "false"}; true;`;
@@ -948,37 +1892,8 @@ export function setEditingModeScript(editing: boolean): string {
     document.documentElement.classList.toggle("mc-editing", !!window.__mcEditing);
   }
   if (root) root.classList.toggle("mc-editing", !!window.__mcEditing);
-  if (!root) return true;
-  var lis = root.querySelectorAll("ul > li");
-  if (window.__mcEditing) {
-    for (var i = 0; i < lis.length; i++) {
-      var li = lis[i];
-      if (li.__mcCollapseTimer) {
-        clearTimeout(li.__mcCollapseTimer);
-        li.__mcCollapseTimer = null;
-      }
-      if (!li.querySelector(".thought-expand")) {
-        li.insertAdjacentHTML(
-          "beforeend",
-          '<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>'
-        );
-      }
-      var title = li.querySelector(".thought-title");
-      if (title) title.__mcTitleH = title.scrollHeight;
-      li.classList.add("is-collapsed");
-      var expand = li.querySelector(".thought-expand");
-      if (expand) expand.setAttribute("aria-expanded", "false");
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-      if (typeof window.__mcAnimateTitle === "function") {
-        window.__mcAnimateTitle(li);
-      }
-    }
-    if (typeof window.__mcSyncChecklistLayouts === "function") {
-      window.__mcSyncChecklistLayouts();
-    }
-  } else if (typeof window.__mcRefreshCategoryTimers === "function") {
-    window.__mcRefreshCategoryTimers();
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
   }
   true;
 })();
@@ -1034,7 +1949,6 @@ export function setThoughtValidationErrorsScript(options: {
     el.classList.remove("is-placeholder");
     el.removeAttribute("data-placeholder");
     el.innerHTML = "<br>";
-    // Force a style recalc so ::before placeholders reappear after clear.
     void el.offsetWidth;
     el.setAttribute("data-placeholder", placeholder);
     el.classList.add("is-placeholder");
@@ -1043,7 +1957,7 @@ export function setThoughtValidationErrorsScript(options: {
 
   clearErrors();
 
-  var lis = content.querySelectorAll("ul > li.thought-item, ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   var emptyContent = ${options.emptyContent ? "true" : "false"};
   var incomplete = ${JSON.stringify(options.incomplete)};
   var titleMsg = ${titleMsg};
@@ -1065,10 +1979,10 @@ export function setThoughtValidationErrorsScript(options: {
           emptyMsg +
           '"><br></div>';
       content.innerHTML =
-        '<ul><li class="thought-item" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
+        '<div class="mc-thoughts"><div class="thought-item" data-thought-type="li" data-category-id="uncategorized" data-completable="false" data-completed="false">' +
         '<div class="thought-fields">' +
         emptyFields +
-        "</div></li></ul>";
+        "</div></div></div>";
       return true;
     }
 
@@ -1119,16 +2033,20 @@ export function clearThoughtValidationErrorsScript(): string {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return false;
+  var placeholders = window.__mcPlaceholders || {};
   var errored = content.querySelectorAll(".is-error-placeholder");
   for (var i = 0; i < errored.length; i++) {
     var el = errored[i];
     el.classList.remove("is-error-placeholder");
     if (el.classList.contains("thought-title")) {
-      el.setAttribute("data-placeholder", "Title");
+      el.setAttribute("data-placeholder", placeholders.title || "Title");
     } else if (window.__mcShowTitles) {
-      el.setAttribute("data-placeholder", "Summary");
+      el.setAttribute("data-placeholder", placeholders.summary || "Summary");
     } else {
-      el.setAttribute("data-placeholder", "Enter a bullet point");
+      el.setAttribute(
+        "data-placeholder",
+        placeholders.bullet || "Write Something..."
+      );
     }
   }
   return true;
@@ -1138,16 +2056,14 @@ true;
 }
 
 const GRAPH_BODY_PAD = `
-      li.thought-item.has-graph .thought-body,
-      li.thought-item:has(> .thought-graph) .thought-body {
-        padding-right: 44px !important;
-      }
-      html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
-        padding-right: 32px !important;
+      .thought-body,
+      .thought-item.has-graph .thought-body,
+      .thought-item:has(> .thought-graph) .thought-body {
+        padding-right: 0 !important;
       }
     `;
 
-/** Toggle simplified (plain bullets) chrome inside the editor WebView. */
+/** Toggle simplified chrome inside the editor WebView. */
 export function setSimplifiedModeScript(
   simplified: boolean,
   markerColor: string,
@@ -1174,12 +2090,9 @@ export function setSimplifiedModeScript(
         cursor: default !important;
       }
       .thought-stripe,
-      li.thought-item .thought-stripe,
-      li.thought-item.is-collapsed .thought-stripe {
+      .thought-item .thought-stripe {
         opacity: 0 !important;
         pointer-events: none !important;
-        transition: none !important;
-        animation: none !important;
       }
       .thought-dot {
         top: 6px !important;
@@ -1187,47 +2100,37 @@ export function setSimplifiedModeScript(
         height: 8px !important;
         margin-left: -4px !important;
         background-color: ${markerColor} !important;
-        transition: none !important;
-        animation: none !important;
-        transform: none !important;
       }
-      .thought-dot.is-bouncing {
-        animation: none !important;
-      }
-      li.thought-item.is-checklist .thought-stripe,
-      li.thought-item.is-checklist .thought-dot {
+      .thought-item.is-checklist .thought-stripe,
+      .thought-item.is-checklist .thought-dot {
         display: none !important;
       }
-      li.thought-item {
+      .thought-item {
         --category-stack: 0px !important;
         padding-right: 0 !important;
       }
       .thought-body {
         padding-right: 0 !important;
       }
-      li.thought-item.is-checklist .thought-check {
-        left: 4px !important;
+      .thought-item.is-checklist .thought-check {
+        left: var(--mc-list-indent, 16px) !important;
         right: auto !important;
-        transition: none !important;
-        top: calc(
-          var(--category-stack, 0px) + var(--check-nudge, 2px)
-        ) !important;
+        top: calc(var(--check-nudge, 2px)) !important;
       }
-      li.thought-item .thought-check-box,
-      li.thought-item[data-category-id] .thought-check-box {
+      .thought-item .thought-check-box,
+      .thought-item[data-category-id] .thought-check-box {
         border-color: ${markerColor} !important;
         background: ${surfaceColor} !important;
       }
-      li.thought-item.is-completed .thought-check-box,
-      li.thought-item[data-category-id].is-completed .thought-check-box {
+      .thought-item.is-completed .thought-check-box,
+      .thought-item[data-category-id].is-completed .thought-check-box {
         background-color: ${markerColor} !important;
         border-color: ${markerColor} !important;
       }
-      li.thought-item.is-completed .thought-check-box svg {
+      .thought-item.is-completed .thought-check-box svg {
         color: ${surfaceColor} !important;
       }
-      .thought-graph,
-      .thought-expand {
+      .thought-graph {
         display: none !important;
       }
     `
@@ -1245,29 +2148,7 @@ export function setSimplifiedModeScript(
   }
   style.textContent = ${JSON.stringify(css)};
 
-  var content =
-    document.querySelector(".pell-content") || document.getElementById("editor");
-  if (content) {
-    var lis = content.querySelectorAll("ul > li.thought-item, ul > li");
-    for (var i = 0; i < lis.length; i++) {
-      var li = lis[i];
-      if (li.__mcCollapseTimer) {
-        clearTimeout(li.__mcCollapseTimer);
-        li.__mcCollapseTimer = null;
-      }
-      if (li.__mcBounceTimer) {
-        clearTimeout(li.__mcBounceTimer);
-        li.__mcBounceTimer = null;
-      }
-      if (window.__mcSimplified) {
-        li.classList.remove("is-collapsed");
-      }
-      var stripe = li.querySelector(".thought-stripe");
-      if (stripe) stripe.classList.remove("is-bouncing");
-    }
-  }
-
-  if (!window.__mcSimplified && typeof window.__mcRefreshCategoryTimers === "function") {
+  if (typeof window.__mcRefreshCategoryTimers === "function") {
     window.__mcRefreshCategoryTimers();
   }
   if (typeof window.__mcSyncChecklistLayouts === "function") {
@@ -1287,179 +2168,11 @@ export const REFRESH_CATEGORY_TIMERS_SCRIPT = `
 })();
 `;
 
-/** Category fade/collapse for view-only editors (does not rebuild chrome). */
 export const CATEGORY_COLLAPSE_SCRIPT = `
 (function () {
-  var content =
-    document.querySelector(".pell-content") || document.getElementById("editor");
-  if (!content || window.__mcCategoryCollapseInstalled) return true;
-  window.__mcCategoryCollapseInstalled = true;
-
-  var CATEGORY_FADE_MS = 3000;
-  var COLLAPSE_TRANSITION_MS = 380;
-
-  function closest(node, predicate) {
-    while (node && node !== document.body) {
-      if (predicate(node)) return node;
-      node = node.parentNode;
-    }
-    return null;
-  }
-
-  function closestLi(node) {
-    return closest(node, function (n) {
-      return n.nodeName === "LI";
-    });
-  }
-
-  function closestClass(node, className) {
-    return closest(node, function (n) {
-      return n.classList && n.classList.contains(className);
-    });
-  }
-
-  function clearCollapseTimer(li) {
-    if (li && li.__mcCollapseTimer) {
-      clearTimeout(li.__mcCollapseTimer);
-      li.__mcCollapseTimer = null;
-    }
-  }
-
-  function bounceStripe(li) {
-    if (window.__mcSimplified) return;
-    if (li && li.classList.contains("is-checklist")) return;
-    var dot = li && li.querySelector(".thought-dot");
-    if (!dot) return;
-    if (li.__mcBounceTimer) {
-      clearTimeout(li.__mcBounceTimer);
-      li.__mcBounceTimer = null;
-    }
-    dot.classList.remove("is-bouncing");
-    void dot.offsetWidth;
-    dot.classList.add("is-bouncing");
-    li.__mcBounceTimer = setTimeout(function () {
-      dot.classList.remove("is-bouncing");
-      li.__mcBounceTimer = null;
-    }, 1800);
-  }
-
-  function collapseThoughtCategory(li) {
-    if (!li || window.__mcSimplified) return;
-    var title = li.querySelector(".thought-title");
-    if (title) title.__mcTitleH = title.scrollHeight;
-    li.classList.add("is-collapsed");
-    var expand = li.querySelector(".thought-expand");
-    if (expand) expand.setAttribute("aria-expanded", "false");
-    if (typeof window.__mcAnimateTitle === "function") {
-      window.__mcAnimateTitle(li);
-    }
-    if (!window.__mcEditing) {
-      li.__mcBounceTimer = setTimeout(function () {
-        bounceStripe(li);
-      }, COLLAPSE_TRANSITION_MS);
-    }
-    if (typeof window.__mcSyncChecklistLayouts === "function") {
-      window.__mcSyncChecklistLayouts();
-    }
-  }
-
-  function expandThoughtCategory(li, reschedule) {
-    if (!li) return;
-    clearCollapseTimer(li);
-    var stripe = li.querySelector(".thought-stripe");
-    if (stripe) stripe.classList.remove("is-bouncing");
-    li.classList.remove("is-collapsed");
-    var expand = li.querySelector(".thought-expand");
-    if (expand) expand.setAttribute("aria-expanded", "true");
-    if (typeof window.__mcAnimateTitle === "function") {
-      window.__mcAnimateTitle(li);
-    }
-    if (reschedule !== false && !window.__mcEditing) {
-      scheduleCollapse(li);
-    }
-    if (typeof window.__mcSyncChecklistLayouts === "function") {
-      window.__mcSyncChecklistLayouts();
-    }
-  }
-
-  function scheduleCollapse(li) {
-    if (!li || window.__mcSimplified || window.__mcEditing) return;
-    clearCollapseTimer(li);
-    li.classList.remove("is-collapsed");
-    var stripe = li.querySelector(".thought-stripe");
-    if (stripe) stripe.classList.remove("is-bouncing");
-    li.__mcCollapseTimer = setTimeout(function () {
-      collapseThoughtCategory(li);
-      li.__mcCollapseTimer = null;
-    }, CATEGORY_FADE_MS);
-  }
-
-  window.__mcExpandThoughtCategory = function (li) {
-    expandThoughtCategory(li, !window.__mcEditing);
-  };
-  window.__mcCollapseThoughtCategory = function (li) {
-    collapseThoughtCategory(li);
-  };
-
-  window.__mcRefreshCategoryTimers = function () {
-    if (window.__mcSimplified) return;
-    var lis = content.querySelectorAll("ul > li.thought-item");
-    for (var i = 0; i < lis.length; i++) {
-      if (window.__mcEditing) {
-        var expand = lis[i].querySelector(".thought-expand");
-        if (expand) {
-          expand.setAttribute(
-            "aria-expanded",
-            lis[i].classList.contains("is-collapsed") ? "false" : "true"
-          );
-        }
-      } else if (!lis[i].classList.contains("is-collapsed")) {
-        scheduleCollapse(lis[i]);
-      }
-    }
-  };
-
-  function openCategoryPicker(li) {
-    if (!li || !li.parentNode || !window.ReactNativeWebView) return;
-    var index = Array.prototype.indexOf.call(li.parentNode.children, li);
-    if (index < 0) return;
-    var now = Date.now();
-    if (window.__mcCategoryPickerAt && now - window.__mcCategoryPickerAt < 400) {
-      return;
-    }
-    window.__mcCategoryPickerAt = now;
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ type: "SELECT_CATEGORY", data: index })
-    );
-  }
-
-  function onViewThoughtPointer(e) {
-    if (window.__mcBulletGuardInstalled) return;
-    if (window.__mcEditing || window.__mcSimplified) return;
-    if (closestClass(e.target, "thought-check")) return;
-    if (closestClass(e.target, "thought-graph")) return;
-    if (closestClass(e.target, "thought-expand")) return;
-    var li = closestLi(e.target);
-    if (!li) return;
-    e.preventDefault();
-    e.stopPropagation();
-    var wantsPicker =
-      closestClass(e.target, "thought-category") ||
-      closestClass(e.target, "thought-stripe") ||
-      closestClass(e.target, "thought-rail");
-    if (wantsPicker && !li.classList.contains("is-collapsed")) {
-      expandThoughtCategory(li, true);
-      openCategoryPicker(li);
-      return;
-    }
-    expandThoughtCategory(li, true);
-  }
-
-  content.addEventListener("click", onViewThoughtPointer, true);
-  content.addEventListener("touchend", onViewThoughtPointer, true);
-
-  window.__mcRefreshCategoryTimers();
-  return true;
+  window.__mcExpandThoughtCategory = function () {};
+  window.__mcCollapseThoughtCategory = function () {};
+  true;
 })();
 `;
 
@@ -1473,20 +2186,12 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
 
   function closestGraph(node) {
     while (node && node !== content) {
-      if (
-        node.classList &&
-        node.classList.contains("thought-graph")
-      ) {
+      if (node.classList && node.classList.contains("thought-graph")) {
         return node;
       }
       node = node.parentNode;
     }
     return null;
-  }
-
-  function setGraphPressed(btn, pressed) {
-    if (!btn) return;
-    btn.classList.toggle("is-pressed", !!pressed);
   }
 
   function onGraphPointer(event) {
@@ -1499,38 +2204,422 @@ export const GRAPH_BUTTON_CLICK_SCRIPT = `
     var now = Date.now();
     if (window.__mcGraphAt && now - window.__mcGraphAt < 400) return;
     window.__mcGraphAt = now;
-    setGraphPressed(btn, true);
-    setTimeout(function () {
-      setGraphPressed(btn, false);
-    }, 180);
     window.ReactNativeWebView.postMessage(
       JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
     );
   }
 
-  content.addEventListener(
-    "touchstart",
-    function (event) {
-      var btn = closestGraph(event.target);
-      if (btn) setGraphPressed(btn, true);
-    },
-    true
-  );
   content.addEventListener("click", onGraphPointer, true);
   content.addEventListener("touchend", onGraphPointer, true);
   return true;
 })();
 `;
 
-export function setThoughtListTypeScript(completable: boolean): string {
+export function setThoughtTypeScript(type: ThoughtType): string {
   return `
 (function () {
-  if (typeof window.__mcSetThoughtListType === "function") {
-    window.__mcSetThoughtListType(${completable ? "true" : "false"});
+  if (typeof window.__mcSetThoughtType === "function") {
+    window.__mcSetThoughtType(${JSON.stringify(type)});
   }
   true;
 })();
 `;
+}
+
+export function setSelectedThoughtScript(index: number): string {
+  return `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+  var lis = content.querySelectorAll(".thought-item");
+  for (var i = 0; i < lis.length; i++) {
+    lis[i].classList.toggle("is-selected", i === ${index});
+  }
+  true;
+})();
+`;
+}
+
+function cssColorToken(color?: string | null): string {
+  const value = (color ?? "").trim();
+  if (!value || /[;{}]/.test(value)) return "";
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+export function setMergeHighlightScript(
+  indexes: number[],
+  color?: string | null
+): string {
+  const selected = JSON.stringify(
+    indexes.filter((index) => Number.isFinite(index) && index >= 0)
+  );
+  const highlight = cssColorToken(color);
+  return `
+(function () {
+  var selected = ${selected};
+  var merging = selected.length > 0;
+  var color = "${highlight}";
+  var wash = color
+    ? "color-mix(in srgb, " + color + " 38%, transparent)"
+    : "color-mix(in srgb, currentColor 28%, transparent)";
+  window.__mcMerging = merging;
+  window.__mcMergeIndexes = selected;
+  var root = document.documentElement;
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (root) {
+    root.classList.toggle("mc-merging", merging);
+    if (merging && color) root.style.setProperty("--mc-merge-color", color);
+    else root.style.removeProperty("--mc-merge-color");
+  }
+  var style = document.getElementById("mc-merge-highlight");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "mc-merge-highlight";
+    (document.head || document.documentElement).appendChild(style);
+  }
+  style.textContent = merging
+    ? "html.mc-merging .thought-item.is-selected .thought-summary," +
+      "html.mc-merging .thought-item.is-selected .thought-title," +
+      "html.mc-merging .thought-item.is-merge-selected .thought-summary," +
+      "html.mc-merging .thought-item.is-merge-selected .thought-title{" +
+      "background-color:" + wash + ";" +
+      "border-radius:3px;}"
+    : "";
+  if (!content) return true;
+  content.classList.toggle("mc-merging", merging);
+  var lis = content.querySelectorAll(".thought-item");
+  for (var i = 0; i < lis.length; i++) {
+    var on = selected.indexOf(i) !== -1;
+    lis[i].classList.toggle("is-merge-selected", on);
+    if (merging) {
+      lis[i].classList.toggle("is-selected", on);
+    }
+    var fields = lis[i].querySelectorAll(".thought-summary, .thought-title");
+    for (var f = 0; f < fields.length; f++) {
+      if (on) {
+        fields[f].style.backgroundColor = wash;
+      } else {
+        fields[f].style.removeProperty("background-color");
+      }
+    }
+  }
+  if (merging) {
+    try {
+      var sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    } catch (err) {}
+  }
+  true;
+})();
+`;
+}
+
+export const REQUEST_EDITOR_HTML_SCRIPT = `
+(function () {
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  var html = content ? content.innerHTML : "";
+  if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ type: "HTML_SYNC", data: html })
+    );
+  }
+  true;
+})();
+`;
+
+export function setCategoryOpacityScript(opacity: number): string {
+  const value = Math.min(1, Math.max(0, Number(opacity) || 0));
+  return `
+(function () {
+  var o = ${value};
+  window.__mcCategoryOpacity = o;
+  var scale = o / 0.6;
+  var apply = function (el) {
+    if (!el || !el.style) return;
+    el.style.setProperty("--mc-cat-wash", 18 * scale + "%");
+    el.style.setProperty("--mc-cat-wash-selected", 34 * scale + "%");
+    el.style.setProperty("--mc-cat-wash-plain", 6 * scale + "%");
+    el.style.setProperty("--mc-cat-wash-plain-selected", 16 * scale + "%");
+  };
+  apply(document.documentElement);
+  apply(document.body);
+  apply(
+    document.querySelector(".pell-content") || document.getElementById("editor")
+  );
+  true;
+})();
+`;
+}
+
+export function setShowCategoryColorsScript(show: boolean): string {
+  return `
+(function () {
+  var show = ${show ? "true" : "false"};
+  window.__mcShowCategoryColors = show;
+  if (document.documentElement) {
+    document.documentElement.classList.toggle("mc-show-categories", show);
+  }
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (content) content.classList.toggle("mc-show-categories", show);
+  true;
+})();
+`;
+}
+
+export function focusThoughtScript(
+  index: number,
+  atEnd: boolean,
+  force = false
+): string {
+  return `
+(function () {
+  var index = ${Math.max(0, Math.floor(index))};
+  var atEnd = ${atEnd ? "true" : "false"};
+  var force = ${force ? "true" : "false"};
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (!content) return true;
+  var lis = content.querySelectorAll(".thought-item");
+  if (!lis.length) return true;
+
+  function fieldOf(li) {
+    if (!li) return null;
+    return li.querySelector(".thought-summary") || li.querySelector(".thought-title");
+  }
+
+  function closestThought(node) {
+    while (node && node !== document.body) {
+      if (node.classList && node.classList.contains("thought-item")) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function firstTextNode(el) {
+    if (!el) return null;
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue && node.nodeValue.length) return node;
+    }
+    return null;
+  }
+
+  function placeCaretAtStart(el) {
+    var sel = window.getSelection();
+    if (!el || !sel) return;
+    try {
+      el.focus({ preventScroll: true });
+    } catch (err) {
+      try { el.focus(); } catch (err2) {}
+    }
+    var range = document.createRange();
+    var text = firstTextNode(el);
+    if (text) {
+      range.setStart(text, 0);
+    } else if (
+      el.childNodes.length === 1 &&
+      el.firstChild &&
+      el.firstChild.nodeName === "BR"
+    ) {
+      range.setStart(el, 0);
+    } else if (el.firstChild) {
+      range.setStartBefore(el.firstChild);
+    } else {
+      range.setStart(el, 0);
+    }
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function placeCaretAtEnd(el) {
+    var sel = window.getSelection();
+    if (!el || !sel) return;
+    try {
+      el.focus({ preventScroll: true });
+    } catch (err) {
+      try { el.focus(); } catch (err2) {}
+    }
+    var range = document.createRange();
+    if (
+      el.childNodes.length === 1 &&
+      el.firstChild &&
+      el.firstChild.nodeName === "BR"
+    ) {
+      range.setStart(el, 0);
+      range.collapse(true);
+    } else {
+      range.selectNodeContents(el);
+      range.collapse(false);
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function placeCaretSoon(el, toEnd) {
+    var apply = function () {
+      if (toEnd) placeCaretAtEnd(el);
+      else placeCaretAtStart(el);
+    };
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 0);
+    setTimeout(apply, 60);
+  }
+
+  var sel = window.getSelection();
+  var current = closestThought(sel && sel.anchorNode);
+  var currentField = fieldOf(current);
+  var keepCaret =
+    !force &&
+    !atEnd &&
+    currentField &&
+    sel &&
+    sel.rangeCount > 0 &&
+    currentField.contains(sel.anchorNode);
+
+  if (!keepCaret && !force && !atEnd && window.__mcSavedRange && sel) {
+    try {
+      var saved = window.__mcSavedRange;
+      var savedNode =
+        saved.startContainer && saved.startContainer.nodeType === 3
+          ? saved.startContainer.parentNode
+          : saved.startContainer;
+      if (savedNode && content.contains(savedNode)) {
+        sel.removeAllRanges();
+        sel.addRange(saved);
+        current = closestThought(saved.startContainer);
+        keepCaret = true;
+      }
+    } catch (err) {}
+  }
+
+  var li = lis[index] || lis[0];
+  for (var i = 0; i < lis.length; i++) {
+    lis[i].classList.toggle("is-selected", lis[i] === (keepCaret ? current : li));
+  }
+
+  if (!keepCaret) {
+    var field = fieldOf(li);
+    if (field) {
+      placeCaretSoon(field, atEnd);
+    }
+  } else {
+    try {
+      content.focus({ preventScroll: true });
+    } catch (err) {
+      try {
+        content.focus();
+      } catch (err2) {}
+    }
+  }
+  true;
+})();
+`;
+}
+
+export function reapplyActiveFormatsScript(formats: {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+}): string {
+  return `
+(function () {
+  var want = ${JSON.stringify(formats)};
+  var saved = window.__mcSavedFormats || {};
+  var sel = window.getSelection();
+  if (!sel || !sel.isCollapsed) return true;
+  var commands = ["bold", "italic", "underline"];
+  for (var i = 0; i < commands.length; i++) {
+    var command = commands[i];
+    if (!want[command] && !saved[command]) continue;
+    try {
+      if (!document.queryCommandState(command)) {
+        document.execCommand(command, false, null);
+      }
+    } catch (err) {}
+  }
+  true;
+})();
+`;
+}
+
+export function setThoughtTextEditableScript(editable: boolean): string {
+  return `
+(function () {
+  var editable = ${editable ? "true" : "false"};
+  var content =
+    document.querySelector(".pell-content") || document.getElementById("editor");
+  if (document.documentElement) {
+    document.documentElement.classList.toggle("mc-details-lock", !editable);
+  }
+  if (!window.__mcDetailsLockInstalled) {
+    window.__mcDetailsLockInstalled = true;
+    document.addEventListener(
+      "keydown",
+      function (e) {
+        if (!document.documentElement.classList.contains("mc-details-lock")) {
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+      },
+      true
+    );
+    document.addEventListener(
+      "beforeinput",
+      function (e) {
+        if (!document.documentElement.classList.contains("mc-details-lock")) {
+          return;
+        }
+        e.preventDefault();
+      },
+      true
+    );
+    document.addEventListener(
+      "selectstart",
+      function (e) {
+        if (!document.documentElement.classList.contains("mc-details-lock")) {
+          return;
+        }
+        e.preventDefault();
+      },
+      true
+    );
+  }
+  if (!content) return true;
+  content.classList.toggle("mc-details-lock", !editable);
+  content.setAttribute("contenteditable", editable ? "true" : "false");
+  var fields = content.querySelectorAll(".thought-summary, .thought-title");
+  for (var i = 0; i < fields.length; i++) {
+    if (editable) {
+      fields[i].removeAttribute("contenteditable");
+    } else {
+      fields[i].setAttribute("contenteditable", "false");
+    }
+  }
+  if (!editable) {
+    try {
+      var sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+      content.blur();
+    } catch (err) {}
+  }
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
+  }
+  true;
+})();
+`;
+}
+
+export function setThoughtListTypeScript(completable: boolean): string {
+  return setThoughtTypeScript(completable ? "checkbox" : "li");
 }
 
 export const SYNC_CHECKLIST_LAYOUT_SCRIPT = `
@@ -1542,7 +2631,7 @@ export const SYNC_CHECKLIST_LAYOUT_SCRIPT = `
 })();
 `;
 
-/** Checkbox chrome, layout, and completion toggles inside the pell WebView. */
+/** Checkbox chrome, layout, selection, and completion toggles. */
 export const CHECKLIST_SCRIPT = `
 (function () {
   var content =
@@ -1557,47 +2646,32 @@ export const CHECKLIST_SCRIPT = `
       .trim();
   }
 
+  function isHeadingType(type) {
+    return (
+      type === "h1" ||
+      type === "h2" ||
+      type === "h3" ||
+      type === "h4" ||
+      type === "h5" ||
+      type === "h6"
+    );
+  }
+
+  function isTextLikeType(type) {
+    return type === "text" || isHeadingType(type);
+  }
+
   window.__mcAnimateTitle = function (li) {
     if (!li) return;
     var title = li.querySelector(".thought-title");
-    var hasText = titlePlainText(title).length > 0;
-    li.classList.toggle("has-entered-title", hasText);
-    if (!title) return;
-
-    var collapsed = li.classList.contains("is-collapsed");
-
-    if (!hasText && !window.__mcEditing) {
-      title.style.maxHeight = "0px";
-      title.style.opacity = "0";
-      title.style.marginBottom = "0px";
-      title.style.minHeight = "0px";
-      title.style.overflow = "hidden";
-      title.style.padding = "0px";
-      return;
-    }
-
-    title.style.overflow = "hidden";
-    if (collapsed) {
-      var current = title.style.maxHeight;
-      if (!current || current === "none") {
-        title.style.maxHeight = (title.__mcTitleH || title.scrollHeight || 24) + "px";
-        void title.offsetHeight;
-      }
-      title.style.maxHeight = "0px";
-      title.style.opacity = "0";
-      title.style.marginBottom = "0px";
-      title.style.minHeight = "0px";
-      title.style.padding = "0px";
-      return;
-    }
-
-    var height = title.__mcTitleH || title.scrollHeight || 24;
-    title.style.minHeight = "";
-    title.style.marginBottom = "";
-    title.style.padding = "";
-    title.style.opacity = "";
-    title.style.maxHeight = height + "px";
+    li.classList.toggle("has-entered-title", titlePlainText(title).length > 0);
   };
+  if (typeof window.__mcExpandThoughtCategory !== "function") {
+    window.__mcExpandThoughtCategory = function () {};
+  }
+  if (typeof window.__mcCollapseThoughtCategory !== "function") {
+    window.__mcCollapseThoughtCategory = function () {};
+  }
 
   if (document.documentElement) {
     document.documentElement.classList.toggle(
@@ -1615,9 +2689,9 @@ export const CHECKLIST_SCRIPT = `
     return null;
   }
 
-  function closestLi(node) {
+  function closestThought(node) {
     return closest(node, function (n) {
-      return n.nodeName === "LI";
+      return n.classList && n.classList.contains("thought-item");
     });
   }
 
@@ -1675,12 +2749,65 @@ export const CHECKLIST_SCRIPT = `
     return 23;
   }
 
+  function thoughtTypeOf(li) {
+    var type = li && li.getAttribute("data-thought-type");
+    if (isTextLikeType(type) || type === "li" || type === "checkbox") return type;
+    if (isTrueAttr(li, "data-completable")) return "checkbox";
+    return "li";
+  }
+
+  function applyThoughtType(li, type) {
+    if (!li) return;
+    if (!isTextLikeType(type) && type !== "li" && type !== "checkbox") type = "li";
+    var previousType = thoughtTypeOf(li);
+    var completable = type === "checkbox";
+    var becomingTextLike =
+      isTextLikeType(type) &&
+      (previousType === "li" || previousType === "checkbox");
+    li.setAttribute("data-thought-type", type);
+    li.setAttribute("data-completable", completable ? "true" : "false");
+    if (!completable) {
+      li.setAttribute("data-completed", "false");
+    }
+    li.classList.toggle("is-block", isTextLikeType(type));
+    li.classList.toggle("is-text-like", isTextLikeType(type));
+    li.classList.toggle("is-heading", isHeadingType(type));
+    li.classList.toggle("is-checklist", completable);
+    if (isHeadingType(type)) {
+      var headingTitle = li.querySelector(".thought-title");
+      if (headingTitle && headingTitle.parentNode) {
+        headingTitle.parentNode.removeChild(headingTitle);
+      }
+    }
+    if (!isTextLikeType(type) || becomingTextLike) {
+      li.classList.remove("is-inline");
+      li.removeAttribute("data-inline");
+    }
+    if (becomingTextLike) {
+      li.classList.remove("is-run-start");
+      var next = li.nextElementSibling;
+      if (
+        next &&
+        next.classList &&
+        next.classList.contains("thought-item") &&
+        (next.classList.contains("is-inline") ||
+          next.getAttribute("data-inline") === "true")
+      ) {
+        next.classList.remove("is-inline");
+        next.removeAttribute("data-inline");
+        next.classList.add("is-block");
+      }
+    }
+    if (!completable) li.classList.remove("is-completed");
+  }
+
   function syncChecklistLayout(li) {
     if (!li) return;
     var check = ensureCheckbox(li);
-    var completable = isTrueAttr(li, "data-completable");
+    var type = thoughtTypeOf(li);
+    applyThoughtType(li, type);
+    var completable = type === "checkbox";
     var completed = completable && isTrueAttr(li, "data-completed");
-    li.classList.toggle("is-checklist", completable);
     li.classList.toggle("is-completed", completed);
     if (check) {
       check.setAttribute("aria-checked", completed ? "true" : "false");
@@ -1689,92 +2816,280 @@ export const CHECKLIST_SCRIPT = `
     var title = li.querySelector(".thought-title");
     var summary = li.querySelector(".thought-summary");
     var graph = li.querySelector(".thought-graph");
-    var expand = li.querySelector(".thought-expand");
-    var collapsed = li.classList.contains("is-collapsed");
     var hasText = titlePlainText(title).length > 0;
     li.classList.toggle("has-entered-title", hasText);
-    var hasTitle = hasText && !collapsed;
-    li.classList.toggle("has-title", hasTitle);
+    li.classList.toggle("has-title", hasText);
+    li.classList.toggle("has-graph", !!graph);
 
-    var field = (hasTitle ? title : null) || summary || title;
+    var field = (hasText ? title : null) || summary || title;
     var lineH = fieldLineHeight(field);
     var fieldH = field ? field.offsetHeight : 0;
-    var singleLine = !hasTitle && fieldH <= lineH * 1.6;
-    li.classList.toggle("is-single-line", singleLine);
-    li.classList.toggle("has-graph", !!graph);
-    li.classList.toggle("has-expand", !!expand && !!window.__mcEditing);
+    li.classList.toggle("is-single-line", !hasText && fieldH <= lineH * 1.6);
 
-    if (graph && !graph.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        graph.classList.add("is-anchored");
-      });
-    }
-    if (expand && !expand.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        expand.classList.add("is-anchored");
-      });
-    }
-
-    // Keep top in CSS so it eases with the category line (0.38s).
-    // Graph button uses the same --category-stack offset — do not recenter
-    // on fields height or it will jump twice while the title animates.
-    var target =
-      hasTitle && title && !window.__mcSimplified ? title : summary || title;
+    var target = summary || title;
     if (target) {
       var alignLineH = fieldLineHeight(target);
       var checkH = (check && check.offsetHeight) || 22;
       var nudge = Math.max(0, Math.round((alignLineH - checkH) / 2));
-      li.style.setProperty("--check-nudge", nudge + "px");
-    } else {
+      var nextNudge = nudge + "px";
+      if (li.style.getPropertyValue("--check-nudge") !== nextNudge) {
+        li.style.setProperty("--check-nudge", nextNudge);
+      }
+    } else if (li.style.getPropertyValue("--check-nudge")) {
       li.style.removeProperty("--check-nudge");
     }
 
-    var dot = ensureDot(li);
-    if (dot && !dot.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        dot.classList.add("is-anchored");
-      });
-    }
+    ensureDot(li);
 
     if (!check) return;
-
     check.style.left = "";
     check.style.right = "";
     check.style.top = "";
+  }
 
-    if (!completable) {
+  function headingLevel(type) {
+    if (type === "h1") return 1;
+    if (type === "h2") return 2;
+    if (type === "h3") return 3;
+    if (type === "h4") return 4;
+    if (type === "h5") return 5;
+    if (type === "h6") return 6;
+    return 0;
+  }
+
+  function isBlockHeading(li) {
+    return (
+      headingLevel(thoughtTypeOf(li)) > 0 &&
+      !li.classList.contains("is-inline") &&
+      li.getAttribute("data-inline") !== "true"
+    );
+  }
+
+  function foldButtonOf(li) {
+    return li ? li.querySelector(".thought-fold") : null;
+  }
+
+  function foldIconSvg() {
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  }
+
+  function ensureFoldButton(li) {
+    var btn = foldButtonOf(li);
+    var body = li.querySelector(".thought-body");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "thought-fold";
+      btn.setAttribute("contenteditable", "false");
+      btn.setAttribute("tabindex", "-1");
+      btn.setAttribute("aria-label", "Collapse section");
+    }
+    if (!btn.querySelector("svg")) {
+      btn.innerHTML = foldIconSvg();
+    }
+    if (body) {
+      var fields = body.querySelector(".thought-fields");
+      var needsMove =
+        btn.parentNode !== body || (fields && btn.nextSibling !== fields);
+      if (needsMove) {
+        if (fields) body.insertBefore(btn, fields);
+        else body.insertBefore(btn, body.firstChild);
+      }
+    } else if (!btn.parentNode) {
+      li.appendChild(btn);
+    }
+    return btn;
+  }
+
+  function removeFoldButton(li) {
+    var btn = foldButtonOf(li);
+    if (btn && btn.parentNode) btn.parentNode.removeChild(btn);
+  }
+
+  function sectionExclusiveEnd(items, start) {
+    var level = headingLevel(thoughtTypeOf(items[start]));
+    if (!level) return start + 1;
+    var i = start + 1;
+    for (; i < items.length; i++) {
+      var next = headingLevel(thoughtTypeOf(items[i]));
+      if (next && next <= level) break;
+    }
+    return i;
+  }
+
+  function setHeadingIndent(li, depth) {
+    var next = Math.max(0, depth);
+    li.style.setProperty("--heading-indent", "0px");
+    li.classList.toggle("in-heading", next > 0);
+  }
+
+  function revealFocusedHidden() {
+    var sel = window.getSelection();
+    var focused = closestThought(sel && sel.anchorNode);
+    if (!focused || !focused.classList.contains("is-section-hidden")) return;
+    var root = focused.parentNode;
+    if (!root) return;
+    var items = root.querySelectorAll(".thought-item");
+    var index = -1;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i] === focused) {
+        index = i;
+        break;
+      }
+    }
+    if (index < 0) return;
+    for (var i = index - 1; i >= 0; i--) {
+      if (!isBlockHeading(items[i])) continue;
+      if (sectionExclusiveEnd(items, i) > index) {
+        items[i].classList.remove("is-section-collapsed");
+      }
+    }
+  }
+
+  function syncHeadingFolds() {
+    var root =
+      document.querySelector(".pell-content") || document.getElementById("editor");
+    if (!root) return;
+    revealFocusedHidden();
+    var items = root.querySelectorAll(".thought-item");
+    var hide = [];
+    var stack = [];
+    for (var i = 0; i < items.length; i++) hide[i] = false;
+    for (var i = 0; i < items.length; i++) {
+      var li = items[i];
+      var level = headingLevel(thoughtTypeOf(li));
+      var heading = isBlockHeading(li);
+      li.classList.toggle("is-heading", level > 0);
+      if (heading) {
+        while (stack.length && stack[stack.length - 1] >= level) stack.pop();
+        setHeadingIndent(li, stack.length);
+        stack.push(level);
+      } else {
+        setHeadingIndent(li, stack.length);
+        li.classList.remove("can-fold");
+        li.classList.remove("is-section-collapsed");
+        removeFoldButton(li);
+        continue;
+      }
+      var end = sectionExclusiveEnd(items, i);
+      var canFold = end > i + 1;
+      li.classList.toggle("can-fold", canFold);
+      if (!canFold) li.classList.remove("is-section-collapsed");
+      var btn = ensureFoldButton(li);
+      var collapsed = canFold && li.classList.contains("is-section-collapsed");
+      btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      btn.setAttribute(
+        "aria-label",
+        collapsed ? "Expand section" : "Collapse section"
+      );
+      if (collapsed) {
+        for (var j = i + 1; j < end; j++) hide[j] = true;
+      }
+    }
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle("is-section-hidden", !!hide[i]);
+    }
+  }
+
+  function isCategoryMode() {
+    return document.documentElement.classList.contains("mc-details-lock");
+  }
+
+  function foldRotationDeg(btn) {
+    if (!btn) return 0;
+    var t = window.getComputedStyle(btn).transform;
+    if (!t || t === "none") return 0;
+    var m = t.match(/matrix\\(([^)]+)\\)/);
+    if (!m) return 0;
+    var parts = m[1].split(",");
+    return Math.round(
+      Math.atan2(parseFloat(parts[1]), parseFloat(parts[0])) * (180 / Math.PI)
+    );
+  }
+
+  function rotateFoldCaret(btn, collapsed) {
+    if (!btn) return;
+    var from = foldRotationDeg(btn);
+    var to = collapsed ? -90 : 0;
+    if (from === to) {
+      btn.style.transform = "rotate(" + to + "deg)";
       return;
     }
-
-    if (!check.classList.contains("is-anchored")) {
-      requestAnimationFrame(function () {
-        check.classList.add("is-anchored");
-      });
+    var easing = "cubic-bezier(0.22, 0.8, 0.32, 1)";
+    if (typeof btn.animate === "function") {
+      try {
+        var anim = btn.animate(
+          [
+            { transform: "rotate(" + from + "deg)" },
+            { transform: "rotate(" + to + "deg)" },
+          ],
+          { duration: 380, easing: easing, fill: "forwards" }
+        );
+        if (anim && anim.finished) {
+          anim.finished
+            .then(function () {
+              btn.style.transform = "rotate(" + to + "deg)";
+              if (anim.cancel) anim.cancel();
+            })
+            .catch(function () {});
+        }
+        return;
+      } catch (err) {}
     }
+    btn.style.webkitTransition =
+      "-webkit-transform 0.38s " + easing;
+    btn.style.transition = "transform 0.38s " + easing;
+    btn.style.webkitTransform = "rotate(" + to + "deg)";
+    btn.style.transform = "rotate(" + to + "deg)";
+  }
+
+  function toggleHeadingFold(li) {
+    if (!li || !isBlockHeading(li)) return;
+    var btn = foldButtonOf(li) || ensureFoldButton(li);
+    li.classList.toggle("is-section-collapsed");
+    rotateFoldCaret(btn, li.classList.contains("is-section-collapsed"));
+    syncHeadingFolds();
   }
 
   function syncAll() {
     var root =
       document.querySelector(".pell-content") || document.getElementById("editor");
     if (!root) return;
-    var lis = root.querySelectorAll("ul > li");
+    var lis = root.querySelectorAll(".thought-item");
     for (var i = 0; i < lis.length; i++) {
       syncChecklistLayout(lis[i]);
     }
+    syncHeadingFolds();
   }
 
   function postCaretType(li) {
-    if (!window.ReactNativeWebView || !li) return;
+    if (!li) return;
+    if (!window.__mcMerging) {
+      var root =
+        document.querySelector(".pell-content") || document.getElementById("editor");
+      if (root) {
+        var rows = root.querySelectorAll(".thought-item");
+        for (var i = 0; i < rows.length; i++) {
+          rows[i].classList.toggle("is-selected", rows[i] === li);
+        }
+      }
+    }
+    if (!window.ReactNativeWebView) return;
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
         type: "CARET_LIST_TYPE",
-        data: { completable: isTrueAttr(li, "data-completable") },
+        data: {
+          type: thoughtTypeOf(li),
+          index: li.parentNode
+            ? Array.prototype.indexOf.call(li.parentNode.children, li)
+            : -1,
+        },
       })
     );
   }
 
   function toggleCompleted(li) {
-    if (!li || !isTrueAttr(li, "data-completable")) return;
+    if (!li || thoughtTypeOf(li) !== "checkbox") return;
     var now = Date.now();
     if (li.__mcCheckAt && now - li.__mcCheckAt < 400) return;
     li.__mcCheckAt = now;
@@ -1796,16 +3111,28 @@ export const CHECKLIST_SCRIPT = `
 
   window.__mcSyncChecklistLayouts = syncAll;
 
-  window.__mcSetThoughtListType = function (completable) {
+  window.__mcSetThoughtType = function (type) {
     var sel = window.getSelection();
-    var li = closestLi(sel && sel.anchorNode);
-    if (!li) li = content.querySelector("ul > li");
+    var li = closestThought(sel && sel.anchorNode);
+    if (!li) li = content.querySelector(".thought-item.is-selected") || content.querySelector(".thought-item");
     if (!li) return true;
-    li.setAttribute("data-completable", completable ? "true" : "false");
-    if (!completable) {
-      li.setAttribute("data-completed", "false");
-    }
+    applyThoughtType(li, type);
     syncChecklistLayout(li);
+    syncHeadingFolds();
+    if (isHeadingType(type)) {
+      var field =
+        li.querySelector(".thought-summary") || li.querySelector(".thought-title");
+      if (field) {
+        var range = document.createRange();
+        range.selectNodeContents(field);
+        range.collapse(true);
+        var nextSel = window.getSelection();
+        if (nextSel) {
+          nextSel.removeAllRanges();
+          nextSel.addRange(range);
+        }
+      }
+    }
     try {
       content.dispatchEvent(new Event("input", { bubbles: true }));
     } catch (err) {}
@@ -1815,12 +3142,19 @@ export const CHECKLIST_SCRIPT = `
       window.ReactNativeWebView.postMessage(
         JSON.stringify({
           type: "LIST_TYPE",
-          data: { index: index, completable: !!completable },
+          data: { index: index, type: thoughtTypeOf(li) },
         })
       );
     }
     return true;
   };
+  window.__mcSetThoughtListType = function (completable) {
+    return window.__mcSetThoughtType(completable ? "checkbox" : "li");
+  };
+
+  function editorRoot() {
+    return document.querySelector(".pell-content") || document.getElementById("editor");
+  }
 
   if (!window.__mcChecklistInstalled) {
     window.__mcChecklistInstalled = true;
@@ -1830,62 +3164,1184 @@ export const CHECKLIST_SCRIPT = `
         closestClass(node, "thought-rail") ||
         closestClass(node, "thought-stripe") ||
         closestClass(node, "thought-category") ||
-        closestClass(node, "thought-graph") ||
-        closestClass(node, "thought-expand")
+        closestClass(node, "thought-graph")
       );
     }
 
+    function eventInEditor(e) {
+      var root = editorRoot();
+      return !!(root && e.target && root.contains(e.target));
+    }
+
     function onChecklistPointer(e) {
+      if (!eventInEditor(e)) return;
       if (isCategoryChrome(e.target)) return;
       var check = closestClass(e.target, "thought-check");
       if (!check) return;
-      var li = closestLi(e.target);
+      var li = closestThought(e.target);
       e.preventDefault();
       e.stopPropagation();
       if (li) toggleCompleted(li);
     }
 
-    content.addEventListener("click", onChecklistPointer, true);
-    content.addEventListener("touchend", onChecklistPointer, true);
+    function blurEditorAfterFold() {
+      try {
+        var sel = window.getSelection();
+        if (sel && sel.removeAllRanges) sel.removeAllRanges();
+        var root = editorRoot();
+        if (root) root.blur();
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+      } catch (err) {}
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "DISMISS_KEYBOARD" })
+        );
+      }
+    }
 
-    content.addEventListener(
-      "transitionend",
-      function (e) {
+    function headingFoldTarget(li, target) {
+      if (!li || !target) return null;
+      if (closestClass(target, "thought-fold")) return "fold";
+      var body = li.querySelector(".thought-body");
+      if (body && body.contains(target)) return "title";
+      return null;
+    }
+
+    function onFoldPointerDown(e) {
+      if (!eventInEditor(e)) return;
+      var li = closestThought(e.target);
+      if (!li || !isBlockHeading(li)) return;
+      var hit = headingFoldTarget(li, e.target);
+      if (!hit) return;
+      if (hit === "fold" || isCategoryMode()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+
+    function onFoldPointer(e) {
+      if (!eventInEditor(e)) return;
+      if (closestClass(e.target, "thought-check")) return;
+      if (closestClass(e.target, "thought-graph")) return;
+      var li = closestThought(e.target);
+      if (!li || !isBlockHeading(li)) return;
+      var hit = headingFoldTarget(li, e.target);
+      if (!hit) return;
+      if (hit !== "fold" && !isCategoryMode()) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var now = Date.now();
+      if (window.__mcFoldAt && now - window.__mcFoldAt < 400) return;
+      window.__mcFoldAt = now;
+      toggleHeadingFold(li);
+      if (hit === "fold" || isCategoryMode()) blurEditorAfterFold();
+    }
+
+    document.addEventListener("click", onChecklistPointer, true);
+    document.addEventListener("touchend", onChecklistPointer, true);
+    document.addEventListener("mousedown", onFoldPointerDown, true);
+    document.addEventListener("touchstart", onFoldPointerDown, true);
+    document.addEventListener("pointerdown", onFoldPointerDown, true);
+    document.addEventListener("click", onFoldPointer, true);
+    document.addEventListener("touchend", onFoldPointer, true);
+
+    function closestGraph(node) {
+      return closestClass(node, "thought-graph");
+    }
+
+    function onGraphPointer(event) {
+      if (!eventInEditor(event)) return;
+      var btn = closestGraph(event.target);
+      if (!btn) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var thoughtId = btn.getAttribute("data-thought-id");
+      if (!thoughtId || !window.ReactNativeWebView) return;
+      var now = Date.now();
+      if (window.__mcGraphAt && now - window.__mcGraphAt < 400) return;
+      window.__mcGraphAt = now;
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "OPEN_GRAPH", data: thoughtId })
+      );
+    }
+
+    document.addEventListener("click", onGraphPointer, true);
+    document.addEventListener("touchend", onGraphPointer, true);
+    window.__mcGraphButtonInstalled = true;
+
+    document.addEventListener("selectionchange", function () {
+      if (!window.__mcEditing) return;
+      var sel = window.getSelection();
+      var root = editorRoot();
+      if (sel && sel.rangeCount && root && root.contains(sel.anchorNode)) {
+        try {
+          window.__mcSavedRange = sel.getRangeAt(0).cloneRange();
+          window.__mcSavedFormats = {
+            bold: document.queryCommandState("bold"),
+            italic: document.queryCommandState("italic"),
+            underline: document.queryCommandState("underline"),
+          };
+        } catch (err) {}
+      }
+      var li = closestThought(sel && sel.anchorNode);
+      if (li) postCaretType(li);
+    });
+
+    document.addEventListener("focusin", function (e) {
+      if (!window.__mcEditing) return;
+      if (!eventInEditor(e)) return;
+      var sel = window.getSelection();
+      var li = closestThought(sel && sel.anchorNode);
+      if (li) postCaretType(li);
+    });
+
+    function textNodeContainsPoint(node, x, y, slop) {
+      if (!node || node.nodeType !== 3 || !node.length) return false;
+      var pad = slop || 2;
+      var range = document.createRange();
+      range.selectNodeContents(node);
+      var rects = range.getClientRects();
+      for (var i = 0; i < rects.length; i++) {
+        var r = rects[i];
         if (
-          !e.target ||
-          !e.target.classList ||
-          (!e.target.classList.contains("thought-category") &&
-            !e.target.classList.contains("thought-title"))
+          x >= r.left - pad &&
+          x <= r.right + pad &&
+          y >= r.top - pad &&
+          y <= r.bottom + pad
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function fieldTextContainsPoint(field, x, y) {
+      if (!field) return false;
+      if (field.classList && field.classList.contains("is-placeholder")) {
+        var box = field.getBoundingClientRect();
+        return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+      }
+      var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+      var node;
+      while ((node = walker.nextNode())) {
+        if (textNodeContainsPoint(node, x, y, 8)) return true;
+      }
+      var rects = field.getClientRects();
+      for (var r = 0; r < rects.length; r++) {
+        var rect = rects[r];
+        if (
+          x >= rect.left &&
+          x <= rect.right &&
+          y >= rect.top &&
+          y <= rect.bottom
+        ) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function thoughtAtPoint(x, y) {
+      var root = editorRoot();
+      if (!root) return null;
+      var hit = document.elementFromPoint(x, y);
+      var field =
+        closestClass(hit, "thought-summary") ||
+        closestClass(hit, "thought-title");
+      if (field) return closestThought(field);
+      var fromHit = closestThought(hit);
+      if (fromHit) {
+        var hitField =
+          fromHit.querySelector(".thought-summary") ||
+          fromHit.querySelector(".thought-title");
+        if (fieldTextContainsPoint(hitField, x, y)) return fromHit;
+      }
+      var lis = root.querySelectorAll(".thought-item");
+      for (var i = 0; i < lis.length; i++) {
+        var nextField =
+          lis[i].querySelector(".thought-summary") ||
+          lis[i].querySelector(".thought-title");
+        if (fieldTextContainsPoint(nextField, x, y)) return lis[i];
+      }
+      return null;
+    }
+
+    function blurViewSelection() {
+      if (window.__mcEditing) return;
+      try {
+        var sel = window.getSelection();
+        if (sel && sel.removeAllRanges) sel.removeAllRanges();
+        var active = document.activeElement;
+        if (active && active.blur) active.blur();
+        content.blur();
+      } catch (err) {}
+    }
+
+    function selectThought(li) {
+      if (!li || window.__mcSplitting) return;
+      window.__mcSelectAt = Date.now();
+      postCaretType(li);
+      blurViewSelection();
+    }
+
+    document.addEventListener(
+      "mousedown",
+      function (e) {
+        if (window.__mcEditing || !eventInEditor(e)) return;
+        if (
+          closestClass(e.target, "thought-check") ||
+          closestClass(e.target, "thought-fold") ||
+          closestClass(e.target, "thought-graph")
         ) {
           return;
         }
-        var li = closestLi(e.target);
-        if (li) syncChecklistLayout(li);
+        if (e.cancelable) e.preventDefault();
       },
       true
     );
 
-    document.addEventListener("selectionchange", function () {
-      var sel = window.getSelection();
-      var li = closestLi(sel && sel.anchorNode);
-      if (li) postCaretType(li);
-    });
+    document.addEventListener(
+      "touchstart",
+      function (e) {
+        if (!eventInEditor(e)) {
+          window.__mcPressThought = null;
+          return;
+        }
+        if (
+          closestClass(e.target, "thought-check") ||
+          closestClass(e.target, "thought-fold")
+        ) {
+          window.__mcPressThought = null;
+          return;
+        }
+        var t = e.changedTouches && e.changedTouches[0];
+        if (!t) return;
+        window.__mcPressThought = {
+          x: t.clientX,
+          y: t.clientY,
+          li: thoughtAtPoint(t.clientX, t.clientY),
+        };
+      },
+      true
+    );
 
-    content.addEventListener("focusin", function () {
-      var sel = window.getSelection();
-      var li = closestLi(sel && sel.anchorNode);
-      if (li) postCaretType(li);
-    });
+    document.addEventListener(
+      "touchend",
+      function (e) {
+        var press = window.__mcPressThought;
+        window.__mcPressThought = null;
+        if (!press) return;
+        if (closestClass(e.target, "thought-check")) return;
+        if (closestClass(e.target, "thought-fold")) return;
+        var t = e.changedTouches && e.changedTouches[0];
+        if (
+          t &&
+          (Math.abs(t.clientX - press.x) > 18 ||
+            Math.abs(t.clientY - press.y) > 18)
+        ) {
+          return;
+        }
+        selectThought(
+          press.li ||
+            thoughtAtPoint(t ? t.clientX : press.x, t ? t.clientY : press.y)
+        );
+        if (!window.__mcEditing && e.cancelable) e.preventDefault();
+      },
+      true
+    );
 
-    if (typeof ResizeObserver !== "undefined") {
-      var observer = new ResizeObserver(function () {
-        syncAll();
-      });
-      observer.observe(content);
+    document.addEventListener(
+      "click",
+      function (e) {
+        if (!eventInEditor(e)) return;
+        if (closestClass(e.target, "thought-check")) return;
+        if (closestClass(e.target, "thought-fold")) return;
+        if (window.__mcSelectAt && Date.now() - window.__mcSelectAt < 450) {
+          return;
+        }
+        selectThought(
+          thoughtAtPoint(e.clientX, e.clientY) ||
+            closestThought(
+              closestClass(e.target, "thought-summary") ||
+                closestClass(e.target, "thought-title")
+            )
+        );
+      },
+      true
+    );
+  }
+
+  if (typeof ResizeObserver !== "undefined" && content) {
+    if (window.__mcChecklistResizeObserver) {
+      try {
+        window.__mcChecklistResizeObserver.disconnect();
+      } catch (err) {}
     }
+    var observer = new ResizeObserver(function () {
+      syncAll();
+    });
+    observer.observe(content);
+    window.__mcChecklistResizeObserver = observer;
   }
 
   syncAll();
   return true;
 })();
 `;
+
+export const THOUGHT_SPLIT_SCRIPT = `
+(function () {
+  if (window.__mcSplitInstalled) return true;
+  window.__mcSplitInstalled = true;
+
+  function editorRoot() {
+    return document.querySelector(".pell-content") || document.getElementById("editor");
+  }
+
+  function closest(node, predicate) {
+    while (node && node !== document.body) {
+      if (predicate(node)) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function closestThought(node) {
+    return closest(node, function (n) {
+      return n.classList && n.classList.contains("thought-item");
+    });
+  }
+
+  function closestClass(node, className) {
+    return closest(node, function (n) {
+      return n.classList && n.classList.contains(className);
+    });
+  }
+
+  function isHeadingType(type) {
+    return (
+      type === "h1" ||
+      type === "h2" ||
+      type === "h3" ||
+      type === "h4" ||
+      type === "h5" ||
+      type === "h6"
+    );
+  }
+
+  function isTextLikeType(type) {
+    return type === "text" || isHeadingType(type);
+  }
+
+  function thoughtTypeOf(li) {
+    return (li && li.getAttribute("data-thought-type")) || "li";
+  }
+
+  function thoughtIndexOf(li) {
+    var root = editorRoot();
+    if (!root || !li) return -1;
+    var items = root.querySelectorAll(".thought-item");
+    for (var i = 0; i < items.length; i++) if (items[i] === li) return i;
+    return -1;
+  }
+
+  function canSplitThought(li) {
+    return !!li && !!fieldOf(li) && !isHeadingType(thoughtTypeOf(li));
+  }
+
+  function markSplitThought(li) {
+    var root = editorRoot();
+    if (root) {
+      var rows = root.querySelectorAll(".thought-item");
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].classList.toggle("is-selected", rows[i] === li);
+      }
+    }
+    if (!window.ReactNativeWebView || !li) return;
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        type: "CARET_LIST_TYPE",
+        data: {
+          type: thoughtTypeOf(li),
+          index: thoughtIndexOf(li),
+        },
+      })
+    );
+  }
+
+  function fieldOf(thought) {
+    if (!thought) return null;
+    return (
+      thought.querySelector(".thought-summary") ||
+      thought.querySelector(".thought-title")
+    );
+  }
+
+  function selectedThought() {
+    var root = editorRoot();
+    if (!root) return null;
+    return (
+      root.querySelector(".thought-item.is-selected") ||
+      root.querySelector(".thought-item")
+    );
+  }
+
+  var ARROW_H = 14;
+  var ARROW_SVG =
+    '<svg class="mc-arrow-left" viewBox="0 0 24 24" width="14" height="14">' +
+    '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19l-7-7l7-7m7 7H5"></path>' +
+    "</svg>" +
+    '<svg class="mc-arrow-right" viewBox="0 0 24 24" width="14" height="14">' +
+    '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7l-7 7"></path>' +
+    "</svg>";
+
+  function ensureStyle() {
+    var style = document.getElementById("mc-split-style");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "mc-split-style";
+      document.head.appendChild(style);
+    }
+    style.textContent =
+      "html.mc-splitting .pell-content{caret-color:transparent !important;}" +
+      ".mc-split-caret{position:fixed;z-index:40;width:0;height:0;overflow:visible;pointer-events:none;}" +
+      ".mc-split-line{position:absolute;left:0;top:" +
+      ARROW_H +
+      "px;bottom:0;width:2px;margin-left:-1px;background:var(--mc-split-current,currentColor);border-radius:1px;}" +
+      ".mc-split-arrow{position:absolute;left:0;top:0;display:flex;align-items:center;justify-content:center;width:auto;height:14px;color:var(--mc-split-new,currentColor);}" +
+      ".mc-split-arrow svg{display:none;width:14px;height:14px;overflow:visible;flex-shrink:0;}" +
+      ".mc-split-swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-sizing:border-box;}" +
+      ".mc-split-swatch-left{background:var(--mc-split-left,currentColor);margin-right:4px;}" +
+      ".mc-split-swatch-right{background:var(--mc-split-right,currentColor);margin-left:4px;}" +
+      ".mc-split-caret[data-side=\\"left\\"] .mc-arrow-left{display:block;}" +
+      ".mc-split-caret[data-side=\\"right\\"] .mc-arrow-right{display:block;}" +
+      ".mc-split-caret[data-side=\\"left\\"] .mc-split-arrow{margin-left:-34px;}" +
+      ".mc-split-caret[data-side=\\"right\\"] .mc-split-arrow{margin-left:-4px;}" +
+      "html.mc-splitting .thought-item.is-selected .thought-summary," +
+      "html.mc-splitting .thought-item.is-selected .thought-title{" +
+      "background-color:transparent !important;}" +
+      ".mc-split-wash{border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;}";
+  }
+
+  function caretEl() {
+    ensureStyle();
+    var el = document.getElementById("mc-split-caret");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "mc-split-caret";
+      el.className = "mc-split-caret";
+      el.setAttribute("contenteditable", "false");
+      document.body.appendChild(el);
+    }
+    el.innerHTML =
+      '<span class="mc-split-arrow mc-split-arrow-top">' +
+      '<span class="mc-split-swatch mc-split-swatch-left"></span>' +
+      ARROW_SVG +
+      '<span class="mc-split-swatch mc-split-swatch-right"></span>' +
+      "</span>" +
+      '<span class="mc-split-line"></span>';
+    return el;
+  }
+
+  function applySplitPreview(el, side, currentColor, newColor) {
+    if (!el) return;
+    var current = currentColor || "";
+    var next = newColor || current || "";
+    var left = side === "left" ? next : current;
+    var right = side === "right" ? next : current;
+    el.setAttribute("data-side", side === "left" ? "left" : "right");
+    if (next) el.style.color = next;
+    if (next) el.style.setProperty("--mc-split-new", next);
+    else el.style.removeProperty("--mc-split-new");
+    if (current) el.style.setProperty("--mc-split-current", current);
+    else el.style.removeProperty("--mc-split-current");
+    if (left) el.style.setProperty("--mc-split-left", left);
+    else el.style.removeProperty("--mc-split-left");
+    if (right) el.style.setProperty("--mc-split-right", right);
+    else el.style.removeProperty("--mc-split-right");
+    var state = window.__mcSplit;
+    if (!state) return;
+    state.side = side === "left" ? "left" : "right";
+    state.currentColor = current;
+    state.newColor = next;
+    paintSplitWashes(state);
+  }
+
+  function textOffsetOfRange(field, range) {
+    if (!field || !range) return 0;
+    var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+    var offset = 0;
+    var node;
+    while ((node = walker.nextNode())) {
+      if (node === range.startContainer) {
+        return offset + range.startOffset;
+      }
+      offset += node.length;
+    }
+    return offset;
+  }
+
+  function restoreSplitField(state) {
+    if (!state || !state.field || state.sourceHtml == null) return;
+    state.field.innerHTML = state.sourceHtml;
+  }
+
+  function wrapSplitRange(range, className, color) {
+    if (!range || range.collapsed) return;
+    var span = document.createElement("span");
+    span.className = "mc-split-wash " + className;
+    if (color) {
+      span.style.backgroundColor =
+        "color-mix(in srgb, " + color + " 34%, transparent)";
+    }
+    try {
+      var contents = range.extractContents();
+      if (!contents || !contents.childNodes.length) return;
+      span.appendChild(contents);
+      range.insertNode(span);
+    } catch (err) {}
+  }
+
+  function paintSplitWashes(state) {
+    if (!state || !state.field) return;
+    if (state.sourceHtml == null) state.sourceHtml = state.field.innerHTML;
+    restoreSplitField(state);
+    var field = state.field;
+    var offset =
+      typeof state.offset === "number"
+        ? state.offset
+        : textOffsetOfRange(field, state.range);
+    state.offset = offset;
+    var current = state.currentColor || "";
+    var next = state.newColor || current;
+    var leftColor = state.side === "left" ? next : current;
+    var rightColor = state.side === "right" ? next : current;
+    var split = rangeAtOffset(field, offset);
+    var right = document.createRange();
+    right.selectNodeContents(field);
+    try {
+      right.setStart(split.startContainer, split.startOffset);
+    } catch (err) {}
+    wrapSplitRange(right, "mc-split-wash-right", rightColor);
+    split = rangeAtOffset(field, offset);
+    var left = document.createRange();
+    left.selectNodeContents(field);
+    try {
+      left.setEnd(split.startContainer, split.startOffset);
+    } catch (err2) {}
+    wrapSplitRange(left, "mc-split-wash-left", leftColor);
+    state.range = rangeAtOffset(field, offset);
+  }
+
+  function rangeFromPoint(x, y) {
+    if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+    if (document.caretPositionFromPoint) {
+      var pos = document.caretPositionFromPoint(x, y);
+      if (!pos) return null;
+      var ranged = document.createRange();
+      ranged.setStart(pos.offsetNode, pos.offset);
+      ranged.collapse(true);
+      return ranged;
+    }
+    return null;
+  }
+
+  function rangeAtOffset(field, offset) {
+    var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+    var left = Math.max(0, offset);
+    var node;
+    while ((node = walker.nextNode())) {
+      if (left <= node.length) {
+        var range = document.createRange();
+        range.setStart(node, left);
+        range.collapse(true);
+        return range;
+      }
+      left -= node.length;
+    }
+    var end = document.createRange();
+    end.selectNodeContents(field);
+    end.collapse(false);
+    return end;
+  }
+
+  function fieldTextLength(field) {
+    return (field.textContent || "").replace(/\\u00a0/g, " ").length;
+  }
+
+  function caretRect(range) {
+    if (!range) return null;
+    var rects = range.getClientRects();
+    if (rects && rects.length) {
+      var first = rects[0];
+      return {
+        left: first.left,
+        top: first.top,
+        height: first.height,
+        bottom: first.bottom,
+      };
+    }
+    if (range.startContainer.nodeType === 3 && range.startOffset > 0) {
+      var prevProbe = range.cloneRange();
+      prevProbe.setStart(range.startContainer, range.startOffset - 1);
+      prevProbe.setEnd(range.startContainer, range.startOffset);
+      var prev = prevProbe.getBoundingClientRect();
+      if (prev && prev.height) {
+        return {
+          left: prev.right,
+          top: prev.top,
+          height: prev.height,
+          bottom: prev.bottom,
+        };
+      }
+    }
+    if (
+      range.startContainer.nodeType === 3 &&
+      range.startOffset < range.startContainer.length
+    ) {
+      var nextProbe = range.cloneRange();
+      nextProbe.setStart(range.startContainer, range.startOffset);
+      nextProbe.setEnd(range.startContainer, range.startOffset + 1);
+      var next = nextProbe.getBoundingClientRect();
+      if (next && next.height) {
+        return {
+          left: next.left,
+          top: next.top,
+          height: next.height,
+          bottom: next.bottom,
+        };
+      }
+    }
+    var rect = range.getBoundingClientRect();
+    if (rect && (rect.width || rect.height)) {
+      return {
+        left: rect.left,
+        top: rect.top,
+        height: rect.height || 18,
+        bottom: rect.bottom,
+      };
+    }
+    return null;
+  }
+
+  function positionCaret() {
+    var state = window.__mcSplit;
+    var el = document.getElementById("mc-split-caret");
+    if (!state || !state.range || !el) return;
+    var rect = caretRect(state.range);
+    if (!rect) return;
+    var height = Math.max(16, rect.height || 16);
+    el.style.left = Math.round(rect.left) + "px";
+    el.style.top = Math.round(rect.top - ARROW_H) + "px";
+    el.style.height = Math.round(height + ARROW_H) + "px";
+  }
+
+  function rangeInField(range, field) {
+    if (!range || !field) return false;
+    var node = range.startContainer;
+    return node === field || field.contains(node);
+  }
+
+  function closestRangeInField(field, x, y) {
+    var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+    var best = null;
+    var bestScore = Infinity;
+    var node;
+    while ((node = walker.nextNode())) {
+      var len = node.length;
+      if (!len) continue;
+      for (var i = 0; i < len; i++) {
+        var probe = document.createRange();
+        probe.setStart(node, i);
+        probe.setEnd(node, i + 1);
+        var r = probe.getBoundingClientRect();
+        if (!r.height && !r.width) continue;
+        var onLine = y >= r.top - 6 && y <= r.bottom + 6;
+        var dx = x < r.left ? r.left - x : x > r.right ? x - r.right : 0;
+        var dy = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0;
+        var score = dx * dx + dy * dy * 8;
+        if (onLine) score -= 10000;
+        if (score < bestScore) {
+          bestScore = score;
+          best = {
+            node: node,
+            offset: x > (r.left + r.right) / 2 ? i + 1 : i,
+          };
+        }
+      }
+    }
+    var range = document.createRange();
+    if (!best) {
+      range.selectNodeContents(field);
+      range.collapse(false);
+      return range;
+    }
+    range.setStart(best.node, Math.min(best.offset, best.node.length));
+    range.collapse(true);
+    return range;
+  }
+
+  function rangeFromPointInField(field, x, y) {
+    var el = document.getElementById("mc-split-caret");
+    if (el) el.style.visibility = "hidden";
+    var range = rangeFromPoint(x, y);
+    if (!rangeInField(range, field)) {
+      var box = field.getBoundingClientRect();
+      var cx = Math.min(Math.max(x, box.left + 1), box.right - 1);
+      var cy = Math.min(Math.max(y, box.top + 1), box.bottom - 1);
+      range = rangeFromPoint(cx, cy);
+    }
+    if (el) el.style.visibility = "";
+    if (rangeInField(range, field)) {
+      range = range.cloneRange();
+      range.collapse(true);
+      var rect = caretRect(range);
+      if (rect) {
+        var dx = x < rect.left ? rect.left - x : x > rect.left + 2 ? x - rect.left : 0;
+        var dy = y < rect.top ? rect.top - y : y > rect.bottom ? y - rect.bottom : 0;
+        if (dx * dx + dy * dy < 144) return range;
+      }
+    }
+    return closestRangeInField(field, x, y);
+  }
+
+  function setSplitRange(range, field) {
+    if (!range || !window.__mcSplit) return;
+    var state = window.__mcSplit;
+    if (field && field !== state.field) {
+      restoreSplitField(state);
+      state.field = field;
+      state.sourceHtml = field.innerHTML;
+    }
+    state.range = range.cloneRange();
+    try {
+      state.range.collapse(true);
+    } catch (err) {}
+    state.offset = textOffsetOfRange(state.field, state.range);
+    paintSplitWashes(state);
+    positionCaret();
+  }
+
+  function placeAtPoint(x, y) {
+    var state = window.__mcSplit;
+    if (!state || !state.thought) return false;
+    var el = document.getElementById("mc-split-caret");
+    if (el) el.style.visibility = "hidden";
+    var hit = document.elementFromPoint(x, y);
+    if (el) el.style.visibility = "";
+    var thought = closestThought(hit);
+    if (canSplitThought(thought) && thought !== state.thought) {
+      restoreSplitField(state);
+      state.thought = thought;
+      state.field = fieldOf(thought);
+      state.sourceHtml = state.field ? state.field.innerHTML : "";
+      state.offset = null;
+      markSplitThought(thought);
+    }
+    var field = fieldOf(state.thought);
+    if (!field) return false;
+    var range = rangeFromPointInField(field, x, y);
+    if (!range) {
+      range = rangeAtOffset(field, Math.floor(fieldTextLength(field) / 2));
+    }
+    if (!range) return false;
+    setSplitRange(range, field);
+    return true;
+  }
+
+  function htmlForRange(range) {
+    var holder = document.createElement("div");
+    holder.appendChild(range.cloneContents());
+    return holder.innerHTML;
+  }
+
+  function splitHtml(field, range) {
+    var before = document.createRange();
+    before.selectNodeContents(field);
+    before.setEnd(range.startContainer, range.startOffset);
+    var after = document.createRange();
+    after.selectNodeContents(field);
+    after.setStart(range.startContainer, range.startOffset);
+    return { left: htmlForRange(before), right: htmlForRange(after) };
+  }
+
+  function setSummaryHtml(thought, html) {
+    var summary = thought.querySelector(".thought-summary") || fieldOf(thought);
+    if (!summary) return;
+    var text = (html || "")
+      .replace(/<br\\s*\\/?>/gi, " ")
+      .replace(/<[^>]+>/g, "")
+      .replace(/\\u00a0/g, " ")
+      .trim();
+    if (!text) {
+      summary.innerHTML = "<br>";
+      summary.classList.add("is-placeholder");
+      return;
+    }
+    summary.innerHTML = html || "<br>";
+    summary.classList.remove("is-placeholder");
+    summary.classList.remove("is-error-placeholder");
+  }
+
+  function clearTitle(thought) {
+    var title = thought.querySelector(".thought-title");
+    if (!title) return;
+    title.innerHTML = "<br>";
+    title.classList.add("is-placeholder");
+    thought.classList.remove("has-entered-title");
+    thought.classList.remove("has-title");
+  }
+
+  function stopSplit() {
+    restoreSplitField(window.__mcSplit);
+    window.__mcSplitting = false;
+    window.__mcSplit = null;
+    if (document.documentElement) {
+      document.documentElement.classList.remove("mc-splitting");
+    }
+    var root = editorRoot();
+    if (root) root.classList.remove("mc-splitting");
+    var el = document.getElementById("mc-split-caret");
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  window.__mcCancelThoughtSplit = function () {
+    stopSplit();
+    return true;
+  };
+
+  window.__mcStartThoughtSplit = function (side, color, currentColor, newColor) {
+    var thought = selectedThought();
+    var field = fieldOf(thought);
+    if (!thought || !field) return false;
+    ensureStyle();
+    window.__mcSplitting = true;
+    if (document.documentElement) {
+      document.documentElement.classList.add("mc-splitting");
+    }
+    var root = editorRoot();
+    if (root) root.classList.add("mc-splitting");
+    var el = caretEl();
+    var nextSide = side === "left" ? "left" : "right";
+    var sel = window.getSelection();
+    var range = null;
+    if (sel && sel.rangeCount && field.contains(sel.anchorNode)) {
+      range = sel.getRangeAt(0).cloneRange();
+      range.collapse(true);
+    } else {
+      range = rangeAtOffset(field, Math.floor(fieldTextLength(field) / 2));
+    }
+    window.__mcSplit = {
+      side: nextSide,
+      thought: thought,
+      field: field,
+      range: range,
+      sourceHtml: field.innerHTML,
+      offset: textOffsetOfRange(field, range),
+      currentColor: currentColor || color || "",
+      newColor: newColor || color || "",
+    };
+    applySplitPreview(el, nextSide, currentColor || color, newColor || color);
+    positionCaret();
+    return true;
+  };
+
+  window.__mcSetThoughtSplitSide = function (side, currentColor, newColor) {
+    if (!window.__mcSplit) {
+      return window.__mcStartThoughtSplit(side, "", currentColor, newColor);
+    }
+    window.__mcSplit.side = side === "left" ? "left" : "right";
+    var el = caretEl();
+    applySplitPreview(
+      el,
+      window.__mcSplit.side,
+      currentColor,
+      newColor
+    );
+    positionCaret();
+    return true;
+  };
+
+  window.__mcSetThoughtSplitPreview = function (currentColor, newColor) {
+    if (!window.__mcSplit) return false;
+    var el = document.getElementById("mc-split-caret");
+    applySplitPreview(el, window.__mcSplit.side, currentColor, newColor);
+    return true;
+  };
+
+  window.__mcConfirmThoughtSplit = function (newThoughtId) {
+    var state = window.__mcSplit;
+    if (!state || !state.thought || !state.field) return false;
+    var thought = state.thought;
+    if (!thought.parentNode) return false;
+    var index = thoughtIndexOf(thought);
+    if (index < 0) return false;
+    restoreSplitField(state);
+    var offset =
+      typeof state.offset === "number"
+        ? state.offset
+        : textOffsetOfRange(state.field, state.range);
+    state.range = rangeAtOffset(state.field, offset);
+    var sourceType = thought.getAttribute("data-thought-type");
+    var parts = splitHtml(state.field, state.range);
+    var clone = thought.cloneNode(true);
+    clone.classList.remove("is-selected");
+    clone.classList.remove("is-section-hidden");
+    clone.classList.remove("is-section-collapsed");
+    clone.setAttribute("data-thought-id", newThoughtId);
+    clone.setAttribute("data-completed", "false");
+    clone.classList.remove("is-completed");
+    clone.setAttribute("data-category-id", "uncategorized");
+    clearTitle(clone);
+    var fold = clone.querySelector(".thought-fold");
+    if (fold && fold.parentNode) fold.parentNode.removeChild(fold);
+    if (isHeadingType(sourceType)) {
+      clone.setAttribute("data-thought-type", "text");
+      clone.classList.remove("is-heading");
+      clone.classList.add("is-block");
+      clone.classList.add("is-text-like");
+      clone.classList.add("in-heading");
+      thought.classList.remove("is-section-collapsed");
+    }
+    if (thought.classList.contains("in-heading")) {
+      clone.classList.add("in-heading");
+    }
+    var wasInline =
+      thought.classList.contains("is-inline") ||
+      thought.getAttribute("data-inline") === "true";
+    function setParagraphStyle(el, inline) {
+      if (inline) {
+        el.classList.add("is-inline");
+        el.setAttribute("data-inline", "true");
+        el.classList.remove("is-run-start");
+        return;
+      }
+      el.classList.remove("is-inline");
+      el.removeAttribute("data-inline");
+      el.classList.add("is-block");
+    }
+    setParagraphStyle(clone, true);
+    if (state.side === "right") {
+      setSummaryHtml(thought, parts.left);
+      setSummaryHtml(clone, parts.right);
+      thought.parentNode.insertBefore(clone, thought.nextSibling);
+      if (!wasInline) thought.classList.add("is-run-start");
+    } else {
+      setSummaryHtml(clone, parts.left);
+      setSummaryHtml(thought, parts.right);
+      thought.parentNode.insertBefore(clone, thought);
+      clone.classList.add("is-run-start");
+    }
+    if (typeof window.__mcSyncChecklistLayouts === "function") {
+      window.__mcSyncChecklistLayouts();
+    }
+    if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
+      window.__mcStripThoughtSeparatorWhitespace();
+    }
+    stopSplit();
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          type: "SPLIT_THOUGHT",
+          data: {
+            index: index,
+            newSide: state.side,
+            newThoughtId: newThoughtId,
+            leftHtml: parts.left,
+            rightHtml: parts.right,
+          },
+        })
+      );
+    }
+    return true;
+  };
+
+  document.addEventListener(
+    "keydown",
+    function (e) {
+      if (!window.__mcSplitting) return;
+      if (e.key === "Enter" || e.keyCode === 13) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: "CONFIRM_SPLIT" })
+          );
+        }
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        stopSplit();
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: "CANCEL_SPLIT" })
+          );
+        }
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    true
+  );
+
+  document.addEventListener(
+    "beforeinput",
+    function (e) {
+      if (!window.__mcSplitting) return;
+      e.preventDefault();
+    },
+    true
+  );
+
+  function pointFromEvent(e) {
+    var t = e.changedTouches && e.changedTouches[0];
+    if (t) return { x: t.clientX, y: t.clientY, touch: true };
+    if (typeof e.clientX === "number") {
+      return { x: e.clientX, y: e.clientY, touch: false };
+    }
+    return null;
+  }
+
+  function onSplitPointerDown(e) {
+    if (!window.__mcSplitting || !window.__mcSplit) return;
+    var p = pointFromEvent(e);
+    if (!p) return;
+    if (!p.touch && window.__mcSplitIgnoreMouse) return;
+    if (p.touch) window.__mcSplitIgnoreMouse = true;
+    window.__mcSplitPress = { x: p.x, y: p.y, dragged: false, touch: p.touch };
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onSplitPointerMove(e) {
+    var press = window.__mcSplitPress;
+    if (!press || !window.__mcSplitting) return;
+    var p = pointFromEvent(e);
+    if (!p) return;
+    var dx = p.x - press.x;
+    var dy = p.y - press.y;
+    if (!press.dragged && dx * dx + dy * dy < 100) return;
+    press.dragged = true;
+    placeAtPoint(p.x, p.y);
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function onSplitPointerUp(e) {
+    var press = window.__mcSplitPress;
+    window.__mcSplitPress = null;
+    if (!press || !window.__mcSplitting) return;
+    var p = pointFromEvent(e) || { x: press.x, y: press.y };
+    if (!press.dragged) placeAtPoint(p.x, p.y);
+    if (press.touch) {
+      setTimeout(function () {
+        window.__mcSplitIgnoreMouse = false;
+      }, 400);
+    }
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  document.addEventListener("touchstart", onSplitPointerDown, true);
+  document.addEventListener("mousedown", onSplitPointerDown, true);
+  document.addEventListener("touchmove", onSplitPointerMove, true);
+  document.addEventListener("mousemove", onSplitPointerMove, true);
+  document.addEventListener("touchend", onSplitPointerUp, true);
+  document.addEventListener("mouseup", onSplitPointerUp, true);
+  document.addEventListener(
+    "scroll",
+    function () {
+      if (window.__mcSplitting) positionCaret();
+    },
+    true
+  );
+  window.addEventListener("resize", function () {
+    if (window.__mcSplitting) positionCaret();
+  });
+
+  return true;
+})();
+`;
+
+export function startThoughtSplitScript(
+  side: "left" | "right",
+  color: string,
+  currentColor?: string | null,
+  newColor?: string | null
+): string {
+  return `
+(function () {
+  if (typeof window.__mcStartThoughtSplit === "function") {
+    window.__mcStartThoughtSplit(
+      ${JSON.stringify(side)},
+      ${JSON.stringify(cssColorToken(color))},
+      ${JSON.stringify(cssColorToken(currentColor))},
+      ${JSON.stringify(cssColorToken(newColor))}
+    );
+  }
+  true;
+})();
+`;
+}
+
+export function setThoughtSplitSideScript(
+  side: "left" | "right",
+  currentColor?: string | null,
+  newColor?: string | null
+): string {
+  return `
+(function () {
+  if (typeof window.__mcSetThoughtSplitSide === "function") {
+    window.__mcSetThoughtSplitSide(
+      ${JSON.stringify(side)},
+      ${JSON.stringify(cssColorToken(currentColor))},
+      ${JSON.stringify(cssColorToken(newColor))}
+    );
+  }
+  true;
+})();
+`;
+}
+
+export function setThoughtSplitPreviewScript(
+  currentColor?: string | null,
+  newColor?: string | null
+): string {
+  return `
+(function () {
+  if (typeof window.__mcSetThoughtSplitPreview === "function") {
+    window.__mcSetThoughtSplitPreview(
+      ${JSON.stringify(cssColorToken(currentColor))},
+      ${JSON.stringify(cssColorToken(newColor))}
+    );
+  }
+  true;
+})();
+`;
+}
+
+export function confirmThoughtSplitScript(newThoughtId: string): string {
+  return `
+(function () {
+  if (typeof window.__mcConfirmThoughtSplit === "function") {
+    window.__mcConfirmThoughtSplit(${JSON.stringify(newThoughtId)});
+  }
+  true;
+})();
+`;
+}
+
+export function cancelThoughtSplitScript(): string {
+  return `
+(function () {
+  if (typeof window.__mcCancelThoughtSplit === "function") {
+    window.__mcCancelThoughtSplit();
+  }
+  true;
+})();
+`;
+}

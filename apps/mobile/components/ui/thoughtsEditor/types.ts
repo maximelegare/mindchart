@@ -1,34 +1,107 @@
+import {
+  assembleThought,
+  isHeadingType,
+  isTextLikeThought,
+  isTextLikeType,
+  parseTextContentStyle,
+  type Thought,
+  type ThoughtType,
+} from "@repo/zod-schemas";
 import { generateID } from "@/utils/genrateID";
 
-export type ThoughtsFormValue = {
-  title: string;
-  summary: string;
-  semanticLabel: string;
-  id: string;
-  createdAt: string;
-  noteId: string;
-  categoryId: string;
-  thoughtId: string;
-  isCompletable: boolean;
-  isCompleted: boolean;
-};
+export type ThoughtsFormValue = Thought;
 
 export type ThoughtsEditorFormValues = {
   thoughts: ThoughtsFormValue[];
 };
 
-export const createEmptyThought = (noteId: string): ThoughtsFormValue => {
+export const createEmptyThought = (
+  noteId: string,
+  type: ThoughtType = "li"
+): ThoughtsFormValue => {
   const thoughtId = generateID();
-  return {
-    title: "",
-    summary: "",
-    semanticLabel: "",
+  return assembleThought({
     id: thoughtId,
-    createdAt: new Date().toISOString(),
-    noteId,
-    categoryId: "uncategorized",
     thoughtId,
-    isCompletable: false,
-    isCompleted: false,
+    noteId,
+    contentId: generateID(),
+    title: "",
+    semanticLabel: "",
+    categoryId: "uncategorized",
+    createdAt: new Date().toISOString(),
+    type,
+    contentText: "",
+    checked: false,
+  });
+};
+
+export const convertThoughtType = (
+  thought: ThoughtsFormValue,
+  type: ThoughtType
+): ThoughtsFormValue => {
+  if (thought.type === type) return thought;
+  const text = thought.content.text;
+  const contentId = generateID();
+  if (type === "checkbox") {
+    return {
+      ...thought,
+      type,
+      contentId,
+      content: { text, checked: false },
+    };
+  }
+  if (isTextLikeType(type)) {
+    const style = isTextLikeThought(thought)
+      ? parseTextContentStyle(thought.content.style)
+      : "block";
+    if (isHeadingType(type)) {
+      return {
+        ...thought,
+        type,
+        contentId,
+        title: "",
+        semanticLabel: "",
+        categoryId: "uncategorized",
+        titleSource: "generated",
+        categorySource: "generated",
+        content: { text, style },
+      };
+    }
+    return {
+      ...thought,
+      type,
+      contentId,
+      content: { text, style },
+    };
+  }
+  return {
+    ...thought,
+    type,
+    contentId,
+    content: { text },
   };
+};
+
+export const setThoughtContentText = (
+  thought: ThoughtsFormValue,
+  text: string
+): ThoughtsFormValue => {
+  if (thought.type === "checkbox") {
+    return { ...thought, content: { text, checked: thought.content.checked } };
+  }
+  if (isTextLikeThought(thought)) {
+    return {
+      ...thought,
+      content: { text, style: parseTextContentStyle(thought.content.style) },
+    };
+  }
+  return { ...thought, content: { text } };
+};
+
+export const setTextThoughtStyle = (
+  thought: ThoughtsFormValue,
+  style: "block" | "inline"
+): ThoughtsFormValue => {
+  if (!isTextLikeThought(thought)) return thought;
+  return { ...thought, content: { ...thought.content, style } };
 };

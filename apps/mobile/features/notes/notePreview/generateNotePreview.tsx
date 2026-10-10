@@ -5,6 +5,7 @@ import {
   Note,
   Person,
   Thought,
+  assembleThought,
 } from "@repo/zod-schemas";
 
 import React from "react";
@@ -26,7 +27,7 @@ import {
 import { PersonSelector } from "../shared/ui/personSelector";
 import { FeelingSelector } from "../shared/ui/feelingSelector";
 import { LocationSelector } from "../shared/ui/locationSelector";
-import { generateID } from "@/utils/genrateID";
+import { createEmptyThought } from "@/components/ui/thoughtsEditor";
 
 type GenerateNotePreviewProps = {
   note: Note;
@@ -49,18 +50,7 @@ export const GenerateNotePreview = ({
     persons: Person[];
     feeling: FeelingValue | null;
     location: Location | null;
-    thoughts: Array<{
-      title: string;
-      summary: string;
-      semanticLabel: string;
-      id: string;
-      createdAt: string;
-      noteId: string;
-      categoryId: string;
-      thoughtId: string;
-      isCompletable: boolean;
-      isCompleted: boolean;
-    }>;
+    thoughts: Thought[];
   };
 
   const { control, handleSubmit } = useForm<FormData>({
@@ -73,18 +63,7 @@ export const GenerateNotePreview = ({
         note.locationId && note.locationName
           ? { id: note.locationId, name: note.locationName }
           : null,
-      thoughts: thoughts.map((thought) => ({
-        title: thought.title ?? "",
-        summary: thought.summary ?? "",
-        semanticLabel: thought.semanticLabel,
-        id: thought.id,
-        createdAt: thought.createdAt ?? "",
-        noteId: thought.noteId,
-        categoryId: thought.categoryId,
-        thoughtId: thought.thoughtId,
-        isCompletable: thought.isCompletable ?? false,
-        isCompleted: thought.isCompleted ?? false,
-      })),
+      thoughts: thoughts.map((thought) => assembleThought(thought)),
     },
   });
 
@@ -137,19 +116,7 @@ export const GenerateNotePreview = ({
   };
 
   const handleAddThought = () => {
-    const thoughtId = generateID();
-    thoughtsAppend({
-      title: "",
-      summary: "",
-      semanticLabel: "",
-      id: thoughtId,
-      createdAt: new Date().toISOString(),
-      noteId: note.id,
-      categoryId: "uncategorized",
-      thoughtId: thoughtId,
-      isCompletable: false,
-      isCompleted: false,
-    });
+    thoughtsAppend(createEmptyThought(note.id));
   };
 
   return (
@@ -294,7 +261,7 @@ export const GenerateNotePreview = ({
 
                 <Controller
                   control={control}
-                  name={`thoughts.${index}.summary`}
+                  name={`thoughts.${index}.content.text`}
                   render={({ field: { onChange, value } }) => (
                     <EditableField
                       onChange={onChange}

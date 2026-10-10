@@ -1,5 +1,6 @@
 import z from "zod";
 import {
+  assembleThought,
   CategoriesJoinThoughtsParsedSchema,
   CategoriesJoinThoughtsParsedSchemaModel,
 } from "@repo/zod-schemas";
@@ -21,20 +22,14 @@ export const parseCategoriesWithThoughts = (
       name: row.category_name,
       color: row.category_color,
       createdAt: row.category_created_at,
-      thoughts: parseThoughtsJson(row.thoughts_json).map(
-        (thought: Record<string, unknown>) => ({
-          id: thought.id,
-          thoughtId: thought.thoughtId ?? thought.id,
-          title: thought.title ?? "",
-          summary: thought.summary ?? "",
-          semanticLabel: thought.semanticLabel ?? "",
-          categoryId: thought.categoryId ?? row.category_id,
-          noteId: thought.noteId,
-          createdAt: thought.createdAt ?? null,
-          isCompletable: Boolean(thought.isCompletable),
-          isCompleted: Boolean(thought.isCompleted),
-        })
-      ),
+      thoughts: parseThoughtsJson(row.thoughts_json)
+        .filter(Boolean)
+        .map((thought: Record<string, unknown>) =>
+          assembleThought({
+            ...thought,
+            categoryId: thought.categoryId ?? row.category_id,
+          })
+        ),
     }))
     .filter((category) => category.thoughts.length > 0);
 

@@ -1,5 +1,21 @@
 import { isDisplayableSemanticLabel } from "@/lib/nlp/labelQuality";
-import { createEmptyThought, type ThoughtsFormValue } from "./types";
+import { thoughtNlpSourceHash } from "@/lib/nlp/contentHash";
+import {
+  getThoughtPlainText,
+  isHeadingType,
+  isTextLikeThought,
+  isTextLikeType,
+  parseTextContentStyle,
+  parseThoughtType,
+  type ThoughtType,
+} from "@repo/zod-schemas";
+import {
+  convertThoughtType,
+  createEmptyThought,
+  setTextThoughtStyle,
+  setThoughtContentText,
+  type ThoughtsFormValue,
+} from "./types";
 import type { ThoughtFieldPlaceholders } from "./thoughtsEditorLabels";
 
 const TITLE_CLASS = "thought-title";
@@ -9,7 +25,7 @@ const FIELDS_CLASS = "thought-fields";
 
 export const TITLE_PLACEHOLDER = "Title";
 export const SUMMARY_PLACEHOLDER = "Summary";
-export const BULLET_PLACEHOLDER = "Enter a bullet point";
+export const BULLET_PLACEHOLDER = "Write Something...";
 
 function escapeHtml(value: string): string {
   return value
@@ -22,6 +38,8 @@ function escapeHtml(value: string): string {
 function decodeHtml(value: string): string {
   return value
     .replace(/&nbsp;/gi, " ")
+    .replace(/&#32;/g, " ")
+    .replace(/&#x20;/gi, " ")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, "<")
@@ -37,9 +55,7 @@ export function stripHtml(html: string): string {
       .replace(/<\/(p|div|li|h[1-6])>/gi, "\n")
       .replace(/<[^>]+>/g, "")
       .replace(/\u00a0/g, " ")
-  )
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  ).replace(/\n{3,}/g, "\n\n");
 }
 
 const isFallbackSemanticLabel = (
@@ -64,13 +80,27 @@ const preservedSemanticLabel = (
     isFallbackSemanticLabel(
       previous.semanticLabel,
       previous.title,
-      previous.summary
+      getThoughtPlainText(previous)
     )
   ) {
     return nextTitle || nextSummary;
   }
   return previous.semanticLabel;
 };
+
+/** Join two thought bodies after a merge, keeping inline markup. */
+export function joinMergedThoughtHtml(left: string, right: string): string {
+  const a = sanitizeInlineHtml(left).replace(/(<br\s*\/?>)+$/gi, "");
+  const b = sanitizeInlineHtml(right).replace(/^(<br\s*\/?>)+/gi, "");
+  if (!stripHtml(a)) return b;
+  if (!stripHtml(b)) return a;
+  const leftPlain = stripHtml(a);
+  const rightPlain = stripHtml(b);
+  const leftEndsSpace = /[\s\u00a0]$/.test(leftPlain);
+  const rightStartsSpace = /^[\s\u00a0]/.test(rightPlain);
+  const gap = leftEndsSpace || rightStartsSpace ? "" : " ";
+  return `${a}${gap}${b}`;
+}
 
 /** Keep only inline bold/italic/underline markup for editor round-trips. */
 export function sanitizeInlineHtml(html: string): string {
@@ -98,7 +128,7 @@ export function sanitizeInlineHtml(html: string): string {
     return "";
   });
 
-  return value.replace(/^(<br>)+|(<br>)+$/gi, "").trim();
+  return value.replace(/^(<br>)+|(<br>)+$/gi, "");
 }
 
 function formatCategoryLabel(
@@ -133,6 +163,10 @@ function stripChrome(liHtml: string): string {
       ""
     )
     .replace(
+      /<button\b[^>]*class=["'][^"']*\bthought-fold\b[^"']*["'][^>]*>[\s\S]*?<\/button>/i,
+      ""
+    )
+    .replace(
       new RegExp(
         `<div\\b[^>]*class=["'][^"']*\\b${CATEGORY_CLASS}\\b[^"']*["'][^>]*>[\\s\\S]*?<\\/div>`,
         "i"
@@ -145,12 +179,41 @@ function stripChrome(liHtml: string): string {
     );
 }
 
-type LiItem = {
+type ThoughtItemRecord = {
   categoryId: string | null;
+  thoughtId: string | null;
   innerHtml: string;
-  isCompletable: boolean | null;
-  isCompleted: boolean | null;
+  type: ThoughtType | null;
+  checked: boolean | null;
+  inline: boolean;
+  structureLocked: boolean;
 };
+
+function itemFromAttrs(attrs: string, innerHtml: string): ThoughtItemRecord {
+  const categoryMatch = attrs.match(/data-category-id=["']([^"']+)["']/i);
+  const thoughtIdMatch = attrs.match(/data-thought-id=["']([^"']+)["']/i);
+  return {
+    categoryId: categoryMatch?.[1] ?? null,
+    thoughtId: thoughtIdMatch?.[1] ?? null,
+    innerHtml,
+    type: parseThoughtTypeFromAttrs(attrs),
+    checked: parseDataBool(attrs, "completed"),
+    inline:
+      /\bis-inline\b/.test(attrs) || parseDataBool(attrs, "inline") === true,
+    structureLocked: parseDataBool(attrs, "nlp-structure-locked") === true,
+  };
+}
+
+function parseThoughtTypeFromAttrs(attrs: string): ThoughtType | null {
+  const match = attrs.match(/data-thought-type=["']([^"']+)["']/i);
+  const value = match?.[1]?.toLowerCase();
+  if (value) {
+    const type = parseThoughtType(value);
+    if (type !== "li" || value === "li") return type;
+  }
+  if (parseDataBool(attrs, "completable")) return "checkbox";
+  return null;
+}
 
 function parseDataBool(attrs: string, name: string): boolean | null {
   const match = attrs.match(new RegExp(`data-${name}=["']([^"']*)["']`, "i"));
@@ -159,21 +222,135 @@ function parseDataBool(attrs: string, name: string): boolean | null {
   return value === "true" || value === "1";
 }
 
-function extractLiItems(html: string): LiItem[] {
-  const items: LiItem[] = [];
+function extractThoughtItemDivs(html: string): ThoughtItemRecord[] {
+  const items: ThoughtItemRecord[] = [];
+  const openRegex =
+    /<div\b([^>]*class=["'][^"']*\bthought-item\b[^"']*["'][^>]*)>/gi;
+  let openMatch: RegExpExecArray | null;
+  while ((openMatch = openRegex.exec(html)) !== null) {
+    const attrs = openMatch[1] ?? "";
+    const contentStart = openMatch.index + openMatch[0].length;
+    let depth = 1;
+    const tagRegex = /<\/?div\b[^>]*>/gi;
+    tagRegex.lastIndex = contentStart;
+    let tag: RegExpExecArray | null;
+    let closed = false;
+    while ((tag = tagRegex.exec(html)) !== null) {
+      const isClose = /^<\//.test(tag[0]);
+      const isSelfClose = /\/>$/.test(tag[0]);
+      if (isClose) {
+        depth -= 1;
+        if (depth === 0) {
+          items.push(itemFromAttrs(attrs, html.slice(contentStart, tag.index)));
+          openRegex.lastIndex = tag.index + tag[0].length;
+          closed = true;
+          break;
+        }
+        continue;
+      }
+      if (!isSelfClose) depth += 1;
+    }
+    if (!closed) {
+      openRegex.lastIndex = contentStart;
+    }
+  }
+  return items;
+}
+
+function extractLegacyLiItems(html: string): ThoughtItemRecord[] {
+  const items: ThoughtItemRecord[] = [];
   const liRegex = /<li\b([^>]*)>([\s\S]*?)<\/li>/gi;
   let match: RegExpExecArray | null;
   while ((match = liRegex.exec(html)) !== null) {
-    const attrs = match[1] ?? "";
-    const categoryMatch = attrs.match(/data-category-id=["']([^"']+)["']/i);
-    items.push({
-      categoryId: categoryMatch?.[1] ?? null,
-      innerHtml: match[2] ?? "",
-      isCompletable: parseDataBool(attrs, "completable"),
-      isCompleted: parseDataBool(attrs, "completed"),
-    });
+    items.push(itemFromAttrs(match[1] ?? "", match[2] ?? ""));
   }
   return items;
+}
+
+function removeClassBlocks(html: string, className: string): string {
+  let result = "";
+  let cursor = 0;
+  const openRegex = new RegExp(
+    `<div\\b([^>]*class=["'][^"']*\\b${className}\\b[^"']*["'][^>]*)>`,
+    "gi"
+  );
+  let openMatch: RegExpExecArray | null;
+  while ((openMatch = openRegex.exec(html)) !== null) {
+    result += html.slice(cursor, openMatch.index);
+    const contentStart = openMatch.index + openMatch[0].length;
+    let depth = 1;
+    const tagRegex = /<\/?div\b[^>]*>/gi;
+    tagRegex.lastIndex = contentStart;
+    let end = html.length;
+    let tag: RegExpExecArray | null;
+    while ((tag = tagRegex.exec(html)) !== null) {
+      const isClose = /^<\//.test(tag[0]);
+      const isSelfClose = /\/>$/.test(tag[0]);
+      if (isClose) {
+        depth -= 1;
+        if (depth === 0) {
+          end = tag.index + tag[0].length;
+          break;
+        }
+        continue;
+      }
+      if (!isSelfClose) depth += 1;
+    }
+    openRegex.lastIndex = end;
+    cursor = end;
+  }
+  result += html.slice(cursor);
+  return result;
+}
+
+function extractStrayParagraphs(html: string): ThoughtItemRecord[] {
+  if (!stripHtml(html)) return [];
+
+  const blocks: string[] = [];
+  const blockRegex = /<(div|p)\b([^>]*)>([\s\S]*?)<\/\1>/gi;
+  let match: RegExpExecArray | null;
+  let foundBlock = false;
+  while ((match = blockRegex.exec(html)) !== null) {
+    const inner = sanitizeInlineHtml(match[3] ?? "");
+    if (stripHtml(inner)) {
+      blocks.push(inner);
+      foundBlock = true;
+    }
+  }
+  if (!foundBlock) {
+    const plain = sanitizeInlineHtml(html);
+    if (stripHtml(plain)) blocks.push(plain);
+  }
+
+  return blocks.map((innerHtml) =>
+    itemFromAttrs("", `<div class="${SUMMARY_CLASS}">${innerHtml}</div>`)
+  );
+}
+
+function leftoverFieldsHtml(contentHtml: string): string {
+  const fields = extractByClass(contentHtml, FIELDS_CLASS) ?? contentHtml;
+  const rest = removeClassBlocks(
+    removeClassBlocks(fields, TITLE_CLASS),
+    SUMMARY_CLASS
+  );
+  return sanitizeInlineHtml(rest);
+}
+
+function joinThoughtHtml(left: string, right: string): string {
+  if (!stripHtml(right)) return left;
+  if (!stripHtml(left)) return right;
+  return `${left}<br>${right}`;
+}
+
+function extractThoughtItems(html: string): ThoughtItemRecord[] {
+  const fromDivs = extractThoughtItemDivs(html);
+  const container = extractByClass(html, "mc-thoughts") ?? html;
+  const stray = extractStrayParagraphs(
+    removeClassBlocks(container, "thought-item")
+  );
+  if (fromDivs.length > 0) return fromDivs.concat(stray);
+  if (stray.length > 0) return stray;
+  return extractLegacyLiItems(html);
 }
 
 /**
@@ -287,25 +464,13 @@ function titledFieldHtml(
   value: string
 ): string {
   const withBreaks = value.replace(/\n/g, "<br>");
-  const body = /<[a-z]/i.test(withBreaks)
+  let body = /<[a-z]/i.test(withBreaks)
     ? sanitizeInlineHtml(withBreaks)
     : escapeHtml(withBreaks);
+  if (body.startsWith(" ")) body = `&#32;${body.slice(1)}`;
   const empty = !stripHtml(body);
   const classes = empty ? `${className} is-placeholder` : className;
   return `<div class="${classes}" data-placeholder="${placeholder}">${empty ? "<br>" : body}</div>`;
-}
-
-function categoryLabelHtml(
-  categoryId: string,
-  labels?: Record<string, string>
-): string {
-  const id = categoryId || "uncategorized";
-  const label = formatCategoryLabel(id, labels);
-  return (
-    `<div class="${CATEGORY_CLASS}" contenteditable="false" data-category-id="${escapeHtml(id)}">` +
-    `<span class="thought-category-name">${escapeHtml(label)}</span>` +
-    `</div>`
-  );
 }
 
 const GRAPH_ICON_SVG =
@@ -318,19 +483,6 @@ function graphButtonHtml(thoughtId: string): string {
     `<div class="thought-graph" contenteditable="false" data-thought-id="${escapeHtml(thoughtId)}">` +
     GRAPH_ICON_SVG +
     `</div>`
-  );
-}
-
-const EXPAND_ICON_SVG =
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true">` +
-  `<path d="M6 9l6 6 6-6"/>` +
-  `</svg>`;
-
-function expandButtonHtml(): string {
-  return (
-    `<button type="button" class="thought-expand" contenteditable="false" tabindex="-1" aria-label="Expand thought" aria-expanded="false">` +
-    EXPAND_ICON_SVG +
-    `</button>`
   );
 }
 
@@ -347,60 +499,90 @@ function thoughtCheckHtml(): string {
   );
 }
 
+const FOLD_ICON_SVG =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" aria-hidden="true">` +
+  `<path d="M6 9l6 6 6-6"/>` +
+  `</svg>`;
+
+const FOLD_BUTTON_STYLE =
+  "appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;min-height:24px;padding:0;margin:0;border:none;border-radius:50%;flex:0 0 auto;background:transparent;";
+
+function thoughtFoldHtml(): string {
+  return (
+    `<button type="button" class="thought-fold" contenteditable="false" tabindex="-1" aria-label="Collapse section" style="${FOLD_BUTTON_STYLE}">` +
+    FOLD_ICON_SVG +
+    "</button>"
+  );
+}
+
 type ThoughtItemOptions = {
   thoughtId?: string;
   showGraphButton?: boolean;
-  isCompletable?: boolean;
-  isCompleted?: boolean;
+  type?: ThoughtType;
+  checked?: boolean;
   startCollapsed?: boolean;
   hasEnteredTitle?: boolean;
+  inline?: boolean;
+  runStart?: boolean;
+  structureLocked?: boolean;
 };
 
 function thoughtItemHtml(
   categoryId: string,
   fieldsHtml: string,
   options: ThoughtItemOptions = {},
-  labels?: Record<string, string>
+  _labels?: Record<string, string>
 ): string {
   const id = categoryId || "uncategorized";
+  const type: ThoughtType = options.type ?? "li";
   const thoughtIdAttr = options.thoughtId
     ? ` data-thought-id="${escapeHtml(options.thoughtId)}"`
     : "";
-  const completable = Boolean(options.isCompletable);
-  const completed = completable && Boolean(options.isCompleted);
+  const isCheckbox = type === "checkbox";
+  const completed = isCheckbox && Boolean(options.checked);
   const classNames = ["thought-item"];
-  if (completable) classNames.push("is-checklist");
+  if (isTextLikeType(type)) {
+    classNames.push("is-block");
+    classNames.push("is-text-like");
+  }
+  if (isHeadingType(type)) classNames.push("is-heading");
+  if (isCheckbox) classNames.push("is-checklist");
   if (completed) classNames.push("is-completed");
-  if (options.startCollapsed) classNames.push("is-collapsed");
   if (options.hasEnteredTitle) classNames.push("has-entered-title");
+  if (isTextLikeType(type) && options.inline) classNames.push("is-inline");
+  if (isTextLikeType(type) && options.runStart) classNames.push("is-run-start");
+  const inlineAttr =
+    isTextLikeType(type) && options.inline ? ` data-inline="true"` : "";
+  const structureLockedAttr = options.structureLocked
+    ? ` data-nlp-structure-locked="true"`
+    : "";
   const graph =
-    options.showGraphButton && options.thoughtId
+    options.showGraphButton && options.thoughtId && !isHeadingType(type)
       ? graphButtonHtml(options.thoughtId)
       : "";
   return (
-    `<li class="${classNames.join(" ")}" data-category-id="${escapeHtml(id)}" data-completable="${completable}" data-completed="${completed}"${thoughtIdAttr}>` +
+    `<div class="${classNames.join(" ")}" data-thought-type="${type}" data-category-id="${escapeHtml(id)}" data-completable="${isCheckbox}" data-completed="${completed}"${thoughtIdAttr}${inlineAttr}${structureLockedAttr}>` +
     `<div class="thought-rail" contenteditable="false">` +
     `<div class="thought-stripe"></div>` +
     `<div class="thought-dot"></div>` +
     `</div>` +
     thoughtCheckHtml() +
     `<div class="thought-body">` +
-    categoryLabelHtml(id, labels) +
+    (isHeadingType(type) ? thoughtFoldHtml() : "") +
     `<div class="${FIELDS_CLASS}">${fieldsHtml}</div>` +
     `</div>` +
     graph +
-    expandButtonHtml() +
-    `</li>`
+    `</div>`
   );
 }
 
 /** Compact NLP label suitable as a thought heading (not a copy of the body). */
 export function compactSemanticLabel(thought: {
   semanticLabel?: string | null;
-  summary?: string | null;
+  content?: { text?: string | null };
 }): string {
   const label = stripHtml(thought.semanticLabel ?? "");
-  const summary = stripHtml(thought.summary ?? "");
+  const summary = stripHtml(thought.content?.text ?? "");
   if (!isDisplayableSemanticLabel(label, summary)) return "";
   return thought.semanticLabel?.trim() ?? label;
 }
@@ -411,39 +593,45 @@ function liToHtml(
   showGraphButton: boolean,
   placeholders: Pick<ThoughtFieldPlaceholders, "title" | "summary" | "bullet">,
   labels?: Record<string, string>,
-  viewMode = false
+  _viewMode = false,
+  runStart = false
 ) {
-  const categoryId = thought.categoryId || "uncategorized";
-  const enteredTitle = stripHtml(thought.title);
+  const categoryId = isHeadingType(thought.type)
+    ? "uncategorized"
+    : thought.categoryId || "uncategorized";
+  const enteredTitle = isHeadingType(thought.type)
+    ? ""
+    : stripHtml(thought.title);
   const semanticTitle = compactSemanticLabel(thought);
   const titleValue = enteredTitle
     ? thought.title
     : semanticTitle
       ? thought.semanticLabel
       : "";
-  const showTitleField = viewMode
-    ? Boolean(stripHtml(titleValue))
-    : showTitles || Boolean(stripHtml(titleValue));
+  const showTitleField = false;
+  const bodyText = thought.content.text;
   const options: ThoughtItemOptions = {
     thoughtId: thought.thoughtId || thought.id,
     showGraphButton,
-    startCollapsed: true,
-    isCompletable: thought.isCompletable,
-    isCompleted: thought.isCompleted,
+    type: thought.type,
+    checked: thought.type === "checkbox" ? thought.content.checked : false,
     hasEnteredTitle: Boolean(stripHtml(titleValue)),
+    inline: isTextLikeThought(thought) && thought.content.style === "inline",
+    runStart,
+    structureLocked: Boolean(thought.nlpStructureLocked),
   };
 
   if (showTitleField) {
     return thoughtItemHtml(
       categoryId,
       titledFieldHtml(TITLE_CLASS, placeholders.title, titleValue) +
-        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, thought.summary),
+        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, bodyText),
       options,
       labels
     );
   }
 
-  const summaryText = thought.summary || thought.title;
+  const summaryText = bodyText;
   return thoughtItemHtml(
     categoryId,
     titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, summaryText),
@@ -460,7 +648,11 @@ export type ThoughtsToHtmlOptions = {
   preferSemanticTitle?: boolean;
 };
 
-/** Serialize thoughts into an HTML unordered list for the rich editor. */
+function thoughtsRootHtml(inner: string): string {
+  return `<div class="mc-thoughts">${inner}</div>`;
+}
+
+/** Serialize thoughts into HTML for the rich editor. */
 export function thoughtsToHtml(
   thoughts: ThoughtsFormValue[],
   showTitles: boolean,
@@ -476,43 +668,108 @@ export function thoughtsToHtml(
   };
 
   if (thoughts.length === 0) {
-    const body = showTitles
-      ? titledFieldHtml(TITLE_CLASS, placeholders.title, "") +
-        titledFieldHtml(SUMMARY_CLASS, placeholders.summary, "")
-      : titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, "");
-    return `<ul>${thoughtItemHtml(
-      "uncategorized",
-      body,
-      { startCollapsed: true },
-      labels
-    )}</ul>`;
+    return thoughtsRootHtml(
+      thoughtItemHtml(
+        "uncategorized",
+        titledFieldHtml(SUMMARY_CLASS, placeholders.bullet, ""),
+        {},
+        labels
+      )
+    );
   }
 
-  return `<ul>${thoughts
-    .map((thought) =>
-      liToHtml(
-        thought,
-        showTitles,
-        showGraphButtons,
-        placeholders,
-        labels,
-        viewMode
-      )
-    )
-    .join("")}</ul>`;
+  return thoughtsRootHtml(
+    thoughts
+      .map((thought, index) => {
+        const next = thoughts[index + 1];
+        const runStart =
+          isTextLikeThought(thought) &&
+          thought.content.style !== "inline" &&
+          Boolean(
+            next && isTextLikeThought(next) && next.content.style === "inline"
+          );
+        return liToHtml(
+          thought,
+          showTitles,
+          showGraphButtons,
+          placeholders,
+          labels,
+          viewMode,
+          runStart
+        );
+      })
+      .join("")
+  );
 }
 
 /**
  * Parse rich-editor HTML back into thoughts, preserving metadata from
  * previous thoughts at the same index when possible.
  */
+function withParsedFields(
+  thought: ThoughtsFormValue,
+  fields: {
+    title?: string;
+    categoryId: string;
+    semanticLabel: string;
+    text: string;
+    checked?: boolean | null;
+  }
+): ThoughtsFormValue {
+  if (thought.type === "checkbox") {
+    return {
+      ...thought,
+      title: fields.title ?? thought.title,
+      categoryId: fields.categoryId,
+      semanticLabel: fields.semanticLabel,
+      content: {
+        text: fields.text,
+        checked: fields.checked ?? thought.content.checked,
+      },
+    };
+  }
+  if (isTextLikeThought(thought)) {
+    if (isHeadingType(thought.type)) {
+      return {
+        ...thought,
+        title: "",
+        semanticLabel: "",
+        categoryId: "uncategorized",
+        titleSource: "generated",
+        categorySource: "generated",
+        content: {
+          text: fields.text,
+          style: parseTextContentStyle(thought.content.style),
+        },
+      };
+    }
+    return {
+      ...thought,
+      title: fields.title ?? thought.title,
+      categoryId: fields.categoryId,
+      semanticLabel: fields.semanticLabel,
+      content: {
+        text: fields.text,
+        style: parseTextContentStyle(thought.content.style),
+      },
+    };
+  }
+  return {
+    ...thought,
+    title: fields.title ?? thought.title,
+    categoryId: fields.categoryId,
+    semanticLabel: fields.semanticLabel,
+    content: { text: fields.text },
+  };
+}
+
 export function htmlToThoughts(
   html: string,
   noteId: string,
   previous: ThoughtsFormValue[],
   showTitles: boolean
 ): ThoughtsFormValue[] {
-  const liItems = extractLiItems(html);
+  const liItems = extractThoughtItems(html);
 
   if (liItems.length === 0) {
     const plain = stripHtml(html);
@@ -521,77 +778,114 @@ export function htmlToThoughts(
     }
 
     const base = previous[0] ?? createEmptyThought(noteId);
+    const nextText = showTitles ? getThoughtPlainText(base) : plain;
     return [
-      {
-        ...base,
-        summary: showTitles ? base.summary : plain,
+      withParsedFields(setThoughtContentText(base, nextText), {
         title: showTitles ? plain : base.title,
+        categoryId: base.categoryId,
         semanticLabel: preservedSemanticLabel(
           base,
           showTitles ? plain : base.title,
-          showTitles ? base.summary : plain
+          nextText
         ),
-      },
+        text: nextText,
+      }),
     ];
   }
 
   const next = liItems.map((item, index) => {
-    const base = previous[index] ?? createEmptyThought(noteId);
+    const base =
+      (item.thoughtId
+        ? previous.find((thought) => thought.id === item.thoughtId)
+        : undefined) ??
+      (item.thoughtId
+        ? {
+            ...createEmptyThought(noteId),
+            id: item.thoughtId,
+            thoughtId: item.thoughtId,
+          }
+        : (previous[index] ?? createEmptyThought(noteId)));
     const contentHtml = stripChrome(item.innerHtml);
     const categoryId = item.categoryId || base.categoryId || "uncategorized";
+    const nextType = item.type ?? base.type ?? "li";
 
-    const { title, summary, hasTitleField, hasSummaryField } =
-      parseTitledLi(contentHtml);
-    const isCompletable = item.isCompletable ?? base.isCompletable ?? false;
-    const isCompleted = isCompletable
-      ? (item.isCompleted ?? base.isCompleted ?? false)
-      : false;
+    const parsed = parseTitledLi(contentHtml);
+    const leftover = leftoverFieldsHtml(contentHtml);
+    const title = parsed.title;
+    const summary = joinThoughtHtml(parsed.summary, leftover);
+    const hasTitleField = parsed.hasTitleField;
+    const hasSummaryField =
+      parsed.hasSummaryField || Boolean(stripHtml(leftover));
+
+    const applyType = (thought: ThoughtsFormValue): ThoughtsFormValue => {
+      const next =
+        thought.type === nextType
+          ? thought
+          : convertThoughtType(thought, nextType);
+      if (!isTextLikeType(nextType)) return next;
+      return setTextThoughtStyle(next, item.inline ? "inline" : "block");
+    };
 
     if (hasTitleField || showTitles) {
-      // Only fall back to previous values when the field node is missing from
-      // the HTML (e.g. mid-init). Present-but-empty fields must clear so
-      // validation can re-run after the user dismisses error placeholders.
+      if (!showTitles) {
+        const nextSummary = hasSummaryField
+          ? summary
+          : summary || getThoughtPlainText(base);
+        return withParsedFields(applyType(base), {
+          categoryId,
+          semanticLabel: preservedSemanticLabel(base, base.title, nextSummary),
+          text: nextSummary,
+          checked: item.checked,
+        });
+      }
       const nextTitle = hasTitleField ? title : title || base.title;
-      const nextSummary = hasSummaryField ? summary : summary || base.summary;
+      const nextSummary = hasSummaryField
+        ? summary
+        : summary || getThoughtPlainText(base);
       const resolvedTitle = resolveEditableTitle(base, nextTitle);
-      return {
-        ...base,
+      return withParsedFields(applyType(base), {
         title: resolvedTitle.title,
-        summary: nextSummary,
         categoryId,
         semanticLabel: resolvedTitle.clearSemantic
           ? ""
           : preservedSemanticLabel(base, resolvedTitle.title, nextSummary),
-        isCompletable,
-        isCompleted,
-      };
+        text: nextSummary,
+        checked: item.checked,
+      });
     }
 
     const summaryField = extractByClass(contentHtml, SUMMARY_CLASS);
-    const nextSummaryHtml = sanitizeInlineHtml(
-      summaryField != null ? summaryField : contentHtml
-    );
-    // Present-but-empty `.thought-summary` must clear, not keep stale text.
-    const nextSummary =
-      summaryField != null ? nextSummaryHtml : nextSummaryHtml || base.summary;
-    return {
-      ...base,
-      summary: nextSummary,
+    const nextSummary = stripHtml(summary)
+      ? summary
+      : summaryField != null
+        ? summary
+        : getThoughtPlainText(base);
+    return withParsedFields(applyType(base), {
       categoryId,
       semanticLabel: preservedSemanticLabel(base, base.title, nextSummary),
-      isCompletable,
-      isCompleted,
-    };
+      text: nextSummary,
+      checked: item.checked,
+    });
   });
 
-  const trimmed = next.filter(
-    (thought, index) =>
-      index === 0 ||
-      stripHtml(thought.title).length > 0 ||
-      stripHtml(thought.summary).length > 0
-  );
-
-  return trimmed.length > 0 ? trimmed : [createEmptyThought(noteId)];
+  const resolved = next.length > 0 ? next : [createEmptyThought(noteId)];
+  return resolved.map((thought, index) => {
+    const item = liItems[index];
+    const locked = Boolean(item?.structureLocked);
+    const withLock = {
+      ...thought,
+      nlpStructureLocked: locked,
+      nlpStructureSourceHash: locked
+        ? thought.nlpStructureSourceHash
+        : undefined,
+      nlpStructureAnchor: locked ? thought.nlpStructureAnchor : undefined,
+    };
+    if (!withLock.nlpSourceHash) return withLock;
+    if (thoughtNlpSourceHash(withLock) === withLock.nlpSourceHash) {
+      return withLock;
+    }
+    return { ...withLock, nlpSourceHash: undefined };
+  });
 }
 
 /** Build a JS snippet that updates one thought's category chrome in the editor. */
@@ -609,7 +903,7 @@ export function setThoughtCategoryScript(
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
-  var lis = content.querySelectorAll("ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   var li = lis[${index}];
   if (!li) return true;
   var categoryId = ${id};
@@ -621,10 +915,8 @@ export function setThoughtCategoryScript(
     var name = chip.querySelector(".thought-category-name");
     if (name) name.textContent = label;
   }
-  if (!window.__mcEditing && typeof window.__mcExpandThoughtCategory === "function") {
-    window.__mcExpandThoughtCategory(li);
-  } else if (typeof window.__mcAnimateTitle === "function") {
-    window.__mcAnimateTitle(li);
+  if (typeof window.__mcSyncChecklistLayouts === "function") {
+    window.__mcSyncChecklistLayouts();
   }
   try {
     content.dispatchEvent(new Event("input", { bubbles: true }));
@@ -644,7 +936,7 @@ export function setThoughtSemanticTitleScript(
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
-  var lis = content.querySelectorAll("ul > li");
+  var lis = content.querySelectorAll(".thought-item");
   var li = lis[${index}];
   if (!li) return true;
   var text = ${label};
@@ -661,9 +953,6 @@ export function setThoughtSemanticTitleScript(
   titleEl.classList.remove("is-error-placeholder");
   titleEl.textContent = text;
   li.classList.add("has-entered-title");
-  if (typeof window.__mcAnimateTitle === "function") {
-    window.__mcAnimateTitle(li);
-  }
   if (typeof window.__mcSyncChecklistLayouts === "function") {
     window.__mcSyncChecklistLayouts();
   }

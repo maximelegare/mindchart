@@ -1,7 +1,32 @@
 import { Thought } from "@repo/zod-schemas";
 import { DB } from "../../utils/initialize/getOPDatabase";
-import { ThoughtTable } from "../../schema.root";
+import { CheckboxContentTable, ThoughtTable } from "../../schema.root";
 import { eq, sql } from "drizzle-orm";
+import {
+  deleteContentByIds,
+  insertThoughtFts,
+  insertTypedContent,
+  saveTypedContent,
+  updateThoughtFts,
+} from "../thoughtContent/typedContent";
+
+const thoughtRow = (thought: Thought, position = 0) => ({
+  id: thought.id,
+  noteId: thought.noteId,
+  type: thought.type,
+  contentId: thought.contentId,
+  title: thought.title,
+  semanticLabel: thought.semanticLabel,
+  nlpSourceHash: thought.nlpSourceHash ?? null,
+  titleSource: thought.titleSource === "user" ? "user" : "generated",
+  categorySource: thought.categorySource === "user" ? "user" : "generated",
+  nlpStructureLocked: Boolean(thought.nlpStructureLocked),
+  nlpStructureSourceHash: thought.nlpStructureSourceHash ?? null,
+  nlpStructureAnchor: thought.nlpStructureAnchor ?? null,
+  categoryId: thought.categoryId,
+  position: thought.position ?? position,
+  createdAt: thought.createdAt ?? new Date().toISOString(),
+});
 
 export const updateThoughtsQuery = async (
   db: DB,
@@ -15,96 +40,94 @@ export const updateThoughtsQuery = async (
     return { inserted: 0, updated: 0 };
   }
 
-  return db.transaction(async (tx) => {
-    let inserted = 0;
-    let updated = 0;
+  let inserted = 0;
+  let updated = 0;
 
-    try {
-      // Split new vs updated
-      const toInsert = validData.filter((t) => t.status === "new");
-      const toUpdate = validData.filter((t) => t.status === "updated");
+  try {
+    const toInsert = validData.filter((t) => t.status === "new");
+    const toUpdate = validData.filter((t) => t.status === "updated");
 
-      // -----------------------------------
-      // INSERTS (Thought + FTS)
-      // -----------------------------------
-      if (toInsert.length > 0) {
-        await tx.insert(ThoughtTable).values(
-          toInsert.map((thought) => ({
-            id: thought.id,
-            summary: thought.summary,
-            title: thought.title,
-            semanticLabel: thought.semanticLabel,
-            categoryId: thought.categoryId,
-            noteId: thought.noteId,
-            isCompletable: thought.isCompletable ?? false,
-            isCompleted: thought.isCompleted ?? false,
-            createdAt: thought.createdAt ?? new Date().toISOString(),
-          }))
-        );
-
-        // FTS sync insert
-        await tx.run(sql`
-          INSERT INTO thought_fts (id, title, summary, semantic_label)
-          VALUES ${sql.join(
-            toInsert.map(
-              (t) =>
-                sql`(${t.id}, ${t.title}, ${t.summary}, ${t.semanticLabel})`
-            ),
-            sql`, `
-          )}
-        `);
-
-        inserted = toInsert.length;
-      }
-
-      // -----------------------------------
-      // UPDATES (Thought + FTS)
-      // -----------------------------------
-      for (const thought of toUpdate) {
-        await tx
-          .update(ThoughtTable)
-          .set({
-            summary: thought.summary,
-            title: thought.title,
-            semanticLabel: thought.semanticLabel,
-            categoryId: thought.categoryId,
-            isCompletable: thought.isCompletable ?? false,
-            isCompleted: thought.isCompleted ?? false,
-          })
-          .where(eq(ThoughtTable.id, thought.id));
-
-        // FTS sync update
-        await tx.run(sql`
-          UPDATE thought_fts
-          SET title = ${thought.title},
-              summary = ${thought.summary},
-              semantic_label = ${thought.semanticLabel}
-          WHERE id = ${thought.id}
-        `);
-
-        updated++;
-      }
-
-      return {
-        inserted,
-        updated,
-        total: inserted + updated,
-      };
-    } catch (error) {
-      console.error("updateThoughtsQuery failed:", error);
-      throw error;
+    for (const [index, thought] of toInsert.entries()) {
+      await insertTypedContent(db, thought);
+      await db.insert(ThoughtTable).values(thoughtRow(thought, index));
+      await insertThoughtFts(db, thought);
+      inserted += 1;
     }
-  });
+
+    for (const [index, thought] of toUpdate.entries()) {
+      const [existing] = await db
+        .select({ contentId: ThoughtTable.contentId })
+        .from(ThoughtTable)
+        .where(eq(ThoughtTable.id, thought.id))
+        .limit(1);
+
+      if (!existing) {
+        await insertTypedContent(db, thought);
+        await db.insert(ThoughtTable).values(thoughtRow(thought, index));
+        await insertThoughtFts(db, thought);
+        inserted += 1;
+        continue;
+      }
+
+      const previousContentId = existing.contentId;
+
+      if (!previousContentId || previousContentId !== thought.contentId) {
+        await insertTypedContent(db, thought);
+      } else {
+        await saveTypedContent(db, thought);
+      }
+
+      await db
+        .update(ThoughtTable)
+        .set({
+          title: thought.title,
+          semanticLabel: thought.semanticLabel,
+          nlpSourceHash: thought.nlpSourceHash ?? null,
+          titleSource: thought.titleSource === "user" ? "user" : "generated",
+          categorySource:
+            thought.categorySource === "user" ? "user" : "generated",
+          nlpStructureLocked: Boolean(thought.nlpStructureLocked),
+          nlpStructureSourceHash: thought.nlpStructureSourceHash ?? null,
+          nlpStructureAnchor: thought.nlpStructureAnchor ?? null,
+          categoryId: thought.categoryId,
+          type: thought.type,
+          contentId: thought.contentId,
+          position: thought.position ?? index,
+        })
+        .where(eq(ThoughtTable.id, thought.id));
+      await updateThoughtFts(db, thought);
+
+      if (previousContentId && previousContentId !== thought.contentId) {
+        await deleteContentByIds(db, [previousContentId]);
+      }
+      updated += 1;
+    }
+
+    return {
+      inserted,
+      updated,
+      total: inserted + updated,
+    };
+  } catch (error) {
+    console.error("updateThoughtsQuery failed:", error);
+    throw error;
+  }
 };
 
 export const updateThoughtCompletionQuery = async (
   db: DB,
   data: { id: string; isCompleted: boolean }
 ) => {
+  const [thought] = await db
+    .select({ contentId: ThoughtTable.contentId, type: ThoughtTable.type })
+    .from(ThoughtTable)
+    .where(eq(ThoughtTable.id, data.id))
+    .limit(1);
+  if (!thought || thought.type !== "checkbox") return;
   await db
-    .update(ThoughtTable)
-    .set({ isCompleted: data.isCompleted })
-    .where(eq(ThoughtTable.id, data.id));
+    .update(CheckboxContentTable)
+    .set({ checked: data.isCompleted })
+    .where(eq(CheckboxContentTable.id, thought.contentId));
 };
 
 export const updateThoughtCategoryQuery = async (
@@ -113,18 +136,55 @@ export const updateThoughtCategoryQuery = async (
 ) => {
   await db
     .update(ThoughtTable)
-    .set({ categoryId: data.categoryId || "uncategorized" })
+    .set({
+      categoryId: data.categoryId || "uncategorized",
+      categorySource: "user",
+    })
     .where(eq(ThoughtTable.id, data.id));
 };
 
 export const updateThoughtNlpQuery = async (
   db: DB,
-  data: Array<{ id: string; semanticLabel?: string; categoryId?: string }>
+  data: Array<{
+    id: string;
+    semanticLabel?: string;
+    categoryId?: string;
+    title?: string;
+    nlpSourceHash?: string;
+    titleSource?: string;
+    categorySource?: string;
+    nlpStructureLocked?: boolean;
+    nlpStructureSourceHash?: string | null;
+    nlpStructureAnchor?: Float32Array | null;
+  }>
 ) => {
   for (const row of data) {
-    const patch: { semanticLabel?: string; categoryId?: string } = {};
+    const patch: {
+      semanticLabel?: string;
+      categoryId?: string;
+      title?: string;
+      nlpSourceHash?: string | null;
+      titleSource?: string;
+      categorySource?: string;
+      nlpStructureLocked?: boolean;
+      nlpStructureSourceHash?: string | null;
+      nlpStructureAnchor?: Float32Array | null;
+    } = {};
     if (row.semanticLabel != null) patch.semanticLabel = row.semanticLabel;
     if (row.categoryId != null) patch.categoryId = row.categoryId;
+    if (row.title != null) patch.title = row.title;
+    if (row.nlpSourceHash != null) patch.nlpSourceHash = row.nlpSourceHash;
+    if (row.titleSource != null) patch.titleSource = row.titleSource;
+    if (row.categorySource != null) patch.categorySource = row.categorySource;
+    if (row.nlpStructureLocked != null) {
+      patch.nlpStructureLocked = row.nlpStructureLocked;
+    }
+    if (row.nlpStructureSourceHash !== undefined) {
+      patch.nlpStructureSourceHash = row.nlpStructureSourceHash;
+    }
+    if (row.nlpStructureAnchor !== undefined) {
+      patch.nlpStructureAnchor = row.nlpStructureAnchor;
+    }
     if (Object.keys(patch).length === 0) continue;
 
     await db.update(ThoughtTable).set(patch).where(eq(ThoughtTable.id, row.id));

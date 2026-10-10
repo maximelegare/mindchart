@@ -1,7 +1,27 @@
-import { Category } from "@repo/zod-schemas";
+import {
+  Category,
+  getThoughtPlainText,
+  isHeadingType,
+  isTextLikeThought,
+  parseThoughtType,
+  type ThoughtType,
+} from "@repo/zod-schemas";
 import React from "react";
-import { Keyboard, Platform, Pressable, ScrollView, View } from "react-native";
-import { runOnJS } from "react-native-reanimated";
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useKeyboardHandler } from "react-native-keyboard-controller";
 import { useFormContext } from "react-hook-form";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -23,28 +43,49 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { useRouter } from "expo-router";
 import { setGraphModeImmediate } from "@/features/graph/context/graphContext";
-import { type ThoughtsEditorFormValues } from "./types";
+import {
+  convertThoughtType,
+  createEmptyThought,
+  setTextThoughtStyle,
+  setThoughtContentText,
+  type ThoughtsEditorFormValues,
+  type ThoughtsFormValue,
+} from "./types";
 import {
   htmlToThoughts,
   setThoughtCategoryScript,
   setThoughtSemanticTitleScript,
+  joinMergedThoughtHtml,
+  sanitizeInlineHtml,
   stripHtml,
   thoughtsToHtml,
   buildCategoryLabelsScript,
 } from "./thoughtsHtml";
 import {
   BULLET_EDITOR_GUARD_SCRIPT,
-  CATEGORY_COLLAPSE_SCRIPT,
   CHECKLIST_SCRIPT,
-  GRAPH_BUTTON_CLICK_SCRIPT,
   REFRESH_CATEGORY_TIMERS_SCRIPT,
   SYNC_CHECKLIST_LAYOUT_SCRIPT,
   clearThoughtValidationErrorsScript,
   setEditingModeScript,
   setShowTitlesScript,
   setSimplifiedModeScript,
-  setThoughtListTypeScript,
+  setThoughtTypeScript,
   setThoughtValidationErrorsScript,
+  setSelectedThoughtScript,
+  setMergeHighlightScript,
+  setThoughtTextEditableScript,
+  setShowCategoryColorsScript,
+  setCategoryOpacityScript,
+  REQUEST_EDITOR_HTML_SCRIPT,
+  focusThoughtScript,
+  THOUGHT_SPLIT_SCRIPT,
+  startThoughtSplitScript,
+  setThoughtSplitSideScript,
+  setThoughtSplitPreviewScript,
+  confirmThoughtSplitScript,
+  cancelThoughtSplitScript,
+  applyParagraphSplitScript,
 } from "./bulletEditorScript";
 import {
   ThoughtsEditorContentLabel,
@@ -53,54 +94,89 @@ import {
 } from "./thoughtsEditorLabels";
 import {
   ThoughtsEditorToolbar,
-  THOUGHTS_EDITOR_TOOLBAR_HEIGHT,
+  THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE,
+  TOOLBAR_HEIGHT_ANIMATION_MS,
+  getThoughtsEditorToolbarHeight,
+  type ThoughtsToolbarMode,
 } from "./thoughtsEditorToolbar";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
-import { analyzeThought } from "@/lib/nlp";
+import { thoughtCapabilities } from "./thoughtCapabilities";
+import { useEditorNlp } from "@/features/nlp/useEditorNlp";
+import { lockThoughtStructure } from "@/lib/nlp";
+import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
+import { usePageScroll } from "@/components/layout/page/pageContainer";
+import { useModal } from "@/components/ui/modal/modal";
+import { ThoughtTitleModalContent } from "./thoughtTitleModalContent";
+import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
+import { generateID } from "@/utils/genrateID";
 
 export type { ThoughtsFormValue, ThoughtsEditorFormValues } from "./types";
-export { createEmptyThought } from "./types";
+export { createEmptyThought, convertThoughtType } from "./types";
 
 /** Gap between the caret and the keyboard / format bar. */
 const CARET_BOTTOM_MARGIN = 15;
 
-const scrollCaretIntoViewScript = (bottomMargin: number) => `
+/** First body thought, skipping headings (titles) that hide the section. */
+function firstVisibleThoughtIndex(
+  thoughts: { type?: string }[] | undefined
+): number {
+  if (!thoughts?.length) return 0;
+  const index = thoughts.findIndex((thought) => !isHeadingType(thought.type));
+  return index >= 0 ? index : 0;
+}
+
+const scrollCaretIntoViewScript = (
+  bottomMargin: number,
+  pageScroll = false
+) => `
 (function () {
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
   if (!content) return true;
 
-  var sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return true;
-
-  var range = sel.getRangeAt(0).cloneRange();
-  var rect = range.getClientRects()[0];
-  if (!rect || (rect.height === 0 && rect.width === 0)) {
-    rect = range.getBoundingClientRect();
-  }
-
   var margin = ${Math.max(0, Math.floor(bottomMargin))};
-  var contentRect = content.getBoundingClientRect();
-
+  var sel = window.getSelection();
+  var rect = null;
+  if (sel && sel.rangeCount > 0) {
+    var range = sel.getRangeAt(0).cloneRange();
+    rect = range.getClientRects()[0] || range.getBoundingClientRect();
+  }
   if (!rect || (rect.height === 0 && rect.width === 0)) {
-    var node = sel.anchorNode;
-    var el = node && (node.nodeType === 3 ? node.parentElement : node);
-    if (el && el.scrollIntoView) {
-      el.scrollIntoView({ block: "nearest", inline: "nearest" });
-    }
+    var thought = document.querySelector(".thought-item.is-selected");
+    if (thought) rect = thought.getBoundingClientRect();
+  }
+  if (!rect || (rect.height === 0 && rect.width === 0)) return true;
+
+  if (${pageScroll ? "true" : "false"}) {
+    window.ReactNativeWebView.postMessage(JSON.stringify({
+      type: "CARET_RECT",
+      data: { top: rect.top, bottom: rect.bottom }
+    }));
     return true;
   }
 
-  var caretTop = rect.top - contentRect.top + content.scrollTop;
-  var caretBottom = rect.bottom - contentRect.top + content.scrollTop;
-  var visibleTop = content.scrollTop + 8;
-  var visibleBottom = content.scrollTop + content.clientHeight - margin;
-
-  if (caretBottom > visibleBottom) {
-    content.scrollTop = Math.max(0, caretBottom - content.clientHeight + margin);
-  } else if (caretTop < visibleTop) {
-    content.scrollTop = Math.max(0, caretTop - 8);
+  var contentRect = content.getBoundingClientRect();
+  var layoutBottom = contentRect.top + content.clientHeight;
+  var viewBottom = layoutBottom;
+  var viewTop = contentRect.top;
+  if (window.visualViewport) {
+    var vvTop = window.visualViewport.offsetTop;
+    var vvBottom = vvTop + window.visualViewport.height;
+    if (vvBottom < layoutBottom - 1) viewBottom = vvBottom;
+    if (vvTop > viewTop + 1) viewTop = vvTop;
   }
+
+  var limitBottom = viewBottom - margin;
+  var limitTop = viewTop + 8;
+  var delta = 0;
+  if (rect.bottom > limitBottom) {
+    delta = Math.ceil(rect.bottom - limitBottom);
+  } else if (rect.top < limitTop) {
+    delta = Math.floor(rect.top - limitTop);
+  }
+  if (!delta) return true;
+
+  content.scrollTop = Math.max(0, content.scrollTop + delta);
   return true;
 })();
 `;
@@ -109,16 +185,23 @@ function buildCategoryColorCss(categories: Category[]): string {
   return categories
     .map(
       (category) => `
-      li[data-category-id="${category.id}"] .thought-stripe,
-      li[data-category-id="${category.id}"] .thought-dot {
-        background-color: ${category.color};
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"] .thought-summary:not(.is-placeholder),
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"] .thought-title:not(.is-placeholder) {
+        background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash, 18%), transparent);
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        line-height: inherit;
       }
-      li[data-category-id="${category.id}"] .thought-check-box {
-        border-color: ${category.color};
-      }
-      li[data-category-id="${category.id}"].is-completed .thought-check-box {
-        background-color: ${category.color};
-        border-color: ${category.color};
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"].is-selected .thought-summary:not(.is-placeholder),
+      html.mc-show-categories .thought-item:not(.is-heading)[data-category-id="${category.id}"].is-selected .thought-title:not(.is-placeholder) {
+        background-color: color-mix(in srgb, ${category.color} var(--mc-cat-wash-selected, 34%), transparent);
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        line-height: inherit;
       }
     `
     )
@@ -156,8 +239,8 @@ function buildEditorThemeCss(colors: {
     .thought-check-box svg {
       color: ${colors.card};
     }
-    li.thought-item.is-completed[data-category-id="uncategorized"] .thought-check-box,
-    li.thought-item.is-completed:not([data-category-id]) .thought-check-box {
+    .thought-item.is-completed[data-category-id="uncategorized"] .thought-check-box,
+    .thought-item.is-completed:not([data-category-id]) .thought-check-box {
       background: ${colors.mutedFg};
       border-color: ${colors.mutedFg};
     }
@@ -168,7 +251,17 @@ function buildEditorThemeCss(colors: {
       color: ${colors.graphButtonColor};
       background: transparent;
     }
-    .thought-expand {
+    .thought-expand,
+    .thought-fold {
+      color: ${colors.mutedFg};
+    }
+    .thought-item.is-heading .thought-body {
+      background: hsla(0, 0%, 50%, 0.12);
+      background: color-mix(in srgb, ${colors.mutedFg} 12%, transparent);
+    }
+    .thought-item.is-heading .thought-fold {
+      background: hsla(0, 0%, 50%, 0.18);
+      background: color-mix(in srgb, ${colors.mutedFg} 18%, transparent);
       color: ${colors.mutedFg};
     }
     .thought-category {
@@ -261,18 +354,18 @@ function CategoryListItem({
 }
 
 /** Presents the category sheet from inside the BottomSheet provider. */
-function CategorySheetPresenter({ index }: { index: number | null }) {
+function CategorySheetPresenter({ open }: { open: boolean }) {
   const { sheetRef } = useBottomSheetContext();
 
   React.useEffect(() => {
-    if (index == null) return;
+    if (!open) return;
     Keyboard.dismiss();
     const timer = setTimeout(() => {
       Keyboard.dismiss();
       sheetRef.current?.present();
     }, 40);
     return () => clearTimeout(timer);
-  }, [index, sheetRef]);
+  }, [open, sheetRef]);
 
   return null;
 }
@@ -292,47 +385,68 @@ type ThoughtsEditorProps = {
    * Ignored while editing (`readOnly={false}`).
    */
   simplified?: boolean;
+  /** Grow with content and let the page ScrollView scroll (note details). */
+  embedInPageScroll?: boolean;
   /** Dock the format toolbar to the keyboard (note details). */
   dockToolbarToKeyboard?: boolean;
+  /** Enter edit mode when the format toolbar is requested from view. */
+  onRequestEdit?: () => void;
   /** Persist completion when the checkbox is toggled in view mode. */
   onToggleCompleted?: (thought: { id: string; isCompleted: boolean }) => void;
   /** Persist category when it is changed in view mode. */
   onChangeCategory?: (thought: { id: string; categoryId: string }) => void;
+  /** True while split or merge is using the toolbar session. */
+  onToolSessionChange?: (active: boolean) => void;
 };
 
 export type ThoughtsEditorHandle = {
   /** Returns true when thoughts are valid to save. Applies red placeholders when not. */
   validateRequiredContent: () => boolean;
   clearValidationErrors: () => void;
-  /** Whether the Titles toggle is on for this note. */
+  /** Whether any thought currently has a title. */
   titlesEnabled: () => boolean;
+  /** Pull live WebView HTML into form state before save. */
+  flushThoughts: () => Promise<ThoughtsFormValue[]>;
+  /** Run pending NLP for dirty thoughts. Resolves after metadata/structure apply. */
+  flushPendingNlp: () => Promise<void>;
 };
 
 function ThoughtsEditorInner(
   {
     noteId,
     categories,
-    defaultShowTitles = false,
     readOnly = false,
-    showGraphButtons = false,
     plain = false,
-    simplified = false,
+    embedInPageScroll = false,
     dockToolbarToKeyboard = false,
     onToggleCompleted,
     onChangeCategory,
+    onRequestEdit,
+    onToolSessionChange,
   }: ThoughtsEditorProps,
   ref: React.ForwardedRef<ThoughtsEditorHandle>
 ) {
   const { colorScheme } = useColorScheme();
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const { scrollTo, getScrollOffset } = usePageScroll();
   const categoryLabels = useCategoryLabelsMap();
   const { push } = useRouter();
+  const { openModal } = useModal();
   const { getValues, setValue, watch } =
     useFormContext<ThoughtsEditorFormValues>();
+  const hideCategories = useNoteDetailsViewStore((state) => state.simplified);
+  const categoryOpacity = useNoteDetailsViewStore(
+    (state) => state.categoryOpacity
+  );
+  const toggleHideCategories = useNoteDetailsViewStore(
+    (state) => state.toggleSimplified
+  );
+  const setCategoryOpacity = useNoteDetailsViewStore(
+    (state) => state.setCategoryOpacity
+  );
   // Static simplified chrome only applies in the view editor.
-  const effectiveSimplified = simplified && readOnly;
-  // Keep the user's Titles preference even while simplified view hides them.
-  const [showTitles, setShowTitles] = React.useState(defaultShowTitles);
+  const effectiveSimplified = hideCategories && readOnly;
   const [keyboardOpen, setKeyboardOpen] = React.useState(false);
   const [keyboardHeight, setKeyboardHeight] = React.useState(0);
   const [activeFormats, setActiveFormats] = React.useState({
@@ -340,27 +454,86 @@ function ThoughtsEditorInner(
     italic: false,
     underline: false,
   });
-  const [caretIsChecklist, setCaretIsChecklist] = React.useState(() =>
-    Boolean(getValues("thoughts")?.[0]?.isCompletable)
+  const [caretThoughtType, setCaretThoughtType] = React.useState<ThoughtType>(
+    () => {
+      const initialThoughts = getValues("thoughts");
+      return (
+        initialThoughts?.[firstVisibleThoughtIndex(initialThoughts)]?.type ??
+        "li"
+      );
+    }
+  );
+  const [toolbarMode, setToolbarMode] = React.useState<ThoughtsToolbarMode>(
+    () => (readOnly ? "details" : "format")
+  );
+  const showCategoryColors =
+    (readOnly || toolbarMode === "details") && !hideCategories;
+  const [selectedThoughtIndex, setSelectedThoughtIndex] = React.useState(() =>
+    firstVisibleThoughtIndex(getValues("thoughts"))
   );
   const [categoryPickerIndex, setCategoryPickerIndex] = React.useState<
     number | null
   >(null);
+  const [splitSide, setSplitSide] = React.useState<"left" | "right" | null>(
+    null
+  );
+  const [splitCategoryId, setSplitCategoryId] = React.useState<string | null>(
+    null
+  );
+  const [splitCategoryPicking, setSplitCategoryPicking] = React.useState(false);
+  const [merging, setMerging] = React.useState(false);
+  const [mergeIndexes, setMergeIndexes] = React.useState<number[]>([]);
+  const [mergeCategoryId, setMergeCategoryId] = React.useState<string | null>(
+    null
+  );
+  const [mergeCategoryPicking, setMergeCategoryPicking] = React.useState(false);
+  const [pageEditorVisible, setPageEditorVisible] =
+    React.useState(!embedInPageScroll);
 
   const richRef = React.useRef<RichEditor>(null);
+  const editorBoxRef = React.useRef<View>(null);
   const editorReadyRef = React.useRef(false);
+  const embedInPageScrollRef = React.useRef(embedInPageScroll);
+  embedInPageScrollRef.current = embedInPageScroll;
+  const readOnlyRef = React.useRef(readOnly);
+  readOnlyRef.current = readOnly;
   const scrollViewHeightRef = React.useRef(0);
   const keyboardOpenRef = React.useRef(false);
   const keyboardHeightRef = React.useRef(0);
+  const toolbarModeRef = React.useRef(toolbarMode);
   const scrollCaretFrameRef = React.useRef<number | null>(null);
   const pendingFormatRef = React.useRef<"bold" | "italic" | "underline" | null>(
     null
   );
-  const showTitlesRef = React.useRef(showTitles);
-  const effectiveShowTitles = effectiveSimplified ? false : showTitles;
-  showTitlesRef.current = effectiveShowTitles;
+  const selectedThoughtIndexRef = React.useRef(selectedThoughtIndex);
+  selectedThoughtIndexRef.current = selectedThoughtIndex;
+  const mergingRef = React.useRef(merging);
+  mergingRef.current = merging;
+  const mergeIndexesRef = React.useRef(mergeIndexes);
+  mergeIndexesRef.current = mergeIndexes;
+  const splitSideRef = React.useRef(splitSide);
+  splitSideRef.current = splitSide;
+  const activeFormatsRef = React.useRef(activeFormats);
+  activeFormatsRef.current = activeFormats;
+  const enteringEditFocusRef = React.useRef(false);
+  const enterEditScrollActiveRef = React.useRef(false);
+  const enterEditScrollForceRef = React.useRef(false);
+  const enterEditScrollTimeoutRef = React.useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
+  const didInitSelectionRef = React.useRef(false);
+  const userPickedThoughtRef = React.useRef(false);
+  const preserveFormatsRef = React.useRef(false);
+  const showTitlesRef = React.useRef(false);
+  showTitlesRef.current = false;
   const simplifiedRef = React.useRef(effectiveSimplified);
   simplifiedRef.current = effectiveSimplified;
+  const hideCategoriesRef = React.useRef(hideCategories);
+  hideCategoriesRef.current = hideCategories;
+  const lastHtmlRef = React.useRef("");
+  const pendingHtmlSyncRef = React.useRef<((html: string) => void) | null>(
+    null
+  );
   const mutedFg = hsl("muted-foreground", colorScheme);
   const cardColor = hsl("card", colorScheme);
   const surfaceColor = plain
@@ -393,8 +566,8 @@ function ThoughtsEditorInner(
   );
   const htmlOptions = React.useMemo(
     () => ({
-      showGraphButtons,
-      preferSemanticTitle: readOnly,
+      showGraphButtons: false,
+      preferSemanticTitle: false,
       placeholders: {
         title: thoughtPlaceholders.title,
         summary: thoughtPlaceholders.summary,
@@ -402,7 +575,7 @@ function ThoughtsEditorInner(
       },
       categoryLabels: categoryLabelsRecord,
     }),
-    [showGraphButtons, thoughtPlaceholders, categoryLabelsRecord, readOnly]
+    [thoughtPlaceholders, categoryLabelsRecord]
   );
   const validationMessages = React.useMemo(
     () => ({
@@ -413,7 +586,7 @@ function ThoughtsEditorInner(
     [thoughtPlaceholders]
   );
   const initialHtmlRef = React.useRef(
-    thoughtsToHtml(getValues("thoughts"), effectiveShowTitles, htmlOptions)
+    thoughtsToHtml(getValues("thoughts"), false, htmlOptions)
   );
   const categoryColorsCss = React.useMemo(
     () => buildCategoryColorCss(categories),
@@ -424,10 +597,63 @@ function ThoughtsEditorInner(
   const { ref: categorySheetRef, close: closeCategorySheet } = useBottomSheet();
 
   const thoughts = watch("thoughts");
-  const selectedCategoryId =
-    categoryPickerIndex != null
-      ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
-      : null;
+  const selectedThought = thoughts?.[selectedThoughtIndex] ?? null;
+  const selectedTitleText = (selectedThought?.title ?? "").replace(
+    /<[^>]+>/g,
+    ""
+  );
+  const selectedCategoryId = splitCategoryPicking
+    ? (splitCategoryId ?? "uncategorized")
+    : mergeCategoryPicking
+      ? (mergeCategoryId ?? "uncategorized")
+      : categoryPickerIndex != null
+        ? (thoughts?.[categoryPickerIndex]?.categoryId ?? "uncategorized")
+        : null;
+  const selectedCategory =
+    categories.find(
+      (category) =>
+        category.id === (selectedThought?.categoryId || "uncategorized")
+    ) ?? null;
+  const splitCategory =
+    categories.find(
+      (category) => category.id === (splitCategoryId || "uncategorized")
+    ) ?? null;
+  const mergeCategory =
+    categories.find(
+      (category) => category.id === (mergeCategoryId || "uncategorized")
+    ) ?? null;
+  const toolbarCategoryId = splitSide
+    ? (splitCategoryId ?? "uncategorized")
+    : merging
+      ? (mergeCategoryId ?? "uncategorized")
+      : selectedThought?.categoryId || "uncategorized";
+  const toolbarCategoryLabel =
+    categoryLabels.get(toolbarCategoryId) ??
+    (splitSide
+      ? splitCategory?.name
+      : merging
+        ? mergeCategory?.name
+        : selectedCategory?.name) ??
+    "Uncategorized";
+  const toolbarCategoryColor = splitSide
+    ? (splitCategory?.color ?? null)
+    : merging
+      ? (mergeCategory?.color ?? null)
+      : (selectedCategory?.color ?? null);
+  const colorForCategoryId = React.useCallback(
+    (categoryId?: string | null) =>
+      categories.find(
+        (category) => category.id === (categoryId || "uncategorized")
+      )?.color ?? mutedFg,
+    [categories, mutedFg]
+  );
+  const mergeHighlightColor = colorForCategoryId(mergeCategoryId);
+  const splitCurrentColor = colorForCategoryId(selectedThought?.categoryId);
+  const splitNewColor = colorForCategoryId(splitCategoryId);
+  const mergeCanConfirm =
+    mergeIndexes.length >= 2 &&
+    Math.max(...mergeIndexes) - Math.min(...mergeIndexes) + 1 ===
+      mergeIndexes.length;
   const pendingNlpByIndexRef = React.useRef(
     new Map<number, { categoryId?: string; semanticLabel?: string }>()
   );
@@ -437,10 +663,154 @@ function ThoughtsEditorInner(
     richRef.current?.injectJavascript(script);
   }, []);
 
+  React.useEffect(() => {
+    if (didInitSelectionRef.current || userPickedThoughtRef.current) return;
+    if (!thoughts?.length) return;
+    didInitSelectionRef.current = true;
+    const next = firstVisibleThoughtIndex(thoughts);
+    selectedThoughtIndexRef.current = next;
+    setSelectedThoughtIndex(next);
+    setCaretThoughtType(thoughts[next]?.type ?? "li");
+    injectIfReady(setSelectedThoughtScript(next));
+  }, [injectIfReady, thoughts]);
+
+  const { embed, isReady: embeddingsReady } = useLlamaEmbeddings();
+  const embedStructureText = React.useCallback(
+    async (text: string) => {
+      if (!embeddingsReady) return null;
+      try {
+        return await embed(text, "document");
+      } catch {
+        return null;
+      }
+    },
+    [embed, embeddingsReady]
+  );
+
+  const { flushPendingNlp } = useEditorNlp({
+    getValues,
+    setValue,
+    noteId,
+    readOnly,
+    thoughts,
+    injectIfReady,
+    applyParagraphSplitScript,
+    setThoughtCategoryScript,
+    setThoughtSemanticTitleScript,
+    categoryLabels,
+    embed: embedStructureText,
+  });
+
+  const focusSelectedThought = React.useCallback(
+    (atEnd: boolean, force = false) => {
+      const index = selectedThoughtIndexRef.current;
+      const editor = richRef.current as
+        | (RichEditor & { showAndroidKeyboard?: () => void })
+        | null;
+      if (!editorReadyRef.current || !editor) return;
+      editor.showAndroidKeyboard?.();
+      editor.focusContentEditor();
+      editor.injectJavascript(focusThoughtScript(index, atEnd, force));
+    },
+    []
+  );
+
   const scrollCaretIntoView = React.useCallback(() => {
     const margin = keyboardOpenRef.current ? CARET_BOTTOM_MARGIN : 15;
-    richRef.current?.injectJavascript(scrollCaretIntoViewScript(margin));
+    richRef.current?.injectJavascript(
+      scrollCaretIntoViewScript(margin, embedInPageScrollRef.current)
+    );
   }, []);
+
+  const smoothCaretScrollRef = React.useRef(false);
+
+  const beginEnterEditScroll = React.useCallback(() => {
+    enterEditScrollActiveRef.current = true;
+    enterEditScrollForceRef.current = false;
+    smoothCaretScrollRef.current = true;
+    if (enterEditScrollTimeoutRef.current != null) {
+      clearTimeout(enterEditScrollTimeoutRef.current);
+    }
+    enterEditScrollTimeoutRef.current = setTimeout(() => {
+      enterEditScrollTimeoutRef.current = null;
+      if (!enterEditScrollActiveRef.current) return;
+      enterEditScrollForceRef.current = true;
+      smoothCaretScrollRef.current = true;
+      scrollCaretIntoView();
+    }, 1200);
+  }, [scrollCaretIntoView]);
+
+  const holdPageScroll = React.useCallback(() => {
+    const offset = getScrollOffset();
+    requestAnimationFrame(() => {
+      if (Math.abs(getScrollOffset() - offset) > 1) {
+        scrollTo(offset, { animated: false });
+      }
+      requestAnimationFrame(() => {
+        if (Math.abs(getScrollOffset() - offset) > 1) {
+          scrollTo(offset, { animated: false });
+        }
+      });
+    });
+  }, [getScrollOffset, scrollTo]);
+
+  const applyCaretRectToPage = React.useCallback(
+    (rect: { top: number; bottom: number }) => {
+      if (!embedInPageScroll || readOnlyRef.current) return;
+      if (
+        !enterEditScrollActiveRef.current &&
+        !enterEditScrollForceRef.current
+      ) {
+        return;
+      }
+      editorBoxRef.current?.measureInWindow((_x, y) => {
+        const caretTop = y + rect.top;
+        const caretBottom = y + rect.bottom;
+        const toolbar = dockToolbarToKeyboard
+          ? getThoughtsEditorToolbarHeight(toolbarModeRef.current) +
+            THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2
+          : 0;
+        const keyboard = keyboardOpenRef.current
+          ? keyboardHeightRef.current
+          : 0;
+        const reserved = keyboard + toolbar + CARET_BOTTOM_MARGIN + 28;
+        const limitBottom = windowHeight - reserved;
+        const limitTop = insets.top + 12;
+        const keyboardReady = keyboard > 0;
+        if (
+          !keyboardReady &&
+          !enterEditScrollForceRef.current &&
+          caretTop >= limitTop
+        ) {
+          return;
+        }
+        const offset = getScrollOffset();
+        let next = offset;
+        if (caretBottom > limitBottom) {
+          next = offset + (caretBottom - limitBottom);
+        } else if (caretTop < limitTop) {
+          next = Math.max(0, offset + (caretTop - limitTop));
+        }
+        if (keyboardReady || enterEditScrollForceRef.current) {
+          enterEditScrollActiveRef.current = false;
+          enterEditScrollForceRef.current = false;
+        }
+        if (Math.abs(next - offset) < 2) return;
+        const animated =
+          smoothCaretScrollRef.current || Math.abs(next - offset) > 24;
+        smoothCaretScrollRef.current = false;
+        scrollTo(next, { animated });
+      });
+    },
+    [
+      dockToolbarToKeyboard,
+      embedInPageScroll,
+      getScrollOffset,
+      insets.top,
+      scrollTo,
+      windowHeight,
+    ]
+  );
 
   const scheduleScrollCaretIntoView = React.useCallback(() => {
     if (scrollCaretFrameRef.current != null) return;
@@ -491,16 +861,28 @@ function ThoughtsEditorInner(
 
     const refreshCaret = () => {
       tryApplyPendingFormat();
+      if (!enterEditScrollActiveRef.current) return;
+      richRef.current?.injectJavascript(
+        focusThoughtScript(selectedThoughtIndexRef.current, false, true)
+      );
       scrollCaretIntoView();
     };
 
     const showSub = Keyboard.addListener("keyboardDidShow", (event) => {
       applyKeyboardOpen(event.endCoordinates.height);
+      if (!enterEditScrollActiveRef.current) {
+        tryApplyPendingFormat();
+        return;
+      }
+      smoothCaretScrollRef.current = true;
       requestAnimationFrame(() => {
         requestAnimationFrame(refreshCaret);
       });
-      setTimeout(refreshCaret, 100);
-      setTimeout(refreshCaret, 280);
+      setTimeout(() => {
+        if (!enterEditScrollActiveRef.current) return;
+        smoothCaretScrollRef.current = true;
+        refreshCaret();
+      }, 220);
     });
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       applyKeyboardClosed();
@@ -513,6 +895,10 @@ function ThoughtsEditorInner(
         cancelAnimationFrame(scrollCaretFrameRef.current);
         scrollCaretFrameRef.current = null;
       }
+      if (enterEditScrollTimeoutRef.current != null) {
+        clearTimeout(enterEditScrollTimeoutRef.current);
+        enterEditScrollTimeoutRef.current = null;
+      }
     };
   }, [
     applyKeyboardClosed,
@@ -524,10 +910,15 @@ function ThoughtsEditorInner(
 
   React.useEffect(() => {
     if (readOnly || keyboardHeight <= 0) return;
+    if (!enterEditScrollActiveRef.current) return;
+    smoothCaretScrollRef.current = true;
     const frame = requestAnimationFrame(() => {
+      if (!enterEditScrollActiveRef.current) return;
       scrollCaretIntoView();
     });
     const later = setTimeout(() => {
+      if (!enterEditScrollActiveRef.current) return;
+      smoothCaretScrollRef.current = true;
       scrollCaretIntoView();
     }, 160);
     return () => {
@@ -538,7 +929,10 @@ function ThoughtsEditorInner(
 
   React.useEffect(() => {
     if (readOnly || !keyboardOpen || dockToolbarToKeyboard) return;
-    const pad = CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT;
+    const pad =
+      CARET_BOTTOM_MARGIN +
+      getThoughtsEditorToolbarHeight(toolbarMode) +
+      THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2;
     injectIfReady(`
 (function () {
   var content =
@@ -547,13 +941,12 @@ function ThoughtsEditorInner(
   true;
 })();
 `);
-    scrollCaretIntoView();
   }, [
     keyboardOpen,
     readOnly,
     dockToolbarToKeyboard,
-    scrollCaretIntoView,
     injectIfReady,
+    toolbarMode,
   ]);
 
   React.useEffect(() => {
@@ -569,7 +962,7 @@ function ThoughtsEditorInner(
   }, [keyboardOpen, readOnly, dockToolbarToKeyboard, injectIfReady]);
 
   const applyEditorFlags = React.useCallback(
-    (nextShowTitles: boolean) => {
+    (nextShowTitles = false) => {
       if (!editorReadyRef.current) return;
       richRef.current?.injectJavascript(setShowTitlesScript(nextShowTitles));
       richRef.current?.injectJavascript(setEditingModeScript(!readOnly));
@@ -637,6 +1030,9 @@ function ThoughtsEditorInner(
         });
         return;
       }
+      if (items.length === 0 && preserveFormatsRef.current) {
+        return;
+      }
       setActiveFormats({
         bold: has(actions.setBold),
         italic: has(actions.setItalic),
@@ -660,7 +1056,6 @@ function ThoughtsEditorInner(
       richRef.current?.injectJavascript(
         buildCategoryLabelsScript(categoryLabelsRecord)
       );
-      richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
     } else {
       richRef.current?.injectJavascript(
         buildThoughtPlaceholdersScript(thoughtPlaceholders)
@@ -670,13 +1065,44 @@ function ThoughtsEditorInner(
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
     }
-    if (showGraphButtons) {
-      richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
-    }
     richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
+    richRef.current?.injectJavascript(THOUGHT_SPLIT_SCRIPT);
+    if (embedInPageScroll) {
+      richRef.current?.injectJavascript(`
+(function () {
+  var style = document.getElementById("mc-hide-scrollbars");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "mc-hide-scrollbars";
+    style.textContent =
+      "html,body,.pell,.pell-content,.content{overflow:hidden!important;overflow-y:hidden!important;scrollbar-width:none}" +
+      "*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}";
+    document.head.appendChild(style);
+  }
+  true;
+})();
+`);
+    }
     requestAnimationFrame(() => {
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
+      richRef.current?.injectJavascript(
+        setSelectedThoughtScript(selectedThoughtIndexRef.current)
+      );
+      richRef.current?.injectJavascript(
+        setThoughtTextEditableScript(!readOnly && toolbarMode === "format")
+      );
+      richRef.current?.injectJavascript(
+        setShowCategoryColorsScript(
+          (readOnly || toolbarMode === "details") && !hideCategoriesRef.current
+        )
+      );
+      richRef.current?.injectJavascript(
+        setCategoryOpacityScript(categoryOpacity)
+      );
+      if (embedInPageScroll) {
+        requestAnimationFrame(() => setPageEditorVisible(true));
+      }
     });
   }, [
     applyEditorFlags,
@@ -685,9 +1111,11 @@ function ThoughtsEditorInner(
     applyEditorTheme,
     applyPendingFormat,
     categoryLabelsRecord,
+    embedInPageScroll,
     readOnly,
-    showGraphButtons,
     thoughtPlaceholders,
+    toolbarMode,
+    categoryOpacity,
   ]);
 
   React.useEffect(() => {
@@ -696,6 +1124,7 @@ function ThoughtsEditorInner(
 
   const syncThoughtsFromHtml = React.useCallback(
     (html: string) => {
+      lastHtmlRef.current = html;
       const previous = getValues("thoughts");
       const next = htmlToThoughts(
         html,
@@ -724,11 +1153,13 @@ function ThoughtsEditorInner(
       if (!editorReadyRef.current) return;
       richRef.current?.injectJavascript(REFRESH_CATEGORY_TIMERS_SCRIPT);
       richRef.current?.injectJavascript(CHECKLIST_SCRIPT);
+      richRef.current?.injectJavascript(THOUGHT_SPLIT_SCRIPT);
       richRef.current?.injectJavascript(SYNC_CHECKLIST_LAYOUT_SCRIPT);
     });
   }, []);
 
   const wasEditingRef = React.useRef(!readOnly);
+  const keepDetailsToolbarOnEditRef = React.useRef(false);
 
   // Entering edit installs the guard and drops graph chrome. Leaving edit
   // rebuilds HTML so graph buttons come back. Skip the initial mount —
@@ -742,7 +1173,13 @@ function ThoughtsEditorInner(
     if (!editorReadyRef.current) return;
 
     if (enteringEdit) {
-      applyEditorFlags(showTitles);
+      const stayOnDetails = keepDetailsToolbarOnEditRef.current;
+      keepDetailsToolbarOnEditRef.current = false;
+      if (!stayOnDetails) {
+        enteringEditFocusRef.current = true;
+        setToolbarMode("format");
+      }
+      applyEditorFlags(false);
       applySimplifiedMode(false);
       richRef.current?.injectJavascript(
         buildThoughtPlaceholdersScript(thoughtPlaceholders)
@@ -752,28 +1189,75 @@ function ThoughtsEditorInner(
       );
       richRef.current?.injectJavascript(BULLET_EDITOR_GUARD_SCRIPT);
       const nextThoughts = getValues("thoughts");
-      setCaretIsChecklist(Boolean(nextThoughts?.[0]?.isCompletable));
-      richRef.current?.setContentHTML(
-        thoughtsToHtml(nextThoughts, showTitles, htmlOptions)
+      const selectedIndex = Math.min(
+        Math.max(0, selectedThoughtIndex),
+        Math.max(0, (nextThoughts?.length ?? 1) - 1)
       );
-      refreshCategoryTimers();
+      selectedThoughtIndexRef.current = selectedIndex;
+      setCaretThoughtType(nextThoughts?.[selectedIndex]?.type ?? "li");
+      const sessionLock = mergingRef.current || splitSideRef.current != null;
+      richRef.current?.injectJavascript(
+        setThoughtTextEditableScript(!sessionLock)
+      );
+      richRef.current?.injectJavascript(
+        setShowCategoryColorsScript(stayOnDetails && !hideCategoriesRef.current)
+      );
+      richRef.current?.injectJavascript(
+        setSelectedThoughtScript(selectedIndex)
+      );
+      if (mergingRef.current) {
+        richRef.current?.injectJavascript(
+          setMergeHighlightScript(
+            mergeIndexesRef.current,
+            colorForCategoryId(mergeCategoryId)
+          )
+        );
+      }
+      if (!stayOnDetails) {
+        requestAnimationFrame(() => {
+          beginEnterEditScroll();
+          focusSelectedThought(false, true);
+          scheduleScrollCaretIntoView();
+          setTimeout(() => {
+            richRef.current?.injectJavascript(
+              focusThoughtScript(selectedThoughtIndexRef.current, false, true)
+            );
+            enteringEditFocusRef.current = false;
+          }, 80);
+        });
+      }
       return;
     }
 
-    const titles = simplifiedRef.current ? false : showTitlesRef.current;
-    applyEditorFlags(titles);
-    applySimplifiedMode(simplifiedRef.current);
-    const nextThoughts = getValues("thoughts");
-    setCaretIsChecklist(Boolean(nextThoughts?.[0]?.isCompletable));
-    richRef.current?.setContentHTML(
-      thoughtsToHtml(nextThoughts, titles, htmlOptions)
-    );
-    richRef.current?.injectJavascript(CATEGORY_COLLAPSE_SCRIPT);
-    if (showGraphButtons) {
-      richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
+    enterEditScrollActiveRef.current = false;
+    enterEditScrollForceRef.current = false;
+    if (enterEditScrollTimeoutRef.current != null) {
+      clearTimeout(enterEditScrollTimeoutRef.current);
+      enterEditScrollTimeoutRef.current = null;
     }
-    applyCategoryColors(categoryColorsCssRef.current);
-    refreshCategoryTimers();
+
+    void (async () => {
+      await flushPendingNlp();
+      setToolbarMode("details");
+      applyEditorFlags(false);
+      applySimplifiedMode(simplifiedRef.current);
+      const nextThoughts = getValues("thoughts");
+      setCaretThoughtType(nextThoughts?.[0]?.type ?? "li");
+      richRef.current?.setContentHTML(
+        thoughtsToHtml(nextThoughts, false, htmlOptions)
+      );
+      applyCategoryColors(categoryColorsCssRef.current);
+      refreshCategoryTimers();
+      requestAnimationFrame(() => {
+        richRef.current?.injectJavascript(
+          setSelectedThoughtScript(selectedThoughtIndex)
+        );
+        richRef.current?.injectJavascript(setThoughtTextEditableScript(false));
+        richRef.current?.injectJavascript(
+          setShowCategoryColorsScript(!hideCategoriesRef.current)
+        );
+      });
+    })();
   }, [
     applyCategoryColors,
     applyEditorFlags,
@@ -783,9 +1267,13 @@ function ThoughtsEditorInner(
     htmlOptions,
     readOnly,
     refreshCategoryTimers,
-    showGraphButtons,
-    showTitles,
     thoughtPlaceholders,
+    beginEnterEditScroll,
+    colorForCategoryId,
+    focusSelectedThought,
+    flushPendingNlp,
+    mergeCategoryId,
+    scheduleScrollCaretIntoView,
   ]);
 
   const viewSignature = React.useMemo(
@@ -794,7 +1282,7 @@ function ThoughtsEditorInner(
         ? (thoughts ?? [])
             .map(
               (thought) =>
-                `${thought.id}:${thought.semanticLabel}:${thought.categoryId}:${thought.title}:${thought.summary}`
+                `${thought.id}:${thought.semanticLabel}:${thought.categoryId}:${thought.title}:${getThoughtPlainText(thought)}:${thought.type}`
             )
             .join("|")
         : "",
@@ -812,12 +1300,27 @@ function ThoughtsEditorInner(
     const skipRebuild = lastViewSignatureRef.current == null;
     lastViewSignatureRef.current = viewSignature;
     if (skipRebuild) return;
-    const titles = simplifiedRef.current ? false : showTitlesRef.current;
     richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), titles, htmlOptions)
+      thoughtsToHtml(getValues("thoughts"), false, htmlOptions)
     );
     refreshCategoryTimers();
-  }, [getValues, htmlOptions, readOnly, refreshCategoryTimers, viewSignature]);
+    requestAnimationFrame(() => {
+      richRef.current?.injectJavascript(
+        setSelectedThoughtScript(selectedThoughtIndex)
+      );
+      richRef.current?.injectJavascript(setThoughtTextEditableScript(false));
+      richRef.current?.injectJavascript(
+        setShowCategoryColorsScript(!hideCategoriesRef.current)
+      );
+    });
+  }, [
+    getValues,
+    htmlOptions,
+    readOnly,
+    refreshCategoryTimers,
+    selectedThoughtIndex,
+    viewSignature,
+  ]);
 
   const handleFormat = React.useCallback(
     (command: "bold" | "italic" | "underline") => {
@@ -848,86 +1351,546 @@ function ThoughtsEditorInner(
     []
   );
 
-  const handleListType = React.useCallback((completable: boolean) => {
-    setCaretIsChecklist(completable);
-    richRef.current?.injectJavascript(setThoughtListTypeScript(completable));
+  const handleThoughtType = React.useCallback((type: ThoughtType) => {
+    setCaretThoughtType(type);
+    richRef.current?.injectJavascript(setThoughtTypeScript(type));
   }, []);
 
-  const handleShowTitlesChange = React.useCallback(
-    (nextShowTitles: boolean) => {
-      if (simplifiedRef.current) return;
-      setShowTitles(nextShowTitles);
-      showTitlesRef.current = nextShowTitles;
-      applyEditorFlags(nextShowTitles);
-
-      let nextThoughts = getValues("thoughts");
-      if (!nextShowTitles) {
-        nextThoughts = nextThoughts.map((thought) => ({
-          ...thought,
-          summary: thought.summary || thought.title,
-        }));
-        setValue("thoughts", nextThoughts, { shouldDirty: true });
+  const handleToolbarModeChange = React.useCallback(
+    (mode: ThoughtsToolbarMode) => {
+      preserveFormatsRef.current = true;
+      setTimeout(() => {
+        preserveFormatsRef.current = false;
+      }, 400);
+      if (mode === "format") {
+        injectIfReady(setShowCategoryColorsScript(false));
+        setSplitSide(null);
+        setSplitCategoryId(null);
+        setSplitCategoryPicking(false);
+        injectIfReady(cancelThoughtSplitScript());
+        setMerging(false);
+        setMergeIndexes([]);
+        mergeIndexesRef.current = [];
+        setMergeCategoryId(null);
+        setMergeCategoryPicking(false);
+        injectIfReady(setMergeHighlightScript([]));
+      } else {
+        void (async () => {
+          await flushPendingNlp();
+          if (hideCategoriesRef.current) {
+            useNoteDetailsViewStore.getState().setSimplified(false);
+          }
+          injectIfReady(setShowCategoryColorsScript(true));
+        })();
       }
+      if (mode === "format" && readOnly) {
+        onRequestEdit?.();
+      }
+      setToolbarMode(mode);
+    },
+    [flushPendingNlp, injectIfReady, onRequestEdit, readOnly]
+  );
 
-      richRef.current?.setContentHTML(
-        thoughtsToHtml(nextThoughts, nextShowTitles, htmlOptions)
+  const handleToggleCategories = React.useCallback(() => {
+    if (hideCategoriesRef.current) void flushPendingNlp();
+    toggleHideCategories();
+  }, [flushPendingNlp, toggleHideCategories]);
+
+  const handleCategoryOpacityChange = React.useCallback(
+    (opacity: number) => {
+      setCategoryOpacity(opacity);
+      if (hideCategoriesRef.current) {
+        useNoteDetailsViewStore.getState().setSimplified(false);
+      }
+      injectIfReady(setCategoryOpacityScript(opacity));
+    },
+    [injectIfReady, setCategoryOpacity]
+  );
+
+  const handleSplit = React.useCallback(() => {
+    if (selectedThoughtIndex < 0) return;
+    if (isHeadingType(caretThoughtType)) return;
+    if (readOnly) {
+      keepDetailsToolbarOnEditRef.current = true;
+      onRequestEdit?.();
+    }
+    if (splitSide) return;
+    setMerging(false);
+    setMergeIndexes([]);
+    setMergeCategoryId(null);
+    setMergeCategoryPicking(false);
+    injectIfReady(setMergeHighlightScript([]));
+    setSplitSide("right");
+    setSplitCategoryId(null);
+    injectIfReady(
+      startThoughtSplitScript(
+        "right",
+        colorForCategoryId(null),
+        colorForCategoryId(
+          getValues("thoughts")?.[selectedThoughtIndex]?.categoryId
+        ),
+        colorForCategoryId(null)
+      )
+    );
+  }, [
+    colorForCategoryId,
+    getValues,
+    injectIfReady,
+    onRequestEdit,
+    readOnly,
+    caretThoughtType,
+    selectedThoughtIndex,
+    splitSide,
+  ]);
+
+  const handleSplitSide = React.useCallback(
+    (side: "left" | "right") => {
+      if (!splitSide || splitSide === side) return;
+      setSplitSide(side);
+      injectIfReady(
+        setThoughtSplitSideScript(side, splitCurrentColor, splitNewColor)
       );
-      refreshCategoryTimers();
-      applySimplifiedMode(simplifiedRef.current);
+    },
+    [injectIfReady, splitCurrentColor, splitNewColor, splitSide]
+  );
+
+  React.useEffect(() => {
+    if (!splitSide) return;
+    injectIfReady(
+      setThoughtSplitPreviewScript(splitCurrentColor, splitNewColor)
+    );
+  }, [injectIfReady, splitCurrentColor, splitNewColor, splitSide]);
+
+  const handleConfirmSplit = React.useCallback(() => {
+    if (!splitSide) return;
+    injectIfReady(confirmThoughtSplitScript(generateID()));
+  }, [injectIfReady, splitSide]);
+
+  const handleCancelSplit = React.useCallback(() => {
+    setSplitSide(null);
+    setSplitCategoryId(null);
+    setSplitCategoryPicking(false);
+    injectIfReady(cancelThoughtSplitScript());
+  }, [injectIfReady]);
+
+  const applyMergeTap = React.useCallback(
+    (index: number) => {
+      if (index < 0) return;
+      const previous = mergeIndexesRef.current;
+      const start = previous.length ? Math.min(...previous) : index;
+      const end = previous.length ? Math.max(...previous) : index;
+      let next: number[];
+      if (previous.includes(index)) {
+        next = previous.filter((item) => item !== index);
+        if (next.length > 1) {
+          const nextStart = Math.min(...next);
+          const nextEnd = Math.max(...next);
+          if (nextEnd - nextStart + 1 !== next.length) {
+            const left = previous.filter((item) => item < index);
+            const right = previous.filter((item) => item > index);
+            next = left.length >= right.length ? left : right;
+          }
+        }
+      } else if (
+        previous.length > 0 &&
+        (index === start - 1 || index === end + 1)
+      ) {
+        const nextStart = Math.min(start, index);
+        const nextEnd = Math.max(end, index);
+        next = Array.from(
+          { length: nextEnd - nextStart + 1 },
+          (_, offset) => nextStart + offset
+        );
+      } else {
+        next = [index];
+        setMergeCategoryId(
+          getValues("thoughts")?.[index]?.categoryId ?? "uncategorized"
+        );
+      }
+      mergeIndexesRef.current = next;
+      setMergeIndexes(next);
+      const focusIndex = next.includes(index)
+        ? index
+        : (next[next.length - 1] ?? index);
+      setSelectedThoughtIndex(focusIndex);
+      injectIfReady(
+        setMergeHighlightScript(
+          next,
+          colorForCategoryId(
+            next.length === 1
+              ? getValues("thoughts")?.[focusIndex]?.categoryId
+              : mergeCategoryId
+          )
+        )
+      );
+    },
+    [colorForCategoryId, getValues, injectIfReady, mergeCategoryId]
+  );
+
+  const handleMerge = React.useCallback(() => {
+    if (selectedThoughtIndex < 0) return;
+    if (isHeadingType(caretThoughtType)) return;
+    if (merging) return;
+    if (readOnly) {
+      keepDetailsToolbarOnEditRef.current = true;
+      onRequestEdit?.();
+    }
+    setSplitSide(null);
+    setSplitCategoryId(null);
+    setSplitCategoryPicking(false);
+    injectIfReady(cancelThoughtSplitScript());
+    const seed = Math.max(0, selectedThoughtIndex);
+    const seedThought = getValues("thoughts")?.[seed];
+    const next = [seed];
+    mergeIndexesRef.current = next;
+    setMerging(true);
+    setMergeIndexes(next);
+    setMergeCategoryId(seedThought?.categoryId ?? "uncategorized");
+    setMergeCategoryPicking(false);
+    injectIfReady(
+      setMergeHighlightScript(next, colorForCategoryId(seedThought?.categoryId))
+    );
+    richRef.current?.dismissKeyboard();
+    Keyboard.dismiss();
+  }, [
+    caretThoughtType,
+    colorForCategoryId,
+    getValues,
+    injectIfReady,
+    merging,
+    onRequestEdit,
+    readOnly,
+    selectedThoughtIndex,
+  ]);
+
+  const handleCancelMerge = React.useCallback(() => {
+    mergeIndexesRef.current = [];
+    setMerging(false);
+    setMergeIndexes([]);
+    setMergeCategoryId(null);
+    setMergeCategoryPicking(false);
+    injectIfReady(setMergeHighlightScript([]));
+  }, [injectIfReady]);
+
+  const handleConfirmMerge = React.useCallback(() => {
+    if (mergeIndexes.length < 2) return;
+    const start = Math.min(...mergeIndexes);
+    const end = Math.max(...mergeIndexes);
+    if (end - start + 1 !== mergeIndexes.length) return;
+    const previous = getValues("thoughts");
+    const pieces = previous.slice(start, end + 1);
+    const first = pieces[0];
+    if (!first || pieces.length < 2) return;
+    const joined = pieces.reduce(
+      (html, thought, index) =>
+        index === 0
+          ? thought.content.text
+          : joinMergedThoughtHtml(html, thought.content.text),
+      ""
+    );
+    const merged = lockThoughtStructure(
+      setThoughtContentText(
+        {
+          ...first,
+          categoryId: mergeCategoryId ?? first.categoryId,
+        },
+        joined
+      ),
+      { categorySource: mergeCategoryId ? "user" : first.categorySource }
+    );
+    const nextThoughts = [
+      ...previous.slice(0, start),
+      merged,
+      ...previous.slice(end + 1),
+    ];
+    setValue("thoughts", nextThoughts, { shouldDirty: true });
+    mergeIndexesRef.current = [];
+    setMerging(false);
+    setMergeIndexes([]);
+    setMergeCategoryId(null);
+    setMergeCategoryPicking(false);
+    setSelectedThoughtIndex(start);
+    richRef.current?.setContentHTML(
+      thoughtsToHtml(nextThoughts, false, htmlOptions)
+    );
+    refreshCategoryTimers();
+    requestAnimationFrame(() => {
+      injectIfReady(setMergeHighlightScript([]));
+      injectIfReady(setSelectedThoughtScript(start));
+    });
+    richRef.current?.dismissKeyboard();
+    Keyboard.dismiss();
+  }, [
+    getValues,
+    htmlOptions,
+    injectIfReady,
+    mergeCategoryId,
+    mergeIndexes,
+    refreshCategoryTimers,
+    setValue,
+  ]);
+
+  React.useEffect(() => {
+    if (!merging) {
+      injectIfReady(setMergeHighlightScript([]));
+      return;
+    }
+    injectIfReady(setMergeHighlightScript(mergeIndexes, mergeHighlightColor));
+  }, [injectIfReady, mergeHighlightColor, mergeIndexes, merging]);
+
+  const applySplitThought = React.useCallback(
+    (payload: {
+      index: number;
+      newSide: "left" | "right";
+      newThoughtId: string;
+      leftHtml: string;
+      rightHtml: string;
+    }) => {
+      try {
+        const previous = getValues("thoughts");
+        const source = previous[payload.index];
+        if (!source) return;
+        const leftText = sanitizeInlineHtml(payload.leftHtml);
+        const rightText = sanitizeInlineHtml(payload.rightHtml);
+        const newText = payload.newSide === "left" ? leftText : rightText;
+        const keptText = payload.newSide === "left" ? rightText : leftText;
+        const created = createEmptyThought(
+          noteId,
+          isHeadingType(source.type) ? "text" : source.type
+        );
+        const sourceStyle =
+          isTextLikeThought(source) && source.content.style === "inline"
+            ? "inline"
+            : "block";
+        const newThought = setThoughtContentText(
+          isTextLikeThought(created)
+            ? setTextThoughtStyle(
+                {
+                  ...created,
+                  id: payload.newThoughtId,
+                  thoughtId: payload.newThoughtId,
+                  categoryId: splitCategoryId ?? "uncategorized",
+                },
+                "inline"
+              )
+            : {
+                ...created,
+                id: payload.newThoughtId,
+                thoughtId: payload.newThoughtId,
+                categoryId: splitCategoryId ?? "uncategorized",
+              },
+          newText
+        );
+        const lockOptions = splitCategoryId
+          ? { categorySource: "user" as const }
+          : undefined;
+        const kept = lockThoughtStructure(
+          setThoughtContentText(
+            isTextLikeThought(source)
+              ? setTextThoughtStyle(source, sourceStyle)
+              : source,
+            keptText
+          ),
+          lockOptions
+        );
+        const lockedNew = lockThoughtStructure(newThought, lockOptions);
+        const next =
+          payload.newSide === "right"
+            ? [
+                ...previous.slice(0, payload.index),
+                kept,
+                lockedNew,
+                ...previous.slice(payload.index + 1),
+              ]
+            : [
+                ...previous.slice(0, payload.index),
+                lockedNew,
+                kept,
+                ...previous.slice(payload.index + 1),
+              ];
+        const pickerIndex =
+          payload.newSide === "right" ? payload.index + 1 : payload.index;
+        setValue("thoughts", next, { shouldDirty: true });
+        setSelectedThoughtIndex(pickerIndex);
+        setSplitSide(null);
+        injectIfReady(setSelectedThoughtScript(pickerIndex));
+        injectIfReady(SYNC_CHECKLIST_LAYOUT_SCRIPT);
+        if (splitCategoryId && splitCategoryId !== "uncategorized") {
+          injectIfReady(
+            setThoughtCategoryScript(
+              pickerIndex,
+              splitCategoryId,
+              categoryLabels.get(splitCategoryId)
+            )
+          );
+        }
+        const pickedCategory = splitCategoryId;
+        setSplitCategoryId(null);
+        setSplitCategoryPicking(false);
+        richRef.current?.dismissKeyboard();
+        Keyboard.dismiss();
+        if (!pickedCategory) {
+          setCategoryPickerIndex(pickerIndex);
+        }
+      } catch (error) {
+        console.warn("Manual thought split failed:", error);
+        setSplitSide(null);
+        setSplitCategoryPicking(false);
+      }
     },
     [
-      applyEditorFlags,
-      applySimplifiedMode,
+      categoryLabels,
       getValues,
-      refreshCategoryTimers,
+      injectIfReady,
+      noteId,
       setValue,
-      showGraphButtons,
+      splitCategoryId,
     ]
   );
+
+  const handleOpenSelectedCategory = React.useCallback(() => {
+    if (splitSide) {
+      richRef.current?.dismissKeyboard();
+      Keyboard.dismiss();
+      setSplitCategoryPicking(true);
+      return;
+    }
+    if (merging) {
+      richRef.current?.dismissKeyboard();
+      Keyboard.dismiss();
+      setMergeCategoryPicking(true);
+      return;
+    }
+    if (!thoughtCapabilities(caretThoughtType).categoryHighlight) return;
+    if (selectedThoughtIndex < 0) return;
+    richRef.current?.dismissKeyboard();
+    Keyboard.dismiss();
+    setCategoryPickerIndex(selectedThoughtIndex);
+  }, [caretThoughtType, merging, selectedThoughtIndex, splitSide]);
+
+  const handleOpenSelectedGraph = React.useCallback(() => {
+    if (!thoughtCapabilities(caretThoughtType).graph) return;
+    const thought = getValues("thoughts")?.[selectedThoughtIndex];
+    const thoughtId = thought?.thoughtId || thought?.id;
+    if (!thoughtId) return;
+    setGraphModeImmediate("category");
+    push({
+      pathname: "/graph/[id]",
+      params: {
+        id: thoughtId,
+        graph: "category",
+        _t: Date.now(),
+      },
+    });
+  }, [caretThoughtType, getValues, push, selectedThoughtIndex]);
+
+  const handleEditTitle = React.useCallback(() => {
+    const index = selectedThoughtIndex;
+    if (index < 0) return;
+    if (!thoughtCapabilities(caretThoughtType).title) return;
+    const currentTitle = getValues("thoughts")?.[index]?.title ?? "";
+    openModal({
+      customContent: () => (
+        <ThoughtTitleModalContent
+          initialTitle={currentTitle}
+          onSave={(title) => {
+            const previous = getValues("thoughts");
+            if (!previous[index]) return;
+            setValue(
+              "thoughts",
+              previous.map((thought, thoughtIndex) =>
+                thoughtIndex === index
+                  ? { ...thought, title, titleSource: "user" as const }
+                  : thought
+              ),
+              { shouldDirty: true }
+            );
+            if (readOnly) {
+              keepDetailsToolbarOnEditRef.current = true;
+              onRequestEdit?.();
+            }
+          }}
+        />
+      ),
+    });
+  }, [
+    caretThoughtType,
+    getValues,
+    onRequestEdit,
+    openModal,
+    readOnly,
+    selectedThoughtIndex,
+    setValue,
+  ]);
+
+  React.useEffect(() => {
+    const textEditable =
+      !readOnly && toolbarMode === "format" && !splitSide && !merging;
+    injectIfReady(setThoughtTextEditableScript(textEditable));
+    injectIfReady(setShowCategoryColorsScript(showCategoryColors));
+    injectIfReady(setCategoryOpacityScript(categoryOpacity));
+    if (readOnly || splitSide || merging) {
+      richRef.current?.dismissKeyboard();
+    }
+  }, [
+    categoryOpacity,
+    injectIfReady,
+    merging,
+    readOnly,
+    showCategoryColors,
+    splitSide,
+    toolbarMode,
+  ]);
+
+  React.useEffect(() => {
+    const previous = toolbarModeRef.current;
+    toolbarModeRef.current = toolbarMode;
+    if (previous === toolbarMode) return;
+    if (readOnly || !editorReadyRef.current) return;
+    if (enteringEditFocusRef.current) return;
+    if (mergingRef.current || splitSide) return;
+    focusSelectedThought(false);
+  }, [focusSelectedThought, readOnly, splitSide, toolbarMode]);
+
+  React.useEffect(() => {
+    const length = thoughts?.length ?? 0;
+    if (length === 0) return;
+    if (selectedThoughtIndex >= length) {
+      setSelectedThoughtIndex(Math.max(0, length - 1));
+    }
+  }, [selectedThoughtIndex, thoughts?.length]);
 
   const lastSimplifiedRef = React.useRef(effectiveSimplified);
   React.useEffect(() => {
     if (lastSimplifiedRef.current === effectiveSimplified) return;
     lastSimplifiedRef.current = effectiveSimplified;
-
-    if (effectiveSimplified) {
-      // Hide titles in the WebView only — keep form title fields and showTitles state.
-      showTitlesRef.current = false;
-      applyEditorFlags(false);
-      richRef.current?.setContentHTML(
-        thoughtsToHtml(getValues("thoughts"), false, htmlOptions)
-      );
-      refreshCategoryTimers();
-      applySimplifiedMode(true);
-      return;
-    }
-
-    showTitlesRef.current = showTitles;
-    applyEditorFlags(showTitles);
-    richRef.current?.setContentHTML(
-      thoughtsToHtml(getValues("thoughts"), showTitles, htmlOptions)
-    );
-    refreshCategoryTimers();
-    applySimplifiedMode(false);
-    if (showGraphButtons) {
-      richRef.current?.injectJavascript(GRAPH_BUTTON_CLICK_SCRIPT);
-    }
-  }, [
-    applyEditorFlags,
-    applySimplifiedMode,
-    effectiveSimplified,
-    getValues,
-    htmlOptions,
-    refreshCategoryTimers,
-    showGraphButtons,
-    showTitles,
-  ]);
+    applySimplifiedMode(effectiveSimplified);
+  }, [applySimplifiedMode, effectiveSimplified]);
 
   const handleEditorMessage = React.useCallback(
     (message: { type: string; data?: unknown }) => {
+      if (message.type === "CARET_RECT") {
+        const payload = message.data as
+          | { top?: number; bottom?: number }
+          | undefined;
+        const top = Number(payload?.top);
+        const bottom = Number(payload?.bottom);
+        if (Number.isFinite(top) && Number.isFinite(bottom)) {
+          applyCaretRectToPage({ top, bottom });
+        }
+        return;
+      }
       if (message.type === "DISMISS_KEYBOARD") {
         richRef.current?.dismissKeyboard();
         Keyboard.dismiss();
+        return;
+      }
+      if (message.type === "HTML_SYNC") {
+        const html = typeof message.data === "string" ? message.data : "";
+        lastHtmlRef.current = html;
+        syncThoughtsFromHtml(html);
+        pendingHtmlSyncRef.current?.(html);
+        pendingHtmlSyncRef.current = null;
         return;
       }
       if (message.type === "OPEN_GRAPH") {
@@ -945,23 +1908,40 @@ function ThoughtsEditorInner(
         return;
       }
       if (message.type === "CARET_LIST_TYPE") {
-        const completable = Boolean(
-          (message.data as { completable?: boolean } | undefined)?.completable
-        );
-        setCaretIsChecklist(completable);
-        if (keyboardOpenRef.current) {
-          scheduleScrollCaretIntoView();
+        const payload = message.data as
+          | { type?: ThoughtType; completable?: boolean; index?: number }
+          | undefined;
+        const nextType: ThoughtType = payload?.completable
+          ? "checkbox"
+          : parseThoughtType(payload?.type);
+        setCaretThoughtType(nextType);
+        const index = Number(payload?.index);
+        if (Number.isFinite(index) && index >= 0) {
+          if (mergingRef.current) {
+            applyMergeTap(index);
+          } else {
+            userPickedThoughtRef.current = true;
+            didInitSelectionRef.current = true;
+            setSelectedThoughtIndex(index);
+            if (readOnly) holdPageScroll();
+          }
         }
         return;
       }
       if (message.type === "LIST_TYPE") {
+        if (mergingRef.current) return;
         const payload = message.data as
-          | { index?: number; completable?: boolean }
+          | { index?: number; type?: ThoughtType; completable?: boolean }
           | undefined;
         const index = Number(payload?.index);
-        const completable = Boolean(payload?.completable);
+        const nextType: ThoughtType = payload?.completable
+          ? "checkbox"
+          : parseThoughtType(payload?.type);
         if (!Number.isFinite(index) || index < 0) return;
-        setCaretIsChecklist(completable);
+        userPickedThoughtRef.current = true;
+        didInitSelectionRef.current = true;
+        setCaretThoughtType(nextType);
+        setSelectedThoughtIndex(index);
         const previous = getValues("thoughts");
         const current = previous[index];
         if (!current) return;
@@ -969,11 +1949,7 @@ function ThoughtsEditorInner(
           "thoughts",
           previous.map((thought, thoughtIndex) =>
             thoughtIndex === index
-              ? {
-                  ...thought,
-                  isCompletable: completable,
-                  isCompleted: completable ? thought.isCompleted : false,
-                }
+              ? convertThoughtType(thought, nextType)
               : thought
           ),
           { shouldDirty: true }
@@ -981,6 +1957,7 @@ function ThoughtsEditorInner(
         return;
       }
       if (message.type === "TOGGLE_COMPLETED") {
+        if (mergingRef.current) return;
         const payload = message.data as
           | { index?: number; completed?: boolean }
           | undefined;
@@ -990,10 +1967,14 @@ function ThoughtsEditorInner(
         const previous = getValues("thoughts");
         const current = previous[index];
         if (!current) return;
+        const checkbox =
+          current.type === "checkbox"
+            ? current
+            : convertThoughtType(current, "checkbox");
         const nextThought = {
-          ...current,
-          isCompletable: true,
-          isCompleted: completed,
+          ...checkbox,
+          type: "checkbox" as const,
+          content: { text: checkbox.content.text, checked: completed },
         };
         setValue(
           "thoughts",
@@ -1010,60 +1991,44 @@ function ThoughtsEditorInner(
         }
         return;
       }
-      if (message.type === "CLASSIFY_BULLET") {
+      if (message.type === "CONFIRM_SPLIT") {
+        injectIfReady(confirmThoughtSplitScript(generateID()));
+        return;
+      }
+      if (message.type === "CANCEL_SPLIT") {
+        setSplitSide(null);
+        setSplitCategoryId(null);
+        setSplitCategoryPicking(false);
+        return;
+      }
+      if (message.type === "SPLIT_THOUGHT") {
         const payload = message.data as
-          | { index?: number; text?: string }
+          | {
+              index?: number;
+              newSide?: "left" | "right";
+              newThoughtId?: string;
+              leftHtml?: string;
+              rightHtml?: string;
+            }
           | undefined;
         const index = Number(payload?.index);
-        if (!Number.isFinite(index) || index < 0) return;
-        const text = String(payload?.text ?? "");
-        const result = analyzeThought(text);
-        const previous = getValues("thoughts");
-        const current = previous[index];
-        const currentCategory = current?.categoryId || "uncategorized";
-        const nextCategory =
-          result.category &&
-          result.categoryConfidence >= 0.35 &&
-          currentCategory === "uncategorized"
-            ? result.category
-            : undefined;
-        const nextLabel = result.semanticLabel || undefined;
-        if (!nextCategory && !nextLabel) return;
-
-        pendingNlpByIndexRef.current.set(index, {
-          categoryId: nextCategory,
-          semanticLabel: nextLabel,
+        const newSide = payload?.newSide;
+        const newThoughtId = String(payload?.newThoughtId ?? "");
+        if (
+          !Number.isFinite(index) ||
+          index < 0 ||
+          (newSide !== "left" && newSide !== "right") ||
+          !newThoughtId
+        ) {
+          return;
+        }
+        applySplitThought({
+          index,
+          newSide,
+          newThoughtId,
+          leftHtml: String(payload?.leftHtml ?? ""),
+          rightHtml: String(payload?.rightHtml ?? ""),
         });
-
-        if (current) {
-          setValue(
-            "thoughts",
-            previous.map((thought, thoughtIndex) =>
-              thoughtIndex === index
-                ? {
-                    ...thought,
-                    categoryId: nextCategory ?? thought.categoryId,
-                    semanticLabel: nextLabel ?? thought.semanticLabel,
-                  }
-                : thought
-            ),
-            { shouldDirty: true }
-          );
-        }
-        if (nextLabel) {
-          richRef.current?.injectJavascript(
-            setThoughtSemanticTitleScript(index, nextLabel)
-          );
-        }
-        if (nextCategory) {
-          richRef.current?.injectJavascript(
-            setThoughtCategoryScript(
-              index,
-              nextCategory,
-              categoryLabels.get(nextCategory)
-            )
-          );
-        }
         return;
       }
       if (message.type !== "SELECT_CATEGORY") return;
@@ -1074,23 +2039,44 @@ function ThoughtsEditorInner(
       setCategoryPickerIndex(index);
     },
     [
+      applyCaretRectToPage,
+      applyMergeTap,
+      applySplitThought,
       categoryLabels,
       getValues,
+      holdPageScroll,
+      injectIfReady,
       onToggleCompleted,
       push,
       readOnly,
-      scheduleScrollCaretIntoView,
       setValue,
+      syncThoughtsFromHtml,
     ]
   );
 
   const handleSelectCategory = React.useCallback(
     (category: Category) => {
+      if (splitCategoryPicking) {
+        setSplitCategoryId(category.id);
+        closeCategorySheet();
+        setSplitCategoryPicking(false);
+        return;
+      }
+      if (mergeCategoryPicking) {
+        setMergeCategoryId(category.id);
+        closeCategorySheet();
+        setMergeCategoryPicking(false);
+        return;
+      }
       if (categoryPickerIndex == null) return;
       const previous = getValues("thoughts");
       const next = previous.map((thought, index) =>
         index === categoryPickerIndex
-          ? { ...thought, categoryId: category.id }
+          ? {
+              ...thought,
+              categoryId: category.id,
+              categorySource: "user" as const,
+            }
           : thought
       );
       setValue("thoughts", next, { shouldDirty: !readOnly });
@@ -1121,6 +2107,8 @@ function ThoughtsEditorInner(
       onChangeCategory,
       readOnly,
       setValue,
+      splitCategoryPicking,
+      mergeCategoryPicking,
     ]
   );
 
@@ -1129,7 +2117,34 @@ function ThoughtsEditorInner(
   const placeholderColor = mutedFg;
   const errorPlaceholderColor = hsl("foreground-errors", colorScheme);
   const caretColor = hsl("primary", colorScheme);
-  const showToolbar = !readOnly;
+  const showToolbar = true;
+  const toolbarBarHeight = getThoughtsEditorToolbarHeight(toolbarMode);
+  const toolbarPad = useSharedValue(toolbarBarHeight);
+  React.useEffect(() => {
+    toolbarPad.value = withTiming(toolbarBarHeight, {
+      duration: TOOLBAR_HEIGHT_ANIMATION_MS,
+      easing: Easing.inOut(Easing.cubic),
+    });
+  }, [toolbarBarHeight, toolbarPad]);
+  const editorToolbarPad =
+    THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2 +
+    Math.max(keyboardHeight, insets.bottom, 6);
+  const editorPadStyle = useAnimatedStyle(
+    () => ({
+      paddingBottom: toolbarPad.value + editorToolbarPad,
+    }),
+    [editorToolbarPad]
+  );
+
+  React.useEffect(() => {
+    onToolSessionChange?.(Boolean(splitSide) || merging);
+  }, [merging, onToolSessionChange, splitSide]);
+
+  React.useEffect(() => {
+    return () => {
+      onToolSessionChange?.(false);
+    };
+  }, [onToolSessionChange]);
 
   React.useImperativeHandle(
     ref,
@@ -1137,13 +2152,9 @@ function ThoughtsEditorInner(
       validateRequiredContent: () => {
         const thoughts = getValues("thoughts") ?? [];
 
-        const isEmptyThought = (thought: {
-          title: string;
-          summary: string;
-          semanticLabel: string;
-        }) =>
+        const isEmptyThought = (thought: ThoughtsFormValue) =>
           !stripHtml(thought.title) &&
-          !stripHtml(thought.summary) &&
+          !stripHtml(getThoughtPlainText(thought)) &&
           !thought.semanticLabel.trim();
 
         // Fully empty bullets are dropped on save — ignore them for "has content".
@@ -1169,15 +2180,50 @@ function ThoughtsEditorInner(
       clearValidationErrors: () => {
         richRef.current?.injectJavascript(clearThoughtValidationErrorsScript());
       },
-      titlesEnabled: () => showTitlesRef.current,
+      titlesEnabled: () =>
+        (getValues("thoughts") ?? []).some(
+          (thought) => stripHtml(thought.title).length > 0
+        ),
+      flushThoughts: () =>
+        new Promise<ThoughtsFormValue[]>((resolve) => {
+          if (lastHtmlRef.current) {
+            syncThoughtsFromHtml(lastHtmlRef.current);
+          }
+          let settled = false;
+          const finish = () => {
+            if (settled) return;
+            settled = true;
+            pendingHtmlSyncRef.current = null;
+            resolve(getValues("thoughts") ?? []);
+          };
+          const timeout = setTimeout(finish, 250);
+          pendingHtmlSyncRef.current = () => {
+            clearTimeout(timeout);
+            finish();
+          };
+          richRef.current?.injectJavascript(REQUEST_EDITOR_HTML_SCRIPT);
+        }),
+      flushPendingNlp,
     }),
-    [getValues, validationMessages]
+    [flushPendingNlp, getValues, syncThoughtsFromHtml, validationMessages]
   );
 
   return (
-    <BottomSheet className="flex-1 min-h-0">
-      <CategorySheetPresenter index={categoryPickerIndex} />
-      <View className="relative flex-col flex-1 min-h-0">
+    <BottomSheet className={embedInPageScroll ? undefined : "flex-1 min-h-0"}>
+      <CategorySheetPresenter
+        open={
+          categoryPickerIndex != null ||
+          splitCategoryPicking ||
+          mergeCategoryPicking
+        }
+      />
+      <View
+        className={
+          embedInPageScroll
+            ? "relative flex-col w-full"
+            : "relative flex-col flex-1 min-h-0"
+        }
+      >
         {!readOnly && !plain ? (
           <Label className="mb-0 text-popover-foreground" nativeID="thoughts">
             <ThoughtsEditorContentLabel />
@@ -1186,57 +2232,92 @@ function ThoughtsEditorInner(
 
         {/* Android: clipping/rounding a WebView parent overflows HWUI while drawing. */}
         <View
+          ref={editorBoxRef}
           className={
-            plain
-              ? Platform.OS === "android"
+            embedInPageScroll
+              ? plain
+                ? "relative w-full"
+                : Platform.OS === "android"
+                  ? "relative w-full border border-input"
+                  : "relative w-full rounded-lg border border-input"
+              : plain
                 ? "relative flex-1 min-h-0"
-                : "relative flex-1 min-h-0 overflow-hidden"
-              : Platform.OS === "android"
-                ? "relative flex-1 min-h-0 border border-input"
-                : "relative flex-1 min-h-0 overflow-hidden rounded-lg border border-input"
+                : Platform.OS === "android"
+                  ? "relative flex-1 min-h-0 border border-input"
+                  : "relative flex-1 min-h-0 rounded-lg border border-input"
           }
-          style={
+          style={[
             plain
-              ? { backgroundColor: "transparent" }
-              : { backgroundColor: hsl("card", colorScheme) }
-          }
+              ? { backgroundColor: "transparent", overflow: "visible" }
+              : {
+                  backgroundColor: hsl("card", colorScheme),
+                  overflow: "visible",
+                },
+            embedInPageScroll && !pageEditorVisible ? { opacity: 0 } : null,
+          ]}
         >
-          <View
-            className="flex-1 min-h-0"
+          <Animated.View
+            className={
+              embedInPageScroll
+                ? "w-full"
+                : Platform.OS === "android"
+                  ? "flex-1 min-h-0"
+                  : "flex-1 min-h-0 overflow-hidden"
+            }
             style={
-              showToolbar && dockToolbarToKeyboard
-                ? {
-                    paddingBottom:
-                      THOUGHTS_EDITOR_TOOLBAR_HEIGHT +
-                      Math.max(keyboardHeight, insets.bottom, 6),
-                  }
-                : undefined
+              showToolbar && dockToolbarToKeyboard ? editorPadStyle : undefined
             }
             onLayout={(event) => {
               scrollViewHeightRef.current = event.nativeEvent.layout.height;
-              if (keyboardOpenRef.current) {
-                scrollCaretIntoView();
-              }
             }}
           >
             {/* Don't load Quicksand via @font-face — Android SIGBUS in FreeType. */}
             <RichEditor
               ref={richRef}
-              style={{ flex: 1 }}
-              useContainer={false}
-              scrollEnabled
-              nestedScrollEnabled
-              disabled={readOnly}
+              style={embedInPageScroll ? { width: "100%" } : { flex: 1 }}
+              useContainer={embedInPageScroll}
+              initialHeight={embedInPageScroll ? 160 : 0}
+              {...(embedInPageScroll
+                ? {
+                    scrollEnabled: false,
+                    nestedScrollEnabled: false,
+                    showsVerticalScrollIndicator: false,
+                    showsHorizontalScrollIndicator: false,
+                    overScrollMode: "never" as const,
+                  }
+                : { scrollEnabled: true, nestedScrollEnabled: true })}
+              disabled={false}
               pasteAsPlainText
               initialContentHTML={initialHtmlRef.current}
               placeholder=""
               editorInitializedCallback={handleEditorInitialized}
+              onHeightChange={
+                embedInPageScroll
+                  ? () => {
+                      if (editorReadyRef.current) setPageEditorVisible(true);
+                    }
+                  : undefined
+              }
               originWhitelist={["*"]}
               editorStyle={{
                 backgroundColor,
                 color: textColor,
                 caretColor,
                 placeholderColor,
+                initialCSSText: embedInPageScroll
+                  ? `
+                    html, body, .pell, .pell-content, .content {
+                      overflow: hidden !important;
+                      overflow-y: hidden !important;
+                      scrollbar-width: none;
+                    }
+                    *::-webkit-scrollbar {
+                      display: none !important;
+                      width: 0 !important;
+                      height: 0 !important;
+                    }
+                  `
+                  : undefined,
                 contentCSSText: `
                   font-family: 'QuicksandRegular', sans-serif;
                   font-size: 16px;
@@ -1245,39 +2326,106 @@ function ThoughtsEditorInner(
                   padding-left: 0;
                   padding-bottom: ${
                     showToolbar && dockToolbarToKeyboard
-                      ? CARET_BOTTOM_MARGIN
+                      ? CARET_BOTTOM_MARGIN +
+                        THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2
                       : !readOnly && keyboardOpen
-                        ? CARET_BOTTOM_MARGIN + THOUGHTS_EDITOR_TOOLBAR_HEIGHT
+                        ? CARET_BOTTOM_MARGIN +
+                          toolbarBarHeight +
+                          THOUGHTS_EDITOR_TOOLBAR_TOGGLE_SIZE / 2
                         : 12
                   }px;
-                  min-height: 100%;
+                  ${
+                    embedInPageScroll
+                      ? "min-height: 0; height: auto; overflow-y: hidden !important;"
+                      : "min-height: 100%;"
+                  }
                   box-sizing: border-box;
                 `,
                 cssText: `
-                  ul {
-                    padding-left: 0;
+                  ${
+                    embedInPageScroll
+                      ? `
+                  html, body, .pell {
+                    height: auto !important;
+                    overflow: hidden !important;
+                  }
+                  .pell-content {
+                    height: auto !important;
+                    overflow-y: hidden !important;
+                  }
+                  `
+                      : ""
+                  }
+                  .mc-thoughts {
+                    --mc-gap-compact: 4px;
+                    --mc-gap-block: 14px;
+                    --mc-gap-type: 8px;
+                    --mc-list-indent: 16px;
+                    --mc-list-pad: 44px;
+                    padding-left: 8px;
+                    padding-right: 8px;
                     margin: 0;
+                    font-size: 0;
+                  }
+                  .thought-item {
+                    font-size: 16px;
+                  }
+                  .thought-item:not(.is-inline):not(.is-run-start) {
+                    margin-left: -8px;
+                    margin-right: -8px;
+                  }
+                  .thought-item.in-heading {
+                    --heading-indent: 0px;
+                    margin-left: -8px;
+                  }
+                  .thought-item.in-heading.is-inline,
+                  .thought-item.in-heading.is-run-start {
+                    margin-left: 0;
+                  }
+                  .pell-content ul,
+                  .pell-content ol {
+                    margin: 0;
+                    padding: 0;
                     list-style: none;
                   }
-                  li.thought-item {
+                  .thought-item {
+                    display: block;
                     position: relative;
-                    margin-bottom: 0.85em;
-                    padding-left: 30px;
+                    margin-top: var(--mc-gap-compact);
+                    margin-bottom: 0;
+                    padding-left: calc(
+                      var(--mc-list-pad) + var(--heading-indent, 0px) +
+                        var(--fold-gutter, 0px)
+                    );
                     padding-right: 0;
                     overflow: visible;
                     box-sizing: border-box;
-                    --category-stack: 25px;
+                    --category-stack: 0px;
                     --dot-size: 8px;
+                    --heading-indent: 0px;
+                    --fold-gutter: 0px;
                   }
-                  li.thought-item.is-collapsed {
-                    --category-stack: 2px;
+                  .thought-item.is-block {
+                    padding-left: calc(
+                      10px + var(--heading-indent, 0px) + var(--fold-gutter, 0px)
+                    );
+                  }
+                  .thought-item.is-block .thought-rail {
+                    display: none;
+                  }
+                  .thought-item.is-block .thought-body {
+                    border-left: 3px solid transparent;
+                    padding-left: 8px;
+                  }
+                  .thought-item.is-collapsed {
+                    --category-stack: 0px;
                   }
                   .thought-rail {
                     position: absolute;
-                    left: 6px;
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
                     top: 0;
                     bottom: 0;
-                    width: 18px;
+                    width: 22px;
                     cursor: pointer;
                     user-select: none;
                     -webkit-user-select: none;
@@ -1287,7 +2435,7 @@ function ThoughtsEditorInner(
                     display: none;
                     position: absolute;
                     z-index: 4;
-                    left: 4px;
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
                     width: 22px;
                     height: 22px;
                     padding: 0;
@@ -1301,7 +2449,7 @@ function ThoughtsEditorInner(
                     justify-content: center;
                   }
                   .thought-check.is-anchored {
-                    transition: top 0.38s ease;
+                    transition: none;
                   }
                   .thought-check::before {
                     content: "";
@@ -1311,10 +2459,10 @@ function ThoughtsEditorInner(
                     bottom: -8px;
                     left: -2px;
                   }
-                  li.thought-item.is-checklist .thought-check {
+                  .thought-item.is-checklist .thought-check {
                     display: flex;
-                    left: 4px;
-                    top: calc(var(--category-stack, 0px) + var(--check-nudge, 2px) - 2px);
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
+                    top: calc(var(--check-nudge, 2px));
                   }
                   .thought-check-box {
                     display: flex;
@@ -1335,20 +2483,20 @@ function ThoughtsEditorInner(
                     height: 16px;
                     color: ${cardColor};
                   }
-                  li.thought-item.is-completed .thought-check-box {
+                  .thought-item.is-completed .thought-check-box {
                     background: ${mutedFg};
                     border-color: ${mutedFg};
                   }
-                  li.thought-item.is-completed .thought-check-box svg {
+                  .thought-item.is-completed .thought-check-box svg {
                     display: block;
                   }
-                  li.thought-item.is-completed .thought-title,
-                  li.thought-item.is-completed .thought-summary {
+                  .thought-item.is-completed .thought-title,
+                  .thought-item.is-completed .thought-summary {
                     text-decoration: line-through;
                     opacity: 0.55;
                   }
-                  li.thought-item.is-completed .thought-title u,
-                  li.thought-item.is-completed .thought-summary u {
+                  .thought-item.is-completed .thought-title u,
+                  .thought-item.is-completed .thought-summary u {
                     text-decoration: underline line-through;
                   }
                   .thought-stripe {
@@ -1370,16 +2518,13 @@ function ThoughtsEditorInner(
                     margin-left: calc(var(--dot-size) / -2);
                     border-radius: 999px;
                     background-color: ${mutedFg};
-                    top: calc(
-                      var(--category-stack, 0px) + var(--check-nudge, 2px) - 3px +
-                        (22px - var(--dot-size)) / 2
-                    );
+                    top: 6px;
                     z-index: 1;
                   }
                   .thought-dot.is-anchored {
-                    transition: top 0.38s ease;
+                    transition: none;
                   }
-                  li.thought-item.is-checklist .thought-dot {
+                  .thought-item.is-checklist .thought-dot {
                     display: none;
                   }
                   .thought-body {
@@ -1387,15 +2532,9 @@ function ThoughtsEditorInner(
                     max-width: 100%;
                     display: flex;
                     flex-direction: column;
+                    align-items: flex-start;
                     box-sizing: border-box;
                     padding-right: 0;
-                  }
-                  li.thought-item.has-graph .thought-body,
-                  li.thought-item:has(> .thought-graph) .thought-body {
-                    padding-right: 44px;
-                  }
-                  html.mc-editing li.thought-item:has(> .thought-expand) .thought-body {
-                    padding-right: 32px;
                   }
                   .thought-expand {
                     display: none;
@@ -1432,8 +2571,131 @@ function ThoughtsEditorInner(
                     pointer-events: none;
                     transition: transform 0.28s ease;
                   }
-                  li.thought-item:not(.is-collapsed) .thought-expand svg {
+                  .thought-item:not(.is-collapsed) .thought-expand svg {
                     transform: rotate(180deg);
+                  }
+                  .thought-fold {
+                    display: none;
+                    position: relative;
+                    appearance: none;
+                    -webkit-appearance: none;
+                    flex: 0 0 auto;
+                    flex-shrink: 0;
+                    order: -1;
+                    align-self: center;
+                    width: 24px;
+                    height: 24px;
+                    min-width: 24px;
+                    min-height: 24px;
+                    max-width: 32px;
+                    max-height: 32px;
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 50%;
+                    background: hsla(0, 0%, 50%, 0.18);
+                    background: color-mix(in srgb, ${mutedFg} 18%, transparent);
+                    color: ${mutedFg};
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                    box-sizing: border-box;
+                    opacity: 1;
+                    cursor: pointer;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    z-index: 4;
+                    -webkit-transform: rotate(0deg);
+                    transform: rotate(0deg);
+                    -webkit-transform-origin: center center;
+                    transform-origin: center center;
+                    -webkit-transition: -webkit-transform 0.38s
+                      cubic-bezier(0.22, 0.8, 0.32, 1);
+                    transition: transform 0.38s cubic-bezier(0.22, 0.8, 0.32, 1);
+                    will-change: transform;
+                  }
+                  .thought-item.is-heading {
+                    --fold-gutter: 0px;
+                    --heading-pill-pad: 3px;
+                    padding-left: 2px;
+                  }
+                  .thought-item.is-heading .thought-body {
+                    display: inline-flex;
+                    flex-direction: row;
+                    align-items: center;
+                    width: fit-content;
+                    max-width: 100%;
+                    gap: 0;
+                    padding: var(--heading-pill-pad);
+                    border-radius: 999px;
+                    background: hsla(0, 0%, 50%, 0.12);
+                    background: color-mix(in srgb, ${mutedFg} 12%, transparent);
+                  }
+                  .thought-item.is-heading .thought-fields {
+                    display: flex;
+                    align-items: center;
+                    width: auto;
+                    max-width: 100%;
+                    min-width: 0;
+                    flex: 1 1 auto;
+                    margin: 0 10px 0 8px;
+                  }
+                  .thought-item.is-heading .thought-summary,
+                  .thought-item.is-heading .thought-summary.is-placeholder,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder {
+                    display: inline-block;
+                    width: auto;
+                    min-width: 0;
+                    min-height: 0;
+                    line-height: 1.2;
+                  }
+                  .thought-item.is-heading .thought-summary.is-placeholder,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder {
+                    width: max-content;
+                    max-width: 100%;
+                    min-height: 1.2em;
+                    overflow: hidden;
+                  }
+                  .thought-item.is-heading .thought-fold {
+                    display: flex;
+                  }
+                  .thought-item[data-thought-type="h1"] .thought-fold {
+                    width: 32px;
+                    height: 32px;
+                  }
+                  .thought-item[data-thought-type="h2"] .thought-fold {
+                    width: 28px;
+                    height: 28px;
+                  }
+                  .thought-item[data-thought-type="h3"] .thought-fold {
+                    width: 26px;
+                    height: 26px;
+                  }
+                  .thought-fold svg {
+                    display: none;
+                    pointer-events: none;
+                  }
+                  .thought-fold::after {
+                    content: "";
+                    display: block;
+                    width: 7px;
+                    height: 7px;
+                    box-sizing: border-box;
+                    border-right: 2px solid currentColor;
+                    border-bottom: 2px solid currentColor;
+                    transform: rotate(45deg) translateY(-1px);
+                    flex-shrink: 0;
+                  }
+                  .thought-item.is-section-collapsed .thought-fold {
+                    -webkit-transform: rotate(-90deg);
+                    transform: rotate(-90deg);
+                  }
+                  .thought-item.is-heading.is-inline .thought-fold,
+                  .thought-item.is-heading.is-run-start .thought-fold {
+                    display: none !important;
+                  }
+                  .thought-item.is-section-hidden {
+                    display: none !important;
                   }
                   .thought-graph {
                     position: absolute;
@@ -1512,7 +2774,7 @@ function ThoughtsEditorInner(
                   .thought-fields {
                     min-width: 0;
                   }
-                  li.thought-item.is-collapsed .thought-category {
+                  .thought-item.is-collapsed .thought-category {
                     opacity: 0;
                     height: 0;
                     min-height: 0;
@@ -1520,7 +2782,7 @@ function ThoughtsEditorInner(
                     padding: 0;
                     pointer-events: none;
                   }
-                  li.thought-item.is-collapsed .thought-title {
+                  .thought-item.is-collapsed .thought-title {
                     opacity: 0;
                     max-height: 0;
                     min-height: 0;
@@ -1529,11 +2791,11 @@ function ThoughtsEditorInner(
                     overflow: hidden;
                     pointer-events: none;
                   }
-                  li.thought-item.is-collapsed .thought-title.is-placeholder::before,
-                  li.thought-item.is-collapsed .thought-title.is-error-placeholder::before {
+                  .thought-item.is-collapsed .thought-title.is-placeholder::before,
+                  .thought-item.is-collapsed .thought-title.is-error-placeholder::before {
                     content: none;
                   }
-                  li.thought-item.is-collapsed .thought-stripe {
+                  .thought-item.is-collapsed .thought-stripe {
                     opacity: 0;
                     pointer-events: none;
                   }
@@ -1554,9 +2816,56 @@ function ThoughtsEditorInner(
                   .thought-title,
                   .thought-summary {
                     position: relative;
-                    min-height: 1.35em;
+                    display: inline;
+                    padding: 0;
+                    border-radius: 2px;
                     overflow-wrap: anywhere;
                     word-break: break-word;
+                    white-space: pre-wrap;
+                    -webkit-box-decoration-break: clone;
+                    box-decoration-break: clone;
+                  }
+                  .thought-summary div,
+                  .thought-summary p,
+                  .thought-title div,
+                  .thought-title p {
+                    display: inline;
+                  }
+                  .thought-title::selection,
+                  .thought-title *::selection,
+                  .thought-summary::selection,
+                  .thought-summary *::selection {
+                    background-color: rgba(90, 90, 90, 0.38);
+                  }
+                  .thought-title.is-placeholder,
+                  .thought-summary.is-placeholder {
+                    display: block;
+                    width: 100%;
+                    padding: 0;
+                    min-height: 1.35em;
+                    background-color: transparent;
+                    overflow-wrap: normal;
+                    word-break: normal;
+                  }
+                  html {
+                    --mc-cat-wash: 18%;
+                    --mc-cat-wash-selected: 34%;
+                    --mc-cat-wash-plain: 6%;
+                    --mc-cat-wash-plain-selected: 16%;
+                  }
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-title,
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-summary {
+                    -webkit-box-decoration-break: slice;
+                    box-decoration-break: slice;
+                  }
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-title:not(.is-placeholder),
+                  html.mc-show-categories .thought-item:not(.is-heading) .thought-summary:not(.is-placeholder) {
+                    background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain, 6%), transparent);
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    line-height: inherit;
                   }
                   .thought-title {
                     font-weight: 700;
@@ -1570,7 +2879,7 @@ function ThoughtsEditorInner(
                       margin 0.38s ease,
                       padding 0.38s ease;
                   }
-                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title {
+                  html:not(.mc-editing) .thought-item:not(.has-entered-title) .thought-title {
                     max-height: 0 !important;
                     min-height: 0 !important;
                     margin: 0 !important;
@@ -1580,7 +2889,7 @@ function ThoughtsEditorInner(
                     pointer-events: none !important;
                     transition: none !important;
                   }
-                  html:not(.mc-editing) li.thought-item:not(.has-entered-title) .thought-title::before {
+                  html:not(.mc-editing) .thought-item:not(.has-entered-title) .thought-title::before {
                     content: none !important;
                   }
                   .thought-title * {
@@ -1589,6 +2898,39 @@ function ThoughtsEditorInner(
                   .thought-summary {
                     font-weight: 400;
                     opacity: 0.92;
+                  }
+                  .thought-item.is-heading .thought-summary {
+                    font-family: "QuicksandBold", "QuicksandRegular", sans-serif;
+                  }
+                  .thought-item[data-thought-type="h1"] .thought-summary {
+                    font-size: 28px;
+                    font-weight: 700;
+                    line-height: 1.25;
+                  }
+                  .thought-item[data-thought-type="h2"] .thought-summary {
+                    font-size: 24px;
+                    font-weight: 700;
+                    line-height: 1.3;
+                  }
+                  .thought-item[data-thought-type="h3"] .thought-summary {
+                    font-size: 20px;
+                    font-weight: 700;
+                    line-height: 1.35;
+                  }
+                  .thought-item[data-thought-type="h4"] .thought-summary {
+                    font-size: 18px;
+                    font-weight: 700;
+                    line-height: 1.4;
+                  }
+                  .thought-item[data-thought-type="h5"] .thought-summary {
+                    font-size: 16px;
+                    font-weight: 700;
+                    line-height: 1.4;
+                  }
+                  .thought-item[data-thought-type="h6"] .thought-summary {
+                    font-size: 14px;
+                    font-weight: 700;
+                    line-height: 1.45;
                   }
                   .thought-title b,
                   .thought-title strong,
@@ -1613,10 +2955,27 @@ function ThoughtsEditorInner(
                     position: absolute;
                     left: 0;
                     top: 0;
+                    width: max-content;
+                    max-width: 100%;
+                    white-space: nowrap;
                     color: ${placeholderColor};
                     pointer-events: none;
                     font-family: inherit;
                     font-weight: inherit;
+                  }
+                  .thought-item.is-heading .thought-summary.is-placeholder::before,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder::before {
+                    position: static;
+                    display: inline;
+                    left: auto;
+                    top: auto;
+                    width: auto;
+                    max-width: none;
+                    white-space: nowrap;
+                  }
+                  .thought-item.is-heading .thought-summary.is-placeholder br,
+                  .thought-item.is-heading .thought-summary.is-error-placeholder br {
+                    display: none;
                   }
                   .thought-title.is-error-placeholder::before,
                   .thought-summary.is-error-placeholder::before {
@@ -1624,57 +2983,336 @@ function ThoughtsEditorInner(
                     position: absolute;
                     left: 0;
                     top: 0;
+                    width: max-content;
+                    max-width: 100%;
+                    white-space: nowrap;
                     color: ${errorPlaceholderColor};
                     pointer-events: none;
                     font-family: inherit;
                     font-weight: inherit;
                   }
+                  .thought-item.is-heading .thought-summary.is-error-placeholder::before {
+                    position: static;
+                    display: inline;
+                    left: auto;
+                    top: auto;
+                    width: auto;
+                    max-width: none;
+                  }
+                  .thought-stripe,
+                  .thought-category,
+                  .thought-expand,
+                  .thought-graph {
+                    display: none !important;
+                  }
+                  .thought-rail {
+                    pointer-events: none;
+                    cursor: default;
+                  }
+                  .thought-title {
+                    display: none !important;
+                  }
+                  html.mc-editing .thought-expand,
+                  html.mc-editing .thought-graph {
+                    display: none !important;
+                  }
+                  html.mc-details-lock .pell-content,
+                  .pell-content.mc-details-lock,
+                  html.mc-merging .pell-content,
+                  html.mc-merging .pell-content * {
+                    caret-color: transparent;
+                    user-select: none;
+                    -webkit-user-select: none;
+                  }
+                  .thought-item {
+                    padding-left: calc(
+                      var(--mc-list-pad) + var(--heading-indent, 0px) +
+                        var(--fold-gutter, 0px)
+                    );
+                    padding-right: 8px;
+                    --category-stack: 0px;
+                    --heading-indent: 0px;
+                    --fold-gutter: 0px;
+                  }
+                  .thought-body,
+                  .thought-item.has-graph .thought-body,
+                  .thought-item:has(> .thought-graph) .thought-body,
+                  html.mc-editing .thought-item:has(> .thought-expand) .thought-body {
+                    padding-right: 0 !important;
+                  }
+                  .thought-item.is-block {
+                    padding-left: calc(
+                      8px + var(--heading-indent, 0px) + var(--fold-gutter, 0px)
+                    );
+                  }
+                  .thought-item.is-heading {
+                    --fold-gutter: 0px;
+                    padding-left: 2px;
+                  }
+                  .thought-item.is-block .thought-rail,
+                  .thought-item.is-block .thought-dot,
+                  .thought-item.is-block .thought-check {
+                    display: none !important;
+                  }
+                  .thought-item.is-block .thought-body {
+                    border-left: none;
+                    padding-left: 0;
+                  }
+                  .thought-item.is-checklist {
+                    padding-left: calc(
+                      var(--mc-list-pad) + var(--heading-indent, 0px)
+                    );
+                  }
+                  .thought-item.is-checklist .thought-dot {
+                    display: none !important;
+                  }
+                  .thought-item.is-checklist .thought-check {
+                    left: calc(var(--mc-list-indent) + var(--heading-indent, 0px));
+                    top: calc(var(--check-nudge, 2px));
+                  }
+                  .thought-fields {
+                    display: inline-block;
+                    width: fit-content;
+                    max-width: 100%;
+                    min-width: 0;
+                    vertical-align: top;
+                  }
+                  .thought-item:not(.is-heading) .thought-fields:has(.is-placeholder),
+                  .thought-item:not(.is-heading) .thought-fields:has(.is-error-placeholder) {
+                    width: 100%;
+                  }
+                  .thought-item.is-inline:not(.is-heading),
+                  .thought-item.is-run-start:not(.is-heading),
+                  .thought-item.is-text-like:not(.is-heading):not(.is-inline):has(+ .thought-item.is-inline) {
+                    display: inline;
+                    padding-left: 0;
+                    padding-right: 0;
+                    margin-top: 0;
+                    margin-bottom: 0;
+                    margin-left: 0;
+                    margin-right: 0;
+                    vertical-align: baseline;
+                    font-size: 0;
+                  }
+                  .thought-item.is-heading {
+                    display: block;
+                    font-size: 16px;
+                  }
+                  .thought-item.is-section-hidden {
+                    display: none !important;
+                  }
+                  .thought-item:not(.is-inline):has(+ .thought-item.is-run-start),
+                  .thought-item:not(.is-inline):has(+ .thought-item.is-text-like:not(.is-inline) + .thought-item.is-inline) {
+                    padding-bottom: var(--mc-gap-block);
+                  }
+                  .thought-item.is-inline + .thought-item.is-run-start:not(.is-heading)::before,
+                  .thought-item.is-inline + .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline)::before {
+                    content: "";
+                    display: block;
+                    height: var(--mc-gap-block);
+                  }
+                  .thought-item.is-block:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)),
+                  .thought-item.is-text-like:not(.is-inline):not(.is-run-start):not(:has(+ .thought-item.is-inline)) {
+                    margin-top: var(--mc-gap-block);
+                  }
+                  .thought-item.is-text-like:not(.is-inline)
+                    + .thought-item:not(.is-inline) {
+                    margin-top: var(--mc-gap-block);
+                  }
+                  .thought-item[data-thought-type="li"] + .thought-item.is-checklist,
+                  .thought-item.is-checklist + .thought-item[data-thought-type="li"] {
+                    margin-top: var(--mc-gap-type);
+                  }
+                  .thought-item.is-checklist:has(+ .thought-item.is-text-like),
+                  .thought-item[data-thought-type="li"]:has(+ .thought-item.is-text-like) {
+                    margin-bottom: var(--mc-gap-block);
+                  }
+                  .thought-item.is-inline + .thought-item:not(.is-inline) {
+                    margin-top: var(--mc-gap-block);
+                  }
+                  .mc-thoughts
+                    > .thought-item.is-inline
+                    + .thought-item.is-block:not(.is-inline):not(.is-run-start),
+                  .mc-thoughts
+                    > .thought-item.is-run-start
+                    + .thought-item.is-inline
+                    + .thought-item.is-block:not(.is-inline):not(.is-run-start) {
+                    margin-top: 0;
+                    padding-top: var(--mc-gap-block);
+                  }
+                  .mc-thoughts > .thought-item:first-child {
+                    margin-top: 0;
+                  }
+                  .mc-thoughts:has(> .thought-item.is-inline:last-child)::after {
+                    content: "";
+                    display: block;
+                    height: var(--mc-gap-block);
+                  }
+                  .thought-item.is-inline .thought-category,
+                  .thought-item.is-run-start .thought-category,
+                  .thought-item.is-inline .thought-graph,
+                  .thought-item.is-run-start .thought-graph,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-category,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-graph {
+                    display: none !important;
+                  }
+                  .thought-item.is-inline .thought-rail,
+                  .thought-item.is-inline .thought-dot,
+                  .thought-item.is-inline .thought-check,
+                  .thought-item.is-run-start .thought-rail,
+                  .thought-item.is-run-start .thought-dot,
+                  .thought-item.is-run-start .thought-check,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-rail,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-dot,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-check {
+                    display: none !important;
+                  }
+                  .thought-item.is-inline .thought-body,
+                  .thought-item.is-inline .thought-fields,
+                  .thought-item.is-run-start .thought-body,
+                  .thought-item.is-run-start .thought-fields,
+                  .thought-item.is-text-like:not(.is-heading):not(.is-inline):has(+ .thought-item.is-inline) .thought-body,
+                  .thought-item.is-text-like:not(.is-heading):not(.is-inline):has(+ .thought-item.is-inline) .thought-fields {
+                    display: inline;
+                    width: auto;
+                    max-width: none;
+                    min-width: 0;
+                    vertical-align: baseline;
+                    border-left: none;
+                    padding-left: 0;
+                    padding-right: 0;
+                  }
+                  .thought-item.is-heading .thought-body {
+                    display: inline-flex;
+                    align-items: center;
+                    width: fit-content;
+                    max-width: 100%;
+                    gap: 0;
+                    padding: var(--heading-pill-pad);
+                  }
+                  .thought-item.is-inline .thought-summary,
+                  .thought-item.is-inline .thought-title,
+                  .thought-item.is-run-start .thought-summary,
+                  .thought-item.is-run-start .thought-title,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-summary,
+                  .thought-item.is-text-like:not(.is-inline):has(+ .thought-item.is-inline) .thought-title {
+                    display: inline;
+                    overflow: visible;
+                    margin: 0;
+                    padding: 0;
+                    font-size: 16px;
+                    white-space: pre-wrap;
+                  }
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-summary:not(.is-placeholder),
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-title:not(.is-placeholder) {
+                    background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    line-height: inherit;
+                  }
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-summary.is-placeholder,
+                  html.mc-show-categories .thought-item.is-selected:not(.is-heading) .thought-title.is-placeholder {
+                    background-color: color-mix(in srgb, ${mutedFg} var(--mc-cat-wash-plain-selected, 16%), transparent);
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    border-radius: 0;
+                    line-height: inherit;
+                  }
+                  html.mc-merging .thought-item.is-merge-selected .thought-summary:not(.is-placeholder),
+                  html.mc-merging .thought-item.is-merge-selected .thought-title:not(.is-placeholder) {
+                    background-color: color-mix(in srgb, var(--mc-merge-color, ${caretColor}) 38%, transparent);
+                    border-radius: 3px;
+                  }
+                  html.mc-merging .thought-item.is-merge-selected .thought-summary.is-placeholder,
+                  html.mc-merging .thought-item.is-merge-selected .thought-title.is-placeholder {
+                    background-color: color-mix(in srgb, var(--mc-merge-color, ${caretColor}) 38%, transparent);
+                    border-radius: 4px;
+                  }
                   ${categoryColorsCss}
                 `,
               }}
               onChange={
-                readOnly
+                readOnly || merging
                   ? undefined
                   : (html) => {
                       syncThoughtsFromHtml(html);
-                      if (keyboardOpenRef.current) {
-                        scrollCaretIntoView();
-                      }
                     }
               }
               onCursorPosition={
-                readOnly
-                  ? undefined
-                  : () => {
-                      tryApplyPendingFormat();
-                      scrollCaretIntoView();
-                    }
+                readOnly || merging ? undefined : tryApplyPendingFormat
               }
               onMessage={handleEditorMessage}
             />
-          </View>
+          </Animated.View>
           {showToolbar && !dockToolbarToKeyboard ? (
             <ThoughtsEditorToolbar
-              showTitles={showTitles}
-              showTitlesToggle={!effectiveSimplified}
-              onShowTitlesChange={handleShowTitlesChange}
+              mode={toolbarMode}
+              onModeChange={handleToolbarModeChange}
               activeFormats={activeFormats}
               onFormat={handleFormat}
-              isChecklist={caretIsChecklist}
-              onListTypeChange={handleListType}
+              thoughtType={caretThoughtType}
+              onThoughtTypeChange={handleThoughtType}
+              selectedTitle={selectedTitleText}
+              selectedCategoryLabel={toolbarCategoryLabel}
+              selectedCategoryColor={toolbarCategoryColor}
+              hasSelectedThought={selectedThought != null}
+              onEditTitle={handleEditTitle}
+              onOpenCategory={handleOpenSelectedCategory}
+              onOpenGraph={handleOpenSelectedGraph}
+              categoriesHidden={hideCategories}
+              categoryOpacity={categoryOpacity}
+              onToggleCategories={handleToggleCategories}
+              onCategoryOpacityChange={handleCategoryOpacityChange}
+              splitSide={splitSide}
+              splitCurrentColor={splitCurrentColor}
+              splitNewColor={splitNewColor}
+              onSplit={handleSplit}
+              onSplitSide={handleSplitSide}
+              onConfirmSplit={handleConfirmSplit}
+              onCancelSplit={handleCancelSplit}
+              merging={merging}
+              mergeCanConfirm={mergeCanConfirm}
+              onMerge={handleMerge}
+              onConfirmMerge={handleConfirmMerge}
+              onCancelMerge={handleCancelMerge}
             />
           ) : null}
         </View>
         {showToolbar && dockToolbarToKeyboard ? (
           <ThoughtsEditorToolbar
             dockToKeyboard
-            showTitles={showTitles}
-            showTitlesToggle={!effectiveSimplified}
-            onShowTitlesChange={handleShowTitlesChange}
+            mode={toolbarMode}
+            onModeChange={handleToolbarModeChange}
             activeFormats={activeFormats}
             onFormat={handleFormat}
-            isChecklist={caretIsChecklist}
-            onListTypeChange={handleListType}
+            thoughtType={caretThoughtType}
+            onThoughtTypeChange={handleThoughtType}
+            selectedTitle={selectedTitleText}
+            selectedCategoryLabel={toolbarCategoryLabel}
+            selectedCategoryColor={toolbarCategoryColor}
+            hasSelectedThought={selectedThought != null}
+            onEditTitle={handleEditTitle}
+            onOpenCategory={handleOpenSelectedCategory}
+            onOpenGraph={handleOpenSelectedGraph}
+            categoriesHidden={hideCategories}
+            categoryOpacity={categoryOpacity}
+            onToggleCategories={handleToggleCategories}
+            onCategoryOpacityChange={handleCategoryOpacityChange}
+            splitSide={splitSide}
+            splitCurrentColor={splitCurrentColor}
+            splitNewColor={splitNewColor}
+            onSplit={handleSplit}
+            onSplitSide={handleSplitSide}
+            onConfirmSplit={handleConfirmSplit}
+            onCancelSplit={handleCancelSplit}
+            merging={merging}
+            mergeCanConfirm={mergeCanConfirm}
+            onMerge={handleMerge}
+            onConfirmMerge={handleConfirmMerge}
+            onCancelMerge={handleCancelMerge}
           />
         ) : null}
       </View>
@@ -1684,7 +3322,11 @@ function ThoughtsEditorInner(
         style={{ zIndex: 100 }}
         enablePanDownToClose
         enableContentPanningGesture={false}
-        onDismiss={() => setCategoryPickerIndex(null)}
+        onDismiss={() => {
+          setCategoryPickerIndex(null);
+          setSplitCategoryPicking(false);
+          setMergeCategoryPicking(false);
+        }}
       >
         <BottomSheetView className="gap-5 pt-6 bg-background">
           <BottomSheetHeader className="bg-background">

@@ -48,7 +48,10 @@ export const HeaderContent = ({
 
   return (
     <View className="w-full flex-row items-center justify-between">
-      <View className="min-w-0 flex-1 flex-row items-center">
+      <View
+        className="min-w-0 flex-1 flex-row items-center"
+        collapsable={false}
+      >
         {showLogo && <LogoWithText />}
         {!hideBackButton && (
           <Button variant="ghost" size="icon" onPress={() => back()}>
@@ -56,7 +59,7 @@ export const HeaderContent = ({
           </Button>
         )}
         {leftButtons && leftButtons.length > 0 && (
-          <View className="flex-row items-center">
+          <View className="flex-row items-center" collapsable={false}>
             {leftButtons.map((button, index) => (
               <React.Fragment key={index}>{button}</React.Fragment>
             ))}
@@ -102,8 +105,11 @@ export const HeaderContent = ({
           )}
         </View>
       </View>
-      <View className="shrink-0 flex-row items-center gap-1">
-        <View className="flex-row items-center">
+      <View
+        className="shrink-0 flex-row items-center gap-1"
+        collapsable={false}
+      >
+        <View className="flex-row items-center" collapsable={false}>
           {buttons?.map((button, index) => (
             <React.Fragment key={index}>{button}</React.Fragment>
           ))}

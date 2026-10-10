@@ -3,6 +3,7 @@ import {
   Note,
   NotesJoinThoughtsParsedJSONPageSchemaModel,
   Thought,
+  assembleThought,
 } from "@repo/zod-schemas";
 
 import { generateID } from "@/utils/genrateID";
@@ -64,13 +65,6 @@ export const createGeneratedDraftNote = (
     showTitles:
       note.showTitles ??
       thoughts.some((thought) => Boolean(thought.title?.trim())),
-    thoughts: thoughts.map((thought) => ({
-      ...thought,
-      title: thought.title ?? "",
-      summary: thought.summary ?? "",
-      semanticLabel: thought.semanticLabel ?? "",
-      isCompletable: thought.isCompletable ?? false,
-      isCompleted: thought.isCompleted ?? false,
-    })),
+    thoughts: thoughts.map((thought) => assembleThought(thought)),
   };
 };

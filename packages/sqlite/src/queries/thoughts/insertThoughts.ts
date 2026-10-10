@@ -1,30 +1,38 @@
-import { sql } from "drizzle-orm";
 import { Thought } from "@repo/zod-schemas";
 import { DB } from "../../utils/initialize/getOPDatabase";
 import { ThoughtTable } from "../../schema.root";
+import {
+  insertThoughtFts,
+  insertTypedContent,
+} from "../thoughtContent/typedContent";
+
+const thoughtRow = (thought: Thought, position = 0) => ({
+  id: thought.id,
+  noteId: thought.noteId,
+  type: thought.type,
+  contentId: thought.contentId,
+  title: thought.title,
+  semanticLabel: thought.semanticLabel,
+  nlpSourceHash: thought.nlpSourceHash ?? null,
+  titleSource: thought.titleSource === "user" ? "user" : "generated",
+  categorySource: thought.categorySource === "user" ? "user" : "generated",
+  nlpStructureLocked: Boolean(thought.nlpStructureLocked),
+  nlpStructureSourceHash: thought.nlpStructureSourceHash ?? null,
+  nlpStructureAnchor: thought.nlpStructureAnchor ?? null,
+  categoryId: thought.categoryId,
+  position: thought.position ?? position,
+  createdAt: thought.createdAt ?? new Date().toISOString(),
+});
 
 export const insertThoughtsQuery = async (db: DB, data: Thought[]) => {
-  for (const thought of data) {
-    await db.insert(ThoughtTable).values({
-      id: thought.id,
-      noteId: thought.noteId,
-      categoryId: thought.categoryId,
-      semanticLabel: thought.semanticLabel,
-      title: thought.title,
-      summary: thought.summary,
-      isCompletable: thought.isCompletable ?? false,
-      isCompleted: thought.isCompleted ?? false,
-      createdAt: thought.createdAt ?? new Date().toISOString(),
-    });
-
-    await db.run(sql`
-      INSERT INTO thought_fts (id, title, summary, semantic_label)
-      VALUES (
-        ${thought.id},
-        ${thought.title},
-        ${thought.summary},
-        ${thought.semanticLabel}
-      )
-    `);
+  // Sequential on the caller connection. Nested `db.transaction` inside
+  // `runRawSqliteTransaction` hits "cannot start a transaction within a
+  // transaction" on OP SQLite.
+  for (let index = 0; index < data.length; index++) {
+    const thought = data[index];
+    if (!thought) continue;
+    await insertTypedContent(db, thought);
+    await db.insert(ThoughtTable).values(thoughtRow(thought, index));
+    await insertThoughtFts(db, thought);
   }
 };

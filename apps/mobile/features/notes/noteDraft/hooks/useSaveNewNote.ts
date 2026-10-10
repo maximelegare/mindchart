@@ -1,5 +1,11 @@
 import { useCallback } from "react";
-import { Note, Thought } from "@repo/zod-schemas";
+import {
+  Note,
+  Thought,
+  getThoughtPlainText,
+  isTextLikeThought,
+  parseTextContentStyle,
+} from "@repo/zod-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useControllers } from "@/api/controllers/useControllers";
 import { runThoughtNlpInBackground } from "@/features/nlp/runThoughtNlpInBackground";
@@ -31,16 +37,31 @@ export const useSaveNewNote = () => {
         rawText: note.rawText ?? "",
       };
 
-      const thoughtsToInsert: Thought[] = thoughts.map((thought) => {
+      const thoughtsToInsert: Thought[] = thoughts.map((thought, index) => {
         const title = asText(thought.title);
-        const summary = asText(thought.summary);
-        const semanticLabel = asText(thought.semanticLabel) || title || summary;
+        const text = getThoughtPlainText(thought);
+        const semanticLabel = asText(thought.semanticLabel) || title || text;
+        const next =
+          thought.type === "checkbox"
+            ? {
+                ...thought,
+                content: { text, checked: thought.content.checked },
+              }
+            : isTextLikeThought(thought)
+              ? {
+                  ...thought,
+                  content: {
+                    text,
+                    style: parseTextContentStyle(thought.content.style),
+                  },
+                }
+              : { ...thought, content: { text } };
 
         return {
-          ...thought,
+          ...next,
           title,
-          summary,
           semanticLabel,
+          position: index,
           categoryId: asText(thought.categoryId) || "uncategorized",
           noteId: noteToInsert.id,
         };

@@ -13,9 +13,13 @@ import {
 } from "@react-navigation/native";
 import Animated, {
   clamp,
+  Easing,
+  runOnJS,
+  useAnimatedReaction,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import { Gradient } from "@/components/ui/gradient";
@@ -41,10 +45,14 @@ export type ScrollToTopOptions = {
 type PageScrollApi = {
   /** Returns true when the page was scrolled away from the top. */
   scrollToTop: (options?: ScrollToTopOptions) => boolean;
+  scrollTo: (y: number, options?: ScrollToTopOptions) => void;
+  getScrollOffset: () => number;
 };
 
 const PageScrollContext = React.createContext<PageScrollApi>({
   scrollToTop: () => false,
+  scrollTo: () => {},
+  getScrollOffset: () => 0,
 });
 
 export const usePageScroll = () => React.useContext(PageScrollContext);
@@ -69,6 +77,11 @@ type PageContainerProps = {
   children: React.ReactNode;
   noScrollView?: boolean;
   collapsingHeader?: boolean;
+  /**
+   * When the collapsing header leaves the viewport, show a see-through
+   * copy of the header actions (not the page options bar).
+   */
+  transparentHeader?: boolean;
   moreOptionsMenu?: {
     state: { open: boolean; setOpen: (open: boolean) => void };
     links: MoreOptionsMenuProps["links"];
@@ -86,6 +99,11 @@ type PageContainerProps = {
   hideTabBar?: boolean;
   /** Top corner radius of the page sheet under the header. */
   pageTopRadius?: number;
+  /**
+   * When this value changes, keep the current scroll offset through the
+   * following layout (edit/save, keyboard, editor height).
+   */
+  restoreScrollToken?: React.Key;
 };
 
 export const PageContainer = ({
@@ -100,10 +118,12 @@ export const PageContainer = ({
   children,
   noScrollView = false,
   collapsingHeader = false,
+  transparentHeader = false,
   moreOptionsMenu,
   optionsHeader,
   hideTabBar = false,
   pageTopRadius = PAGE_TOP_RADIUS,
+  restoreScrollToken,
 }: PageContainerProps) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -157,6 +177,9 @@ export const PageContainer = ({
   );
   const fixedGradientHeight = headerHeight + HEADER_OVERLAP;
   const useCollapsingHeader = collapsingHeader && showHeader && !noScrollView;
+  const useTransparentHeader = useCollapsingHeader && transparentHeader;
+  const [transparentHeaderActive, setTransparentHeaderActive] =
+    React.useState(false);
 
   const onOptionsHeaderLayout = React.useCallback((height: number) => {
     const next = Math.round(height);
@@ -169,6 +192,12 @@ export const PageContainer = ({
   const scrollY = useSharedValue(0);
   const previousScrollY = useSharedValue(0);
   const filteredScroll = useSharedValue(0);
+  const lastUserScroll = useSharedValue(0);
+  const isRestoringScroll = useSharedValue(false);
+  const userDraggingScroll = useSharedValue(false);
+  const transparentHeaderProgress = useSharedValue(0);
+  const transparentHeaderTranslate = useSharedValue(0);
+  const transparentHeaderVisible = useSharedValue(false);
 
   const scrollToTop = React.useCallback(
     (options?: ScrollToTopOptions) => {
@@ -186,13 +215,93 @@ export const PageContainer = ({
     [filteredScroll, previousScrollY, scrollY]
   );
 
-  const pageScrollApi = React.useMemo(() => ({ scrollToTop }), [scrollToTop]);
+  const scrollTo = React.useCallback(
+    (y: number, options?: ScrollToTopOptions) => {
+      const animated = options?.animated ?? false;
+      const next = Math.max(0, y);
+      animatedScrollRef.current?.scrollTo({ y: next, animated });
+      staticScrollRef.current?.scrollTo({ y: next, animated });
+    },
+    []
+  );
+
+  const getScrollOffset = React.useCallback(
+    () => Math.max(scrollY.value, staticScrollOffsetRef.current),
+    [scrollY]
+  );
+
+  const pageScrollApi = React.useMemo(
+    () => ({ scrollToTop, scrollTo, getScrollOffset }),
+    [getScrollOffset, scrollTo, scrollToTop]
+  );
+
+  const prevRestoreTokenRef = React.useRef(restoreScrollToken);
+  React.useLayoutEffect(() => {
+    if (restoreScrollToken === undefined) return;
+    if (prevRestoreTokenRef.current === restoreScrollToken) return;
+    prevRestoreTokenRef.current = restoreScrollToken;
+    const currentY = Math.max(scrollY.value, staticScrollOffsetRef.current);
+    const y = lastUserScroll.value;
+    // Stay put when already at the top (edit/save must not invent a scroll).
+    if (currentY <= 16 || y <= 16 || filteredScroll.value <= 8) return;
+    isRestoringScroll.value = true;
+    const collapsed = Math.min(y, chromeHeight);
+    const apply = () => {
+      animatedScrollRef.current?.scrollTo({ y, animated: false });
+      staticScrollRef.current?.scrollTo({ y, animated: false });
+      scrollY.value = y;
+      previousScrollY.value = y;
+      filteredScroll.value = collapsed;
+      if (useTransparentHeader && collapsed > 4) {
+        transparentHeaderVisible.value = true;
+        transparentHeaderTranslate.value = 0;
+        transparentHeaderProgress.value = 1;
+      }
+    };
+    apply();
+    const frame = requestAnimationFrame(apply);
+    const later = setTimeout(apply, 80);
+    const late = setTimeout(apply, 240);
+    const done = setTimeout(() => {
+      apply();
+      isRestoringScroll.value = false;
+      lastUserScroll.value = y;
+      if (useTransparentHeader && collapsed > 4) {
+        setTransparentHeaderActive(true);
+      }
+    }, 480);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(later);
+      clearTimeout(late);
+      clearTimeout(done);
+      isRestoringScroll.value = false;
+    };
+  }, [
+    chromeHeight,
+    filteredScroll,
+    isRestoringScroll,
+    lastUserScroll,
+    previousScrollY,
+    restoreScrollToken,
+    scrollY,
+    transparentHeaderProgress,
+    transparentHeaderTranslate,
+    transparentHeaderVisible,
+    useTransparentHeader,
+  ]);
 
   // Calculate filtered scroll directly inside the scroll handler to guarantee zero-frame lag
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       const y = event.contentOffset.y;
       scrollY.value = y;
+      if (!isRestoringScroll.value) {
+        lastUserScroll.value = y;
+      } else {
+        previousScrollY.value = y;
+        return;
+      }
 
       if (y <= 0) {
         filteredScroll.value = 0;
@@ -208,7 +317,14 @@ export const PageContainer = ({
       previousScrollY.value = y;
     },
     onBeginDrag: (event) => {
+      userDraggingScroll.value = true;
       previousScrollY.value = event.contentOffset.y;
+    },
+    onEndDrag: () => {
+      userDraggingScroll.value = false;
+    },
+    onMomentumEnd: () => {
+      userDraggingScroll.value = false;
     },
   });
 
@@ -218,6 +334,77 @@ export const PageContainer = ({
       transform: [{ translateY: -filteredScroll.value }],
     };
   });
+
+  const transparentHeaderStyle = useAnimatedStyle(() => {
+    return {
+      opacity: transparentHeaderProgress.value,
+      transform: [{ translateY: transparentHeaderTranslate.value }],
+    };
+  });
+
+  const showTransparentHeader = React.useCallback(() => {
+    setTransparentHeaderActive(true);
+    requestAnimationFrame(() => {
+      transparentHeaderTranslate.value = -16;
+      transparentHeaderTranslate.value = withTiming(0, {
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+      });
+      transparentHeaderProgress.value = withTiming(1, {
+        duration: 260,
+        easing: Easing.out(Easing.cubic),
+      });
+    });
+  }, [transparentHeaderProgress, transparentHeaderTranslate]);
+
+  const hideTransparentHeader = React.useCallback(() => {
+    transparentHeaderTranslate.value = 0;
+    transparentHeaderProgress.value = withTiming(
+      0,
+      {
+        duration: 180,
+        easing: Easing.out(Easing.quad),
+      },
+      (finished) => {
+        if (finished) {
+          runOnJS(setTransparentHeaderActive)(false);
+        }
+      }
+    );
+  }, [transparentHeaderProgress, transparentHeaderTranslate]);
+
+  useAnimatedReaction(
+    () => filteredScroll.value,
+    (y) => {
+      if (isRestoringScroll.value) return;
+      if (!useTransparentHeader) {
+        if (transparentHeaderVisible.value) {
+          transparentHeaderVisible.value = false;
+          runOnJS(hideTransparentHeader)();
+        }
+        return;
+      }
+      const showAt = Math.min(22, Math.max(14, headerHeight * 0.2));
+      const hideAt = 4;
+      if (
+        !transparentHeaderVisible.value &&
+        y >= showAt &&
+        userDraggingScroll.value
+      ) {
+        transparentHeaderVisible.value = true;
+        runOnJS(showTransparentHeader)();
+      } else if (transparentHeaderVisible.value && y <= hideAt) {
+        transparentHeaderVisible.value = false;
+        runOnJS(hideTransparentHeader)();
+      }
+    },
+    [
+      headerHeight,
+      hideTransparentHeader,
+      showTransparentHeader,
+      useTransparentHeader,
+    ]
+  );
 
   const fullWidthGradientStyle = {
     width: windowWidth,
@@ -244,6 +431,43 @@ export const PageContainer = ({
   // Without optionsHeader, round the page sheet so fixedGradient shows in the corners.
   const pageNeedsTopRadius = showHeader && !optionsHeader;
 
+  const cloneHeaderActions = (
+    nodes: React.ReactNode[] | undefined,
+    slot: string
+  ) =>
+    nodes?.map((node, index) =>
+      React.isValidElement(node) ? (
+        <React.Fragment key={`${slot}-${index}`}>
+          {React.cloneElement(node)}
+        </React.Fragment>
+      ) : (
+        node
+      )
+    );
+
+  const [overlayMenuOpen, setOverlayMenuOpen] = React.useState(false);
+  const overlayMoreOptionsMenu = moreOptionsMenu
+    ? {
+        ...moreOptionsMenu,
+        state: { open: overlayMenuOpen, setOpen: setOverlayMenuOpen },
+      }
+    : undefined;
+
+  const renderHeaderContent = (slot: "main" | "overlay") => (
+    <HeaderContent
+      title={displayTitle}
+      subtitle={subtitle}
+      subtitleContent={subtitleContent}
+      showLogo={showLogo}
+      hideBackButton={hideBackButton || headerVariant === "stack" || !canGoBack}
+      leftButtons={cloneHeaderActions(leftButtons, `${slot}-left`)}
+      buttons={cloneHeaderActions(buttons, `${slot}-right`)}
+      moreOptionsMenu={
+        slot === "overlay" ? overlayMoreOptionsMenu : moreOptionsMenu
+      }
+    />
+  );
+
   const headerBlock = (
     <Gradient
       type="linear"
@@ -259,18 +483,7 @@ export const PageContainer = ({
       ]}
     >
       <View style={[styles.headerBar, { paddingHorizontal: SIDE_GUTTER }]}>
-        <HeaderContent
-          title={displayTitle}
-          subtitle={subtitle}
-          subtitleContent={subtitleContent}
-          showLogo={showLogo}
-          hideBackButton={
-            hideBackButton || headerVariant === "stack" || !canGoBack
-          }
-          leftButtons={leftButtons}
-          buttons={buttons}
-          moreOptionsMenu={moreOptionsMenu}
-        />
+        {renderHeaderContent("main")}
       </View>
     </Gradient>
   );
@@ -341,6 +554,9 @@ export const PageContainer = ({
                 className="flex-1"
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                automaticallyAdjustKeyboardInsets={false}
+                automaticallyAdjustContentInsets={false}
                 scrollEventThrottle={16}
                 onScroll={(event) => {
                   staticScrollOffsetRef.current =
@@ -380,6 +596,9 @@ export const PageContainer = ({
             scrollEventThrottle={16} // Guarantees 60fps/120fps tracking updates
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets={false}
+            automaticallyAdjustContentInsets={false}
             contentContainerStyle={styles.scrollContent}
           >
             {/* Reserve space for headers to sit over */}
@@ -417,10 +636,56 @@ export const PageContainer = ({
             {optionsHeader}
           </Animated.View>
         ) : null}
+
+        {useTransparentHeader ? (
+          <Animated.View
+            pointerEvents={transparentHeaderActive ? "box-none" : "none"}
+            collapsable={false}
+            shouldRasterizeIOS
+            renderToHardwareTextureAndroid
+            style={[styles.transparentChrome, transparentHeaderStyle]}
+          >
+            <View
+              style={[
+                styles.transparentBar,
+                {
+                  paddingTop: insets.top,
+                  paddingBottom: 16,
+                  backgroundColor: withAlpha(chromeBackdrop, 0.82),
+                  borderBottomColor:
+                    colorScheme === "dark"
+                      ? "hsl(0, 0%, 32%)"
+                      : "hsl(0, 0%, 66%)",
+                },
+              ]}
+            >
+              <View style={{ marginHorizontal: SIDE_GUTTER }}>
+                <View
+                  style={[
+                    styles.headerBar,
+                    fullWidthGradientStyle,
+                    { paddingHorizontal: SIDE_GUTTER },
+                  ]}
+                >
+                  {renderHeaderContent("overlay")}
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        ) : null}
       </View>
     </PageScrollContext.Provider>
   );
 };
+
+function withAlpha(color: string, alpha: number): string {
+  const clamped = Math.min(1, Math.max(0, alpha));
+  if (color.startsWith("hsla(")) return color;
+  if (color.startsWith("hsl(")) {
+    return color.replace(/^hsl\(/, "hsla(").replace(/\)$/, `, ${clamped})`);
+  }
+  return `hsla(${color}, ${clamped})`;
+}
 
 const styles = StyleSheet.create({
   root: {
@@ -446,9 +711,20 @@ const styles = StyleSheet.create({
     right: SIDE_GUTTER,
     zIndex: 21,
   },
+  transparentChrome: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 30,
+  },
+  transparentBar: {
+    borderBottomWidth: 1,
+  },
   headerBar: {
     height: HEADER_HEIGHT,
     justifyContent: "center",
+    overflow: "hidden",
   },
   optionsOverlap: {
     zIndex: 1,

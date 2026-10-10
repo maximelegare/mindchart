@@ -10,6 +10,7 @@ type NoteEditorHeaderActionsProps = {
   onConfirm: () => void;
   onDeny: () => void;
   disabled?: boolean;
+  confirmDisabled?: boolean;
   /** Preview/new delete the note; editing an existing note discards edits. */
   denyVariant?: "delete" | "discard";
 };
@@ -18,16 +19,17 @@ export function NoteEditorHeaderActions({
   onConfirm,
   onDeny,
   disabled,
+  confirmDisabled,
   denyVariant = "discard",
 }: NoteEditorHeaderActionsProps) {
   return (
-    <View className="flex-row items-center gap-2 ml-2">
+    <View className="flex-row items-center gap-2 ml-2" collapsable={false}>
       <Button
         variant="ghost"
         size="icon"
         cornerRadius="full"
         onPress={onConfirm}
-        disabled={disabled}
+        disabled={disabled || confirmDisabled}
         accessibilityRole="button"
         accessibilityLabel={EditNoteSaveAccessibilityLabel()}
       >

@@ -113,7 +113,7 @@ export const searchThoughtsInFTSQuery = async (
     return PaginatedSearchResultsSchema.parse({ items: [], totalCount: 0 });
   }
 
-  const scopedMatchQuery = `{title summary semantic_label} : ${ftsMatch}`;
+  const scopedMatchQuery = `{title body semantic_label} : ${ftsMatch}`;
 
   let thoughtHitNoteIds: string[] = [];
   try {
@@ -213,7 +213,7 @@ export const searchThoughtsInFTSQuery = async (
             t.category_id as categoryId,
             COALESCE(n.title, '') as noteTitle,
             COALESCE(t.title, '') as thoughtTitle,
-            COALESCE(t.summary, '') as thoughtSummary,
+            COALESCE(thought_fts.body, '') as thoughtSummary,
             t.created_at as createdAt
           FROM thought_fts
           JOIN thought t ON t.id = thought_fts.id
@@ -262,7 +262,12 @@ export const searchThoughtsInFTSQuery = async (
           t.category_id as categoryId,
           COALESCE(n.title, '') as noteTitle,
           COALESCE(t.title, '') as thoughtTitle,
-          COALESCE(t.summary, '') as thoughtSummary,
+          COALESCE(
+            (SELECT text FROM list_item_content WHERE id = t.content_id),
+            (SELECT text FROM checkbox_content WHERE id = t.content_id),
+            (SELECT text FROM text_content WHERE id = t.content_id),
+            ''
+          ) as thoughtSummary,
           t.created_at as createdAt
         FROM thought t
         LEFT JOIN note n ON n.id = t.note_id

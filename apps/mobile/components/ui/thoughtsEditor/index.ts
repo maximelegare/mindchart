@@ -1,6 +1,7 @@
 export {
   ThoughtsEditor,
   createEmptyThought,
+  convertThoughtType,
   type ThoughtsFormValue,
   type ThoughtsEditorFormValues,
   type ThoughtsEditorHandle,

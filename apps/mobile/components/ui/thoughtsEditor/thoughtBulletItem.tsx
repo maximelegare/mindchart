@@ -254,7 +254,7 @@ export const ThoughtBulletItem = ({
           />
           <Controller
             control={control}
-            name={`thoughts.${index}.summary`}
+            name={`thoughts.${index}.content.text`}
             render={({ field: { onChange, value } }) => (
               <EditableField
                 ref={(ref) => registerFieldRef(summaryFieldKey, ref)}
@@ -268,7 +268,7 @@ export const ThoughtBulletItem = ({
                 title="Summary"
                 fontSize="sm"
                 fontFamily="QuicksandRegular"
-                placeholder="Enter a bullet point"
+                placeholder="Write Something..."
                 scrollEnabled={false}
                 onInsertNewItem={handleInsertNewItem}
                 onBackspaceAtStart={() =>
@@ -285,7 +285,7 @@ export const ThoughtBulletItem = ({
     return (
       <Controller
         control={control}
-        name={`thoughts.${index}.summary`}
+        name={`thoughts.${index}.content.text`}
         render={({ field: { onChange, value } }) => (
           <EditableField
             ref={(ref) => registerFieldRef(summaryFieldKey, ref)}
@@ -299,7 +299,7 @@ export const ThoughtBulletItem = ({
             title="Summary"
             fontSize="sm"
             fontFamily="QuicksandRegular"
-            placeholder="Enter a bullet point"
+            placeholder="Write Something..."
             scrollEnabled={false}
             onInsertNewItem={handleInsertNewItem}
             onBackspaceAtStart={() => handleBackspaceAtStart(summaryFieldKey)}

@@ -1,67 +1,58 @@
 import { Thought } from "@repo/zod-schemas";
 import { getOPDatabase, updateThoughtNlpQuery } from "@repo/sqlite";
-import { analyzeThought, isDisplayableSemanticLabel } from "@/lib/nlp";
-
-const stripHtml = (value: string) =>
-  value
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const thoughtText = (thought: Thought) =>
-  stripHtml(thought.summary) || stripHtml(thought.title);
-
-const isFallbackLabel = (thought: Thought) => {
-  const label = stripHtml(thought.semanticLabel).toLowerCase();
-  if (!label) return true;
-  const title = stripHtml(thought.title).toLowerCase();
-  const summary = stripHtml(thought.summary).toLowerCase();
-  return label === title || label === summary;
-};
+import { thoughtNlpSourceHash } from "@/lib/nlp/contentHash";
+import { needsNlp } from "@/lib/nlp/needsNlp";
+import { createNlpJob, processNlpJob } from "@/lib/nlp/processNlpJob";
+import { resolveStructureLock } from "@/lib/nlp/resolveStructureLock";
 
 export const applyLocalThoughtNlp = async (thoughts: Thought[]) => {
   const patches: Array<{
     id: string;
     semanticLabel?: string;
     categoryId?: string;
+    title?: string;
+    nlpSourceHash?: string;
+    titleSource?: string;
+    categorySource?: string;
+    nlpStructureLocked?: boolean;
+    nlpStructureSourceHash?: string | null;
+    nlpStructureAnchor?: Float32Array | null;
   }> = [];
 
   for (const thought of thoughts) {
-    const text = thoughtText(thought);
-    if (!text) continue;
+    if (!needsNlp(thought)) continue;
 
     try {
-      const result = analyzeThought(text);
-      const patch: {
-        id: string;
-        semanticLabel?: string;
-        categoryId?: string;
-      } = { id: thought.id };
+      const resolved = thought.nlpStructureLocked
+        ? await resolveStructureLock(thought)
+        : thought;
+      const job = createNlpJob(resolved);
+      if (thoughtNlpSourceHash(resolved) !== job.sourceHash) continue;
+      const result = processNlpJob(job);
+      if (thoughtNlpSourceHash(resolved) !== result.sourceHash) continue;
 
-      const currentLabel = stripHtml(thought.semanticLabel);
-      if (result.semanticLabel) {
-        patch.semanticLabel = result.semanticLabel;
-      } else if (
-        currentLabel &&
-        (isFallbackLabel(thought) ||
-          !isDisplayableSemanticLabel(currentLabel, text))
-      ) {
-        patch.semanticLabel = "";
-      }
+      const piece = result.pieces[0];
+      if (!piece) continue;
 
-      const currentCategory = thought.categoryId || "uncategorized";
-      if (
-        result.category &&
-        result.categoryConfidence >= 0.35 &&
-        currentCategory === "uncategorized"
-      ) {
-        patch.categoryId = result.category;
+      const patch: (typeof patches)[number] = {
+        id: thought.id,
+        nlpSourceHash: result.sourceHash,
+      };
+      if (resolved.titleSource !== "user") {
+        patch.title = piece.title;
+        patch.titleSource = "generated";
       }
-
-      if (patch.semanticLabel != null || patch.categoryId != null) {
-        patches.push(patch);
+      if (resolved.categorySource !== "user") {
+        patch.categoryId = piece.categoryId;
+        patch.categorySource = "generated";
       }
+      patch.semanticLabel = piece.semanticLabel;
+      if (resolved.nlpStructureLocked !== thought.nlpStructureLocked) {
+        patch.nlpStructureLocked = Boolean(resolved.nlpStructureLocked);
+        patch.nlpStructureSourceHash = resolved.nlpStructureSourceHash ?? null;
+        patch.nlpStructureAnchor = resolved.nlpStructureAnchor ?? null;
+      }
+      patches.push(patch);
     } catch (error) {
       console.warn("Local thought NLP failed:", error);
     }

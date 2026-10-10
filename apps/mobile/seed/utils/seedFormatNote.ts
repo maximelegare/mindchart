@@ -4,6 +4,7 @@ import {
   LocalAIResThought,
   Note,
   Thought,
+  isTextLikeType,
 } from "@repo/zod-schemas";
 import { CATEGORIES_DEFINITIONS, type CategoryKey } from "@repo/sqlite";
 import { generateID } from "@/utils/genrateID";
@@ -22,6 +23,54 @@ const resolveSeedCategory = (
     return fromSeed as CategoryKey;
   }
   return classifyCategory(text, "en-US");
+};
+
+const thoughtFromSeed = (t: LocalAIResThought, noteId: string): Thought => {
+  const recordId = generateID();
+  const thoughtId = t.thoughtId ?? recordId;
+  const thoughtTitle = (t.title ?? "").trim();
+  const thoughtText = (t.content?.text ?? t.summary ?? "").trim();
+  const semanticLabel =
+    (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtText;
+  const type = t.type ?? "li";
+  const base = {
+    noteId,
+    id: recordId,
+    thoughtId,
+    contentId: generateID(),
+    title: thoughtTitle,
+    semanticLabel,
+    categoryId: resolveSeedCategory(
+      t,
+      `${thoughtTitle} ${thoughtText} ${semanticLabel}`
+    ),
+    titleSource: "generated" as const,
+    categorySource: "generated" as const,
+    nlpStructureLocked: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  if (type === "checkbox") {
+    return {
+      ...base,
+      type: "checkbox",
+      content: { text: thoughtText, checked: t.content?.checked ?? false },
+    };
+  }
+
+  if (isTextLikeType(type)) {
+    return {
+      ...base,
+      type,
+      content: { text: thoughtText, style: "block" },
+    };
+  }
+
+  return {
+    ...base,
+    type: "li",
+    content: { text: thoughtText },
+  };
 };
 
 export const seedFormatNote = (
@@ -44,30 +93,7 @@ export const seedFormatNote = (
     showTitles: thoughts.some((thought) => Boolean(thought.title?.trim())),
   };
 
-  const formatedToughts = thoughts.map((t: LocalAIResThought) => {
-    const recordId = generateID();
-    const thoughtId = t.thoughtId ?? recordId;
-    const thoughtTitle = (t.title ?? "").trim();
-    const thoughtSummary = (t.summary ?? "").trim();
-    const semanticLabel =
-      (t.semanticLabel ?? "").trim() || thoughtTitle || thoughtSummary;
-
-    return {
-      noteId,
-      id: recordId,
-      thoughtId,
-      title: thoughtTitle,
-      summary: thoughtSummary,
-      semanticLabel,
-      categoryId: resolveSeedCategory(
-        t,
-        `${thoughtTitle} ${thoughtSummary} ${semanticLabel}`
-      ),
-      createdAt: new Date().toISOString(),
-      isCompletable: false,
-      isCompleted: false,
-    };
-  });
+  const formatedToughts = thoughts.map((t) => thoughtFromSeed(t, noteId));
 
   return { note: formatedNote, thoughts: formatedToughts };
 };

@@ -74,21 +74,272 @@ const sqliteBoolean = z.preprocess(
   z.boolean()
 );
 
-export const ThoughtSchema = z.object({
-  id: z.string(),
-  title: z.string(),
+export const HEADING_TYPES = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+export type HeadingType = (typeof HEADING_TYPES)[number];
+
+export const THOUGHT_TYPES = [
+  "text",
+  "li",
+  "checkbox",
+  ...HEADING_TYPES,
+] as const;
+export type ThoughtType = (typeof THOUGHT_TYPES)[number];
+
+export const ThoughtTypeSchema = z.enum(THOUGHT_TYPES);
+
+export const isHeadingType = (type: unknown): type is HeadingType =>
+  type === "h1" ||
+  type === "h2" ||
+  type === "h3" ||
+  type === "h4" ||
+  type === "h5" ||
+  type === "h6";
+
+export const isTextLikeType = (type: unknown): type is "text" | HeadingType =>
+  type === "text" || isHeadingType(type);
+
+export type TextLikeThought = Extract<Thought, { type: "text" | HeadingType }>;
+
+export const isTextLikeThought = (
+  thought: Thought
+): thought is TextLikeThought => isTextLikeType(thought.type);
+
+export const parseThoughtType = (value: unknown): ThoughtType => {
+  if (
+    value === "text" ||
+    value === "li" ||
+    value === "checkbox" ||
+    isHeadingType(value)
+  ) {
+    return value;
+  }
+  return "li";
+};
+
+export const NLP_METADATA_SOURCES = ["generated", "user"] as const;
+export type NlpMetadataSource = (typeof NLP_METADATA_SOURCES)[number];
+
+export const parseNlpMetadataSource = (value: unknown): NlpMetadataSource =>
+  value === "user" ? "user" : "generated";
+
+const ThoughtJoinFieldsSchema = z.object({
   folderId: z.string().nullable().optional(),
   folderLabel: z.string().nullable().optional(),
   folderPath: z.string().nullable().optional(),
-  summary: z.string(),
-  semanticLabel: z.string(),
-  noteId: z.string(),
-  categoryId: z.string(),
-  thoughtId: z.string(),
-  createdAt: z.string().nullable(),
-  isCompletable: sqliteBoolean,
-  isCompleted: sqliteBoolean,
 });
+
+export const ThoughtBaseSchema = z
+  .object({
+    id: z.string(),
+    thoughtId: z.string(),
+    noteId: z.string(),
+    contentId: z.string(),
+    title: z.string(),
+    categoryId: z.string(),
+    semanticLabel: z.string(),
+    nlpSourceHash: z.string().optional(),
+    titleSource: z.enum(NLP_METADATA_SOURCES).optional().default("generated"),
+    categorySource: z
+      .enum(NLP_METADATA_SOURCES)
+      .optional()
+      .default("generated"),
+    nlpStructureLocked: sqliteBoolean.optional().default(false),
+    nlpStructureSourceHash: z.string().optional(),
+    nlpStructureAnchor: z.custom<Float32Array>().optional().nullable(),
+    createdAt: z.string().nullable(),
+    position: z.number().int().optional(),
+  })
+  .merge(ThoughtJoinFieldsSchema);
+
+export const TEXT_CONTENT_STYLES = ["block", "inline"] as const;
+export type TextContentStyle = (typeof TEXT_CONTENT_STYLES)[number];
+
+export const parseTextContentStyle = (value: unknown): TextContentStyle =>
+  value === "inline" ? "inline" : "block";
+
+export const TextThoughtContentSchema = z.object({
+  text: z.string(),
+  style: z.enum(TEXT_CONTENT_STYLES).optional().default("block"),
+});
+
+export const ListItemThoughtContentSchema = z.object({
+  text: z.string(),
+});
+
+export const CheckboxThoughtContentSchema = z.object({
+  text: z.string(),
+  checked: sqliteBoolean,
+});
+
+export const TextThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("text"),
+  content: TextThoughtContentSchema,
+});
+
+export const ListItemThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("li"),
+  content: ListItemThoughtContentSchema,
+});
+
+export const CheckboxThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("checkbox"),
+  content: CheckboxThoughtContentSchema,
+});
+
+export const H1ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h1"),
+  content: TextThoughtContentSchema,
+});
+export const H2ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h2"),
+  content: TextThoughtContentSchema,
+});
+export const H3ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h3"),
+  content: TextThoughtContentSchema,
+});
+export const H4ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h4"),
+  content: TextThoughtContentSchema,
+});
+export const H5ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h5"),
+  content: TextThoughtContentSchema,
+});
+export const H6ThoughtSchema = ThoughtBaseSchema.extend({
+  type: z.literal("h6"),
+  content: TextThoughtContentSchema,
+});
+
+export const ThoughtSchema = z.discriminatedUnion("type", [
+  TextThoughtSchema,
+  ListItemThoughtSchema,
+  CheckboxThoughtSchema,
+  H1ThoughtSchema,
+  H2ThoughtSchema,
+  H3ThoughtSchema,
+  H4ThoughtSchema,
+  H5ThoughtSchema,
+  H6ThoughtSchema,
+]);
+
+export type TextThought = z.infer<typeof TextThoughtSchema>;
+export type ListItemThought = z.infer<typeof ListItemThoughtSchema>;
+export type CheckboxThought = z.infer<typeof CheckboxThoughtSchema>;
+export type ThoughtContent =
+  | z.infer<typeof TextThoughtContentSchema>
+  | z.infer<typeof ListItemThoughtContentSchema>
+  | z.infer<typeof CheckboxThoughtContentSchema>;
+
+export const getThoughtPlainText = (thought: {
+  content?: { text?: string } | null;
+}): string => thought.content?.text ?? "";
+
+type LooseThoughtRecord = Record<string, unknown> & {
+  content?: { text?: unknown; checked?: unknown; style?: unknown } | null;
+};
+
+const asString = (value: unknown, fallback = ""): string =>
+  typeof value === "string" ? value : value == null ? fallback : String(value);
+
+const parseNlpStructureLocked = (value: unknown): boolean =>
+  value === true || value === 1 || value === "1" || value === "true";
+
+const parseNlpStructureAnchor = (value: unknown): Float32Array | undefined => {
+  if (value == null || value === "") return undefined;
+  if (value instanceof Float32Array) {
+    return value.length > 0 ? value : undefined;
+  }
+  if (value instanceof Uint8Array) {
+    if (value.byteLength < 4) return undefined;
+    return new Float32Array(
+      value.buffer,
+      value.byteOffset,
+      Math.floor(value.byteLength / 4)
+    );
+  }
+  if (Array.isArray(value) && value.every((item) => typeof item === "number")) {
+    return value.length > 0 ? new Float32Array(value) : undefined;
+  }
+  if (typeof value === "string") {
+    const hex = value.trim();
+    if (!hex || hex.length % 2 !== 0) return undefined;
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let index = 0; index < bytes.length; index += 1) {
+      const next = Number.parseInt(hex.slice(index * 2, index * 2 + 2), 16);
+      if (!Number.isFinite(next)) return undefined;
+      bytes[index] = next;
+    }
+    if (bytes.byteLength < 4) return undefined;
+    return new Float32Array(
+      bytes.buffer,
+      bytes.byteOffset,
+      Math.floor(bytes.byteLength / 4)
+    );
+  }
+  return undefined;
+};
+
+export const assembleThought = (raw: LooseThoughtRecord): Thought => {
+  const nested =
+    raw.content && typeof raw.content === "object" ? raw.content : {};
+  const type: ThoughtType = raw.isCompletable
+    ? "checkbox"
+    : parseThoughtType(raw.type);
+  const text = asString(nested.text ?? raw.contentText ?? raw.summary ?? "");
+  const id = asString(raw.id ?? raw.thoughtId);
+  const base = {
+    id,
+    thoughtId: asString(raw.thoughtId ?? id),
+    noteId: asString(raw.noteId),
+    contentId: asString(raw.contentId ?? ""),
+    title: asString(raw.title),
+    categoryId: asString(raw.categoryId, "uncategorized") || "uncategorized",
+    semanticLabel: asString(raw.semanticLabel),
+    nlpSourceHash: asString(raw.nlpSourceHash) || undefined,
+    titleSource: parseNlpMetadataSource(raw.titleSource),
+    categorySource: parseNlpMetadataSource(raw.categorySource),
+    nlpStructureLocked: parseNlpStructureLocked(raw.nlpStructureLocked),
+    nlpStructureSourceHash: asString(raw.nlpStructureSourceHash) || undefined,
+    nlpStructureAnchor: parseNlpStructureAnchor(raw.nlpStructureAnchor),
+    createdAt:
+      raw.createdAt == null || raw.createdAt === ""
+        ? null
+        : asString(raw.createdAt),
+    folderId: (raw.folderId as string | null | undefined) ?? undefined,
+    folderLabel: (raw.folderLabel as string | null | undefined) ?? undefined,
+    folderPath: (raw.folderPath as string | null | undefined) ?? undefined,
+    position: (() => {
+      const value =
+        typeof raw.position === "number"
+          ? raw.position
+          : typeof raw.position === "string" && raw.position.trim() !== ""
+            ? Number(raw.position)
+            : NaN;
+      return Number.isFinite(value) ? value : undefined;
+    })(),
+  };
+
+  if (type === "checkbox") {
+    return {
+      ...base,
+      type,
+      content: {
+        text,
+        checked: Boolean(nested.checked ?? raw.checked ?? raw.isCompleted),
+      },
+    };
+  }
+
+  if (isTextLikeType(type)) {
+    const style = parseTextContentStyle(
+      nested.style ?? raw.contentStyle ?? raw.style
+    );
+    return { ...base, type, content: { text, style } };
+  }
+
+  return { ...base, type: "li", content: { text } };
+};
 
 export const EmbeddingSchema = z.object({
   id: z.string(),
@@ -116,7 +367,11 @@ export const NoteSchema = z.object({
   showTitles: sqliteBoolean.optional(),
 });
 
-export const ThoughtWithEmbeddingSchema = ThoughtSchema.merge(EmbeddingSchema);
+export const ThoughtWithEmbeddingSchema = ThoughtSchema.and(
+  z.object({
+    embedding: z.custom<Float32Array>().nullable(),
+  })
+);
 
 export const FolderSchema = z.object({
   id: z.string(),

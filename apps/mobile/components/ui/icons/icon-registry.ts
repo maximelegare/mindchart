@@ -6,6 +6,7 @@ export type IconName =
   | "arrow-down-wide-narrow"
   | "arrow-left"
   | "arrow-right-left"
+  | "arrow-right"
   | "arrow-up-a-z"
   | "arrow-up-from-line"
   | "arrow-up-narrow-wide"
@@ -28,13 +29,24 @@ export type IconName =
   | "cpu"
   | "database"
   | "download"
+  | "drop-half-bottom"
+  | "drop-slash"
+  | "droplet-off"
+  | "droplet"
   | "ellipsis-vertical"
   | "ellipsis"
+  | "eye-off"
   | "eye"
   | "folder-tree"
   | "folder"
   | "funnel"
   | "graph"
+  | "heading-1"
+  | "heading-2"
+  | "heading-3"
+  | "heading-4"
+  | "heading-5"
+  | "heading-6"
   | "headset"
   | "heart"
   | "house"
@@ -77,11 +89,15 @@ export type IconName =
   | "square-check"
   | "square-dashed-mouse-pointer"
   | "square-mouse-pointer"
+  | "square-split-horizontal"
   | "square"
+  | "squares-unite"
   | "star"
   | "tag"
   | "target"
+  | "text-align-start"
   | "trash-2"
+  | "type-outline"
   | "underline"
   | "undo-dot"
   | "user-round"
@@ -110,6 +126,10 @@ export const ICON_METADATA: Record<
   "arrow-right-left": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 3l4 4l-4 4m4-4H4m4 14l-4-4l4-4m-4 4h16"></path>`,
+  },
+  "arrow-right": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-7l7 7l-7 7"></path>`,
   },
   "arrow-up-a-z": {
     viewBox: "0 0 24 24",
@@ -199,6 +219,22 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 15V3m9 12v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10l5 5l5-5"></path></g>`,
   },
+  "drop-half-bottom": {
+    viewBox: "0 0 256 256",
+    content: `<path fill="currentColor" d="M174 47.75a254.2 254.2 0 0 0-41.45-38.3a8 8 0 0 0-9.18 0A254.2 254.2 0 0 0 82 47.75C54.51 79.32 40 112.6 40 144a88 88 0 0 0 176 0c0-31.4-14.51-64.68-42-96.25M187.83 184H68.17a72 72 0 0 1-8-16h135.7a72 72 0 0 1-8.04 16M200 144a71 71 0 0 1-.46 8H56.46a71 71 0 0 1-.46-8q0-4 .36-8h143.28q.36 4 .36 8M128 26c14.16 11.1 56.86 47.74 68.84 94H59.16C71.14 73.76 113.84 37.12 128 26M82.81 200h90.38a71.82 71.82 0 0 1-90.38 0"></path>`,
+  },
+  "drop-slash": {
+    viewBox: "0 0 256 256",
+    content: `<path fill="currentColor" d="M53.92 34.62a8 8 0 1 0-11.84 10.76l22.64 24.91C48.32 95 40 119.78 40 144a88 88 0 0 0 149.21 63.22l12.87 14.16a8 8 0 1 0 11.84-10.76ZM128 216a72.08 72.08 0 0 1-72-72c0-19.93 6.68-40.57 19.86-61.46l102.57 112.82A71.84 71.84 0 0 1 128 216M90 50.51a8 8 0 0 1-.27-11.31a248 248 0 0 1 33.68-29.75a8 8 0 0 1 9.18 0C136 11.83 216 68.7 216 144a88 88 0 0 1-3.15 23.4a8 8 0 0 1-7.71 5.88A7.8 7.8 0 0 1 203 173a8 8 0 0 1-5.59-9.83A72.6 72.6 0 0 0 200 144c0-57.24-55.48-105-72-118a252 252 0 0 0-26.66 24.23a8 8 0 0 1-11.34.28"></path>`,
+  },
+  "droplet-off": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M18.715 13.186C18.29 11.858 17.384 10.349 16 9c-1.5-1.6-3.5-4-4-6.5-.4 2.1-1.5 3.8-2.7 5.2"></path><path d="m2 2 20 20"></path><path d="M8.587 8.464C6.4 11 5 13 5 15a7 7 0 0 0 12.27 4.268"></path><path d="M19.144 19.144A7 7 0 0 0 19 15c0-.7-.1-1.4-.3-2.1"></path></g>`,
+  },
+  droplet: {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></g>`,
+  },
   "ellipsis-vertical": {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></g>`,
@@ -206,6 +242,10 @@ export const ICON_METADATA: Record<
   ellipsis: {
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></g>`,
+  },
+  "eye-off": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575a1 1 0 0 1 0 .696a10.8 10.8 0 0 1-1.444 2.49m-6.41-.679a3 3 0 0 1-4.242-4.242"></path><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151a1 1 0 0 1 0-.696a10.75 10.75 0 0 1 4.446-5.143M2 2l20 20"></path></g>`,
   },
   eye: {
     viewBox: "0 0 24 24",
@@ -226,6 +266,30 @@ export const ICON_METADATA: Record<
   graph: {
     viewBox: "0 0 256 256",
     content: `<path d="M200 152a31.84 31.84 0 0 0-19.53 6.68l-23.11-18A31.65 31.65 0 0 0 160 128c0-.74 0-1.48-.08-2.21l13.23-4.41A32 32 0 1 0 168 104c0 .74 0 1.48.08 2.21l-13.23 4.41A32 32 0 0 0 128 96a32.6 32.6 0 0 0-5.27.44L115.89 81A32 32 0 1 0 96 88a32.6 32.6 0 0 0 5.27-.44l6.84 15.4a31.92 31.92 0 0 0-8.57 39.64l-25.71 22.84a32.06 32.06 0 1 0 10.63 12l25.71-22.84a31.91 31.91 0 0 0 37.36-1.24l23.11 18A31.65 31.65 0 0 0 168 184a32 32 0 1 0 32-32m0-64a16 16 0 1 1-16 16a16 16 0 0 1 16-16M80 56a16 16 0 1 1 16 16a16 16 0 0 1-16-16M56 208a16 16 0 1 1 16-16a16 16 0 0 1-16 16m56-80a16 16 0 1 1 16 16a16 16 0 0 1-16-16m88 72a16 16 0 1 1 16-16a16 16 0 0 1-16 16"></path>`,
+  },
+  "heading-1": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h8m-8 6V6m8 12V6m5 6l3-2v8"></path>`,
+  },
+  "heading-2": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h8m-8 6V6m8 12V6m9 12h-4c0-4 4-3 4-6c0-1.5-2-2.5-4-1"></path>`,
+  },
+  "heading-3": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h8m-8 6V6m8 12V6m5.5 4.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2m-2 3.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2"></path>`,
+  },
+  "heading-4": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18V6m5 4v3a1 1 0 0 0 1 1h3m0-4v8M4 12h8m-8 6V6"></path>`,
+  },
+  "heading-5": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h8m-8 6V6m8 12V6m5 7v-3h4m-4 7.7c.4.2.8.3 1.3.3c1.5 0 2.7-1.1 2.7-2.5S19.8 13 18.3 13H17"></path>`,
+  },
+  "heading-6": {
+    viewBox: "0 0 24 24",
+    content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 12h8m-8 6V6m8 12V6"></path><circle cx="19" cy="16" r="2"></circle><path d="M20 10c-2 2-3 3.5-3 6"></path></g>`,
   },
   headset: {
     viewBox: "0 0 24 24",
@@ -395,9 +459,17 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z"></path><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"></path></g>`,
   },
+  "square-split-horizontal": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v20m4-19h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3m-8 0H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"></path>`,
+  },
   square: {
     viewBox: "0 0 24 24",
     content: `<rect width="18" height="18" x="3" y="3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" rx="2"></rect>`,
+  },
+  "squares-unite": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3a1 1 0 0 0 1 1h3a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-3a1 1 0 0 0-1-1z"></path>`,
   },
   star: {
     viewBox: "0 0 24 24",
@@ -411,9 +483,17 @@ export const ICON_METADATA: Record<
     viewBox: "0 0 24 24",
     content: `<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></g>`,
   },
+  "text-align-start": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 5H3m12 7H3m14 7H3"></path>`,
+  },
   "trash-2": {
     viewBox: "0 0 24 24",
     content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11v6m4-6v6m5-11v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>`,
+  },
+  "type-outline": {
+    viewBox: "0 0 24 24",
+    content: `<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 16.5a.5.5 0 0 0 .5.5h.5a2 2 0 0 1 0 4H9a2 2 0 0 1 0-4h.5a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5V8a2 2 0 0 1-4 0V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-4 0v-.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5Z"></path>`,
   },
   underline: {
     viewBox: "0 0 24 24",

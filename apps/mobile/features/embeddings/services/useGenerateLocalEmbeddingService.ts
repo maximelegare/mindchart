@@ -1,4 +1,4 @@
-import { Embedding, PendingEmbedding } from "@repo/zod-schemas";
+import { Embedding, Thought, getThoughtPlainText } from "@repo/zod-schemas";
 
 import { generateID } from "@/utils/genrateID";
 import { useLlamaEmbeddings } from "@/features/llama/hooks/useLlamaEmbeddings";
@@ -7,14 +7,14 @@ export const useGenerateLocalEmbeddingsService = () => {
   const { embed } = useLlamaEmbeddings();
 
   const generateEmbeddings = async (
-    thoughts: PendingEmbedding[]
+    thoughts: Thought[]
   ): Promise<Embedding[]> => {
     const embeddings: Embedding[] = [];
 
     for (const thought of thoughts) {
       // Embed the original thought text, never the generated semantic label.
       const textToEmbed =
-        (thought.summary ?? "").trim() || thought.semanticLabel;
+        (getThoughtPlainText(thought) || "").trim() || thought.semanticLabel;
       const vector = await embed(textToEmbed, "document");
 
       const floatArray =

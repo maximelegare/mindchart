@@ -1,5 +1,5 @@
 // This file is required for Expo/React Native SQLite migrations - https://orm.drizzle.team/quick-sqlite/expo
-// inline-import cache bump: 7
+// inline-import cache bump: 11
 
 import journal from "./meta/_journal.json";
 import m0000 from "./0000_damp_stone_men.sql";
@@ -21,6 +21,11 @@ import m0015 from "./0015_thought_checklist.sql";
 import m0016 from "./0016_six_categories.sql";
 import m0017 from "./0017_note_show_titles.sql";
 import m0018 from "./0018_category_theme.sql";
+import m0019 from "./0019_thought_typed_content.sql";
+import m0020 from "./0020_thought_position.sql";
+import m0021 from "./0021_text_content_style.sql";
+import m0022 from "./0022_thought_nlp_source.sql";
+import m0023 from "./0023_thought_nlp_structure_lock.sql";
 
 export default {
   journal,
@@ -44,5 +49,10 @@ export default {
     m0016,
     m0017,
     m0018,
+    m0019,
+    m0020,
+    m0021,
+    m0022,
+    m0023,
   },
 };

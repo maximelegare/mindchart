@@ -1,3 +1,5 @@
+import type { ThoughtType } from "@repo/zod-schemas";
+
 export type GraphMode = "category" | "folder";
 
 /** How many folder levels the category graph keeps before merging deeper thoughts. */
@@ -39,8 +41,8 @@ export type NodeDatum = {
   categoryId?: string;
   createdAt?: string | null;
   embedding?: Float32Array | null;
-  isCompletable?: boolean;
-  isCompleted?: boolean;
+  type?: ThoughtType;
+  checked?: boolean;
 };
 
 export type GraphDataCache = Record<GraphMode, NodeDatum> & {

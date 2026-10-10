@@ -1,5 +1,6 @@
 import React from "react";
 import { Keyboard, TextInput, View } from "react-native";
+import { SpaceFiller } from "@/components/ui/spaceFiller";
 import { useNavigation } from "@react-navigation/native";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { Typography } from "@/components/ui/typography";
@@ -11,6 +12,14 @@ import {
   type ThoughtsEditorHandle,
   type ThoughtsFormValue,
 } from "@/components/ui/thoughtsEditor";
+import {
+  assembleThought,
+  getThoughtPlainText,
+  isTextLikeThought,
+  parseTextContentStyle,
+  type FeelingValue,
+  Person,
+} from "@repo/zod-schemas";
 import { useControllers } from "@/api/controllers/useControllers";
 import { useEditNote } from "@/features/notes/editNote/hooks/useEditNote";
 import { useSaveNewNote } from "@/features/notes/noteDraft/hooks/useSaveNewNote";
@@ -21,16 +30,16 @@ import {
   noteDetailsTitleRequiredPlaceholder,
   NoteDetailsTitlePlaceholder,
 } from "@/features/notes/noteDetails/noteDetailsLabels";
-import { type FeelingValue, Person } from "@repo/zod-schemas";
 
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
+import type { BindNoteSave } from "@/features/notes/noteDetails/types";
 
-type NoteDetailsFeatureProps = {
+export type NoteDetailsFeatureProps = {
   isPending: boolean;
   note: ReturnType<typeof parseNoteAndThoughts>;
   isEditing: boolean;
   onEditingChange: (editing: boolean) => void;
-  saveActionRef?: React.MutableRefObject<(() => void) | null>;
+  onBindSave?: BindNoteSave;
   onSavingChange?: (saving: boolean) => void;
   /** Current folder from the header selector (preferred over stale note data). */
   folderId?: string | null;
@@ -41,6 +50,7 @@ type NoteDetailsFeatureProps = {
   isNew?: boolean;
   /** Called when save validation needs to highlight the folder selector. */
   onFolderErrorChange?: (hasError: boolean) => void;
+  onToolSessionChange?: (active: boolean) => void;
 };
 
 type NoteRow = NonNullable<ReturnType<typeof parseNoteAndThoughts>>[number];
@@ -51,31 +61,13 @@ type NoteDetailsFormValues = {
 };
 
 const mapThoughtToFormValue = (
-  thought: {
-    title?: string | null;
-    summary?: string | null;
-    semanticLabel?: string | null;
-    id: string;
-    createdAt?: string | null;
-    noteId: string;
-    categoryId: string;
-    thoughtId: string;
-    isCompletable?: boolean;
-    isCompleted?: boolean;
-  },
+  thought: Parameters<typeof assembleThought>[0] | ThoughtsFormValue,
   noteId: string
-): ThoughtsFormValue => ({
-  title: thought.title ?? "",
-  summary: thought.summary ?? "",
-  semanticLabel: thought.semanticLabel ?? "",
-  id: thought.id,
-  createdAt: thought.createdAt ?? new Date().toISOString(),
-  noteId: thought.noteId ?? noteId,
-  categoryId: thought.categoryId ?? "uncategorized",
-  thoughtId: thought.thoughtId ?? thought.id,
-  isCompletable: thought.isCompletable ?? false,
-  isCompleted: thought.isCompleted ?? false,
-});
+): ThoughtsFormValue =>
+  assembleThought({
+    ...thought,
+    noteId: thought.noteId ?? noteId,
+  });
 
 type TransitionEndEvent = { data?: { closing?: boolean } };
 
@@ -92,7 +84,7 @@ type NoteDetailsContentProps = {
   note: NoteRow;
   isEditing: boolean;
   onEditingChange: (editing: boolean) => void;
-  saveActionRef?: React.MutableRefObject<(() => void) | null>;
+  onBindSave?: BindNoteSave;
   onSavingChange?: (saving: boolean) => void;
   folderId: string | null;
   persons: Person[];
@@ -101,13 +93,14 @@ type NoteDetailsContentProps = {
   locationName: string | null;
   isNew: boolean;
   onFolderErrorChange?: (hasError: boolean) => void;
+  onToolSessionChange?: (active: boolean) => void;
 };
 
 function NoteDetailsContent({
   note,
   isEditing,
   onEditingChange,
-  saveActionRef,
+  onBindSave,
   onSavingChange,
   folderId,
   persons,
@@ -116,6 +109,7 @@ function NoteDetailsContent({
   locationName,
   isNew,
   onFolderErrorChange,
+  onToolSessionChange,
 }: NoteDetailsContentProps) {
   const { editNoteAction } = useEditNote();
   const { saveNewNote } = useSaveNewNote();
@@ -140,7 +134,6 @@ function NoteDetailsContent({
   const titleDraftRef = React.useRef(note.title ?? "");
   const keepDraftOnExitRef = React.useRef(false);
   const wasEditingRef = React.useRef(isEditing);
-  const [editorGeneration, setEditorGeneration] = React.useState(0);
 
   const originalThoughtIds = React.useMemo(
     () => new Set(note.thoughts.map((thought) => thought.id)),
@@ -178,7 +171,6 @@ function NoteDetailsContent({
     if (isEditing || !wasEditing) return;
     if (keepDraftOnExitRef.current) return;
     restoreOriginalNote();
-    setEditorGeneration((generation) => generation + 1);
   }, [isEditing, restoreOriginalNote]);
 
   // Keep form in sync when note data refreshes in view mode.
@@ -203,6 +195,9 @@ function NoteDetailsContent({
     // Prefer the live TextInput draft over possibly stale form state.
     const title = (titleDraftRef.current ?? data.title ?? "").trim();
     setValue("title", title, { shouldDirty: true });
+
+    await thoughtsEditorRef.current?.flushThoughts();
+    await thoughtsEditorRef.current?.flushPendingNlp();
 
     let hasError = false;
 
@@ -230,26 +225,42 @@ function NoteDetailsContent({
     Keyboard.dismiss();
     onSavingChange?.(true);
     try {
+      const flushedThoughts = getValues("thoughts");
       // Drop fully empty bullets on save; keep only contentful thoughts.
       const showTitles =
         thoughtsEditorRef.current?.titlesEnabled() ?? note.showTitles ?? false;
-      const nextThoughts = data.thoughts
+      const nextThoughts = flushedThoughts
         .filter(
           (thought) =>
             stripHtml(thought.title) ||
-            stripHtml(thought.summary) ||
+            stripHtml(getThoughtPlainText(thought)) ||
             thought.semanticLabel.trim()
         )
-        .map((thought) => {
+        .map((thought, index) => {
           const thoughtTitle = stripHtml(thought.title);
-          const summary = stripHtml(thought.summary) || thoughtTitle;
+          const text = getThoughtPlainText(thought) || thoughtTitle;
           const semanticLabel =
-            stripHtml(thought.semanticLabel) || thoughtTitle || summary;
+            stripHtml(thought.semanticLabel) || thoughtTitle || text;
+          const withText =
+            thought.type === "checkbox"
+              ? {
+                  ...thought,
+                  content: { text, checked: thought.content.checked },
+                }
+              : isTextLikeThought(thought)
+                ? {
+                    ...thought,
+                    content: {
+                      text,
+                      style: parseTextContentStyle(thought.content.style),
+                    },
+                  }
+                : { ...thought, content: { text } };
           return {
-            ...thought,
+            ...withText,
             title: thought.title.trim(),
-            summary: thought.summary.trim() || thought.title.trim(),
             semanticLabel,
+            position: index,
             status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
               | "new"
               | "updated",
@@ -294,6 +305,11 @@ function NoteDetailsContent({
       setTitleRequiredError(false);
       onFolderErrorChange?.(false);
       thoughtsEditorRef.current?.clearValidationErrors();
+      setValue(
+        "thoughts",
+        nextThoughts.map(({ status: _status, ...thought }) => thought),
+        { shouldDirty: false }
+      );
       keepDraftOnExitRef.current = true;
       onEditingChange(false);
     } finally {
@@ -327,14 +343,13 @@ function NoteDetailsContent({
   ]);
 
   React.useEffect(() => {
-    if (!saveActionRef) return;
-    saveActionRef.current = () => {
+    onBindSave?.(() => {
       void saveNote();
-    };
+    });
     return () => {
-      saveActionRef.current = null;
+      onBindSave?.(null);
     };
-  }, [saveActionRef, saveNote]);
+  }, [onBindSave, saveNote]);
 
   const showTitles = note.showTitles ?? false;
 
@@ -348,10 +363,7 @@ function NoteDetailsContent({
 
   return (
     <FormProvider {...form}>
-      <View
-        style={{ marginTop: 10 }}
-        className="flex-col flex-1 min-h-0 w-full gap-4"
-      >
+      <View style={{ marginTop: 10 }} className="flex-col w-full gap-4">
         <View className="w-full shrink-0 px-1">
           {isEditing ? (
             <Controller
@@ -418,27 +430,23 @@ function NoteDetailsContent({
         </View>
 
         <View
-          className="flex-1 min-h-0"
-          style={
-            isEditing
-              ? {
-                  marginLeft: -(gutter("md").marginLeft ?? 8),
-                  marginRight: -(gutter("md").marginRight ?? 8),
-                }
-              : undefined
-          }
+          style={{
+            marginLeft: -(gutter("md").marginLeft ?? 8),
+            marginRight: -(gutter("md").marginRight ?? 8),
+          }}
         >
           <ThoughtsEditor
             ref={thoughtsEditorRef}
-            key={`${note.id}-${editorGeneration}`}
+            key={note.id}
             noteId={note.id}
             categories={categoriesData ?? []}
             defaultShowTitles={showTitles}
             readOnly={!isEditing}
-            showGraphButtons={!isEditing && !simplified}
             plain
             simplified={simplified}
+            embedInPageScroll
             dockToolbarToKeyboard
+            onRequestEdit={() => onEditingChange(true)}
             onToggleCompleted={({ id, isCompleted }) => {
               if (isEditing || isNew) return;
               persistThoughtCompletion({ id, isCompleted });
@@ -447,19 +455,21 @@ function NoteDetailsContent({
               if (isEditing || isNew) return;
               persistThoughtCategory({ id, categoryId });
             }}
+            onToolSessionChange={onToolSessionChange}
           />
         </View>
+        <SpaceFiller sizes={{ height: ["HEADER_OVERLAP", 24] }} />
       </View>
     </FormProvider>
   );
 }
 
-export const NoteDetailsFeature = ({
+export function NoteDetailsFeature({
   isPending,
   note,
   isEditing,
   onEditingChange,
-  saveActionRef,
+  onBindSave,
   onSavingChange,
   folderId = null,
   persons = [],
@@ -468,7 +478,8 @@ export const NoteDetailsFeature = ({
   locationName = null,
   isNew = false,
   onFolderErrorChange,
-}: NoteDetailsFeatureProps) => {
+  onToolSessionChange,
+}: NoteDetailsFeatureProps) {
   const navigation = useNavigation();
   const [surfaceReady, setSurfaceReady] = React.useState(false);
 
@@ -507,7 +518,7 @@ export const NoteDetailsFeature = ({
   const willMountEditor = surfaceReady && !isPending && Boolean(noteRow);
 
   if (!willMountEditor || !noteRow) {
-    return <View className="flex-1" collapsable={false} />;
+    return <View collapsable={false} />;
   }
 
   return (
@@ -516,7 +527,7 @@ export const NoteDetailsFeature = ({
       note={noteRow}
       isEditing={isEditing}
       onEditingChange={onEditingChange}
-      saveActionRef={saveActionRef}
+      onBindSave={onBindSave}
       onSavingChange={onSavingChange}
       folderId={folderId ?? noteRow.folderId ?? null}
       persons={persons}
@@ -525,6 +536,7 @@ export const NoteDetailsFeature = ({
       locationName={locationName}
       isNew={isNew}
       onFolderErrorChange={onFolderErrorChange}
+      onToolSessionChange={onToolSessionChange}
     />
   );
-};
+}

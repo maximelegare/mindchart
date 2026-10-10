@@ -8,7 +8,8 @@ export const getAllThoughtsQuery = async (db: DB) => {
         thoughtId: ThoughtTable.id,
         noteId: ThoughtTable.noteId,
         title: ThoughtTable.title,
-        summary: ThoughtTable.summary,
+        type: ThoughtTable.type,
+        contentId: ThoughtTable.contentId,
         createdAt: ThoughtTable.createdAt,
       })
       .from(ThoughtTable);

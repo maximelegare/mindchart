@@ -1,41 +1,160 @@
-import { memo } from "react";
+import { Fragment, memo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
+
 import { Typography } from "@/components/ui/typography";
 import { DisplayDate } from "@/components/ui/date";
-import { useRouter } from "expo-router";
 import { CardTitleRow, pushNoteDetails } from "../shared/cardTitleRow";
 import { NoteBottomSheet } from "@/features/notes/noteBottomSheet";
 import {
   CHECKBOX_MARK_SIZE,
   StaticCheckboxMark,
 } from "../shared/staticCheckboxMark";
+import {
+  getThoughtPlainText,
+  isHeadingType,
+  isTextLikeType,
+  parseTextContentStyle,
+  type ThoughtType,
+} from "@repo/zod-schemas";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
 import { hsl } from "@/utils/hsl";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { Icon } from "@/components/ui/icons/icon";
 
 const MAX_VISIBLE_BULLETS = 4;
+
 const BULLET_SIZE = 6;
-const TEXT_LINE_HEIGHT = 22;
+const TEXT_LINE_HEIGHT = 18;
+const HEADING_FONT_SIZE = 18;
+const HEADING_LINE_HEIGHT = 22;
+
+const COMPACT_GAP = 4;
+const TYPE_CHANGE_GAP = 8;
+const PARAGRAPH_GAP = 6;
 
 export type NoteOverviewItem = {
+  type: ThoughtType;
   text: string;
-  isChecklist?: boolean;
+  style?: "block" | "inline";
   isCompleted?: boolean;
   markerColor?: string;
 };
 
 export function thoughtToOverviewItem(thought: {
-  summary?: string | null;
   title?: string | null;
+  type?: ThoughtType;
+  content?: {
+    text?: string;
+    checked?: boolean;
+    style?: string;
+  };
+  summary?: string | null;
   isCompletable?: boolean;
   isCompleted?: boolean;
 }): NoteOverviewItem {
+  const type = thought.type ?? "text";
+
+  const text = stripHtml(
+    thought.content?.text ||
+      thought.summary ||
+      thought.title ||
+      (thought.content
+        ? getThoughtPlainText({ content: thought.content })
+        : "") ||
+      ""
+  );
+
+  const isCompleted =
+    type === "checkbox"
+      ? Boolean(thought.content?.checked)
+      : Boolean(thought.isCompleted);
+
   return {
-    text: stripHtml(thought.summary || thought.title || ""),
-    isChecklist: Boolean(thought.isCompletable),
-    isCompleted: Boolean(thought.isCompleted),
+    type,
+    text,
+    style: isTextLikeType(type)
+      ? parseTextContentStyle(thought.content?.style)
+      : undefined,
+    isCompleted,
   };
 }
+
+type ThoughtOverviewItemProps = {
+  item: NoteOverviewItem;
+  markerColor: string;
+};
+
+const ThoughtOverviewItem = memo(
+  ({ item, markerColor }: ThoughtOverviewItemProps) => {
+    const isParagraph = isTextLikeType(item.type);
+    const isHeading = isHeadingType(item.type);
+    const isCheckbox = item.type === "checkbox";
+    const isCompleted = isCheckbox && Boolean(item.isCompleted);
+
+    return (
+      <View className="flex-row items-start">
+        {!isParagraph && (
+          <View
+            className="ml-1"
+            style={{
+              width: CHECKBOX_MARK_SIZE,
+              minHeight: TEXT_LINE_HEIGHT,
+              marginRight: 10,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {isCheckbox ? (
+              <StaticCheckboxMark completed={Boolean(item.isCompleted)} />
+            ) : (
+              <View
+                className="rounded-full"
+                style={{
+                  width: BULLET_SIZE,
+                  height: BULLET_SIZE,
+                  backgroundColor: item.markerColor ?? markerColor,
+                }}
+              />
+            )}
+          </View>
+        )}
+
+        <View
+          className={
+            isParagraph && item.style === "inline" ? undefined : "flex-1"
+          }
+        >
+          <Typography
+            variant="p"
+            padding={false}
+            style={{
+              lineHeight: isHeading ? HEADING_LINE_HEIGHT : TEXT_LINE_HEIGHT,
+              includeFontPadding: false,
+              ...(isHeading
+                ? {
+                    fontFamily: "QuicksandBold",
+                    fontSize: HEADING_FONT_SIZE,
+                  }
+                : null),
+              ...(isCompleted
+                ? {
+                    textDecorationLine: "line-through",
+                    opacity: 0.55,
+                  }
+                : null),
+            }}
+          >
+            {item.text}
+            {isParagraph && item.style === "inline" ? " " : ""}
+          </Typography>
+        </View>
+      </View>
+    );
+  }
+);
+
+ThoughtOverviewItem.displayName = "ThoughtOverviewItem";
 
 type ListItemProps = {
   id: string;
@@ -43,18 +162,65 @@ type ListItemProps = {
   date?: string | null;
   category?: string | null;
   overviewItems: NoteOverviewItem[];
+
   /** When true, render every thought instead of the truncated overview. */
   showAllContent?: boolean;
+
   onPress?: (id: string) => void;
 };
+
+function isInlineParagraph(item: NoteOverviewItem): boolean {
+  return isTextLikeType(item.type) && item.style === "inline";
+}
+
+function getItemGap(
+  current: NoteOverviewItem,
+  next?: NoteOverviewItem
+): number {
+  if (!next) {
+    return 0;
+  }
+
+  if (isInlineParagraph(current) && isInlineParagraph(next)) {
+    return 0;
+  }
+
+  if (
+    isTextLikeType(current.type) &&
+    isTextLikeType(next.type) &&
+    current.style !== "inline" &&
+    next.style === "inline"
+  ) {
+    return 0;
+  }
+
+  // Two paragraphs get the largest spacing.
+  if (isTextLikeType(current.type) && isTextLikeType(next.type)) {
+    return PARAGRAPH_GAP;
+  }
+
+  // Consecutive items of the same list type form a compact group.
+  if (
+    current.type === next.type &&
+    (current.type === "li" || current.type === "checkbox")
+  ) {
+    return COMPACT_GAP;
+  }
+
+  // Changing between thought types gets an intermediate gap.
+  return TYPE_CHANGE_GAP;
+}
 
 export const NoteWithThoughts: React.FC<ListItemProps> = memo(
   ({ title, id, date, overviewItems, showAllContent = false, onPress }) => {
     const { push } = useRouter();
     const { colorScheme } = useColorScheme();
+
     const markerColor = hsl("muted-foreground", colorScheme);
+
     const hasMore =
       !showAllContent && overviewItems.length > MAX_VISIBLE_BULLETS;
+
     const visibleItems = hasMore
       ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
       : overviewItems;
@@ -64,6 +230,7 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
         onPress(id);
         return;
       }
+
       pushNoteDetails(push, id);
     };
 
@@ -78,73 +245,69 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
           accessibilityLabel={title}
           style={StyleSheet.absoluteFillObject}
         />
+
         <View pointerEvents="box-none">
           <View
-            className="flex-row items-center justify-between mb-1"
+            className="mb-1 flex-row items-center justify-between"
             pointerEvents="none"
           >
             <DisplayDate date={date} />
           </View>
+
           <CardTitleRow title={title} menu={<NoteBottomSheet noteId={id} />} />
+
           {visibleItems.length > 0 && (
-            <View className="mt-4 ml-2" pointerEvents="none">
-              {visibleItems.map((item, idx) => {
-                const completed = Boolean(item.isChecklist && item.isCompleted);
+            <View className="mt-4 ml-2 flex-row flex-wrap" pointerEvents="none">
+              {visibleItems.map((item, index) => {
+                const nextItem = visibleItems[index + 1];
+                const prevItem = visibleItems[index - 1];
+                const gap = getItemGap(item, nextItem);
+                const inline = isInlineParagraph(item);
+                const startsInlineRun =
+                  isTextLikeType(item.type) &&
+                  item.style !== "inline" &&
+                  Boolean(nextItem && isInlineParagraph(nextItem));
+                const shareRow = inline || startsInlineRun;
+                const breakBefore =
+                  startsInlineRun &&
+                  Boolean(prevItem && isInlineParagraph(prevItem));
+
                 return (
-                  <View
-                    key={idx}
-                    className="flex-row items-start"
-                    style={{ marginBottom: 10 }}
-                  >
-                    <View
-                      style={{
-                        width: CHECKBOX_MARK_SIZE,
-                        height: TEXT_LINE_HEIGHT,
-                        marginRight: 10,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {item.isChecklist ? (
-                        <StaticCheckboxMark
-                          completed={completed}
-                          color={item.markerColor ?? markerColor}
-                        />
-                      ) : (
-                        <View
-                          className="rounded-full"
-                          style={{
-                            width: BULLET_SIZE,
-                            height: BULLET_SIZE,
-                            backgroundColor: item.markerColor ?? markerColor,
-                          }}
-                        />
-                      )}
-                    </View>
-                    <View className="flex-1">
-                      <Typography
-                        variant="p"
-                        padding={false}
-                        style={{
-                          lineHeight: TEXT_LINE_HEIGHT,
-                          includeFontPadding: false,
-                          ...(completed
-                            ? {
-                                textDecorationLine: "line-through" as const,
-                                opacity: 0.55,
-                              }
-                            : null),
-                        }}
-                      >
-                        {item.text}
-                      </Typography>
-                      {idx === visibleItems.length - 1 && hasMore ? (
-                        <Typography variant="muted" padding={false}>
-                          ...
-                        </Typography>
+                  <Fragment key={index}>
+                    {breakBefore ? (
+                      <View style={{ width: "100%", height: PARAGRAPH_GAP }} />
+                    ) : null}
+                    <View style={shareRow ? undefined : { width: "100%" }}>
+                      <ThoughtOverviewItem
+                        item={item}
+                        markerColor={markerColor}
+                      />
+
+                      {gap > 0 && <View style={{ height: gap }} />}
+
+                      {index === visibleItems.length - 1 && hasMore ? (
+                        <View className="mt-1 ml-1 flex-row items-center gap-1">
+                          <Typography
+                            variant="muted"
+                            padding={false}
+                            style={{
+                              fontSize: 13,
+                              opacity: 0.75,
+                            }}
+                          >
+                            See more
+                          </Typography>
+
+                          <Icon
+                            name="arrow-right"
+                            size={12}
+                            color="muted-foreground"
+                            style={{ marginTop: 2 }}
+                          />
+                        </View>
                       ) : null}
                     </View>
-                  </View>
+                  </Fragment>
                 );
               })}
             </View>
@@ -160,3 +323,5 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
     prevProps.showAllContent === nextProps.showAllContent &&
     prevProps.onPress === nextProps.onPress
 );
+
+NoteWithThoughts.displayName = "NoteWithThoughts";

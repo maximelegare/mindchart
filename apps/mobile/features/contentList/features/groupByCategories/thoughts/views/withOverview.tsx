@@ -8,6 +8,7 @@ import {
 } from "../hooks/useGroupByCategoriesThoughtsData";
 import { useCategoryLabelsMap } from "@/features/categories/hooks/useCategoryLabels";
 import { stripHtml } from "@/components/ui/thoughtsEditor";
+import { getThoughtPlainText } from "@repo/zod-schemas";
 
 export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
   const parsedData = useGroupByCategoriesThoughtsData();
@@ -35,10 +36,12 @@ export const ThoughtsListGroupByCategoriesWithOverviewFeature = () => {
               title={
                 stripHtml(thought.title) || stripHtml(thought.semanticLabel)
               }
-              summary={stripHtml(thought.summary)}
+              summary={stripHtml(getThoughtPlainText(thought))}
               date={thought.createdAt ?? ""}
-              isChecklist={thought.isCompletable ?? false}
-              isCompleted={thought.isCompleted ?? false}
+              isChecklist={thought.type === "checkbox"}
+              isCompleted={
+                thought.type === "checkbox" ? thought.content.checked : false
+              }
             />
           ))}
         </CategorySection>
