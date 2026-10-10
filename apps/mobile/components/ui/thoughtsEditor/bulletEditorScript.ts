@@ -2241,20 +2241,37 @@ export function setSelectedThoughtScript(index: number): string {
 `;
 }
 
-export function setMergeHighlightScript(indexes: number[]): string {
+function cssColorToken(color?: string | null): string {
+  const value = (color ?? "").trim();
+  if (!value || /[;{}]/.test(value)) return "";
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+export function setMergeHighlightScript(
+  indexes: number[],
+  color?: string | null
+): string {
   const selected = JSON.stringify(
     indexes.filter((index) => Number.isFinite(index) && index >= 0)
   );
+  const highlight = cssColorToken(color);
   return `
 (function () {
   var selected = ${selected};
   var merging = selected.length > 0;
+  var color = "${highlight}";
+  var wash = color
+    ? "color-mix(in srgb, " + color + " 38%, transparent)"
+    : "color-mix(in srgb, currentColor 28%, transparent)";
   window.__mcMerging = merging;
   window.__mcMergeIndexes = selected;
+  var root = document.documentElement;
   var content =
     document.querySelector(".pell-content") || document.getElementById("editor");
-  if (document.documentElement) {
-    document.documentElement.classList.toggle("mc-merging", merging);
+  if (root) {
+    root.classList.toggle("mc-merging", merging);
+    if (merging && color) root.style.setProperty("--mc-merge-color", color);
+    else root.style.removeProperty("--mc-merge-color");
   }
   var style = document.getElementById("mc-merge-highlight");
   if (!style) {
@@ -2267,7 +2284,7 @@ export function setMergeHighlightScript(indexes: number[]): string {
       "html.mc-merging .thought-item.is-selected .thought-title," +
       "html.mc-merging .thought-item.is-merge-selected .thought-summary," +
       "html.mc-merging .thought-item.is-merge-selected .thought-title{" +
-      "background-color:color-mix(in srgb, currentColor 22%, transparent);" +
+      "background-color:" + wash + ";" +
       "border-radius:3px;}"
     : "";
   if (!content) return true;
@@ -2282,8 +2299,7 @@ export function setMergeHighlightScript(indexes: number[]): string {
     var fields = lis[i].querySelectorAll(".thought-summary, .thought-title");
     for (var f = 0; f < fields.length; f++) {
       if (on) {
-        fields[f].style.backgroundColor =
-          "color-mix(in srgb, currentColor 28%, transparent)";
+        fields[f].style.backgroundColor = wash;
       } else {
         fields[f].style.removeProperty("background-color");
       }

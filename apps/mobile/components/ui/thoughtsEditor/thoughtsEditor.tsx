@@ -639,6 +639,14 @@ function ThoughtsEditorInner(
     : merging
       ? (mergeCategory?.color ?? null)
       : (selectedCategory?.color ?? null);
+  const colorForCategoryId = React.useCallback(
+    (categoryId?: string | null) =>
+      categories.find(
+        (category) => category.id === (categoryId || "uncategorized")
+      )?.color ?? mutedFg,
+    [categories, mutedFg]
+  );
+  const mergeHighlightColor = colorForCategoryId(mergeCategoryId);
   const mergeCanConfirm =
     mergeIndexes.length >= 2 &&
     Math.max(...mergeIndexes) - Math.min(...mergeIndexes) + 1 ===
@@ -1196,7 +1204,10 @@ function ThoughtsEditorInner(
       );
       if (mergingRef.current) {
         richRef.current?.injectJavascript(
-          setMergeHighlightScript(mergeIndexesRef.current)
+          setMergeHighlightScript(
+            mergeIndexesRef.current,
+            colorForCategoryId(mergeCategoryId)
+          )
         );
       }
       if (!stayOnDetails) {
@@ -1255,8 +1266,10 @@ function ThoughtsEditorInner(
     refreshCategoryTimers,
     thoughtPlaceholders,
     beginEnterEditScroll,
+    colorForCategoryId,
     focusSelectedThought,
     flushPendingNlp,
+    mergeCategoryId,
     scheduleScrollCaretIntoView,
   ]);
 
@@ -1448,7 +1461,16 @@ function ThoughtsEditorInner(
       const end = previous.length ? Math.max(...previous) : index;
       let next: number[];
       if (previous.includes(index)) {
-        next = previous;
+        next = previous.filter((item) => item !== index);
+        if (next.length > 1) {
+          const nextStart = Math.min(...next);
+          const nextEnd = Math.max(...next);
+          if (nextEnd - nextStart + 1 !== next.length) {
+            const left = previous.filter((item) => item < index);
+            const right = previous.filter((item) => item > index);
+            next = left.length >= right.length ? left : right;
+          }
+        }
       } else if (
         previous.length > 0 &&
         (index === start - 1 || index === end + 1)
@@ -1467,10 +1489,22 @@ function ThoughtsEditorInner(
       }
       mergeIndexesRef.current = next;
       setMergeIndexes(next);
-      setSelectedThoughtIndex(index);
-      injectIfReady(setMergeHighlightScript(next));
+      const focusIndex = next.includes(index)
+        ? index
+        : (next[next.length - 1] ?? index);
+      setSelectedThoughtIndex(focusIndex);
+      injectIfReady(
+        setMergeHighlightScript(
+          next,
+          colorForCategoryId(
+            next.length === 1
+              ? getValues("thoughts")?.[focusIndex]?.categoryId
+              : mergeCategoryId
+          )
+        )
+      );
     },
-    [getValues, injectIfReady]
+    [colorForCategoryId, getValues, injectIfReady, mergeCategoryId]
   );
 
   const handleMerge = React.useCallback(() => {
@@ -1493,11 +1527,14 @@ function ThoughtsEditorInner(
     setMergeIndexes(next);
     setMergeCategoryId(seedThought?.categoryId ?? "uncategorized");
     setMergeCategoryPicking(false);
-    injectIfReady(setMergeHighlightScript(next));
+    injectIfReady(
+      setMergeHighlightScript(next, colorForCategoryId(seedThought?.categoryId))
+    );
     richRef.current?.dismissKeyboard();
     Keyboard.dismiss();
   }, [
     caretThoughtType,
+    colorForCategoryId,
     getValues,
     injectIfReady,
     merging,
@@ -1578,8 +1615,8 @@ function ThoughtsEditorInner(
       injectIfReady(setMergeHighlightScript([]));
       return;
     }
-    injectIfReady(setMergeHighlightScript(mergeIndexes));
-  }, [injectIfReady, mergeIndexes, merging]);
+    injectIfReady(setMergeHighlightScript(mergeIndexes, mergeHighlightColor));
+  }, [injectIfReady, mergeHighlightColor, mergeIndexes, merging]);
 
   const applySplitThought = React.useCallback(
     (payload: {
@@ -3166,12 +3203,12 @@ function ThoughtsEditorInner(
                   }
                   html.mc-merging .thought-item.is-merge-selected .thought-summary:not(.is-placeholder),
                   html.mc-merging .thought-item.is-merge-selected .thought-title:not(.is-placeholder) {
-                    background-color: color-mix(in srgb, ${caretColor} 28%, transparent);
+                    background-color: color-mix(in srgb, var(--mc-merge-color, ${caretColor}) 38%, transparent);
                     border-radius: 3px;
                   }
                   html.mc-merging .thought-item.is-merge-selected .thought-summary.is-placeholder,
                   html.mc-merging .thought-item.is-merge-selected .thought-title.is-placeholder {
-                    background-color: color-mix(in srgb, ${caretColor} 28%, transparent);
+                    background-color: color-mix(in srgb, var(--mc-merge-color, ${caretColor}) 38%, transparent);
                     border-radius: 4px;
                   }
                   ${categoryColorsCss}
