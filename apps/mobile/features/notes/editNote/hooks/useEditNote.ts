@@ -31,10 +31,13 @@ export const useEditNote = () => {
     thoughts: (Thought & { status: "new" | "updated" })[],
     thoughtsToDelete: string[]
   ) => {
+    await updateNoteAndThoughtsMutateAsync({ note, thoughts });
+    runThoughtNlpInBackground(thoughts, queryClient);
+    await deleteThoughtsByIdsMutateAsync({ ids: thoughtsToDelete });
+
     const generatedEmbeddings = await generateLocalEmbeddingsMutateAsync({
       thoughts,
     });
-
     const newThoughtIdSet = new Set(
       thoughts.filter((t) => t.status === "new").map((t) => t.id)
     );
@@ -45,17 +48,12 @@ export const useEditNote = () => {
       (e) => !newThoughtIdSet.has(e.thoughtId)
     );
 
-    await updateNoteAndThoughtsMutateAsync({ note, thoughts });
-    runThoughtNlpInBackground(thoughts, queryClient);
-
     if (embeddingsToInsert.length > 0) {
       await insertEmbeddingsMutateAsync({ data: embeddingsToInsert });
     }
     if (embeddingsToUpdate.length > 0) {
       await updateEmbeddingsMutateAsync({ data: embeddingsToUpdate });
     }
-
-    await deleteThoughtsByIdsMutateAsync({ ids: thoughtsToDelete });
   };
 
   return {

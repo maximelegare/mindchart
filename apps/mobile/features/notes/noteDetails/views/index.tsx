@@ -27,18 +27,31 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { hsl } from "@/utils/hsl";
 import { gutter } from "@/components/ui/gutter";
 import {
+  noteDetailsLoadingNoteTitle,
+  noteDetailsSaveFailedToastTitle,
+  noteDetailsSavedToastTitle,
   noteDetailsTitleRequiredPlaceholder,
   NoteDetailsTitlePlaceholder,
 } from "@/features/notes/noteDetails/noteDetailsLabels";
-
 import { useNoteDetailsViewStore } from "@/features/notes/noteDetails/context/noteDetailsViewContext";
-import type { BindNoteSave } from "@/features/notes/noteDetails/types";
+import type {
+  BindNoteSave,
+  NoteSaveFinished,
+} from "@/features/notes/noteDetails/types";
+import { useToast } from "@/components/ui/toast";
+import { LoadingState } from "@/components/ui/modal/custom/loadingState/loadingState";
+import {
+  useIsNoteSavePending,
+  useNoteSaveStore,
+} from "@/features/notes/noteSave/noteSaveStore";
+import { useNoteDraftStore } from "@/features/notes/noteDraft/store/noteDraftStore";
 
 export type NoteDetailsFeatureProps = {
   isPending: boolean;
   note: ReturnType<typeof parseNoteAndThoughts>;
   isEditing: boolean;
   onEditingChange: (editing: boolean) => void;
+  onSaveFinished?: NoteSaveFinished;
   onBindSave?: BindNoteSave;
   onSavingChange?: (saving: boolean) => void;
   /** Current folder from the header selector (preferred over stale note data). */
@@ -84,6 +97,7 @@ type NoteDetailsContentProps = {
   note: NoteRow;
   isEditing: boolean;
   onEditingChange: (editing: boolean) => void;
+  onSaveFinished?: NoteSaveFinished;
   onBindSave?: BindNoteSave;
   onSavingChange?: (saving: boolean) => void;
   folderId: string | null;
@@ -100,6 +114,7 @@ function NoteDetailsContent({
   note,
   isEditing,
   onEditingChange,
+  onSaveFinished,
   onBindSave,
   onSavingChange,
   folderId,
@@ -113,6 +128,10 @@ function NoteDetailsContent({
 }: NoteDetailsContentProps) {
   const { editNoteAction } = useEditNote();
   const { saveNewNote } = useSaveNewNote();
+  const { toast } = useToast();
+  const startSave = useNoteSaveStore((state) => state.startSave);
+  const finishSave = useNoteSaveStore((state) => state.finishSave);
+  const savePending = useIsNoteSavePending(note.id);
   const { useFetchAllCategoriesQuery } = useControllers().categories;
   const {
     useUpdateThoughtCompletionMutation,
@@ -180,8 +199,9 @@ function NoteDetailsContent({
       keepDraftOnExitRef.current = false;
       return;
     }
+    if (savePending) return;
     restoreOriginalNote();
-  }, [isEditing, restoreOriginalNote]);
+  }, [isEditing, restoreOriginalNote, savePending]);
 
   // Entering edit: seed draft from current form/note so validation matches the field.
   React.useEffect(() => {
@@ -197,7 +217,6 @@ function NoteDetailsContent({
     setValue("title", title, { shouldDirty: true });
 
     await thoughtsEditorRef.current?.flushThoughts();
-    await thoughtsEditorRef.current?.flushPendingNlp();
 
     let hasError = false;
 
@@ -223,101 +242,117 @@ function NoteDetailsContent({
     }
 
     Keyboard.dismiss();
-    onSavingChange?.(true);
-    try {
-      const flushedThoughts = getValues("thoughts");
-      // Drop fully empty bullets on save; keep only contentful thoughts.
-      const showTitles =
-        thoughtsEditorRef.current?.titlesEnabled() ?? note.showTitles ?? false;
-      const nextThoughts = flushedThoughts
-        .filter(
-          (thought) =>
-            stripHtml(thought.title) ||
-            stripHtml(getThoughtPlainText(thought)) ||
-            thought.semanticLabel.trim()
-        )
-        .map((thought, index) => {
-          const thoughtTitle = stripHtml(thought.title);
-          const text = getThoughtPlainText(thought) || thoughtTitle;
-          const semanticLabel =
-            stripHtml(thought.semanticLabel) || thoughtTitle || text;
-          const withText =
-            thought.type === "checkbox"
+    const flushedThoughts = getValues("thoughts");
+    // Drop fully empty bullets on save; keep only contentful thoughts.
+    const showTitles =
+      thoughtsEditorRef.current?.titlesEnabled() ?? note.showTitles ?? false;
+    const nextThoughts = flushedThoughts
+      .filter(
+        (thought) =>
+          stripHtml(thought.title) ||
+          stripHtml(getThoughtPlainText(thought)) ||
+          thought.semanticLabel.trim()
+      )
+      .map((thought, index) => {
+        const thoughtTitle = stripHtml(thought.title);
+        const text = getThoughtPlainText(thought) || thoughtTitle;
+        const semanticLabel =
+          stripHtml(thought.semanticLabel) || thoughtTitle || text;
+        const withText =
+          thought.type === "checkbox"
+            ? {
+                ...thought,
+                content: { text, checked: thought.content.checked },
+              }
+            : isTextLikeThought(thought)
               ? {
                   ...thought,
-                  content: { text, checked: thought.content.checked },
+                  content: {
+                    text,
+                    style: parseTextContentStyle(thought.content.style),
+                  },
                 }
-              : isTextLikeThought(thought)
-                ? {
-                    ...thought,
-                    content: {
-                      text,
-                      style: parseTextContentStyle(thought.content.style),
-                    },
-                  }
-                : { ...thought, content: { text } };
-          return {
-            ...withText,
-            title: thought.title.trim(),
-            semanticLabel,
-            position: index,
-            status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
-              | "new"
-              | "updated",
-          };
-        });
+              : { ...thought, content: { text } };
+        return {
+          ...withText,
+          title: thought.title.trim(),
+          semanticLabel,
+          position: index,
+          status: (originalThoughtIds.has(thought.id) ? "updated" : "new") as
+            | "new"
+            | "updated",
+        };
+      });
 
-      // If everything was empty bullets, surface editor validation instead of saving.
-      if (nextThoughts.length === 0) {
-        thoughtsEditorRef.current?.validateRequiredContent();
-        return;
-      }
-
-      const noteToSave = {
-        id: note.id,
-        title,
-        summary: note.summary,
-        rawText: note.rawText ?? "",
-        folderId: folderId ?? note.folderId ?? null,
-        persons: isNew ? persons : (note.persons ?? []),
-        feeling: isNew ? feeling : (note.feeling ?? null),
-        locationId: isNew ? locationId : (note.locationId ?? null),
-        locationName: isNew ? locationName : (note.locationName ?? null),
-        createdAt: note.createdAt,
-        showTitles,
-      };
-
-      if (isNew) {
-        const thoughtsToSave = nextThoughts.map(
-          ({ status: _status, ...thought }) => ({
-            ...thought,
-            noteId: note.id,
-          })
-        ) as import("@repo/zod-schemas").Thought[];
-        await saveNewNote(noteToSave, thoughtsToSave);
-      } else {
-        const remainingIds = new Set(nextThoughts.map((thought) => thought.id));
-        const thoughtsToDelete = [...originalThoughtIds].filter(
-          (id) => !remainingIds.has(id)
-        );
-        await editNoteAction(noteToSave, nextThoughts, thoughtsToDelete);
-      }
-      setTitleRequiredError(false);
-      onFolderErrorChange?.(false);
-      thoughtsEditorRef.current?.clearValidationErrors();
-      setValue(
-        "thoughts",
-        nextThoughts.map(({ status: _status, ...thought }) => thought),
-        { shouldDirty: false }
-      );
-      keepDraftOnExitRef.current = true;
-      onEditingChange(false);
-    } finally {
-      onSavingChange?.(false);
+    // If everything was empty bullets, surface editor validation instead of saving.
+    if (nextThoughts.length === 0) {
+      thoughtsEditorRef.current?.validateRequiredContent();
+      return;
     }
+
+    const noteToSave = {
+      id: note.id,
+      title,
+      summary: note.summary,
+      rawText: note.rawText ?? "",
+      folderId: folderId ?? note.folderId ?? null,
+      persons: isNew ? persons : (note.persons ?? []),
+      feeling: isNew ? feeling : (note.feeling ?? null),
+      locationId: isNew ? locationId : (note.locationId ?? null),
+      locationName: isNew ? locationName : (note.locationName ?? null),
+      createdAt: note.createdAt,
+      showTitles,
+    };
+
+    setTitleRequiredError(false);
+    onFolderErrorChange?.(false);
+    thoughtsEditorRef.current?.clearValidationErrors();
+    setValue(
+      "thoughts",
+      nextThoughts.map(({ status: _status, ...thought }) => thought),
+      { shouldDirty: false }
+    );
+    keepDraftOnExitRef.current = true;
+    startSave(note.id);
+    onSavingChange?.(false);
+    onEditingChange(false);
+
+    void (async () => {
+      try {
+        if (isNew) {
+          const thoughtsToSave = nextThoughts.map(
+            ({ status: _status, ...thought }) => ({
+              ...thought,
+              noteId: note.id,
+            })
+          ) as import("@repo/zod-schemas").Thought[];
+          await saveNewNote(noteToSave, thoughtsToSave);
+          useNoteDraftStore.getState().clearDraft();
+        } else {
+          const remainingIds = new Set(
+            nextThoughts.map((thought) => thought.id)
+          );
+          const thoughtsToDelete = [...originalThoughtIds].filter(
+            (id) => !remainingIds.has(id)
+          );
+          await editNoteAction(noteToSave, nextThoughts, thoughtsToDelete);
+        }
+        onSaveFinished?.();
+        toast({ title: noteDetailsSavedToastTitle() });
+      } catch (error) {
+        toast({
+          title: noteDetailsSaveFailedToastTitle(),
+          description: String(error),
+          variant: "error",
+        });
+      } finally {
+        finishSave(note.id);
+      }
+    })();
   }, [
     editNoteAction,
     feeling,
+    finishSave,
     folderId,
     getValues,
     isNew,
@@ -335,11 +370,14 @@ function NoteDetailsContent({
     note.summary,
     onEditingChange,
     onFolderErrorChange,
+    onSaveFinished,
     onSavingChange,
     originalThoughtIds,
     persons,
     saveNewNote,
     setValue,
+    startSave,
+    toast,
   ]);
 
   React.useEffect(() => {
@@ -469,6 +507,7 @@ export function NoteDetailsFeature({
   note,
   isEditing,
   onEditingChange,
+  onSaveFinished,
   onBindSave,
   onSavingChange,
   folderId = null,
@@ -482,6 +521,10 @@ export function NoteDetailsFeature({
 }: NoteDetailsFeatureProps) {
   const navigation = useNavigation();
   const [surfaceReady, setSurfaceReady] = React.useState(false);
+  const [shownNoteId, setShownNoteId] = React.useState<string | null>(null);
+  const noteRow = note?.[0];
+  const savePending = useIsNoteSavePending(noteRow?.id);
+  const hasShownEditor = shownNoteId === noteRow?.id;
 
   React.useEffect(() => {
     let cancelled = false;
@@ -514,10 +557,22 @@ export function NoteDetailsFeature({
     };
   }, [navigation]);
 
-  const noteRow = note?.[0];
-  const willMountEditor = surfaceReady && !isPending && Boolean(noteRow);
+  const blockForSave = savePending && !hasShownEditor;
+  const willMountEditor =
+    surfaceReady && !isPending && Boolean(noteRow) && !blockForSave;
+
+  React.useLayoutEffect(() => {
+    if (willMountEditor && noteRow) setShownNoteId(noteRow.id);
+  }, [noteRow, willMountEditor]);
 
   if (!willMountEditor || !noteRow) {
+    if (isPending || blockForSave) {
+      return (
+        <View collapsable={false} className="w-full pt-8">
+          <LoadingState title={noteDetailsLoadingNoteTitle()} size="large" />
+        </View>
+      );
+    }
     return <View collapsable={false} />;
   }
 
@@ -527,6 +582,7 @@ export function NoteDetailsFeature({
       note={noteRow}
       isEditing={isEditing}
       onEditingChange={onEditingChange}
+      onSaveFinished={onSaveFinished}
       onBindSave={onBindSave}
       onSavingChange={onSavingChange}
       folderId={folderId ?? noteRow.folderId ?? null}

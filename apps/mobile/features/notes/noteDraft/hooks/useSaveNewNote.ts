@@ -73,16 +73,10 @@ export const useSaveNewNote = () => {
       });
 
       runThoughtNlpInBackground(thoughtsToInsert, queryClient);
-      void (async () => {
-        try {
-          const generatedEmbeddings = await generateLocalEmbeddingsMutateAsync({
-            thoughts: thoughtsToInsert,
-          });
-          await insertEmbeddingsMutateAsync({ data: generatedEmbeddings });
-        } catch (error) {
-          console.warn("Background embeddings failed:", error);
-        }
-      })();
+      const generatedEmbeddings = await generateLocalEmbeddingsMutateAsync({
+        thoughts: thoughtsToInsert,
+      });
+      await insertEmbeddingsMutateAsync({ data: generatedEmbeddings });
     },
     [
       generateLocalEmbeddingsMutateAsync,
