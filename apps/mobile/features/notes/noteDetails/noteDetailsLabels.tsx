@@ -83,6 +83,21 @@ export function EditNoteEditAccessibilityLabel() {
   return fbs("Edit note", "Accessibility label for edit note button");
 }
 
+export function noteDetailsSavedToastTitle() {
+  return fbs("Note saved", "Toast title after a note finishes saving");
+}
+
+export function noteDetailsSaveFailedToastTitle() {
+  return fbs("Couldn't save note", "Toast title when note save fails");
+}
+
+export function noteDetailsLoadingNoteTitle() {
+  return fbs(
+    "Loading note",
+    "Note details loading title while a save is pending"
+  );
+}
+
 export function getDiscardNoteAccessibilityLabel(
   variant: "delete" | "discard"
 ): string {

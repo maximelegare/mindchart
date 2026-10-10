@@ -22,6 +22,7 @@ import { PaperProvider } from "react-native-paper";
 
 import { PortalHost } from "@/components/primitives/portal";
 import { ModalProvider } from "@/components/ui/modal/modal";
+import { ToastHost } from "@/components/ui/toast";
 import { FolderFormSheetProvider } from "@/features/contentList/features/folderContents/components/folderFormSheet";
 import { WorkspaceActionsSheetProvider } from "@/features/workspaces/components/manageWorkspaces/workspaceActionsSheet";
 import { WorkspaceEditSheetProvider } from "@/features/workspaces/components/manageWorkspaces/workspaceEditSheet";
@@ -298,6 +299,7 @@ export default function RootLayout() {
                   </LockScreenSettingsUiProvider>
                 </LocaleContext>
               </AppLockProvider>
+              <ToastHost />
             </View>
           </GestureHandlerRootView>
         </KeyboardProvider>

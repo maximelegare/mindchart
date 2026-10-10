@@ -12,6 +12,7 @@ import { usePageScroll } from "@/components/layout/page/pageContainer";
 import { filterGraphHierarchy } from "../utils/filterGraphHierarchy";
 import { findNodeById, findNodePath } from "../utils/findNodePath";
 import { setGraphPageScrollToTop } from "../utils/focusGraphNode";
+import { useHasAnyNoteSavePending } from "@/features/notes/noteSave/noteSaveStore";
 
 export const GraphFeature = ({
   focusedThoughtId,
@@ -27,6 +28,7 @@ export const GraphFeature = ({
     (state) => state.categoryFolderMergeDepth
   );
   const { hierarchies, isLoading, refetchGraph, refetchSyncFlag } = useGraph();
+  const noteSavePending = useHasAnyNoteSavePending();
   const { scrollToTop } = usePageScroll();
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export const GraphFeature = ({
       .setBreadcrumbNav(hierarchy, activeNode?.id ?? null);
   }, [activeNode?.id, hierarchy]);
 
-  if (isLoading || !hierarchy) {
+  if (isLoading || noteSavePending || !hierarchy) {
     return (
       <View className="flex-col gap-4 items-center flex-1">
         <GraphLoadingPlaceholder />

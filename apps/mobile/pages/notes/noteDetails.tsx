@@ -13,6 +13,7 @@ import type {
   NoteEditorMode,
 } from "@/features/notes/noteDetails/types";
 import { useNoteDraftStore } from "@/features/notes/noteDraft/store/noteDraftStore";
+import { useIsNoteSavePending } from "@/features/notes/noteSave/noteSaveStore";
 import {
   noteDetailsDeleteNoteMenuLabel,
   noteDetailsFolderRequiredAlertMessage,
@@ -56,7 +57,6 @@ export const NoteDetailsPage = () => {
   const [isEditing, setIsEditing] = useState(() =>
     shouldStartEditing(modeParam)
   );
-  const [isSaving, setIsSaving] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [headerFolder, setHeaderFolder] = useState<FolderSelection>(null);
   const [headerPersons, setHeaderPersons] = useState<Person[]>([]);
@@ -75,6 +75,7 @@ export const NoteDetailsPage = () => {
   const { openModal, closeModal } = useModal();
   const isNewMode = editorMode === "new";
   const { noteTitle, isPending, note, noteId } = useNoteDetailsData(isNewMode);
+  const savePending = useIsNoteSavePending(noteId);
 
   const { notesAndThoughts, folders } = useControllers();
   const { data: allFolders } = folders.useFetchAllFoldersQuery();
@@ -88,7 +89,7 @@ export const NoteDetailsPage = () => {
     notesAndThoughts.useUpdateNoteLocationMutation();
 
   const isPreviewMode = editorMode === "preview";
-  const showHeaderEditorActions = isPreviewMode || isEditing;
+  const showHeaderEditorActions = (isPreviewMode || isEditing) && !savePending;
   const headerDenyVariant = isNewMode || isPreviewMode ? "delete" : "discard";
 
   const leaveAfterDelete = useCallback(() => {
@@ -220,14 +221,17 @@ export const NoteDetailsPage = () => {
 
   const handleEditingChange = (editing: boolean) => {
     setIsEditing(editing);
-    // Leaving edit after a preview/new save promotes the note to regular mode.
-    if (!editing && (editorMode === "preview" || editorMode === "new")) {
-      if (editorMode === "new") {
-        clearDraft();
-      }
-      switchToRegularMode();
-    }
   };
+
+  const handleSaveFinished = useCallback(() => {
+    if (editorMode === "new") {
+      clearDraft();
+    }
+    if (editorMode === "preview" || editorMode === "new") {
+      setEditorMode("regular");
+      router.setParams({ mode: "regular" });
+    }
+  }, [clearDraft, editorMode]);
 
   const handleEditPress = () => {
     setIsEditing(true);
@@ -343,7 +347,7 @@ export const NoteDetailsPage = () => {
                 key="note-editor-actions"
                 onConfirm={handleConfirmNote}
                 onDeny={handleDenyNote}
-                disabled={isSaving || isDiscarding || !noteId}
+                disabled={isDiscarding || !noteId}
                 confirmDisabled={toolSessionActive}
                 denyVariant={headerDenyVariant}
               />,
@@ -375,7 +379,7 @@ export const NoteDetailsPage = () => {
                 key="edit-note"
                 isEditing={isEditing}
                 onPress={handleEditPress}
-                disabled={isSaving || isDiscarding || toolSessionActive}
+                disabled={isDiscarding || toolSessionActive}
               />,
             ]
           : []
@@ -392,8 +396,8 @@ export const NoteDetailsPage = () => {
         note={note}
         isEditing={isEditing}
         onEditingChange={handleEditingChange}
+        onSaveFinished={handleSaveFinished}
         onBindSave={bindSave}
-        onSavingChange={setIsSaving}
         folderId={headerFolder?.id ?? null}
         persons={headerPersons}
         feeling={headerFeeling}
