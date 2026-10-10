@@ -119,7 +119,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "main": "expo-router/entry",
   "name": "mobile",
-  "version": "0.35.1",
+  "version": "0.36.0",
   "scripts": {
     "android": "expo run:android",
     "build:web": "expo export --platform web",
