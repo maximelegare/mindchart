@@ -27,6 +27,9 @@ const thoughtFromLocalAi = (t: LocalAIResThought, noteId: string): Thought => {
     categoryId: classifyCategory(
       `${thoughtTitle} ${thoughtText} ${semanticLabel}`
     ),
+    titleSource: "generated" as const,
+    categorySource: "generated" as const,
+    nlpStructureLocked: false,
     createdAt: new Date().toISOString(),
   };
 

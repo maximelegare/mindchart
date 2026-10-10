@@ -44,6 +44,9 @@ const thoughtFromSeed = (t: LocalAIResThought, noteId: string): Thought => {
       t,
       `${thoughtTitle} ${thoughtText} ${semanticLabel}`
     ),
+    titleSource: "generated" as const,
+    categorySource: "generated" as const,
+    nlpStructureLocked: false,
     createdAt: new Date().toISOString(),
   };
 

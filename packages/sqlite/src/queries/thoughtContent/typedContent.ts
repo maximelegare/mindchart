@@ -2,7 +2,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import {
   Thought,
   getThoughtPlainText,
-  isTextLikeType,
+  isTextLikeThought,
 } from "@repo/zod-schemas";
 import {
   CheckboxContentTable,
@@ -24,7 +24,7 @@ export const insertTypedContent = async (tx: DB, thought: Thought) => {
 };
 
 const insertTypeRow = async (tx: DB, thought: Thought) => {
-  if (isTextLikeType(thought.type)) {
+  if (isTextLikeThought(thought)) {
     await tx.insert(TextContentTable).values({
       id: thought.contentId,
       text: thought.content.text,
