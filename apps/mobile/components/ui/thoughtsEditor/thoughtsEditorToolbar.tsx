@@ -617,7 +617,7 @@ function SplitColorSwatch({ color }: { color: string | null | undefined }) {
       style={{
         width: 10,
         height: 10,
-        borderRadius: 2,
+        borderRadius: 999,
         backgroundColor: color ?? hsl("muted", colorScheme),
       }}
     />

@@ -3535,12 +3535,40 @@ export const THOUGHT_SPLIT_SCRIPT = `
     return type === "text" || isHeadingType(type);
   }
 
+  function thoughtTypeOf(li) {
+    return (li && li.getAttribute("data-thought-type")) || "li";
+  }
+
   function thoughtIndexOf(li) {
     var root = editorRoot();
     if (!root || !li) return -1;
     var items = root.querySelectorAll(".thought-item");
     for (var i = 0; i < items.length; i++) if (items[i] === li) return i;
     return -1;
+  }
+
+  function canSplitThought(li) {
+    return !!li && !!fieldOf(li) && !isHeadingType(thoughtTypeOf(li));
+  }
+
+  function markSplitThought(li) {
+    var root = editorRoot();
+    if (root) {
+      var rows = root.querySelectorAll(".thought-item");
+      for (var i = 0; i < rows.length; i++) {
+        rows[i].classList.toggle("is-selected", rows[i] === li);
+      }
+    }
+    if (!window.ReactNativeWebView || !li) return;
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        type: "CARET_LIST_TYPE",
+        data: {
+          type: thoughtTypeOf(li),
+          index: thoughtIndexOf(li),
+        },
+      })
+    );
   }
 
   function fieldOf(thought) {
@@ -3581,20 +3609,20 @@ export const THOUGHT_SPLIT_SCRIPT = `
       ".mc-split-caret{position:fixed;z-index:40;width:0;height:0;overflow:visible;pointer-events:none;}" +
       ".mc-split-line{position:absolute;left:0;top:" +
       ARROW_H +
-      "px;bottom:" +
-      ARROW_H +
-      "px;width:2px;margin-left:-1px;background:currentColor;border-radius:1px;}" +
-      ".mc-split-arrow{position:absolute;left:0;display:flex;align-items:center;justify-content:center;width:36px;height:14px;}" +
+      "px;bottom:0;width:2px;margin-left:-1px;background:var(--mc-split-current,currentColor);border-radius:1px;}" +
+      ".mc-split-arrow{position:absolute;left:0;top:0;display:flex;align-items:center;justify-content:center;width:auto;height:14px;color:var(--mc-split-new,currentColor);}" +
       ".mc-split-arrow svg{display:none;width:14px;height:14px;overflow:visible;flex-shrink:0;}" +
-      ".mc-split-swatch{width:8px;height:8px;border-radius:2px;flex-shrink:0;box-sizing:border-box;}" +
-      ".mc-split-swatch-left{background:var(--mc-split-left,currentColor);margin-right:2px;}" +
-      ".mc-split-swatch-right{background:var(--mc-split-right,currentColor);margin-left:2px;}" +
-      ".mc-split-arrow-top{top:4px;}" +
-      ".mc-split-arrow-bottom{bottom:4px;}" +
+      ".mc-split-swatch{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-sizing:border-box;}" +
+      ".mc-split-swatch-left{background:var(--mc-split-left,currentColor);margin-right:4px;}" +
+      ".mc-split-swatch-right{background:var(--mc-split-right,currentColor);margin-left:4px;}" +
       ".mc-split-caret[data-side=\\"left\\"] .mc-arrow-left{display:block;}" +
       ".mc-split-caret[data-side=\\"right\\"] .mc-arrow-right{display:block;}" +
-      ".mc-split-caret[data-side=\\"left\\"] .mc-split-arrow{margin-left:-28px;}" +
-      ".mc-split-caret[data-side=\\"right\\"] .mc-split-arrow{margin-left:-8px;}";
+      ".mc-split-caret[data-side=\\"left\\"] .mc-split-arrow{margin-left:-34px;}" +
+      ".mc-split-caret[data-side=\\"right\\"] .mc-split-arrow{margin-left:-4px;}" +
+      "html.mc-splitting .thought-item.is-selected .thought-summary," +
+      "html.mc-splitting .thought-item.is-selected .thought-title{" +
+      "background-color:transparent !important;}" +
+      ".mc-split-wash{border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;}";
   }
 
   function caretEl() {
@@ -3613,12 +3641,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
       ARROW_SVG +
       '<span class="mc-split-swatch mc-split-swatch-right"></span>' +
       "</span>" +
-      '<span class="mc-split-line"></span>' +
-      '<span class="mc-split-arrow mc-split-arrow-bottom">' +
-      '<span class="mc-split-swatch mc-split-swatch-left"></span>' +
-      ARROW_SVG +
-      '<span class="mc-split-swatch mc-split-swatch-right"></span>' +
-      "</span>";
+      '<span class="mc-split-line"></span>';
     return el;
   }
 
@@ -3630,10 +3653,86 @@ export const THOUGHT_SPLIT_SCRIPT = `
     var right = side === "right" ? next : current;
     el.setAttribute("data-side", side === "left" ? "left" : "right");
     if (next) el.style.color = next;
+    if (next) el.style.setProperty("--mc-split-new", next);
+    else el.style.removeProperty("--mc-split-new");
+    if (current) el.style.setProperty("--mc-split-current", current);
+    else el.style.removeProperty("--mc-split-current");
     if (left) el.style.setProperty("--mc-split-left", left);
     else el.style.removeProperty("--mc-split-left");
     if (right) el.style.setProperty("--mc-split-right", right);
     else el.style.removeProperty("--mc-split-right");
+    var state = window.__mcSplit;
+    if (!state) return;
+    state.side = side === "left" ? "left" : "right";
+    state.currentColor = current;
+    state.newColor = next;
+    paintSplitWashes(state);
+  }
+
+  function textOffsetOfRange(field, range) {
+    if (!field || !range) return 0;
+    var walker = document.createTreeWalker(field, NodeFilter.SHOW_TEXT, null);
+    var offset = 0;
+    var node;
+    while ((node = walker.nextNode())) {
+      if (node === range.startContainer) {
+        return offset + range.startOffset;
+      }
+      offset += node.length;
+    }
+    return offset;
+  }
+
+  function restoreSplitField(state) {
+    if (!state || !state.field || state.sourceHtml == null) return;
+    state.field.innerHTML = state.sourceHtml;
+  }
+
+  function wrapSplitRange(range, className, color) {
+    if (!range || range.collapsed) return;
+    var span = document.createElement("span");
+    span.className = "mc-split-wash " + className;
+    if (color) {
+      span.style.backgroundColor =
+        "color-mix(in srgb, " + color + " 34%, transparent)";
+    }
+    try {
+      var contents = range.extractContents();
+      if (!contents || !contents.childNodes.length) return;
+      span.appendChild(contents);
+      range.insertNode(span);
+    } catch (err) {}
+  }
+
+  function paintSplitWashes(state) {
+    if (!state || !state.field) return;
+    if (state.sourceHtml == null) state.sourceHtml = state.field.innerHTML;
+    restoreSplitField(state);
+    var field = state.field;
+    var offset =
+      typeof state.offset === "number"
+        ? state.offset
+        : textOffsetOfRange(field, state.range);
+    state.offset = offset;
+    var current = state.currentColor || "";
+    var next = state.newColor || current;
+    var leftColor = state.side === "left" ? next : current;
+    var rightColor = state.side === "right" ? next : current;
+    var split = rangeAtOffset(field, offset);
+    var right = document.createRange();
+    right.selectNodeContents(field);
+    try {
+      right.setStart(split.startContainer, split.startOffset);
+    } catch (err) {}
+    wrapSplitRange(right, "mc-split-wash-right", rightColor);
+    split = rangeAtOffset(field, offset);
+    var left = document.createRange();
+    left.selectNodeContents(field);
+    try {
+      left.setEnd(split.startContainer, split.startOffset);
+    } catch (err2) {}
+    wrapSplitRange(left, "mc-split-wash-left", leftColor);
+    state.range = rangeAtOffset(field, offset);
   }
 
   function rangeFromPoint(x, y) {
@@ -3736,7 +3835,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
     var height = Math.max(16, rect.height || 16);
     el.style.left = Math.round(rect.left) + "px";
     el.style.top = Math.round(rect.top - ARROW_H) + "px";
-    el.style.height = Math.round(height + ARROW_H * 2) + "px";
+    el.style.height = Math.round(height + ARROW_H) + "px";
   }
 
   function rangeInField(range, field) {
@@ -3810,11 +3909,18 @@ export const THOUGHT_SPLIT_SCRIPT = `
 
   function setSplitRange(range, field) {
     if (!range || !window.__mcSplit) return;
-    window.__mcSplit.range = range.cloneRange();
-    window.__mcSplit.field = field || window.__mcSplit.field;
+    var state = window.__mcSplit;
+    if (field && field !== state.field) {
+      restoreSplitField(state);
+      state.field = field;
+      state.sourceHtml = field.innerHTML;
+    }
+    state.range = range.cloneRange();
     try {
-      window.__mcSplit.range.collapse(true);
+      state.range.collapse(true);
     } catch (err) {}
+    state.offset = textOffsetOfRange(state.field, state.range);
+    paintSplitWashes(state);
     positionCaret();
   }
 
@@ -3826,19 +3932,20 @@ export const THOUGHT_SPLIT_SCRIPT = `
     var hit = document.elementFromPoint(x, y);
     if (el) el.style.visibility = "";
     var thought = closestThought(hit);
-    var nextField = fieldOf(thought);
-    if (
-      thought &&
-      thought !== state.thought &&
-      nextField &&
-      (hit === nextField || nextField.contains(hit))
-    ) {
+    if (canSplitThought(thought) && thought !== state.thought) {
+      restoreSplitField(state);
       state.thought = thought;
-      state.field = nextField;
+      state.field = fieldOf(thought);
+      state.sourceHtml = state.field ? state.field.innerHTML : "";
+      state.offset = null;
+      markSplitThought(thought);
     }
     var field = fieldOf(state.thought);
     if (!field) return false;
     var range = rangeFromPointInField(field, x, y);
+    if (!range) {
+      range = rangeAtOffset(field, Math.floor(fieldTextLength(field) / 2));
+    }
     if (!range) return false;
     setSplitRange(range, field);
     return true;
@@ -3888,6 +3995,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
   }
 
   function stopSplit() {
+    restoreSplitField(window.__mcSplit);
     window.__mcSplitting = false;
     window.__mcSplit = null;
     if (document.documentElement) {
@@ -3917,7 +4025,6 @@ export const THOUGHT_SPLIT_SCRIPT = `
     if (root) root.classList.add("mc-splitting");
     var el = caretEl();
     var nextSide = side === "left" ? "left" : "right";
-    applySplitPreview(el, nextSide, currentColor || color, newColor || color);
     var sel = window.getSelection();
     var range = null;
     if (sel && sel.rangeCount && field.contains(sel.anchorNode)) {
@@ -3931,7 +4038,12 @@ export const THOUGHT_SPLIT_SCRIPT = `
       thought: thought,
       field: field,
       range: range,
+      sourceHtml: field.innerHTML,
+      offset: textOffsetOfRange(field, range),
+      currentColor: currentColor || color || "",
+      newColor: newColor || color || "",
     };
+    applySplitPreview(el, nextSide, currentColor || color, newColor || color);
     positionCaret();
     return true;
   };
@@ -3961,11 +4073,17 @@ export const THOUGHT_SPLIT_SCRIPT = `
 
   window.__mcConfirmThoughtSplit = function (newThoughtId) {
     var state = window.__mcSplit;
-    if (!state || !state.range || !state.thought || !state.field) return false;
+    if (!state || !state.thought || !state.field) return false;
     var thought = state.thought;
     if (!thought.parentNode) return false;
     var index = thoughtIndexOf(thought);
     if (index < 0) return false;
+    restoreSplitField(state);
+    var offset =
+      typeof state.offset === "number"
+        ? state.offset
+        : textOffsetOfRange(state.field, state.range);
+    state.range = rangeAtOffset(state.field, offset);
     var sourceType = thought.getAttribute("data-thought-type");
     var parts = splitHtml(state.field, state.range);
     var clone = thought.cloneNode(true);
