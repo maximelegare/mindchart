@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Pressable, StyleSheet, View } from "react-native";
+import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon } from "@/components/ui/icons/icon";
 import { Typography } from "@/components/ui/typography";
@@ -13,7 +14,9 @@ function ToastCard({ item }: { item: ToastItem }) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(12)).current;
   const dismiss = useToastStore((state) => state.dismiss);
+  const router = useRouter();
   const isError = item.variant === "error";
+  const hasLink = Boolean(item.label && item.link);
 
   useEffect(() => {
     Animated.parallel([
@@ -79,6 +82,20 @@ function ToastCard({ item }: { item: ToastItem }) {
             </Typography>
           ) : null}
         </View>
+        {hasLink ? (
+          <Pressable
+            onPress={() => {
+              if (item.link) router.push(item.link);
+              dismiss(item.id);
+            }}
+            hitSlop={8}
+            accessibilityRole="link"
+          >
+            <Typography variant="small" className="text-primary underline pb-0">
+              {item.label}
+            </Typography>
+          </Pressable>
+        ) : null}
       </Pressable>
     </Animated.View>
   );

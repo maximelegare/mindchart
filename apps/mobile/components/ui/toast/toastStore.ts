@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Href } from "expo-router";
 import { create } from "zustand";
 
 export type ToastInput = {
@@ -6,6 +7,8 @@ export type ToastInput = {
   description?: ReactNode;
   duration?: number;
   variant?: "default" | "error";
+  label?: ReactNode;
+  link?: Href;
 };
 
 export type ToastItem = ToastInput & { id: string };
@@ -17,6 +20,7 @@ type ToastStore = {
 };
 
 const DEFAULT_DURATION_MS = 3200;
+const DEFAULT_DURATION_WITH_LINK_MS = 5000;
 
 export const useToastStore = create<ToastStore>((set) => ({
   toasts: [],
@@ -30,7 +34,13 @@ export const useToastStore = create<ToastStore>((set) => ({
             title: input.title,
             description: input.description,
             variant: input.variant,
-            duration: input.duration ?? DEFAULT_DURATION_MS,
+            label: input.label,
+            link: input.link,
+            duration:
+              input.duration ??
+              (input.link
+                ? DEFAULT_DURATION_WITH_LINK_MS
+                : DEFAULT_DURATION_MS),
           };
     set((state) => ({ toasts: [...state.toasts, next] }));
     return id;
