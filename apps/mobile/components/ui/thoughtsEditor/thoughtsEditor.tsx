@@ -115,6 +115,8 @@ export { createEmptyThought, convertThoughtType } from "./types";
 
 /** Gap between the caret and the keyboard / format bar. */
 const CARET_BOTTOM_MARGIN = 15;
+/** Real header is still on-screen; native focus must not bounce the page. */
+const ENTER_EDIT_AT_TOP_PX = 24;
 
 /** First body thought, skipping headings (titles) that hide the section. */
 function firstVisibleThoughtIndex(
@@ -507,6 +509,7 @@ function ThoughtsEditorInner(
   );
   const selectedThoughtIndexRef = React.useRef(selectedThoughtIndex);
   selectedThoughtIndexRef.current = selectedThoughtIndex;
+  const headingSelectedRef = React.useRef(false);
   const mergingRef = React.useRef(merging);
   mergingRef.current = merging;
   const mergeIndexesRef = React.useRef(mergeIndexes);
@@ -518,6 +521,7 @@ function ThoughtsEditorInner(
   const enteringEditFocusRef = React.useRef(false);
   const enterEditScrollActiveRef = React.useRef(false);
   const enterEditScrollForceRef = React.useRef(false);
+  const enterEditScrollOffsetRef = React.useRef(0);
   const enterEditScrollTimeoutRef = React.useRef<ReturnType<
     typeof setTimeout
   > | null>(null);
@@ -598,6 +602,9 @@ function ThoughtsEditorInner(
 
   const thoughts = watch("thoughts");
   const selectedThought = thoughts?.[selectedThoughtIndex] ?? null;
+  headingSelectedRef.current = isHeadingType(
+    selectedThought?.type ?? caretThoughtType
+  );
   const selectedTitleText = (selectedThought?.title ?? "").replace(
     /<[^>]+>/g,
     ""
@@ -702,14 +709,16 @@ function ThoughtsEditorInner(
   });
 
   const focusSelectedThought = React.useCallback(
-    (atEnd: boolean, force = false) => {
+    (atEnd: boolean, force = false, preventPageScroll = false) => {
       const index = selectedThoughtIndexRef.current;
       const editor = richRef.current as
         | (RichEditor & { showAndroidKeyboard?: () => void })
         | null;
       if (!editorReadyRef.current || !editor) return;
-      editor.showAndroidKeyboard?.();
-      editor.focusContentEditor();
+      if (!preventPageScroll) {
+        editor.showAndroidKeyboard?.();
+        editor.focusContentEditor();
+      }
       editor.injectJavascript(focusThoughtScript(index, atEnd, force));
     },
     []
@@ -727,6 +736,7 @@ function ThoughtsEditorInner(
   const beginEnterEditScroll = React.useCallback(() => {
     enterEditScrollActiveRef.current = true;
     enterEditScrollForceRef.current = false;
+    enterEditScrollOffsetRef.current = getScrollOffset();
     smoothCaretScrollRef.current = true;
     if (enterEditScrollTimeoutRef.current != null) {
       clearTimeout(enterEditScrollTimeoutRef.current);
@@ -738,7 +748,7 @@ function ThoughtsEditorInner(
       smoothCaretScrollRef.current = true;
       scrollCaretIntoView();
     }, 1200);
-  }, [scrollCaretIntoView]);
+  }, [getScrollOffset, scrollCaretIntoView]);
 
   const holdPageScroll = React.useCallback(() => {
     const offset = getScrollOffset();
@@ -757,6 +767,11 @@ function ThoughtsEditorInner(
   const applyCaretRectToPage = React.useCallback(
     (rect: { top: number; bottom: number }) => {
       if (!embedInPageScroll || readOnlyRef.current) return;
+      if (headingSelectedRef.current) {
+        enterEditScrollActiveRef.current = false;
+        enterEditScrollForceRef.current = false;
+        return;
+      }
       if (
         !enterEditScrollActiveRef.current &&
         !enterEditScrollForceRef.current
@@ -785,9 +800,20 @@ function ThoughtsEditorInner(
           return;
         }
         const offset = getScrollOffset();
+        // Focus lands at the start of the thought. A tall selected-thought
+        // fallback must not drag the whole block above the keyboard.
+        const caretHeight = caretBottom - caretTop;
+        const focusBottom = caretHeight > 40 ? caretTop + 22 : caretBottom;
+        const alreadyVisible =
+          caretTop >= limitTop && focusBottom <= limitBottom;
+        if (alreadyVisible) {
+          enterEditScrollActiveRef.current = false;
+          enterEditScrollForceRef.current = false;
+          return;
+        }
         let next = offset;
-        if (caretBottom > limitBottom) {
-          next = offset + (caretBottom - limitBottom);
+        if (focusBottom > limitBottom) {
+          next = offset + (focusBottom - limitBottom);
         } else if (caretTop < limitTop) {
           next = Math.max(0, offset + (caretTop - limitTop));
         }
@@ -1173,6 +1199,9 @@ function ThoughtsEditorInner(
     if (!editorReadyRef.current) return;
 
     if (enteringEdit) {
+      const pageOffset = getScrollOffset();
+      enterEditScrollOffsetRef.current = pageOffset;
+      const stayAtTop = pageOffset <= ENTER_EDIT_AT_TOP_PX;
       const stayOnDetails = keepDetailsToolbarOnEditRef.current;
       keepDetailsToolbarOnEditRef.current = false;
       if (!stayOnDetails) {
@@ -1214,7 +1243,21 @@ function ThoughtsEditorInner(
         );
       }
       if (!stayOnDetails) {
+        const selectedIsHeading = isHeadingType(
+          nextThoughts?.[selectedIndex]?.type
+        );
+        const skipCaretScroll = stayAtTop || selectedIsHeading;
         requestAnimationFrame(() => {
+          if (skipCaretScroll) {
+            focusSelectedThought(false, true, true);
+            setTimeout(() => {
+              richRef.current?.injectJavascript(
+                focusThoughtScript(selectedThoughtIndexRef.current, false, true)
+              );
+              enteringEditFocusRef.current = false;
+            }, 80);
+            return;
+          }
           beginEnterEditScroll();
           focusSelectedThought(false, true);
           scheduleScrollCaretIntoView();
@@ -1272,6 +1315,7 @@ function ThoughtsEditorInner(
     colorForCategoryId,
     focusSelectedThought,
     flushPendingNlp,
+    getScrollOffset,
     mergeCategoryId,
     scheduleScrollCaretIntoView,
   ]);
@@ -1923,7 +1967,7 @@ function ThoughtsEditorInner(
             userPickedThoughtRef.current = true;
             didInitSelectionRef.current = true;
             setSelectedThoughtIndex(index);
-            if (readOnly) holdPageScroll();
+            if (readOnly || isHeadingType(nextType)) holdPageScroll();
           }
         }
         return;
