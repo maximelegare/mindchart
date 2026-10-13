@@ -9,6 +9,13 @@ import pkg from "./package.json";
 const version = pkg.version;
 
 const isDev = process.env.NODE_ENV !== "production";
+/** `qa` uses the sideload package id even for production APKs. */
+const appVariant = process.env.APP_VARIANT ?? (isDev ? "qa" : "production");
+const isQaPackage = appVariant === "qa";
+const androidPackage = isQaPackage
+  ? "com.mindchart.qa.app"
+  : "com.mindchart.app";
+const iosBundle = isQaPackage ? "com.mindchart.qa.app" : "com.mindchart.app";
 
 function versionCode(v: string) {
   const [major, minor, patch] = v.split(".").map(Number);
@@ -40,7 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     newArchEnabled: true,
     supportsTablet: true,
-    bundleIdentifier: isDev ? "com.mindchart.dev.app" : "com.mindchart.app",
+    bundleIdentifier: iosBundle,
     buildNumber: version,
     infoPlist: {
       NSContactsUsageDescription:
@@ -56,7 +63,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: "#17302b",
     },
     versionCode: versionCode(version),
-    package: isDev ? "com.mindchart.dev.app" : "com.mindchart.app",
+    package: androidPackage,
     permissions: ["RECORD_AUDIO", "READ_CONTACTS"],
     softwareKeyboardLayoutMode: "resize",
   },
