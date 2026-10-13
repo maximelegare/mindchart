@@ -10,7 +10,11 @@
         "credentialsSource": "local"
       },
       "channel": "production",
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "NODE_ENV": "production",
+        "APP_VARIANT": "qa"
+      }
     },
     "development": {
       "developmentClient": true,
