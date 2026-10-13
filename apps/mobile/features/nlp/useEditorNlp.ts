@@ -153,7 +153,11 @@ export const useEditorNlp = ({
   );
 
   const flushPendingNlp = React.useCallback(async () => {
-    if (applyingRef.current) return;
+    while (applyingRef.current) {
+      await new Promise<void>((resolve) => {
+        queueMicrotask(resolve);
+      });
+    }
     const processed = new Set<string>();
     for (;;) {
       const ctx = latestRef.current;

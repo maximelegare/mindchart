@@ -407,7 +407,7 @@ export type ThoughtsEditorHandle = {
   clearValidationErrors: () => void;
   /** Whether any thought currently has a title. */
   titlesEnabled: () => boolean;
-  /** Pull live WebView HTML into form state before save. */
+  /** Pull live WebView HTML into form state and apply pending NLP splits before save. */
   flushThoughts: () => Promise<ThoughtsFormValue[]>;
   /** Run pending NLP for dirty thoughts. Resolves after metadata/structure apply. */
   flushPendingNlp: () => Promise<void>;
@@ -2238,7 +2238,9 @@ function ThoughtsEditorInner(
             if (settled) return;
             settled = true;
             pendingHtmlSyncRef.current = null;
-            resolve(getValues("thoughts") ?? []);
+            void flushPendingNlp().finally(() => {
+              resolve(getValues("thoughts") ?? []);
+            });
           };
           const timeout = setTimeout(finish, 250);
           pendingHtmlSyncRef.current = () => {

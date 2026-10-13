@@ -217,7 +217,7 @@ function NoteDetailsContent({
     const title = (titleDraftRef.current ?? data.title ?? "").trim();
     setValue("title", title, { shouldDirty: true });
 
-    await thoughtsEditorRef.current?.flushThoughts();
+    const flushedFromEditor = await thoughtsEditorRef.current?.flushThoughts();
 
     let hasError = false;
 
@@ -243,7 +243,7 @@ function NoteDetailsContent({
     }
 
     Keyboard.dismiss();
-    const flushedThoughts = getValues("thoughts");
+    const flushedThoughts = flushedFromEditor ?? getValues("thoughts");
     // Drop fully empty bullets on save; keep only contentful thoughts.
     const showTitles =
       thoughtsEditorRef.current?.titlesEnabled() ?? note.showTitles ?? false;
