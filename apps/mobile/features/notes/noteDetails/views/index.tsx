@@ -30,6 +30,7 @@ import {
   noteDetailsLoadingNoteTitle,
   noteDetailsSaveFailedToastTitle,
   noteDetailsSavedToastTitle,
+  noteDetailsViewNoteToastLabel,
   noteDetailsTitleRequiredPlaceholder,
   NoteDetailsTitlePlaceholder,
 } from "@/features/notes/noteDetails/noteDetailsLabels";
@@ -338,7 +339,11 @@ function NoteDetailsContent({
           await editNoteAction(noteToSave, nextThoughts, thoughtsToDelete);
         }
         onSaveFinished?.();
-        toast({ title: noteDetailsSavedToastTitle() });
+        toast({
+          title: noteDetailsSavedToastTitle(),
+          label: noteDetailsViewNoteToastLabel(),
+          link: { pathname: "/notes/[id]", params: { id: note.id } },
+        });
       } catch (error) {
         toast({
           title: noteDetailsSaveFailedToastTitle(),

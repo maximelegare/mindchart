@@ -87,6 +87,10 @@ export function noteDetailsSavedToastTitle() {
   return fbs("Note saved", "Toast title after a note finishes saving");
 }
 
+export function noteDetailsViewNoteToastLabel() {
+  return fbs("View note", "Toast link to open the saved note");
+}
+
 export function noteDetailsSaveFailedToastTitle() {
   return fbs("Couldn't save note", "Toast title when note save fails");
 }
