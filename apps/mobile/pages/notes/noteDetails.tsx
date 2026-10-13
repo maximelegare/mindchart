@@ -213,12 +213,6 @@ export const NoteDetailsPage = () => {
     saveActionRef.current?.();
   };
 
-  const switchToRegularMode = () => {
-    if (editorMode === "regular") return;
-    setEditorMode("regular");
-    router.setParams({ mode: "regular" });
-  };
-
   const handleEditingChange = (editing: boolean) => {
     setIsEditing(editing);
   };
