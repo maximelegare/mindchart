@@ -235,6 +235,21 @@ export const PageContainer = ({
     [getScrollOffset, scrollTo, scrollToTop]
   );
 
+  const showAtForHeader = Math.min(22, Math.max(14, headerHeight * 0.2));
+
+  const snapTransparentHeaderOn = React.useCallback(() => {
+    if (!useTransparentHeader) return;
+    transparentHeaderVisible.value = true;
+    transparentHeaderTranslate.value = 0;
+    transparentHeaderProgress.value = 1;
+    setTransparentHeaderActive(true);
+  }, [
+    transparentHeaderProgress,
+    transparentHeaderTranslate,
+    transparentHeaderVisible,
+    useTransparentHeader,
+  ]);
+
   const prevRestoreTokenRef = React.useRef(restoreScrollToken);
   React.useLayoutEffect(() => {
     if (restoreScrollToken === undefined) return;
@@ -242,6 +257,12 @@ export const PageContainer = ({
     prevRestoreTokenRef.current = restoreScrollToken;
     const currentY = Math.max(scrollY.value, staticScrollOffsetRef.current);
     const y = lastUserScroll.value;
+    const headerCollapsed = filteredScroll.value >= showAtForHeader;
+    // Edit/save: if the real header is already off-screen, show the overlay
+    // immediately — don't wait for another drag.
+    if (headerCollapsed) {
+      snapTransparentHeaderOn();
+    }
     // Stay put when already at the top (edit/save must not invent a scroll).
     if (currentY <= 16 || y <= 16 || filteredScroll.value <= 8) return;
     isRestoringScroll.value = true;
@@ -252,10 +273,8 @@ export const PageContainer = ({
       scrollY.value = y;
       previousScrollY.value = y;
       filteredScroll.value = collapsed;
-      if (useTransparentHeader && collapsed > 4) {
-        transparentHeaderVisible.value = true;
-        transparentHeaderTranslate.value = 0;
-        transparentHeaderProgress.value = 1;
+      if (useTransparentHeader && collapsed >= showAtForHeader) {
+        snapTransparentHeaderOn();
       }
     };
     apply();
@@ -266,9 +285,6 @@ export const PageContainer = ({
       apply();
       isRestoringScroll.value = false;
       lastUserScroll.value = y;
-      if (useTransparentHeader && collapsed > 4) {
-        setTransparentHeaderActive(true);
-      }
     }, 480);
     return () => {
       cancelAnimationFrame(frame);
@@ -285,9 +301,8 @@ export const PageContainer = ({
     previousScrollY,
     restoreScrollToken,
     scrollY,
-    transparentHeaderProgress,
-    transparentHeaderTranslate,
-    transparentHeaderVisible,
+    showAtForHeader,
+    snapTransparentHeaderOn,
     useTransparentHeader,
   ]);
 
@@ -325,6 +340,11 @@ export const PageContainer = ({
     },
     onMomentumEnd: () => {
       userDraggingScroll.value = false;
+      if (!useTransparentHeader) return;
+      const showAt = Math.min(22, Math.max(14, headerHeight * 0.2));
+      if (!transparentHeaderVisible.value && filteredScroll.value >= showAt) {
+        runOnJS(snapTransparentHeaderOn)();
+      }
     },
   });
 

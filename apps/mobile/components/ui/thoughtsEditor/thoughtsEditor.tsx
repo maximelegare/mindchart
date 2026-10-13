@@ -518,6 +518,7 @@ function ThoughtsEditorInner(
   const enteringEditFocusRef = React.useRef(false);
   const enterEditScrollActiveRef = React.useRef(false);
   const enterEditScrollForceRef = React.useRef(false);
+  const enterEditScrollOffsetRef = React.useRef(0);
   const enterEditScrollTimeoutRef = React.useRef<ReturnType<
     typeof setTimeout
   > | null>(null);
@@ -727,6 +728,7 @@ function ThoughtsEditorInner(
   const beginEnterEditScroll = React.useCallback(() => {
     enterEditScrollActiveRef.current = true;
     enterEditScrollForceRef.current = false;
+    enterEditScrollOffsetRef.current = getScrollOffset();
     smoothCaretScrollRef.current = true;
     if (enterEditScrollTimeoutRef.current != null) {
       clearTimeout(enterEditScrollTimeoutRef.current);
@@ -738,7 +740,7 @@ function ThoughtsEditorInner(
       smoothCaretScrollRef.current = true;
       scrollCaretIntoView();
     }, 1200);
-  }, [scrollCaretIntoView]);
+  }, [getScrollOffset, scrollCaretIntoView]);
 
   const holdPageScroll = React.useCallback(() => {
     const offset = getScrollOffset();
@@ -785,9 +787,24 @@ function ThoughtsEditorInner(
           return;
         }
         const offset = getScrollOffset();
+        const snapshot = enterEditScrollOffsetRef.current;
+        // Focus lands at the start of the thought. A tall selected-thought
+        // fallback must not drag the whole block above the keyboard.
+        const caretHeight = caretBottom - caretTop;
+        const focusBottom = caretHeight > 40 ? caretTop + 22 : caretBottom;
+        const alreadyVisible =
+          caretTop >= limitTop && focusBottom <= limitBottom;
+        if (alreadyVisible) {
+          enterEditScrollActiveRef.current = false;
+          enterEditScrollForceRef.current = false;
+          if (Math.abs(offset - snapshot) > 2) {
+            scrollTo(snapshot, { animated: false });
+          }
+          return;
+        }
         let next = offset;
-        if (caretBottom > limitBottom) {
-          next = offset + (caretBottom - limitBottom);
+        if (focusBottom > limitBottom) {
+          next = offset + (focusBottom - limitBottom);
         } else if (caretTop < limitTop) {
           next = Math.max(0, offset + (caretTop - limitTop));
         }
