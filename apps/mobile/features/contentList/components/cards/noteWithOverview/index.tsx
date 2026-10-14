@@ -218,12 +218,13 @@ export const NoteWithThoughts: React.FC<ListItemProps> = memo(
 
     const markerColor = hsl("muted-foreground", colorScheme);
 
+    const contentItems = overviewItems.filter((item) => item.text.trim());
     const hasMore =
-      !showAllContent && overviewItems.length > MAX_VISIBLE_BULLETS;
+      !showAllContent && contentItems.length > MAX_VISIBLE_BULLETS;
 
     const visibleItems = hasMore
-      ? overviewItems.slice(0, MAX_VISIBLE_BULLETS)
-      : overviewItems;
+      ? contentItems.slice(0, MAX_VISIBLE_BULLETS)
+      : contentItems;
 
     const openDetails = () => {
       if (onPress) {
