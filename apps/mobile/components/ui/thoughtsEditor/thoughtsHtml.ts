@@ -869,7 +869,7 @@ export function htmlToThoughts(
   });
 
   const resolved = next.length > 0 ? next : [createEmptyThought(noteId)];
-  return resolved.map((thought, index) => {
+  const withMeta = resolved.map((thought, index) => {
     const item = liItems[index];
     const locked = Boolean(item?.structureLocked);
     const withLock = {
@@ -886,6 +886,12 @@ export function htmlToThoughts(
     }
     return { ...withLock, nlpSourceHash: undefined };
   });
+  const filled = withMeta.filter((thought) => {
+    const title = stripHtml(thought.title);
+    const text = stripHtml(getThoughtPlainText(thought));
+    return Boolean(title || text);
+  });
+  return filled.length > 0 ? filled : withMeta.slice(0, 1);
 }
 
 /** Build a JS snippet that updates one thought's category chrome in the editor. */

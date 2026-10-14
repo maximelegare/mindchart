@@ -1,4 +1,4 @@
-name: React Native CI/CD
+name: QA Production Release
 
 permissions:
   contents: write
@@ -12,11 +12,10 @@ on:
       - "docs/**"
   workflow_dispatch:
     inputs:
-      buildType:
-        type: choice
-        description: "Build type to run"
-        options:
-          - prod
+      reason:
+        description: "Optional note for this manual QA release"
+        required: false
+        type: string
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -26,7 +25,7 @@ env:
 jobs:
   check-skip:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip ci]')
     steps:
       - name: Skip CI check
         run: echo "Proceeding with workflow"
@@ -42,10 +41,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
+          cache: yarn
 
       - name: 📦 Install dependencies
-        run: yarn install
+        run: yarn install --immutable
 
       - name: 🧪 Run TypeScript check
         run: yarn check-types
@@ -55,29 +54,91 @@ jobs:
 
   build-and-release:
     needs: test
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/QA') || github.event_name == 'workflow_dispatch'
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/QA') ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
+      - name: 🧹 Free runner disk space
+        run: |
+          set -eux
+
+          echo "===== BEFORE CLEANUP ====="
+          df -h /
+          df -ih /
+
+          echo "===== LARGE RUNNER DIRECTORIES ====="
+          sudo du -xhd1 / 2>/dev/null | sort -h | tail -20 || true
+
+          echo "===== REMOVE UNUSED SOFTWARE ====="
+
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/local/lib/android/sdk/system-images
+          sudo rm -rf /usr/local/lib/android/sdk/emulator
+
+          echo "===== CLEAN DOCKER ====="
+
+          sudo docker system prune -af --volumes || true
+
+          echo "===== CLEAN USER CACHES ====="
+
+          rm -rf ~/.cache || true
+          rm -rf ~/.npm || true
+
+          echo "===== CLEAN GRADLE TEMPORARY STATE ====="
+
+          rm -rf ~/.gradle/daemon || true
+          rm -rf ~/.gradle/notifications || true
+          rm -rf ~/.gradle/native || true
+
+          echo "===== CLEAN TEMP ====="
+
+          sudo find /tmp -mindepth 1 -maxdepth 1 -exec rm -rf {} + || true
+          sudo find /var/tmp -mindepth 1 -maxdepth 1 -exec rm -rf {} + || true
+
+          echo "===== AFTER CLEANUP ====="
+
+          df -h /
+          df -ih /
+
       - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
+          cache: yarn
 
-      - name: 📦 Install dependencies & EAS CLI
+      - name: 📦 Install dependencies
+        run: yarn install --immutable
+
+      - name: 🧹 Configure Gradle
         run: |
-          yarn install
-          npm install -g eas-cli@latest
+          mkdir -p ~/.gradle
 
-      - name: 🔄 Verify EAS CLI
-        run: eas --version
+          cat > ~/.gradle/gradle.properties <<'EOF'
+          org.gradle.daemon=false
+          org.gradle.caching=true
+          org.gradle.parallel=false
+          org.gradle.configureondemand=false
+          org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m
+          EOF
+
+          cat ~/.gradle/gradle.properties
+
+      - name: 📱 Configure Android architecture
+        run: |
+          echo "Using ARM64 Android build"
+          echo "ORG_GRADLE_PROJECT_reactNativeArchitectures=arm64-v8a" >> "$GITHUB_ENV"
 
       - name: 🔑 Restore Android Keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > apps/mobile/MindChart.keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" |
+            base64 --decode > apps/mobile/MindChart.keystore
 
       - name: 📝 Create local credentials.json
         working-directory: apps/mobile
@@ -86,41 +147,109 @@ jobs:
           EAS_BUILD_KEYSTORE_ALIAS: ${{ secrets.KEY_ALIAS }}
           EAS_BUILD_KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
-          echo '{
-                "android": {
-                  "keystore":{
-                    "keystorePath": "./MindChart.keystore",
-                    "keystorePassword": "'"$EAS_BUILD_KEYSTORE_PASSWORD"'",
-                    "keyAlias": "'"$EAS_BUILD_KEYSTORE_ALIAS"'",
-                    "keyPassword": "'"$EAS_BUILD_KEY_PASSWORD"'"
-                  }
-                }
-              }' > credentials.json
+          cat > credentials.json <<EOF
+          {
+            "android": {
+              "keystore": {
+                "keystorePath": "./MindChart.keystore",
+                "keystorePassword": "${EAS_BUILD_KEYSTORE_PASSWORD}",
+                "keyAlias": "${EAS_BUILD_KEYSTORE_ALIAS}",
+                "keyPassword": "${EAS_BUILD_KEY_PASSWORD}"
+              }
+            }
+          }
+          EOF
 
-      - name: 📱 Build Production APK
-        if: github.event_name == 'push' || github.event.inputs.buildType == 'prod'
+      - name: ⚙️ Generate Android project
         working-directory: apps/mobile
-        run: |
-          export NODE_OPTIONS="--openssl-legacy-provider --max_old_space_size=4096"
-          eas build --platform android --profile production --local --non-interactive --output=../../MindChart-prod.apk
         env:
           NODE_ENV: production
           APP_VARIANT: qa
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
-          EAS_BUILD_KEYSTORE_PATH: "./MindChart.keystore"
-          EAS_BUILD_KEYSTORE_ALIAS: "${{ secrets.KEY_ALIAS }}"
-          EAS_BUILD_KEYSTORE_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
-          EAS_BUILD_KEY_PASSWORD: "${{ secrets.KEYSTORE_PASSWORD }}"
+        run: |
+          npx expo prebuild \
+            --platform android \
+            --non-interactive \
+            --no-install
 
-      - name: 🔑 Generate SHA256 for APK
+      - name: 💾 Check disk before Gradle
+        run: |
+          echo "===== DISK ====="
+          df -h /
+          df -ih /
+
+          echo "===== GRADLE ====="
+          du -sh ~/.gradle 2>/dev/null || true
+
+          echo "===== NODE MODULES ====="
+          du -sh node_modules 2>/dev/null || true
+          du -sh apps/mobile/node_modules 2>/dev/null || true
+
+          echo "===== ANDROID ====="
+          du -sh apps/mobile/android 2>/dev/null || true
+
+      - name: 📱 Build Android APK
+        working-directory: apps/mobile/android
+        env:
+          NODE_ENV: production
+          APP_VARIANT: qa
+          GRADLE_OPTS: >-
+            -Dorg.gradle.jvmargs=-Xmx4096m
+            -XX:MaxMetaspaceSize=1024m
+            -Dorg.gradle.daemon=false
+            -Dorg.gradle.caching=true
+            -Dorg.gradle.parallel=false
+        run: |
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --build-cache \
+            --max-workers=2
+
+      - name: 📦 Copy APK
+        run: |
+          set -eux
+
+          APK=$(find apps/mobile/android/app/build/outputs/apk/release \
+            -type f \
+            -name "*.apk" \
+            | head -n 1)
+
+          test -n "$APK"
+
+          cp "$APK" ./MindChart-prod.apk
+
+          ls -lh ./MindChart-prod.apk
+
+      - name: 💾 Final disk check
+        if: always()
+        run: |
+          echo "===== FILESYSTEM ====="
+          df -h /
+          df -ih /
+
+          echo "===== GRADLE ====="
+          du -sh ~/.gradle 2>/dev/null || true
+
+          echo "===== WORKSPACE ====="
+          du -xhd2 "$GITHUB_WORKSPACE" 2>/dev/null |
+            sort -h |
+            tail -30 || true
+
+          echo "===== TEMP ====="
+          sudo du -sh /tmp 2>/dev/null || true
+          sudo du -sh /var/tmp 2>/dev/null || true
+
+      - name: 🔑 Generate SHA256
+        if: success()
         run: sha256sum ./MindChart-prod.apk > MindChart-prod.apk.sha256
 
       - name: 🔄 Fetch git history
+        if: success()
         run: |
           git fetch --prune --tags --force
           git fetch --unshallow || true
 
       - name: 🏷️ Generate build info & changelog
+        if: success()
         id: build-info
         run: |
           VERSION=$(node -p "require('./apps/mobile/package.json').version")
@@ -174,6 +303,7 @@ jobs:
           done
 
       - name: 🔖 Tag source repository
+        if: success()
         run: |
           VERSION="${{ steps.build-info.outputs.version }}"
           TAG="v${VERSION}"
@@ -189,7 +319,8 @@ jobs:
           git tag -a "${TAG}" -m "Release ${TAG}"
           git push origin "refs/tags/${TAG}"
 
-      - name: 📤 Publish README and draft release
+      - name: 📤 Push code and draft release to public repo
+        if: success()
         env:
           GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
           VERSION: ${{ steps.build-info.outputs.version }}
@@ -204,38 +335,21 @@ jobs:
           TAG="v${VERSION}"
           REMOTE="https://x-access-token:${GH_TOKEN}@github.com/${PUBLIC_REPO}.git"
 
-          rm -rf public-dist
-          git clone --depth 1 "$REMOTE" public-dist || true
-          if [ ! -d public-dist/.git ]; then
-            mkdir -p public-dist
-            git -C public-dist init
-            git -C public-dist checkout -b main
-            git -C public-dist remote add origin "$REMOTE"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          if git remote get-url public >/dev/null 2>&1; then
+            git remote set-url public "$REMOTE"
           else
-            git -C public-dist remote set-url origin "$REMOTE"
+            git remote add public "$REMOTE"
           fi
 
-          git -C public-dist config user.name "github-actions"
-          git -C public-dist config user.email "github-actions@github.com"
+          git push public HEAD:main --force
 
-          mkdir -p public-dist/.github/images
-          cp README.md public-dist/README.md
-          cp .github/images/HEADER.png public-dist/.github/images/HEADER.png
-
-          git -C public-dist add README.md .github/images/HEADER.png
-          if git -C public-dist diff --cached --quiet && git -C public-dist rev-parse --verify HEAD >/dev/null 2>&1; then
-            echo "Public README unchanged."
-          else
-            git -C public-dist commit --allow-empty -m "docs: update README for ${TAG}"
-          fi
-
-          git -C public-dist push -u origin HEAD:main
-
-          if git -C public-dist ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+          if git ls-remote --exit-code --tags public "refs/tags/${TAG}" >/dev/null 2>&1; then
             echo "Public tag ${TAG} already exists."
           else
-            git -C public-dist tag -a "${TAG}" -m "Release ${TAG}"
-            git -C public-dist push origin "refs/tags/${TAG}"
+            git push public "refs/tags/${TAG}"
           fi
 
           if gh release view "${TAG}" --repo "${PUBLIC_REPO}" >/dev/null 2>&1; then
@@ -259,7 +373,8 @@ jobs:
               --draft
           fi
 
-      - name: 📦 Upload build artifacts to GitHub
+      - name: 📦 Upload build artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-builds

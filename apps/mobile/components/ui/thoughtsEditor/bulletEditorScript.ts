@@ -1037,6 +1037,64 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       );
     };
 
+    function isEmptyNonHeadingThought(li) {
+      return (
+        isThought(li) &&
+        !isHeadingType(thoughtTypeOf(li)) &&
+        !thoughtHasContent(li)
+      );
+    }
+
+    function skipEmptyNodes(node) {
+      while (node && !isThought(node) && isEmptyishNode(node)) {
+        var next = node.nextSibling;
+        if (node.parentNode) node.parentNode.removeChild(node);
+        node = next;
+      }
+      return node && node.nodeType === 1 ? node : null;
+    }
+
+    function dropConsecutiveEmptyThoughts() {
+      var root = content.querySelector(".mc-thoughts") || content;
+      if (!root) return;
+      var items = root.querySelectorAll(".thought-item");
+      if (items.length <= 1) return;
+      var sel = window.getSelection();
+      var caretLi = closestThought(sel && sel.anchorNode);
+      var prevEmpty = false;
+      var li = root.firstElementChild;
+      while (li) {
+        var next = li.nextElementSibling;
+        if (!isThought(li)) {
+          prevEmpty = false;
+          li = next;
+          continue;
+        }
+        var empty = isEmptyNonHeadingThought(li);
+        if (empty && prevEmpty) {
+          var prev = li.previousElementSibling;
+          var keepFocus = caretLi === li;
+          if (li.parentNode) li.parentNode.removeChild(li);
+          if (keepFocus) {
+            var focus = prev;
+            while (focus && !isThought(focus)) {
+              focus = focus.previousElementSibling;
+            }
+            if (isThought(focus)) {
+              placeCaretAtStartSoon(
+                focus.querySelector(".thought-summary") ||
+                  focus.querySelector(".thought-title")
+              );
+            }
+          }
+          li = next;
+          continue;
+        }
+        prevEmpty = empty;
+        li = next;
+      }
+    }
+
     function normalizeLis() {
       unwrapLists();
       if (window.__mcShowTitles) {
@@ -1047,6 +1105,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       stripThoughtSeparatorWhitespace(
         content.querySelector(".mc-thoughts") || content
       );
+      dropConsecutiveEmptyThoughts();
     }
 
     function notifyChange() {
@@ -1190,8 +1249,9 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           if (typeof window.__mcSyncChecklistLayouts === "function") {
             window.__mcSyncChecklistLayouts();
           }
-          notifyChange();
         }
+        dropConsecutiveEmptyThoughts();
+        notifyChange();
         return;
       }
       if (isCaretAtStartOf(summary) && !isHeadingType(type)) {
@@ -1204,11 +1264,13 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
       }
 
       var insertAfter = lastThoughtInInlineRun(li);
-      var next = insertAfter.nextElementSibling;
-      if (isThought(next) && !thoughtHasContent(next) && !isInlineThought(next)) {
-        var emptyNext = next.querySelector(".thought-summary") ||
+      var next = skipEmptyNodes(insertAfter.nextSibling);
+      if (isEmptyNonHeadingThought(next)) {
+        var emptyNext =
+          next.querySelector(".thought-summary") ||
           next.querySelector(".thought-title");
         if (emptyNext) placeCaretAtStartSoon(emptyNext);
+        dropConsecutiveEmptyThoughts();
         notifyChange();
         return;
       }
@@ -1240,6 +1302,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
           ? created.querySelector(".thought-title")
           : created.querySelector(".thought-summary");
       if (focusField) placeCaretAtStartSoon(focusField);
+      dropConsecutiveEmptyThoughts();
       notifyChange();
     }
 
@@ -1801,7 +1864,7 @@ export const BULLET_EDITOR_GUARD_SCRIPT = `
         var sel = window.getSelection();
         var anchor = sel && sel.anchorNode;
         var li = closestThought(anchor) || closestThought(e.target);
-        if (inputType === "insertParagraph") {
+        if (inputType === "insertParagraph" || inputType === "insertLineBreak") {
           if (!li) return;
           handleEnter(e, li, anchor || e.target);
           return;
@@ -3994,8 +4057,8 @@ export const THOUGHT_SPLIT_SCRIPT = `
     thought.classList.remove("has-title");
   }
 
-  function stopSplit() {
-    restoreSplitField(window.__mcSplit);
+  function stopSplit(keepField) {
+    if (!keepField) restoreSplitField(window.__mcSplit);
     window.__mcSplitting = false;
     window.__mcSplit = null;
     if (document.documentElement) {
@@ -4140,7 +4203,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
     if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
       window.__mcStripThoughtSeparatorWhitespace();
     }
-    stopSplit();
+    stopSplit(true);
     if (window.ReactNativeWebView) {
       window.ReactNativeWebView.postMessage(
         JSON.stringify({
