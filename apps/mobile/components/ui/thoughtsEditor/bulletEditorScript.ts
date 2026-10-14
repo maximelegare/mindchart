@@ -3994,8 +3994,8 @@ export const THOUGHT_SPLIT_SCRIPT = `
     thought.classList.remove("has-title");
   }
 
-  function stopSplit() {
-    restoreSplitField(window.__mcSplit);
+  function stopSplit(keepField) {
+    if (!keepField) restoreSplitField(window.__mcSplit);
     window.__mcSplitting = false;
     window.__mcSplit = null;
     if (document.documentElement) {
@@ -4140,7 +4140,7 @@ export const THOUGHT_SPLIT_SCRIPT = `
     if (typeof window.__mcStripThoughtSeparatorWhitespace === "function") {
       window.__mcStripThoughtSeparatorWhitespace();
     }
-    stopSplit();
+    stopSplit(true);
     if (window.ReactNativeWebView) {
       window.ReactNativeWebView.postMessage(
         JSON.stringify({
